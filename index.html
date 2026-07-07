@@ -3511,37 +3511,71 @@ function rankPackages(packages, input){
   }
   return packages.map(p => ({...p, recommended:p.mode===chosen.mode}));
 }
-function runAiPlanner(){
-  const input = aiReadInputs();
-  const out = document.getElementById('aiPlannerOutput');
-  if(!input.birthYear || input.age<0 || input.age>98){
-    out.innerHTML = `<div class="content-card"><div class="validation-box bad">ตรวจสอบปีเกิดอีกครั้ง อายุที่คำนวณได้อยู่นอกช่วงตารางเบี้ย</div></div>`;
-    return;
+function plannerEscapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function plannerPackageForAi(pkg, idx){
+  return {
+    index: idx,
+    name: pkg.name,
+    premium: pkg.premium,
+    overBudget: !!(pkg.budgetStatus && pkg.budgetStatus.level && pkg.budgetStatus.level !== 'good' && pkg.budgetStatus.level !== 'no-budget'),
+    forceShownOverBudget: !!pkg.forceShownOverBudget,
+    budgetStatus: pkg.budgetStatus ? pkg.budgetStatus.level : '',
+    recommendedBeforeAI: !!pkg.recommended,
+    missing: pkg.missing || [],
+    items: (pkg.items || []).map(it => ({
+      kind: it.kind,
+      label: packageLabelItem(it).replace(/<[^>]*>/g,''),
+      premium: it.premium || 0
+    })),
+    why: pkg.why || []
+  };
+}
+function plannerProfileForAi(input){
+  return {
+    gender: input.gender,
+    age: input.age,
+    birthYear: input.birthYear,
+    budget: input.budget || 0,
+    hasGroup: !!input.hasGroup,
+    groupCoverage: input.groupCoverage || 0,
+    ipdNeed: document.getElementById('ai_ipdNeed')?.selectedOptions?.[0]?.textContent || input.ipdNeed,
+    opdNeed: document.getElementById('ai_opdNeed')?.selectedOptions?.[0]?.textContent || input.opdNeed,
+    riskChoice: document.getElementById('ai_riskChoice')?.selectedOptions?.[0]?.textContent || input.riskChoice,
+    ciCapital: input.ciCapital || 0,
+    ciStyle: document.getElementById('ai_ciStyle')?.selectedOptions?.[0]?.textContent || input.ciStyle
+  };
+}
+function renderAiBackendAdvice(aiAdvice, isLoading=false, errorText=''){
+  if(isLoading){
+    return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#b7e4c7;background:#f4fff8;">
+      <b>AI กำลังวิเคราะห์แพ็กเกจจากเบี้ยจริงในเว็บ...</b><br>
+      ระบบยังใช้เครื่องคำนวณเดิมเป็นฐาน เพื่อกัน AI แต่งเบี้ยหรือแต่งชื่อแผนเอง
+    </div>`;
   }
-  if(input.age>90){
-    out.innerHTML = `<div class="content-card"><div class="validation-box bad">อายุ ${input.age} ปี เกินช่วงรับทำใหม่ของสัญญาหลักสุขภาพส่วนใหญ่ในตารางนี้ ควรให้ตัวแทนเช็กใบเสนอจริงก่อน</div></div>`;
-    return;
+  if(errorText){
+    return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#f3b4b4;background:#fff7f7;">
+      <b>AI วิเคราะห์แผนไม่สำเร็จ</b><br>${plannerEscapeHtml(errorText)}<br>
+      ระบบยังแสดงผลจากเครื่องคำนวณเดิมให้ใช้งานต่อได้ ไม่ทำให้หน้าเว็บค้าง
+    </div>`;
   }
-  const desiredPackages = ['budget','balanced','premium'].map(m => pricePackage(buildPackage(input,m), input.gender, input.age));
-  const adaptivePackages = buildBudgetAdaptivePackages(input).map(p => pricePackage(p, input.gender, input.age));
-  let allPackages = uniquePackages([...adaptivePackages, ...desiredPackages]);
-  allPackages.sort((a,b)=>a.premium-b.premium);
-  allPackages = rankPackages(allPackages,input);
-  const filtered = filterPackagesByBudget(allPackages,input);
-  const packages = filtered.shown;
-  // v14: ถ้าโจทย์คือ งบน้อยแต่ต้องการคุ้มครองสูง ให้แนะนำ DHL 5M Deductible ก่อนถ้ายังอยู่ในกรอบ hard cap
-  if(packages.length && requestedHighProtection(input)){
-    const preferredHigh = packages.find(p => p.mode==='dhl-high-deduct' && !p.forceShownOverBudget && budgetStatus(p,input).ok && !p.missing.length);
-    const fallbackEcp = packages.find(p => p.mode==='ecp-careplus' && !p.forceShownOverBudget && !p.missing.length);
-    const preferred = preferredHigh || fallbackEcp;
-    if(preferred) packages.forEach(p=>p.recommended = (p === preferred));
-  }
-  // หลังตัดแพ็กเกจที่เกินงบมากออก ต้องเลือก recommended ใหม่จากรายการที่ยังแสดงอยู่
-  if(packages.length && !packages.some(p=>p.recommended)){
-    const underBudget = input.budget ? packages.filter(p=>p.premium<=input.budget) : [];
-    const chosen = underBudget.length ? underBudget[underBudget.length-1] : [...packages].sort((a,b)=>a.premium-b.premium)[0];
-    packages.forEach(p=>p.recommended = (p.mode === chosen.mode));
-  }
+  if(!aiAdvice) return '';
+  const reasons = (aiAdvice.reasons||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
+  const risks = (aiAdvice.riskFlags||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
+  const qs = (aiAdvice.followUpQuestions||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
+  return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#b7e4c7;background:#f4fff8;">
+    <b>AI วิเคราะห์แผนจากเบี้ยจริงในเว็บแล้ว</b>
+    ${aiAdvice.model?`<div class="meta">model: ${plannerEscapeHtml(aiAdvice.model)} • tier: ${plannerEscapeHtml(aiAdvice.routeTier||'')}</div>`:''}
+    ${aiAdvice.summary?`<p>${plannerEscapeHtml(aiAdvice.summary)}</p>`:''}
+    ${reasons?`<b>เหตุผลที่เลือก</b><ul>${reasons}</ul>`:''}
+    ${aiAdvice.budgetWarning?`<p style="color:#9a4f00;"><b>เรื่องงบ:</b> ${plannerEscapeHtml(aiAdvice.budgetWarning)}</p>`:''}
+    ${aiAdvice.clientMessage?`<b>ข้อความสั้นสำหรับคุยกับลูกค้า</b><p>${plannerEscapeHtml(aiAdvice.clientMessage)}</p>`:''}
+    ${risks?`<b>จุดที่ต้องระวัง</b><ul>${risks}</ul>`:''}
+    ${qs?`<b>ควรถามเพิ่ม</b><ul>${qs}</ul>`:''}
+  </div>`;
+}
+function renderAiPlannerOutput(input, packages, filtered, adaptivePackages, aiAdvice=null, loading=false, errorText=''){
   AI_PACKAGES = packages;
   const genderText = input.gender==='m'?'ชาย':'หญิง';
   const explain = [
@@ -3567,20 +3601,75 @@ function runAiPlanner(){
       <b>งบนี้ต่ำกว่าเบี้ยขั้นต่ำของแพ็กเกจที่ระบบจัดได้</b><br>
       จึงแสดงเฉพาะตัวเลือกที่ถูกที่สุดให้ดูเป็นฐานตั้งต้น ควรเพิ่มงบ ลดความคุ้มครองบางส่วน หรือให้ตัวแทนออกแบบมืออีกครั้ง
     </div>` : '';
+  const out = document.getElementById('aiPlannerOutput');
   out.innerHTML = `
     <div class="content-card">
       <h2>ผลวิเคราะห์และแพ็กเกจที่แนะนำ</h2>
-      <p class="meta">ระบบจะเสนอเฉพาะแพ็กเกจที่ยังอยู่ในกรอบงบประมาณโดยประมาณ ไม่ดันแพ็กเกจที่เบี้ยเกินงบมากเกินไป</p>
+      <p class="meta">ระบบเสนอแพ็กเกจจากเบี้ยจริงในไฟล์นี้ก่อน แล้วให้ AI ช่วยวิเคราะห์ซ้ำอีกชั้น โดยไม่ให้ AI แต่งเบี้ยหรือชื่อแผนเอง</p>
       <div class="ai-chip-row">${explain.map(x=>`<span class="ai-chip">${x}</span>`).join('')}</div>
       ${adaptiveNote}
       ${suppressedNote}
       ${forceNote}
+      ${renderAiBackendAdvice(aiAdvice, loading, errorText)}
       <div class="ai-result-grid">
         ${packages.map((p,idx)=>renderAiPackageCard(p, idx)).join('')}
       </div>
       <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณตามตารางในไฟล์นี้ ไม่รวมผลตรวจสุขภาพ/เพิ่มเบี้ย/ข้อยกเว้นเฉพาะบุคคล และควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
     </div>`;
+}
+async function askAiPlannerBackend(input, packages, filtered, adaptivePackages){
+  const response = await fetch(INSURANCE_PLAN_AI_ENDPOINT, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      profile: plannerProfileForAi(input),
+      packages: packages.map(plannerPackageForAi),
+      allowWebSearch: false
+    })
+  });
+  const data = await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(data.error || `AI backend error ${response.status}`);
+  if(Number.isInteger(data.recommendationIndex) && packages[data.recommendationIndex]){
+    packages.forEach((p,idx)=>p.recommended = idx === data.recommendationIndex);
+  }
+  renderAiPlannerOutput(input, packages, filtered, adaptivePackages, data, false, '');
+}
+function runAiPlanner(){
+  const input = aiReadInputs();
+  const out = document.getElementById('aiPlannerOutput');
+  if(!input.birthYear || input.age<0 || input.age>98){
+    out.innerHTML = `<div class="content-card"><div class="validation-box bad">ตรวจสอบปีเกิดอีกครั้ง อายุที่คำนวณได้อยู่นอกช่วงตารางเบี้ย</div></div>`;
+    return;
+  }
+  if(input.age>90){
+    out.innerHTML = `<div class="content-card"><div class="validation-box bad">อายุ ${input.age} ปี เกินช่วงรับทำใหม่ของสัญญาหลักสุขภาพส่วนใหญ่ในตารางนี้ ควรให้ตัวแทนเช็กใบเสนอจริงก่อน</div></div>`;
+    return;
+  }
+  const desiredPackages = ['budget','balanced','premium'].map(m => pricePackage(buildPackage(input,m), input.gender, input.age));
+  const adaptivePackages = buildBudgetAdaptivePackages(input).map(p => pricePackage(p, input.gender, input.age));
+  let allPackages = uniquePackages([...adaptivePackages, ...desiredPackages]);
+  allPackages.sort((a,b)=>a.premium-b.premium);
+  allPackages = rankPackages(allPackages,input);
+  const filtered = filterPackagesByBudget(allPackages,input);
+  const packages = filtered.shown;
+  // ถ้าโจทย์คือ งบน้อยแต่ต้องการคุ้มครองสูง ให้แนะนำ DHL 5M Deductible ก่อนถ้ายังอยู่ในกรอบ hard cap
+  if(packages.length && requestedHighProtection(input)){
+    const preferredHigh = packages.find(p => p.mode==='dhl-high-deduct' && !p.forceShownOverBudget && budgetStatus(p,input).ok && !p.missing.length);
+    const fallbackEcp = packages.find(p => p.mode==='ecp-careplus' && !p.forceShownOverBudget && !p.missing.length);
+    const preferred = preferredHigh || fallbackEcp;
+    if(preferred) packages.forEach(p=>p.recommended = (p === preferred));
+  }
+  // หลังตัดแพ็กเกจที่เกินงบมากออก ต้องเลือก recommended ใหม่จากรายการที่ยังแสดงอยู่
+  if(packages.length && !packages.some(p=>p.recommended)){
+    const underBudget = input.budget ? packages.filter(p=>p.premium<=input.budget) : [];
+    const chosen = underBudget.length ? underBudget[underBudget.length-1] : [...packages].sort((a,b)=>a.premium-b.premium)[0];
+    packages.forEach(p=>p.recommended = (p.mode === chosen.mode));
+  }
+  renderAiPlannerOutput(input, packages, filtered, adaptivePackages, null, true, '');
   out.scrollIntoView({behavior:'smooth', block:'start'});
+  askAiPlannerBackend(input, packages, filtered, adaptivePackages).catch(err=>{
+    renderAiPlannerOutput(input, packages, filtered, adaptivePackages, null, false, err.message || 'ไม่ทราบสาเหตุ');
+  });
 }
 function renderAiPackageCard(pkg, idx){
   const budgetVal = parseFloat(document.getElementById('ai_budget').value)||0;
@@ -3728,6 +3817,7 @@ function faqHighlight(text, terms){
   return safe;
 }
 const INSURANCE_AI_ENDPOINT = window.INSURANCE_AI_ENDPOINT || '/api/insurance-chat';
+const INSURANCE_PLAN_AI_ENDPOINT = window.INSURANCE_PLAN_AI_ENDPOINT || '/api/insurance-plan';
 
 function faqFormatAiText(text){
   return faqEscapeHtml(text || '').replace(/\n/g, '<br>');
@@ -3772,10 +3862,20 @@ async function faqChatAsk(){
       <div class="chat-ai-answer">${faqFormatAiText(data.answer)}</div>
       <div class="chat-meta" style="margin-top:12px;">หมายเหตุ: คำตอบ AI ใช้เพื่อให้ข้อมูลเบื้องต้น เงื่อนไขจริงให้ยืนยันจากกรมธรรม์/ใบเสนอ/บริษัทอีกครั้ง โดยเฉพาะเคสรับประกันหรือเคลมจริง</div>`;
   }catch(err){
-    answer.innerHTML = `<div class="chat-error"><b>ยังเชื่อมต่อ AI backend ไม่สำเร็จ</b><br>
-      สาเหตุที่พบบ่อยคือยังไม่ได้ deploy endpoint <code>${faqEscapeHtml(INSURANCE_AI_ENDPOINT)}</code> หรือยังไม่ได้ตั้งค่า <code>OPENAI_API_KEY</code> บน server/serverless<br><br>
+    const errMsg = String(err?.message || err || '');
+    let title = 'ยังเชื่อมต่อ AI backend ไม่สำเร็จ';
+    let help = `สาเหตุที่พบบ่อยคือยังไม่ได้ deploy endpoint <code>${faqEscapeHtml(INSURANCE_AI_ENDPOINT)}</code> หรือยังไม่ได้ตั้งค่า <code>OPENAI_API_KEY</code> บน server/serverless`;
+    if(/quota|billing|credit|exceeded/i.test(errMsg)){
+      title = 'เชื่อมต่อ backend สำเร็จแล้ว แต่เครดิต/โควตา OpenAI API ไม่พอ';
+      help = 'ให้ตรวจ Billing / Credit / Usage limit ใน OpenAI Platform หรือเปลี่ยน API key ที่มีเครดิต แล้ว Redeploy Vercel';
+    }else if(/รูปแบบ \{ answer \}|no text answer|no text/i.test(errMsg)){
+      title = 'backend เชื่อม OpenAI ได้แล้ว แต่คำตอบที่ส่งกลับมายังไม่ใช่ข้อความสำหรับหน้าเว็บ';
+      help = 'ให้อัปเดตไฟล์ <code>api/insurance-chat.js</code> เป็นเวอร์ชัน v17 ซึ่งมีตัวอ่านคำตอบแบบ fallback และ retry โดยไม่ใช้ web search หากคำตอบว่าง';
+    }
+    answer.innerHTML = `<div class="chat-error"><b>${faqEscapeHtml(title)}</b><br>
+      ${help}<br><br>
       เพื่อความปลอดภัย <b>ห้ามใส่ API key ในไฟล์ HTML ฝั่งลูกค้าโดยตรง</b> ต้องให้หน้าเว็บเรียก backend แล้ว backend ค่อยเรียก OpenAI API<br><br>
-      รายละเอียด error: ${faqEscapeHtml(err.message || String(err))}</div>`;
+      รายละเอียด error: ${faqEscapeHtml(errMsg)}</div>`;
   }
 }
 
