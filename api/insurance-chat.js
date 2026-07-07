@@ -35,6 +35,58 @@ function summarizeOutputTypes(result) {
   }));
 }
 
+function routeModel(question) {
+  const q = (question || "").toLowerCase();
+
+  const hardKeywords = [
+    "ข้อยกเว้น", "ถอดข้อยกเว้น", "cof", "underwrite", "underwriting",
+    "birads", "mammogram", "ultrasound", "cyst", "ซีสต์", "ก้อน",
+    "เบาหวาน", "ความดัน", "มะเร็ง", "ผ่าตัด", "admit", "ipd",
+    "เคยเป็น", "ประวัติ", "โรคประจำตัว", "ใบรับรองแพทย์"
+  ];
+
+  const mediumKeywords = [
+    "เลือก", "เทียบ", "คุ้ม", "แผนไหนดี", "งบ", "เบี้ย",
+    "d health lite", "elite", "care plus", "extra care plus",
+    "deductible", "copayment", "opd"
+  ];
+
+  const easyKeywords = [
+    "คืออะไร", "หมายถึง", "ต่างกันยังไง", "ระยะรอคอย",
+    "แฟกซ์เคลม", "สำรองจ่าย"
+  ];
+
+  if (hardKeywords.some(k => q.includes(k))) {
+    return {
+      model: process.env.OPENAI_MODEL_HARD || "gpt-5.5",
+      maxOutputTokens: 700,
+      useWebSearch: false
+    };
+  }
+
+  if (mediumKeywords.some(k => q.includes(k))) {
+    return {
+      model: process.env.OPENAI_MODEL_MEDIUM || "gpt-5.4-mini",
+      maxOutputTokens: 500,
+      useWebSearch: false
+    };
+  }
+
+  if (easyKeywords.some(k => q.includes(k))) {
+    return {
+      model: process.env.OPENAI_MODEL_EASY || "gpt-5.4-nano",
+      maxOutputTokens: 350,
+      useWebSearch: false
+    };
+  }
+
+  return {
+    model: process.env.OPENAI_MODEL_DEFAULT || "gpt-5.4-mini",
+    maxOutputTokens: 450,
+    useWebSearch: false
+  };
+}
+
 async function callOpenAI(payload) {
   const upstream = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -71,6 +123,8 @@ export default async function handler(req, res) {
     const { question = '', resources = [], allowWebSearch = true } = req.body || {};
     const q = String(question).trim();
     if (!q) return res.status(400).json({ error: 'Missing question' });
+    
+    const route = routeModel(q);
 
     const resourceText = (Array.isArray(resources) ? resources : []).slice(0, 30).map((r, i) => {
       const title = String(r.title || '').replace(/\s+/g, ' ').trim();
@@ -94,21 +148,21 @@ export default async function handler(req, res) {
 - หลีกเลี่ยงคำตอบยาวเป็นพรื้ด ให้จัดเป็นย่อหน้าและ bullet เท่าที่จำเป็น`;
 
     const basePayload = {
-      model: process.env.OPENAI_MODEL || 'gpt-5.5',
+      model: route.model,
       reasoning: { effort: 'low' },
-      max_output_tokens: 1400,
+      max_output_tokens: route.maxOutputTokens,
       instructions,
       input: `คำถามลูกค้า:\n${q}\n\nRESOURCE/FAQ จากเว็บไซต์ Doctor Insurance:\n${resourceText}`,
     };
 
     let payload = { ...basePayload };
-    if (allowWebSearch !== false) {
-      payload.tools = [{
-        type: 'web_search',
-        search_context_size: 'low',
-        filters: { allowed_domains: ['doctor-insurance.com', 'muangthai.co.th'] }
-      }];
-    }
+    if (allowWebSearch !== false && route.useWebSearch) {
+  payload.tools = [{
+    type: 'web_search',
+    search_context_size: 'low',
+    filters: { allowed_domains: ['muangthai-agent.com', 'muangthai.co.th'] }
+  }];
+}
 
     let result = await callOpenAI(payload);
     let answer = extractTextFromResponsesApi(result);
