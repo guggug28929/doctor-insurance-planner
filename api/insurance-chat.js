@@ -1,42 +1,33 @@
-// Vercel Serverless Function: /api/insurance-chat.js
-// Cost saver version v20: route model + relevant resource selection + cache + basic rate limit + Muang Thai domains
+// Vercel Serverless Function: /api/insurance-plan.js
+// v21: AI advisor for the Health Plan Designer page
+// Purpose: ให้ AI วิเคราะห์แพ็กเกจที่ frontend คำนวณไว้แล้ว โดยไม่ invent เบี้ย/รายการใหม่เอง
 // Required env: OPENAI_API_KEY
-// Optional env: ALLOWED_ORIGIN, OPENAI_MODEL_EASY, OPENAI_MODEL_MEDIUM, OPENAI_MODEL_HARD, OPENAI_MODEL_DEFAULT, RATE_LIMIT_PER_HOUR, RATE_LIMIT_PER_DAY
+// Optional env: ALLOWED_ORIGIN, OPENAI_MODEL_PLAN, OPENAI_MODEL_MEDIUM, OPENAI_MODEL_DEFAULT, RATE_LIMIT_PER_HOUR, RATE_LIMIT_PER_DAY
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
-const MAX_QUESTION_CHARS = 900;
-const DEFAULT_RATE_LIMIT_HOUR = 10;
-const DEFAULT_RATE_LIMIT_DAY = 40;
+const DEFAULT_RATE_LIMIT_HOUR = 8;
+const DEFAULT_RATE_LIMIT_DAY = 25;
+const MAX_PACKAGES = 6;
 
-// OpenAI web_search allowed_domains expects domains, not full URLs.
-// User-facing target: https://www.muangthai-agent.com/
+// If later you allow web search for plan questions, keep domains limited.
 const WEB_SEARCH_ALLOWED_DOMAINS = ['muangthai.co.th', 'www.muangthai-agent.com', 'muangthai-agent.com'];
 
-// In-memory maps work on a warm Vercel instance. For strict production limits, use Redis/KV later.
-globalThis.__insuranceChatCache = globalThis.__insuranceChatCache || new Map();
-globalThis.__insuranceChatRateLimit = globalThis.__insuranceChatRateLimit || new Map();
+globalThis.__insurancePlanCache = globalThis.__insurancePlanCache || new Map();
+globalThis.__insurancePlanRateLimit = globalThis.__insurancePlanRateLimit || new Map();
 
-const answerCache = globalThis.__insuranceChatCache;
-const rateStore = globalThis.__insuranceChatRateLimit;
+const answerCache = globalThis.__insurancePlanCache;
+const rateStore = globalThis.__insurancePlanRateLimit;
 
 function json(res, status, data) {
   return res.status(status).json(data);
 }
 
-function normalizeThaiText(text) {
+function normalizeText(text) {
   return String(text || '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .replace(/[“”"'`.,!?;:()\[\]{}<>/\\|*_~+=-]/g, ' ')
     .trim();
-}
-
-function makeCacheKey(question) {
-  return normalizeThaiText(question)
-    .replace(/ครับ|ค่ะ|คะ|จ้า|หน่อย|รบกวน/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 280);
 }
 
 function getClientIp(req) {
@@ -62,168 +53,101 @@ function checkRateLimit(req) {
     item.dayStart = now;
     item.dayCount = 0;
   }
-
   item.hourCount += 1;
   item.dayCount += 1;
   rateStore.set(ip, item);
 
   if (item.hourCount > perHour) {
-    return { ok: false, message: `ถามครบ ${perHour} ครั้งต่อชั่วโมงแล้ว กรุณาลองใหม่ภายหลัง หรือติดต่อหมอกึ๊กโดยตรงครับ` };
+    return { ok: false, message: `วิเคราะห์แผนครบ ${perHour} ครั้งต่อชั่วโมงแล้ว กรุณาลองใหม่ภายหลัง หรือติดต่อหมอกึ๊กโดยตรงครับ` };
   }
   if (item.dayCount > perDay) {
-    return { ok: false, message: `ถามครบ ${perDay} ครั้งต่อวันแล้ว กรุณาลองใหม่พรุ่งนี้ หรือติดต่อหมอกึ๊กโดยตรงครับ` };
+    return { ok: false, message: `วิเคราะห์แผนครบ ${perDay} ครั้งต่อวันแล้ว กรุณาลองใหม่พรุ่งนี้ หรือติดต่อหมอกึ๊กโดยตรงครับ` };
   }
-  return { ok: true, ip, hourCount: item.hourCount, dayCount: item.dayCount };
+  return { ok: true, ip };
 }
 
-function routeModel(question) {
-  const q = normalizeThaiText(question);
+function safeNumber(v, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  const hardKeywords = [
-    'ข้อยกเว้น', 'ถอดข้อยกเว้น', 'cof', 'counter offer', 'underwrite', 'underwriting',
-    'birads', 'mammogram', 'แมมโมแกรม', 'ultrasound', 'อัลตราซาวด์', 'ซีสต์', 'cyst', 'ก้อน',
-    'มะเร็ง', 'เบาหวาน', 'ความดัน', 'หัวใจ', 'ตับ', 'ไต', 'ไทรอยด์', 'thyroid', 'breast', 'เต้านม',
-    'ผ่าตัด', 'admit', 'ipd', 'ประวัติสุขภาพ', 'โรคประจำตัว', 'ใบรับรองแพทย์',
-    'เคลม', 'ปฏิเสธเคลม', 'เคลมไม่ได้', 'ภาวะแทรกซ้อน'
-  ];
-
-  const mediumKeywords = [
-    'เลือก', 'เทียบ', 'เปรียบเทียบ', 'คุ้ม', 'แผนไหนดี', 'งบ', 'เบี้ย',
-    'd health lite', 'dhealth lite', 'd health', 'elite', 'care plus', 'extra care plus',
-    'deductible', 'ดีดัก', 'copayment', 'โคเพย์', 'opd', 'ipd', 'โรคร้ายแรง',
-    '99/20', '99/99', 'ทุนชีวิต', 'สวัสดิการ', 'ห้องเดี่ยว'
-  ];
-
-  const easyKeywords = [
-    'คืออะไร', 'หมายถึง', 'ต่างกันยังไง', 'ต่างกันอย่างไร', 'ระยะรอคอย',
-    'แฟกซ์เคลม', 'fax claim', 'direct claim', 'สำรองจ่าย', 'waiting period',
-    'copay คือ', 'deductible คือ', 'opd คือ', 'ipd คือ'
-  ];
-
-  const needsWeb = shouldUseWebSearch(q);
-
-  if (hardKeywords.some(k => q.includes(k))) {
-    return {
-      tier: 'hard',
-      model: process.env.OPENAI_MODEL_HARD || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.5',
-      maxOutputTokens: 650,
-      maxResources: 7,
-      maxCharsPerResource: 1800,
-      totalResourceChars: 12000,
-      useWebSearch: needsWeb
-    };
-  }
-
-  if (mediumKeywords.some(k => q.includes(k))) {
-    return {
-      tier: 'medium',
-      model: process.env.OPENAI_MODEL_MEDIUM || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
-      maxOutputTokens: 450,
-      maxResources: 5,
-      maxCharsPerResource: 1500,
-      totalResourceChars: 8000,
-      useWebSearch: needsWeb
-    };
-  }
-
-  if (easyKeywords.some(k => q.includes(k))) {
-    return {
-      tier: 'easy',
-      model: process.env.OPENAI_MODEL_EASY || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
-      maxOutputTokens: 280,
-      maxResources: 3,
-      maxCharsPerResource: 1200,
-      totalResourceChars: 4500,
-      useWebSearch: false
-    };
-  }
-
+function sanitizeProfile(profile = {}) {
   return {
-    tier: 'default',
-    model: process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
-    maxOutputTokens: 380,
-    maxResources: 4,
-    maxCharsPerResource: 1400,
-    totalResourceChars: 6500,
-    useWebSearch: needsWeb
+    gender: String(profile.gender || '').slice(0, 20),
+    age: safeNumber(profile.age),
+    birthYear: safeNumber(profile.birthYear),
+    budget: safeNumber(profile.budget),
+    hasGroup: Boolean(profile.hasGroup),
+    groupCoverage: safeNumber(profile.groupCoverage),
+    ipdNeed: String(profile.ipdNeed || '').slice(0, 80),
+    opdNeed: String(profile.opdNeed || '').slice(0, 80),
+    riskChoice: String(profile.riskChoice || '').slice(0, 80),
+    ciCapital: safeNumber(profile.ciCapital),
+    ciStyle: String(profile.ciStyle || '').slice(0, 80),
   };
 }
 
-function shouldUseWebSearch(question) {
-  const q = normalizeThaiText(question);
-  const webKeywords = [
-    'ล่าสุด', 'อัปเดต', 'update', 'ปี 2569', 'ปี 2570', '2026', '2027',
-    'เบี้ยล่าสุด', 'ตารางเบี้ยล่าสุด', 'ประกาศใหม่', 'เงื่อนไขใหม่', 'กฎหมายใหม่',
-    'ตอนนี้', 'ปัจจุบัน', 'วันนี้', 'เดือนนี้'
-  ];
-  return webKeywords.some(k => q.includes(k));
+function sanitizePackages(packages = []) {
+  const list = Array.isArray(packages) ? packages.slice(0, MAX_PACKAGES) : [];
+  return list.map((p, idx) => ({
+    index: safeNumber(p.index, idx),
+    name: String(p.name || `Package ${idx + 1}`).slice(0, 120),
+    premium: safeNumber(p.premium),
+    overBudget: Boolean(p.overBudget),
+    forceShownOverBudget: Boolean(p.forceShownOverBudget),
+    budgetStatus: String(p.budgetStatus || '').slice(0, 40),
+    recommendedBeforeAI: Boolean(p.recommendedBeforeAI),
+    missing: Array.isArray(p.missing) ? p.missing.map(x => String(x).slice(0, 80)).slice(0, 10) : [],
+    items: Array.isArray(p.items) ? p.items.map(it => ({
+      kind: String(it.kind || '').slice(0, 40),
+      label: String(it.label || '').slice(0, 220),
+      premium: safeNumber(it.premium),
+    })).slice(0, 20) : [],
+    why: Array.isArray(p.why) ? p.why.map(x => String(x).slice(0, 280)).slice(0, 12) : [],
+  }));
 }
 
-function keywordSet(question) {
-  const q = normalizeThaiText(question);
-  const tokens = q.split(' ').filter(w => w.length >= 2);
-  const fixed = [
-    'copayment', 'deductible', 'opd', 'ipd', 'ระยะรอคอย', 'แฟกซ์เคลม', 'สำรองจ่าย',
-    'ข้อยกเว้น', 'care plus', 'extra care plus', 'd health lite', 'elite', 'โรคร้ายแรง',
-    'ทุนชีวิต', '99/20', '99/99', 'สวัสดิการ', 'เคลม', 'cof'
-  ].filter(k => q.includes(k));
-  return Array.from(new Set([...tokens, ...fixed]));
+function makeCacheKey(profile, packages) {
+  const brief = {
+    profile,
+    packages: packages.map(p => ({ index: p.index, name: p.name, premium: p.premium, items: p.items.map(i => i.label).slice(0, 8) }))
+  };
+  return normalizeText(JSON.stringify(brief)).slice(0, 1800);
 }
 
-function scoreResource(resource, keys) {
-  const title = normalizeThaiText(resource?.title || '');
-  const body = normalizeThaiText(resource?.body || resource?.content || '');
-  const hay = `${title} ${body}`;
-  let score = 0;
-  for (const k of keys) {
-    if (!k) continue;
-    if (title.includes(k)) score += 6;
-    if (hay.includes(k)) score += 2;
+function shouldUseWebSearch(profile) {
+  // For plan design we should normally NOT search web because premiums come from frontend tables.
+  // Keep this available only if later adding date-sensitive wording.
+  const text = normalizeText(JSON.stringify(profile));
+  return ['ล่าสุด', 'อัปเดต', 'เบี้ยล่าสุด', 'เงื่อนไขใหม่', 'ปี 2569', 'ปี 2570'].some(k => text.includes(k));
+}
+
+function modelForPlan(profile, packages) {
+  const budget = safeNumber(profile.budget);
+  const hasHealthConditionLikeNeed = false;
+  const highNeed = ['high', 'elite20', 'elite75'].includes(profile.ipdNeed);
+  const tightBudget = budget > 0 && packages.some(p => p.premium > budget * 1.5);
+
+  if (hasHealthConditionLikeNeed || (highNeed && tightBudget)) {
+    return {
+      tier: 'plan-hard',
+      model: process.env.OPENAI_MODEL_PLAN || process.env.OPENAI_MODEL_HARD || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+      maxOutputTokens: 780,
+      useWebSearch: false
+    };
   }
-  // Boost important FAQ-like sections that often answer common questions.
-  if (/faq|คำถาม|ความรู้|ประกันสุขภาพ/.test(title)) score += 1;
-  return score;
-}
-
-function selectRelevantResources(resources, question, route) {
-  const list = Array.isArray(resources) ? resources : [];
-  if (!list.length) return '';
-
-  const keys = keywordSet(question);
-  const ranked = list
-    .map((r, idx) => ({ r, idx, score: scoreResource(r, keys) }))
-    .sort((a, b) => (b.score - a.score) || (a.idx - b.idx));
-
-  // ถ้า score ต่ำหมด ให้เอา resource แรก ๆ แทน เพื่อไม่ให้ prompt ว่าง
-  const selected = ranked
-    .filter(x => x.score > 0)
-    .slice(0, route.maxResources);
-
-  const finalSelected = selected.length ? selected : ranked.slice(0, Math.min(3, route.maxResources));
-
-  let usedChars = 0;
-  const blocks = [];
-  for (const [i, item] of finalSelected.entries()) {
-    const r = item.r || {};
-    const title = String(r.title || `Resource ${i + 1}`).replace(/\s+/g, ' ').trim();
-    const rawContent = String(r.body || r.content || '').replace(/\s+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-    const room = route.totalResourceChars - usedChars;
-    if (room <= 0) break;
-    const clipped = rawContent.slice(0, Math.min(route.maxCharsPerResource, room));
-    usedChars += clipped.length;
-    blocks.push(`### RESOURCE ${i + 1}: ${title}\n${clipped}`);
-  }
-  return blocks.join('\n\n---\n\n');
+  return {
+    tier: 'plan-medium',
+    model: process.env.OPENAI_MODEL_PLAN || process.env.OPENAI_MODEL_MEDIUM || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+    maxOutputTokens: 620,
+    useWebSearch: false
+  };
 }
 
 function extractTextFromResponsesApi(result) {
-  if (typeof result?.output_text === 'string' && result.output_text.trim()) {
-    return result.output_text.trim();
-  }
-
+  if (typeof result?.output_text === 'string' && result.output_text.trim()) return result.output_text.trim();
   const chunks = [];
   const output = Array.isArray(result?.output) ? result.output : [];
-
   for (const item of output) {
     const content = Array.isArray(item?.content) ? item.content : [];
     for (const c of content) {
@@ -231,21 +155,17 @@ function extractTextFromResponsesApi(result) {
       if (typeof c?.output_text === 'string' && c.output_text.trim()) chunks.push(c.output_text.trim());
       if (typeof c?.content === 'string' && c.content.trim()) chunks.push(c.content.trim());
     }
-    if (item?.type === 'message' && typeof item?.text === 'string' && item.text.trim()) {
-      chunks.push(item.text.trim());
-    }
   }
-
   return chunks.join('\n\n').trim();
 }
 
-function summarizeOutputTypes(result) {
-  const output = Array.isArray(result?.output) ? result.output : [];
-  return output.map(item => ({
-    type: item?.type || null,
-    status: item?.status || null,
-    contentTypes: Array.isArray(item?.content) ? item.content.map(c => c?.type || null) : []
-  }));
+function extractJsonObject(text) {
+  const raw = String(text || '').trim();
+  if (!raw) throw new Error('Empty AI response');
+  try { return JSON.parse(raw); } catch (_) {}
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (match) return JSON.parse(match[0]);
+  throw new Error('AI response is not valid JSON');
 }
 
 async function callOpenAI(payload) {
@@ -270,19 +190,31 @@ async function callOpenAI(payload) {
 }
 
 function buildInstructions(route) {
-  return `คุณคือ AI ผู้ช่วยตอบคำถามประกันสุขภาพของ Doctor Insurance โดยหมอกึ๊ก
+  return `คุณคือ AI ผู้ช่วยออกแบบแผนประกันสุขภาพของ Doctor Insurance โดยหมอกึ๊ก
 
-หลักการตอบ:
-- ตอบภาษาไทย สุภาพ กระชับ อ่านง่าย แต่ต้องมีเหตุผล
-- ยึด Resource/FAQ ที่ส่งมาเป็นหลักก่อนเสมอ
-- ถ้าข้อมูลใน Resource ไม่พอ และมี web_search ให้ค้นข้อมูลเพิ่มเติมได้ โดยเน้น muangthai.co.th และ www.muangthai-agent.com
-- ห้ามแต่งเงื่อนไขกรมธรรม์เอง ถ้าไม่แน่ใจให้บอกว่าไม่ทราบ/ต้องตรวจเงื่อนไขกรมธรรม์หรือถามบริษัท
-- ห้ามให้คำมั่นว่าเคลมได้แน่นอนหรือรับประกันได้แน่นอน
-- สำหรับคำถามด้าน underwriting/เคลม ให้แนะนำว่าต้องดูเอกสารกรมธรรม์ ประวัติสุขภาพ และดุลพินิจบริษัท
-- ตอบไม่เกิน 6-8 บรรทัด ถ้าต้องอธิบายให้ใช้ bullet สั้น ๆ ไม่เกิน 5 bullet
-- ถ้าเป็นคำถามง่าย ให้ตอบสั้นมาก ไม่ต้องเกริ่นยาว
-- ถ้าข้อมูลไม่พอ ให้ถามข้อมูลเพิ่ม 1-3 ข้อ ไม่ต้องเดา
-- ระดับคำถามที่ระบบประเมิน: ${route.tier}`;
+ข้อบังคับสำคัญ:
+- ให้เลือกและอธิบายจากแพ็กเกจที่ frontend ส่งมาเท่านั้น ห้ามสร้างชื่อแผน/เบี้ย/สัญญาเพิ่มเติมใหม่เอง
+- เบี้ยและรายการ rider จาก frontend ถือเป็น source of truth ห้ามแก้ตัวเลขเอง
+- ตอบกลับเป็น JSON object เท่านั้น ห้ามมี markdown นอก JSON
+- หลักการจัดแผน: IPD/สุขภาพหลักก่อน → โรคร้ายแรง/Care Plus → OPD ถ้างบพอ → ทุนชีวิตท้ายสุด
+- ถ้างบจำกัดแต่ต้องการความคุ้มครองสูง ให้ให้เหตุผลว่าควรพยายามคง D Health Lite 5 ล้านแบบ Deductible ก่อน ถ้ายังพอจ่ายไหว
+- ถ้างบน้อยมาก ให้ยอม step down เป็น Extra Care Plus แผน 3 + Care Plus + 99/99 ทุน 50,000 และอาจคง PA แผน 1 หากช่วยให้เลือก 99/99 ได้
+- อย่าเสนอแพ็กเกจที่เบี้ยเกินงบมากเกินจริง ถ้าเกินงบมากให้เตือนตรง ๆ
+- ห้ามรับรองว่าอนุมัติ/เคลมได้แน่นอน ต้องบอกว่าเงื่อนไขจริงขึ้นกับใบเสนอ กรมธรรม์ สุขภาพ และดุลพินิจบริษัท
+- ใช้ภาษาไทย กระชับ อ่านง่าย เหมือนตัวแทนมืออาชีพคุยกับลูกค้า
+
+JSON schema ที่ต้องตอบ:
+{
+  "recommendationIndex": number หรือ null,
+  "summary": "สรุปสั้น 1-2 ประโยค",
+  "reasons": ["เหตุผล 1", "เหตุผล 2", "เหตุผล 3"],
+  "budgetWarning": "คำเตือนเรื่องงบ ถ้าไม่มีให้เป็นค่าว่าง",
+  "clientMessage": "ข้อความที่ใช้พูดกับลูกค้าแบบสั้น กระชับ",
+  "followUpQuestions": ["คำถามต่อยอดที่ควรถามลูกค้า"],
+  "riskFlags": ["จุดที่ต้องระวัง เช่น ประวัติสุขภาพ/ข้อยกเว้น/งบตึง"]
+}
+
+ระดับงาน: ${route.tier}`;
 }
 
 export default async function handler(req, res) {
@@ -292,46 +224,45 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
-  if (!process.env.OPENAI_API_KEY) {
-    return json(res, 500, { error: 'OPENAI_API_KEY is not configured on server' });
-  }
+  if (!process.env.OPENAI_API_KEY) return json(res, 500, { error: 'OPENAI_API_KEY is not configured on server' });
 
   try {
     const rate = checkRateLimit(req);
     if (!rate.ok) return json(res, 429, { error: rate.message });
 
-    const { question = '', resources = [], allowWebSearch = true } = req.body || {};
-    let q = String(question).trim();
-    if (!q) return json(res, 400, { error: 'Missing question' });
-    if (q.length > MAX_QUESTION_CHARS) q = q.slice(0, MAX_QUESTION_CHARS);
+    const profile = sanitizeProfile(req.body?.profile || {});
+    const packages = sanitizePackages(req.body?.packages || []);
+    if (!packages.length) return json(res, 400, { error: 'Missing packages' });
 
-    const route = routeModel(q);
-    const cacheKey = `${route.tier}:${route.model}:${makeCacheKey(q)}`;
+    const route = modelForPlan(profile, packages);
+    const cacheKey = `${route.model}:${makeCacheKey(profile, packages)}`;
     const cached = answerCache.get(cacheKey);
     if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
-      return json(res, 200, {
-        answer: cached.answer,
-        cached: true,
-        usedWebSearch: cached.usedWebSearch || false,
-        model: cached.model,
-        routeTier: cached.routeTier,
-      });
+      return json(res, 200, { ...cached.data, cached: true });
     }
 
-    const resourceText = selectRelevantResources(resources, q, route);
-    const instructions = buildInstructions(route);
+    const payloadForAi = {
+      profile,
+      packages,
+      businessRules: {
+        budgetTolerance: 'เสนอเป็นตัวเลือกหลักเฉพาะแพ็กเกจที่ไม่หลุดงบเกินประมาณ 30-50% ถ้าเกินมากให้เตือน/ไม่เชียร์',
+        healthFirst: 'IPD ก่อน โรคร้ายแรง ต่อด้วย OPD และทุนชีวิตท้ายสุด',
+        lowBudgetHighProtection: 'พยายามเสนอ D Health Lite 5M แบบ deductible ก่อน ถ้าต่ำมากจริงค่อย step down Extra Care Plus 3 + Care Plus + 99/99 50,000 + อาจคง PA 1',
+        lifeCapital: 'ทุนชีวิตสูงควรแยกเล่ม ไม่ดันทุนสูงในเล่มสุขภาพ'
+      }
+    };
 
     const basePayload = {
       model: route.model,
       reasoning: { effort: 'low' },
       max_output_tokens: route.maxOutputTokens,
       text: { verbosity: 'low' },
-      instructions,
-      input: `คำถามลูกค้า:\n${q}\n\nRESOURCE/FAQ จากเว็บไซต์ Doctor Insurance:\n${resourceText || '(ไม่มี resource ที่เกี่ยวข้องถูกส่งมา)'}`,
+      instructions: buildInstructions(route),
+      input: JSON.stringify(payloadForAi)
     };
 
     let payload = { ...basePayload };
-    if (allowWebSearch !== false && route.useWebSearch) {
+    if (req.body?.allowWebSearch === true && shouldUseWebSearch(profile)) {
       payload.tools = [{
         type: 'web_search',
         search_context_size: 'low',
@@ -340,49 +271,31 @@ export default async function handler(req, res) {
       payload.tool_choice = 'auto';
     }
 
-    let result = await callOpenAI(payload);
-    let answer = extractTextFromResponsesApi(result);
-    let usedWebSearch = Boolean(payload.tools);
-    let retriedWithoutWebSearch = false;
+    const result = await callOpenAI(payload);
+    const answerText = extractTextFromResponsesApi(result);
+    const parsed = extractJsonObject(answerText);
 
-    if (!answer && payload.tools) {
-      retriedWithoutWebSearch = true;
-      usedWebSearch = false;
-      result = await callOpenAI(basePayload);
-      answer = extractTextFromResponsesApi(result);
-    }
-
-    if (!answer) {
-      return json(res, 502, {
-        error: 'OpenAI response completed but no text answer was found',
-        status: result?.status || null,
-        outputTypes: summarizeOutputTypes(result),
-      });
-    }
-
-    answerCache.set(cacheKey, {
-      answer,
-      createdAt: Date.now(),
+    const data = {
+      recommendationIndex: Number.isInteger(parsed.recommendationIndex) ? parsed.recommendationIndex : null,
+      summary: String(parsed.summary || '').slice(0, 600),
+      reasons: Array.isArray(parsed.reasons) ? parsed.reasons.map(x => String(x).slice(0, 240)).slice(0, 5) : [],
+      budgetWarning: String(parsed.budgetWarning || '').slice(0, 400),
+      clientMessage: String(parsed.clientMessage || '').slice(0, 900),
+      followUpQuestions: Array.isArray(parsed.followUpQuestions) ? parsed.followUpQuestions.map(x => String(x).slice(0, 220)).slice(0, 4) : [],
+      riskFlags: Array.isArray(parsed.riskFlags) ? parsed.riskFlags.map(x => String(x).slice(0, 220)).slice(0, 5) : [],
       model: route.model,
       routeTier: route.tier,
-      usedWebSearch,
-    });
+      usedWebSearch: Boolean(payload.tools),
+      usage: result?.usage || null,
+    };
 
-    // Prevent cache from growing forever on warm instances.
-    if (answerCache.size > 300) {
+    answerCache.set(cacheKey, { data, createdAt: Date.now() });
+    if (answerCache.size > 200) {
       const oldestKey = answerCache.keys().next().value;
       if (oldestKey) answerCache.delete(oldestKey);
     }
 
-    return json(res, 200, {
-      answer,
-      cached: false,
-      usedWebSearch,
-      retriedWithoutWebSearch,
-      model: route.model,
-      routeTier: route.tier,
-      usage: result?.usage || null,
-    });
+    return json(res, 200, { ...data, cached: false });
   } catch (err) {
     const status = Number(err?.status) || 500;
     return json(res, status, {
