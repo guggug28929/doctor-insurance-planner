@@ -39,8 +39,140 @@ async function replyToLine(replyToken, message) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("LINE reply error:", response.status, errorText);
+    throw new Error(
+      `LINE reply failed: ${response.status} ${errorText}`
+    );
   }
+}
+
+function containsAny(text, keywords) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function getRuleBasedReply(message) {
+  const text = message.toLowerCase().trim();
+
+  // คำทักทายทั่วไป: ไม่เรียก OpenAI
+  if (
+    containsAny(text, [
+      "สวัสดี",
+      "หวัดดี",
+      "hello",
+      "hi",
+      "ดีครับ",
+      "ดีค่ะ",
+    ])
+  ) {
+    return {
+      handled: true,
+      reply:
+        "สวัสดีครับ 😊 หมอกึ๊กจากเมืองไทยประกันชีวิตครับ\n\nสอบถามเรื่องประกันสุขภาพ โรคร้ายแรง ชีวิต หรือการวางแผนความคุ้มครองได้เลยครับ",
+    };
+  }
+
+  // ช่องทางติดต่อ: ไม่เรียก OpenAI
+  if (
+    containsAny(text, [
+      "ติดต่อ",
+      "เบอร์โทร",
+      "โทรหา",
+      "ไลน์ไอดี",
+      "line id",
+      "นัดคุย",
+    ])
+  ) {
+    return {
+      handled: true,
+      reply:
+        "สามารถพิมพ์รายละเอียดไว้ในแชตนี้ได้เลยครับ หรือแจ้งว่าต้องการให้หมอกึ๊กติดต่อกลับ พร้อมช่วงเวลาที่สะดวกครับ",
+    };
+  }
+
+  // พบประวัติสุขภาพหรือคำถามการแพทย์: ไม่ส่งเข้า OpenAI
+  if (
+    containsAny(text, [
+      "ผ่าตัด",
+      "มะเร็ง",
+      "ก้อน",
+      "ไทรอยด์",
+      "เบาหวาน",
+      "ความดัน",
+      "หัวใจ",
+      "สโตรก",
+      "เส้นเลือดสมอง",
+      "กินยา",
+      "ทานยา",
+      "นอนโรงพยาบาล",
+      "แอดมิท",
+      "ผลชิ้นเนื้อ",
+      "ผลตรวจผิดปกติ",
+      "โรคประจำตัว",
+      "เคยรักษา",
+      "เคยป่วย",
+      "ตรวจสุขภาพ",
+      "ตั้งครรภ์",
+    ])
+  ) {
+    return {
+      handled: true,
+      reply:
+        "เรื่องการวางแผนประกันเบื้องต้นสามารถช่วยดูให้ได้ครับ แต่เนื่องจากมีประวัติสุขภาพร่วมด้วย ขออนุญาตส่งต่อให้หมอกึ๊กประเมินรายละเอียดโดยตรงนะครับ\n\nสามารถพิมพ์ประวัติ การรักษา ยาที่ใช้ และผลตรวจล่าสุดเพิ่มเติมไว้ได้เลยครับ",
+    };
+  }
+
+  // คำถามเบี้ยที่ข้อมูลยังไม่ครบ: ไม่เรียก OpenAI
+  if (
+    containsAny(text, [
+      "เบี้ยเท่าไหร่",
+      "เบี้ยเท่าไร",
+      "ราคาเท่าไหร่",
+      "ราคาเท่าไร",
+      "ปีละกี่บาท",
+      "ค่าเบี้ย",
+    ])
+  ) {
+    return {
+      handled: true,
+      reply:
+        "เพื่อคำนวณเบี้ยให้ใกล้เคียงที่สุด รบกวนแจ้งข้อมูลดังนี้ครับ\n\n1. อายุ\n2. เพศ\n3. อาชีพ\n4. งบประมาณต่อปี\n5. มีประกันกลุ่มหรือสวัสดิการเดิมกี่บาท\n6. สนใจประกันสุขภาพ โรคร้ายแรง หรือทั้งสองแบบ",
+    };
+  }
+
+  return {
+    handled: false,
+    reply: null,
+  };
+}
+
+async function askInsuranceAI(question, requestUrl) {
+  const apiUrl = new URL("/api/insurance-chat", requestUrl);
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      question,
+      resources: [],
+      allowWebSearch: false,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Insurance AI failed: ${response.status} ${errorText}`
+    );
+  }
+
+  const data = await response.json();
+
+  if (!data?.answer) {
+    throw new Error("Insurance AI returned no answer");
+  }
+
+  return data.answer;
 }
 
 export default {
@@ -49,11 +181,14 @@ export default {
       return Response.json({
         ok: true,
         service: "Doctor Gug LINE Webhook",
+        mode: "Hybrid Rule Engine + AI",
       });
     }
 
     if (request.method !== "POST") {
-      return new Response("Method Not Allowed", { status: 405 });
+      return new Response("Method Not Allowed", {
+        status: 405,
+      });
     }
 
     const channelSecret = process.env.LINE_CHANNEL_SECRET;
@@ -89,7 +224,9 @@ export default {
     try {
       body = JSON.parse(rawBody);
     } catch {
-      return new Response("Invalid JSON", { status: 400 });
+      return new Response("Invalid JSON", {
+        status: 400,
+      });
     }
 
     const events = Array.isArray(body.events)
@@ -109,12 +246,52 @@ export default {
       const customerMessage =
         event.message.text?.trim() || "";
 
-      await replyToLine(
-        event.replyToken,
-        `ได้รับข้อความแล้วครับ 😊\n\nคุณพิมพ์ว่า: ${customerMessage}\n\nขณะนี้ระบบ Doctor Gug LINE Bot อยู่ในช่วงทดสอบครับ`
-      );
+      try {
+        const ruleResult =
+          getRuleBasedReply(customerMessage);
+
+        let finalReply;
+
+        if (ruleResult.handled) {
+          // ตอบจากกฎโดยตรง ไม่เสีย OpenAI token
+          finalReply = ruleResult.reply;
+
+          console.log("LINE reply source: rule", {
+            messageId: event.message?.id,
+            userId: event.source?.userId,
+          });
+        } else {
+          // เฉพาะคำถามที่กฎจับไม่ได้ จึงเรียก OpenAI
+          finalReply = await askInsuranceAI(
+            customerMessage,
+            request.url
+          );
+
+          console.log("LINE reply source: AI", {
+            messageId: event.message?.id,
+            userId: event.source?.userId,
+          });
+        }
+
+        await replyToLine(
+          event.replyToken,
+          finalReply
+        );
+      } catch (error) {
+        console.error(
+          "Failed to process LINE message",
+          error
+        );
+
+        await replyToLine(
+          event.replyToken,
+          "ขออภัยครับ ระบบไม่สามารถประมวลผลคำถามนี้ได้ในขณะนี้ ขออนุญาตส่งต่อให้หมอกึ๊กตอบโดยตรงนะครับ"
+        );
+      }
     }
 
-    return new Response("OK", { status: 200 });
+    return new Response("OK", {
+      status: 200,
+    });
   },
 };
