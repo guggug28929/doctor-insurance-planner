@@ -49,6 +49,13 @@ function containsAny(text, keywords) {
   return keywords.some((keyword) => text.includes(keyword));
 }
 
+function forceMalePoliteTone(message) {
+  return String(message || "")
+    .replace(/นะคะ/g, "นะครับ")
+    .replace(/ค่ะ/g, "ครับ")
+    .replace(/คะ/g, "ครับ");
+}
+
 function getRuleBasedReply(message) {
   const text = message.toLowerCase().trim();
 
@@ -274,8 +281,8 @@ export default {
         }
 
         await replyToLine(
-          event.replyToken,
-          finalReply
+        event.replyToken,
+        forceMalePoliteTone(finalReply)
         );
       } catch (error) {
         console.error(
