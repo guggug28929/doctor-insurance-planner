@@ -279,7 +279,7 @@ function inferContextualUpdates(message, current) {
   return updates;
 }
 
-function mergeProfile(current, analysis, message) {
+function mergeProfile(current, analysis, message, contextualUpdates = null) {
   const next = migrateProfile(current);
   for (const field of analysis.clearFields || []) {
     if (field === "focus") next[field] = [];
@@ -298,7 +298,7 @@ function mergeProfile(current, analysis, message) {
 
   // กฎตามบริบททำหน้าที่เป็น safety net เมื่อคำตอบลูกค้าไม่ใช่ตัวเลขล้วน
   // เช่น "ไม่จำกัดค่าห้อง", "ได้หมด", "เอา max" หรือ "ค่าห้อง 30,000"
-  Object.assign(next, inferContextualUpdates(message, current));
+  Object.assign(next, contextualUpdates || inferContextualUpdates(message, current));
 
   next.focus = Array.isArray(next.focus) ? [...new Set(next.focus)] : [];
   next.updatedAt = new Date().toISOString();
@@ -478,7 +478,8 @@ export default async function handler(req, res) {
 
     const currentProfile = migrateProfile(req.body?.profile || {});
     const analysis = await analyzeTurn(message, currentProfile);
-    const profile = mergeProfile(currentProfile, analysis, message);
+    const contextualUpdates = inferContextualUpdates(message, currentProfile);
+    const profile = mergeProfile(currentProfile, analysis, message, contextualUpdates);
 
     if (analysis.intent === "human_handoff") {
       profile.botMode = "human";
@@ -511,7 +512,8 @@ export default async function handler(req, res) {
       analysis.asksForPremium ||
       analysis.shouldRecommendPlan ||
       analysis.intent === "insurance_advice" ||
-      analysis.intent === "profile_update";
+      analysis.intent === "profile_update" ||
+      Object.keys(contextualUpdates).length > 0;
 
     if (needsPlanning) {
       const missing = missingFields(profile);
