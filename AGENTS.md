@@ -40,6 +40,7 @@ Rules:
 - The latest explicit customer statement overrides older memory.
 - Do not ask a question already answered in the same turn or in stored memory.
 - LINE replies are natural Thai, concise, end politely with `ครับ`, contain no Markdown, and must never say `D Health Plus` (use `D Health Lite`).  For a detailed D Care question, append only the approved Doctor Gug plan URL: `https://doctor-insurance.com`.
+- After a successful quote, ask whether the customer wants the brochures. If the customer gives an affirmative Thai reply, send only the hosted brochure links for plans actually included in that quote. The LINE Messaging API cannot send a PDF attachment; use the approved `https://doctor-insurance.com/brochures/` PDF links. Do not send a brochure for an unquoted plan.
 
 ## Health-history behavior
 
