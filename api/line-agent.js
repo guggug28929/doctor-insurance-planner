@@ -1,5 +1,5 @@
 // Vercel Serverless Function: /api/line-agent.js
-// ทุกข้อความลูกค้าผ่าน GPT-5.6 Luna เพื่อทำความเข้าใจบริบท อัปเดตความจำ และสร้างคำตอบ
+// ทุกข้อความลูกค้าผ่าน AI เพื่อทำความเข้าใจบริบท อัปเดตความจำ และสร้างคำตอบ
 // ตัวเลขเบี้ยต้องมาจาก /api/premium-quote เท่านั้น
 
 const MODEL = process.env.OPENAI_MODEL_LINE || "gpt-5.6-luna";
@@ -8,24 +8,28 @@ const PRODUCT_RULES = `
 คุณเป็นผู้ช่วยประกันของหมอกึ๊กจากเมืองไทยประกันชีวิต ตอบภาษาไทย สุภาพ กระชับ ลงท้ายครับเสมอ
 
 กฎจัดแผนที่ต้องยึดตาม:
-1. กรอบงบรวมยอมให้บวกลบได้ไม่เกิน 50% จากงบที่ลูกค้าแจ้ง โดยพยายามใกล้งบที่สุดและห้ามเกิน 150% ของงบ
-2. เริ่มจากประกันสุขภาพเป็นหลักก่อน
-3. ลูกค้าต้องการค่าห้องต่ำกว่า 10,000 บาท: เริ่ม D Health Lite 5 ล้านบาท/ครั้ง + Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี
-4. หากงบถึง ให้เพิ่ม PA Easy Plan 1
-5. จากนั้นถ้างบถึงให้ใช้ Smart Protection 99/20 ทุนชีวิต 200,000 บาท
-6. หากเกินงบ ให้ลดเป็น 99/99 ทุนชีวิต 100,000 บาท และถ้ายังเกินให้ลดเหลือ 50,000 บาท
-7. หากชุด D Health Lite แบบไม่มีความรับผิดส่วนแรกยังเกินกรอบงบ และลูกค้ามีประกันกลุ่ม/กรมธรรม์เดิม หรือขอ deductible ให้ถามวงเงินค่ารักษาของสิทธิเดิมก่อน แล้วใช้ D Health Lite 5 ล้านบาท แบบ deductible 30,000 / 50,000 / 100,000 บาทให้สัมพันธ์กับวงเงินเดิม
-8. ถ้า D Health Lite ยังไม่เหมาะกับงบมากจริง ๆ จึงค่อยใช้ Extra Care Plus Plan 3 เป็นแผนสำรอง และแนบ Care Plus
-9. หากต้องการค่าห้องตั้งแต่ 10,000 บาทขึ้นไป ให้เปลี่ยน D Health Lite + Care Plus เป็น Elite Health Plus
-10. Elite: ถ้างบต่ำกว่า 50,000 บาทและไม่เน้น OPD ให้ใช้ Elite Health Plus 20 ล้านบาท
-11. ถ้างบตั้งแต่ 50,000 บาทขึ้นไป หรืออยากได้ OPD ให้ใช้ Elite Health Plus 75 ล้านบาท
-12. ห้ามเสนอ Elite 40 ล้านบาทเป็นแผนหลัก หากถามเหตุผล ให้ตอบว่าเบี้ยใกล้กับ 75 ล้านบาทมาก เพิ่มอีกประมาณหลักพันบาทก็ได้วงเงิน 75 ล้านบาทซึ่งคุ้มกว่ามาก
-13. Elite Health Plus ไม่ต้องแนบ Care Plus
-14. ห้ามพูดถึง D Health Plus เพราะปิดการขายแล้ว ใช้ชื่อ D Health Lite เท่านั้น
-15. D Health Lite: หากแอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทนอาจช่วยขอส่วนลดค่าห้องได้
-16. ห้ามแต่งตัวเลขเบี้ย ห้ามประมาณเอง ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
-17. ห้ามใช้ Markdown เครื่องหมาย ** หรือลิงก์ดิบในคำตอบ LINE
-18. หากมีประวัติสุขภาพ ให้ตอบได้ในเชิงวางแผนเบื้องต้น แต่แจ้งว่าผลรับประกันขึ้นกับบริษัทและส่งต่อหมอกึ๊กเมื่อต้องประเมินรายละเอียด
+1. งบที่ลูกค้าแจ้งเป็นงบเป้าหมาย คำว่า "ถ้างบถึง" หมายถึงยอดรวมต้องไม่เกินงบเป้าหมาย ไม่ใช่ใช้เพดาน +50% เพื่อยัดความคุ้มครองเพิ่ม
+2. ยอมรับยอดรวมสูงกว่างบได้ไม่เกิน 50% เฉพาะเมื่อความคุ้มครองหลักทำให้หลีกเลี่ยงไม่ได้ โดยต้องเลือกชุดที่เกินงบน้อยที่สุด
+3. เริ่มจากประกันสุขภาพเป็นหลักก่อน
+4. ค่าห้องต่ำกว่า 10,000 บาท: D Health Lite 5 ล้านบาท/ครั้ง + Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี
+5. ถ้างบถึง ใช้ Smart Protection 99/20 ทุน 200,000 บาท และเพิ่ม PA Easy Plan 1 เมื่อยังไม่เกินงบ
+6. หาก 99/20 + PA เกินงบ สามารถใช้ 99/20 โดยไม่แนบ PA ได้เมื่อจำเป็นจริง ๆ
+7. หากต้องลดเป็นสัญญาหลัก 99/99 ทุน 100,000 หรือ 50,000 บาท ต้องแนบ PA เสมอ ห้ามเสนอ 99/99 เดี่ยว ๆ
+8. หาก D Health Lite แบบไม่มีความรับผิดส่วนแรกยังเกินงบ และลูกค้ามีประกันกลุ่ม/กรมธรรม์เดิม หรือขอ deductible ให้ถามวงเงินค่ารักษาเดิมก่อน แล้วใช้ deductible 30,000 / 50,000 / 100,000 บาทให้สัมพันธ์กับวงเงินเดิม
+9. ถ้ายังไม่ลงตัวจริง ๆ ค่อยใช้ Extra Care Plus Plan 3 + Care Plus เป็นแผนสำรอง
+10. ค่าห้องตั้งแต่ 10,000 บาทขึ้นไป: ใช้ Elite Health Plus
+11. งบต่ำกว่า 50,000 บาทและไม่ได้ยืนยันว่าต้องการ OPD: Elite Health Plus 20 ล้านบาท
+12. งบตั้งแต่ 50,000 บาทขึ้นไป หรือยืนยันว่าต้องการ OPD: Elite Health Plus 75 ล้านบาท
+13. ข้อความ "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เผื่อ OPD" หมายถึง OPD เป็น optional ไม่ใช่การยืนยันว่าต้องการ OPD จึงห้ามบังคับไป Elite 75 ล้านบาท
+14. ห้ามเสนอ Elite 40 ล้านบาทเป็นแผนหลัก หากถามเหตุผล ให้ตอบว่าเบี้ยใกล้กับ 75 ล้านบาทมาก เพิ่มอีกประมาณหลักพันบาทก็ได้วงเงิน 75 ล้านบาทซึ่งคุ้มกว่า
+15. Elite Health Plus ไม่ต้องแนบ Care Plus
+16. ห้ามพูดถึง D Health Plus เพราะปิดการขายแล้ว ใช้ชื่อ D Health Lite เท่านั้น
+17. หากลูกค้าระบุชื่อแผนล่าสุดโดยตรง เช่น "เอา Elite 20 ล้าน", "ขอเบี้ย D Health Lite" คำขอล่าสุดต้องมีลำดับสูงกว่ากฎค่าห้องและข้อมูลเก่า
+18. ถ้าลูกค้าบอกว่าเบี้ยแพง/เกินงบ ให้จัดใหม่โดยถอดความคุ้มครองเสริมก่อนและเลือกชุดที่ใกล้งบที่สุด ห้ามส่งแผนเดิมซ้ำเฉย ๆ
+19. D Health Lite: แอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทนอาจช่วยขอส่วนลดค่าห้องได้
+20. ห้ามแต่งตัวเลขเบี้ย ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
+21. ห้ามใช้ Markdown เครื่องหมาย ** หรือลิงก์ดิบในคำตอบ LINE
+22. หากมีประวัติสุขภาพ ให้ตอบเชิงวางแผนเบื้องต้น และแจ้งว่าผลรับประกันขึ้นกับบริษัท
 `.trim();
 
 const ANALYSIS_SCHEMA = {
@@ -63,7 +67,19 @@ const ANALYSIS_SCHEMA = {
           type: ["string", "null"],
           enum: ["yes", "none", "auto", null],
         },
-        wantsOPD: { type: ["boolean", "null"] },
+        opdPreference: {
+          type: ["string", "null"],
+          enum: ["yes", "no", "optional", "unknown", null],
+        },
+        requestedHealthPlan: {
+          type: ["string", "null"],
+          enum: ["auto", "dhl", "elite20", "elite75", "ecp", null],
+        },
+        quoteScope: {
+          type: ["string", "null"],
+          enum: ["package", "health_only", null],
+        },
+        optimizeForBudget: { type: ["boolean", "null"] },
         focus: {
           type: ["array", "null"],
           items: {
@@ -83,7 +99,10 @@ const ANALYSIS_SCHEMA = {
         "hasGroupBenefit",
         "groupBenefit",
         "deductiblePreference",
-        "wantsOPD",
+        "opdPreference",
+        "requestedHealthPlan",
+        "quoteScope",
+        "optimizeForBudget",
         "focus",
       ],
       additionalProperties: false,
@@ -103,7 +122,10 @@ const ANALYSIS_SCHEMA = {
           "hasGroupBenefit",
           "groupBenefit",
           "deductiblePreference",
-          "wantsOPD",
+          "opdPreference",
+          "requestedHealthPlan",
+          "quoteScope",
+          "optimizeForBudget",
           "focus",
         ],
       },
@@ -160,7 +182,7 @@ async function callOpenAI(payload) {
 
 function defaultProfile() {
   return {
-    version: 4,
+    version: 5,
     age: null,
     gender: null,
     occupation: null,
@@ -171,7 +193,10 @@ function defaultProfile() {
     hasGroupBenefit: null,
     groupBenefit: null,
     deductiblePreference: "auto",
-    wantsOPD: null,
+    opdPreference: "unknown",
+    requestedHealthPlan: "auto",
+    quoteScope: "package",
+    optimizeForBudget: false,
     focus: [],
     botMode: "ai",
     lastPlanCode: null,
@@ -179,12 +204,25 @@ function defaultProfile() {
   };
 }
 
+function migrateProfile(input = {}) {
+  const profile = { ...defaultProfile(), ...input };
+  if (!input.opdPreference) {
+    if (input.wantsOPD === true) profile.opdPreference = "yes";
+    else if (input.wantsOPD === false) profile.opdPreference = "no";
+  }
+  profile.version = 5;
+  return profile;
+}
+
 function mergeProfile(current, analysis) {
-  const next = { ...defaultProfile(), ...(current || {}) };
+  const next = migrateProfile(current);
   for (const field of analysis.clearFields || []) {
     if (field === "focus") next[field] = [];
-    else if (field === "budgetFlexible") next[field] = false;
+    else if (field === "budgetFlexible" || field === "optimizeForBudget") next[field] = false;
     else if (field === "deductiblePreference") next[field] = "auto";
+    else if (field === "opdPreference") next[field] = "unknown";
+    else if (field === "requestedHealthPlan") next[field] = "auto";
+    else if (field === "quoteScope") next[field] = "package";
     else next[field] = null;
   }
 
@@ -206,7 +244,9 @@ function missingFields(profile) {
   if (profile.annualBudget === null && profile.budgetFlexible !== true) {
     missing.push("annualBudget");
   }
-  if (profile.roomBudget === null) missing.push("roomBudget");
+  if (profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
+    missing.push("roomBudget");
+  }
   if (!profile.healthStatus) missing.push("healthStatus");
   if (profile.hasGroupBenefit === null) missing.push("hasGroupBenefit");
   return missing;
@@ -228,16 +268,22 @@ async function analyzeTurn(message, profile) {
 ${PRODUCT_RULES}
 
 หน้าที่ของคุณรอบนี้:
-- อ่านข้อความลูกค้าและข้อมูลสะสมเดิม แล้วแยก intent พร้อมข้อมูลใหม่เป็น JSON ตาม schema เท่านั้น
-- ต้องเข้าใจภาษาพูด คำย่อ คำสะกดผิด ตัวเลขแบบ 20k, 5พัน, 1แสน
-- คำว่า ไม่มีโรคประจำตัว, ไม่มีประวัติสุขภาพ, สุขภาพแข็งแรง, ผลตรวจปกติ หมายถึง healthStatus = none ห้ามตีความว่ามีโรคเพียงเพราะมีคำว่าโรคหรือสุขภาพ
-- ถ้าลูกค้าแก้ข้อมูล ให้ใส่ค่าที่แก้ใน updates และระบุ clearFields เฉพาะข้อมูลที่ต้องล้างจริง
-- ห้ามถามข้อมูลที่มีอยู่แล้วใน CURRENT PROFILE
-- ถ้าลูกค้าถามเบี้ย ราคา ปีละเท่าไร รวมเท่าไร หรือขอใบเสนอราคา ให้ asksForPremium = true
-- ถ้าลูกค้าขอแนะนำแผน ให้ shouldRecommendPlan = true
-- directReply ใช้ตอบคำถามทั่วไปหรือทักทายได้ แต่ถ้าต้องคำนวณเบี้ยให้ปล่อยเป็นข้อความสั้น ๆ ว่ากำลังคำนวณ ไม่ต้องใส่ตัวเลข
-- หากขอคุยกับคน/เจ้าหน้าที่/หมอกึ๊ก ให้ intent = human_handoff
-- ตอบและสรุปด้วยคำลงท้ายครับเท่านั้น
+- อ่านข้อความล่าสุดร่วมกับ CURRENT PROFILE แล้วส่ง JSON ตาม schema เท่านั้น
+- เข้าใจภาษาพูด คำย่อ คำสะกดผิด และตัวเลข เช่น 20k, 5พัน, 1แสน
+- ไม่มีโรคประจำตัว, ไม่มีประวัติสุขภาพ, สุขภาพแข็งแรง, ผลตรวจปกติ = healthStatus none
+- ห้ามถามข้อมูลที่มีใน CURRENT PROFILE แล้ว เว้นแต่ลูกค้าบอกว่าขอแก้ไข
+- "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เอา OPD ก็ได้ไม่เอาก็ได้" = opdPreference optional ห้ามตั้งเป็น yes
+- "ไม่เอา OPD", "เอาแค่ IPD" = opdPreference no
+- "ต้องการ OPD", "เอา OPD" = opdPreference yes
+- หากลูกค้าระบุ D Health, D Health Lite, ดีเฮลท์ หรือขอเบี้ย D Health ให้ requestedHealthPlan dhl โดยคำขอล่าสุดชนะ roomBudget เดิม
+- หากระบุ Elite 20 ล้าน ให้ requestedHealthPlan elite20 หากระบุ Elite 75 ล้าน ให้ elite75
+- หากพูดว่า "เบี้ยแพง", "เกินงบ", "ลดเบี้ย", "จัดใหม่ให้ถูกลง" ให้ optimizeForBudget true, asksForPremium true, shouldRecommendPlan true และตั้ง requestedHealthPlan auto เว้นแต่ข้อความเดียวกันระบุชื่อแผนชัดเจน
+- หากลูกค้าบอก "ไม่เอา OPD ก็ได้" หลังเคยเสนอ Elite 75 ให้ตั้ง requestedHealthPlan auto เพื่อเปิดทางให้ระบบเลือก Elite 20
+- หากถามเฉพาะเบี้ยของตัวแผนสุขภาพ เช่น "เฉพาะเบี้ย D Health Lite เท่าไร" ให้ quoteScope health_only มิฉะนั้นใช้ package
+- หากถามเบี้ย ราคา ปีละเท่าไร รวมเท่าไร หรือขอใบเสนอราคา ให้ asksForPremium true
+- หากขอแนะนำแผน ให้ shouldRecommendPlan true
+- หากขอคุยกับเจ้าหน้าที่ ให้ intent human_handoff
+- directReply ห้ามแต่งตัวเลขเบี้ย
 `.trim();
 
   const result = await callOpenAI({
@@ -250,29 +296,55 @@ ${PRODUCT_RULES}
     text: {
       format: {
         type: "json_schema",
-        name: "line_insurance_turn",
+        name: "line_insurance_turn_v5",
         strict: true,
         schema: ANALYSIS_SCHEMA,
       },
     },
   });
 
-  const text = extractResponseText(result);
-  return JSON.parse(text);
+  return JSON.parse(extractResponseText(result));
+}
+
+function quoteFallbackReply(quote) {
+  if (!quote?.ok) return quote?.question || "ยังไม่สามารถจัดแผนในกรอบงบที่แจ้งได้ครับ";
+  const parts = [];
+  if (quote.selectionReason) parts.push(quote.selectionReason);
+  parts.push(quote.text);
+  if (Array.isArray(quote.notes) && quote.notes.length) {
+    parts.push(quote.notes.join("\n"));
+  }
+  return parts.filter(Boolean).join("\n\n");
+}
+
+function replyMatchesQuote(reply, quote) {
+  if (!quote?.ok) return true;
+  const text = String(reply || "");
+  const hasDhl = quote.planType === "dhl" || quote.planType === "ecp";
+  const hasElite = quote.planType === "elite";
+
+  if (/D\s*Health\s*Plus/i.test(text)) return false;
+  if (hasDhl && /Elite\s*Health\s*Plus/i.test(text)) return false;
+  if (hasElite && /D\s*Health\s*Lite/i.test(text)) return false;
+  if (hasDhl && !/D\s*Health\s*Lite|Extra\s*Care\s*Plus/i.test(text)) return false;
+  if (hasElite && !/Elite\s*Health\s*Plus/i.test(text)) return false;
+  if (!text.includes(String(Math.round(quote.totalPremium).toLocaleString("th-TH")))) return false;
+  return true;
 }
 
 async function writeReply({ message, profile, analysis, quote = null, forcedQuestion = null }) {
   const instructions = `
 ${PRODUCT_RULES}
 
-สร้างคำตอบ LINE OA ของหมอกึ๊ก:
-- ใช้ข้อมูลสะสมเดิม ไม่ถามซ้ำ
-- ถ้ามี forcedQuestion ให้ถามเพียงคำถามนั้นหนึ่งเรื่อง ห้ามถามเรื่องอื่นเพิ่ม
-- ถ้ามี QUOTE ให้ใช้ชื่อแผน รายการ และตัวเลขตาม QUOTE แบบตรงตัว ห้ามแก้ ห้ามปัด ห้ามเติมตัวเลขใหม่
-- เมื่อมี QUOTE ต้องแจกแจงแต่ละสัญญาพร้อมเบี้ย และยอดรวม
-- หากลูกค้าถามเบี้ย ต้องตอบเบี้ยทันทีเมื่อ QUOTE พร้อม
-- ข้อความธรรมดา ไม่มี Markdown ไม่มีลิงก์ดิบ
-- สุภาพ กระชับ อ่านง่าย และลงท้ายครับเสมอ
+สร้างคำตอบ LINE OA:
+- คำขอล่าสุดของลูกค้ามีลำดับสูงสุด
+- ใช้ข้อมูลสะสมเดิมและห้ามถามซ้ำ
+- ถ้ามี forcedQuestion ให้ถามเพียงเรื่องนั้น
+- ถ้ามี QUOTE ให้ใช้แผน รายการ และตัวเลขจาก QUOTE เท่านั้น ห้ามอ้างแผนก่อนหน้า ห้ามเปลี่ยนชื่อแผน และห้ามเติมตัวเลข
+- ถ้าลูกค้าขอ D Health Lite แต่ QUOTE เป็น D Health Lite ต้องตอบ D Health Lite ห้ามย้อนกลับไป Elite
+- ถ้าลูกค้าขอ Elite 20 แต่ QUOTE เป็น Elite 20 ต้องทำตามตรง ๆ
+- เมื่อมี QUOTE ให้แจกแจงแต่ละสัญญาและยอดรวม
+- ไม่มี Markdown ไม่มีลิงก์ดิบ ลงท้ายครับ
 `.trim();
 
   const result = await callOpenAI({
@@ -291,7 +363,11 @@ ${PRODUCT_RULES}
     text: { verbosity: "low" },
   });
 
-  return extractResponseText(result);
+  const reply = extractResponseText(result);
+  if (quote?.ok && !replyMatchesQuote(reply, quote)) {
+    return quoteFallbackReply(quote);
+  }
+  return reply || (quote ? quoteFallbackReply(quote) : "รับทราบครับ");
 }
 
 async function getQuote(requestUrl, profile) {
@@ -322,7 +398,7 @@ export default async function handler(req, res) {
     const message = String(req.body?.message || "").trim();
     if (!message) return sendJson(res, 400, { error: "Missing message" });
 
-    const currentProfile = { ...defaultProfile(), ...(req.body?.profile || {}) };
+    const currentProfile = migrateProfile(req.body?.profile || {});
     const analysis = await analyzeTurn(message, currentProfile);
     const profile = mergeProfile(currentProfile, analysis);
 
@@ -397,6 +473,11 @@ export default async function handler(req, res) {
 
       if (quote?.ok) profile.lastPlanCode = quote.planCode || null;
       const reply = await writeReply({ message, profile, analysis, quote });
+
+      // quoteScope และคำสั่งปรับงบเป็นคำสั่งเฉพาะรอบ ไม่ควรค้างไปถามครั้งถัดไป
+      profile.quoteScope = "package";
+      profile.optimizeForBudget = false;
+
       return sendJson(res, 200, {
         action: quote?.ok ? "quote" : "no_quote",
         profile,
