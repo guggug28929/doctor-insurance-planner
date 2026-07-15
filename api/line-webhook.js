@@ -2,10 +2,11 @@ import crypto from "node:crypto";
 
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 90;
 const EVENT_TTL_SECONDS = 60 * 60 * 24;
+const fallbackClaimedEvents = new Map();
 
 function defaultProfile() {
   return {
-    version: 6,
+    version: 7,
     age: null,
     gender: null,
     occupation: null,
@@ -15,9 +16,11 @@ function defaultProfile() {
     healthStatus: null,
     hasGroupBenefit: null,
     groupBenefit: null,
+    groupBenefitAsked: false,
     deductiblePreference: "auto",
     opdPreference: "unknown",
     requestedHealthPlan: "auto",
+    mainPlanPreference: "auto",
     quoteScope: "package",
     optimizeForBudget: false,
     requestedProduct: "auto",
@@ -58,7 +61,7 @@ function sanitizeLineText(message) {
     .replace(/__+/g, "")
     .replace(/^#{1,6}\s*/gm, "")
     .replace(/`{1,3}/g, "")
-    .replace(/https?:\/\/\S+/g, "")
+    .replace(/https?:\/\/(?!doctor-insurance\.com\b)\S+/g, "")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
@@ -192,6 +195,12 @@ async function claimEvent(eventId) {
     return result === "OK";
   } catch (error) {
     console.error("claimEvent failed", error);
+    const now = Date.now();
+    for (const [key, expiresAt] of fallbackClaimedEvents) {
+      if (expiresAt <= now) fallbackClaimedEvents.delete(key);
+    }
+    if (fallbackClaimedEvents.has(eventId)) return false;
+    fallbackClaimedEvents.set(eventId, now + EVENT_TTL_SECONDS * 1000);
     return true;
   }
 }
