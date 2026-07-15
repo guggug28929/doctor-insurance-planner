@@ -3,6 +3,25 @@ import crypto from "node:crypto";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
 const EVENT_TTL_SECONDS = 60 * 60 * 24; // 1 day
 
+const CURRENT_PRODUCT_RULES = `
+กฎผลิตภัณฑ์ที่ต้องยึดตามอย่างเคร่งครัด:
+1) ห้ามแนะนำหรือกล่าวถึง D Health Plus เพราะปิดการขายแล้ว และห้ามใช้ชื่อ D Health แบบกว้าง ๆ ให้ใช้ชื่อ D Health Lite เท่านั้น
+2) ถ้าต้องการค่าห้องประมาณ 5,000-10,000 บาท หรือมีงบจำกัดต่ำกว่า 30,000 บาทต่อปี ให้ใช้ D Health Lite เป็นแผนสุขภาพหลัก ไม่ต้องเสนอแผนห้องอื่นซ้ำ
+3) สำหรับ D Health Lite: หากแอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย และโรงพยาบาลคู่สัญญาบางแห่งตัวแทนอาจช่วยขอส่วนลดค่าห้องได้
+4) ถ้าต้องการค่าห้องตั้งแต่ 10,000 บาทขึ้นไป และงบไม่จำกัด หรือมีงบตั้งแต่ 30,000 บาทต่อปีขึ้นไปและเน้นค่าห้อง 10,000 บาทขึ้นไป ให้แนะนำ Elite Health Plus
+5) เมื่อแนะนำ D Health Lite, เหมาจ่ายเอ๊กตร้า หรือ Extra Care Plus ให้เสนอ Care Plus เสริมด้วยเสมอ
+6) เมื่อแนะนำ Elite Health Plus ไม่ต้องเสนอ Care Plus เพิ่ม
+7) ห้ามแต่งตัวเลขเบี้ยหรือผลรับประกัน และห้ามใช้ข้อมูลแผนเก่าจากเว็บค้นหา
+8) คำตอบใน LINE ต้องเป็นข้อความธรรมดา ห้ามใช้ Markdown เช่น ** หรือลิงก์แบบ [ข้อความ](URL)
+`.trim();
+
+const FORBIDDEN_PRODUCT_PATTERNS = [
+  /\bD\s*Health\s*Plus\b/i,
+  /\bD\s*Health\b(?!\s*Lite)/i,
+  /ดี\s*เฮลท์\s*พลัส/i,
+  /ดี\s*เฮลท์(?!\s*ไลท์)/i,
+];
+
 const PROFILE_FIELDS = [
   "age",
   "gender",
@@ -12,6 +31,7 @@ const PROFILE_FIELDS = [
   "groupBenefit",
   "roomBudget",
   "occupation",
+  "budgetFlexible",
 ];
 
 const FIELD_LABELS = {
@@ -23,6 +43,7 @@ const FIELD_LABELS = {
   groupBenefit: "ประกันกลุ่มหรือสวัสดิการเดิม",
   roomBudget: "งบค่าห้องต่อคืน",
   occupation: "อาชีพ",
+  budgetFlexible: "ความยืดหยุ่นของงบ",
 };
 
 function verifyLineSignature(rawBody, signature, channelSecret) {
@@ -42,7 +63,7 @@ function verifyLineSignature(rawBody, signature, channelSecret) {
 }
 
 async function replyToLine(replyToken, message) {
-  const safeText = forceMalePoliteTone(String(message || "")).slice(0, 4900);
+  const safeText = sanitizeLineText(String(message || "")).slice(0, 4900);
 
   const response = await fetch("https://api.line.me/v2/bot/message/reply", {
     method: "POST",
@@ -52,7 +73,40 @@ async function replyToLine(replyToken, message) {
     },
     body: JSON.stringify({
       replyToken,
-      messages: [{ type: "text", text: safeText }],
+      messages: [
+        {
+          type: "text",
+          text: safeText,
+          quickReply: {
+            items: [
+              {
+                type: "action",
+                action: {
+                  type: "message",
+                  label: "คุยกับเจ้าหน้าที่",
+                  text: "คุยกับเจ้าหน้าที่",
+                },
+              },
+              {
+                type: "action",
+                action: {
+                  type: "message",
+                  label: "เริ่มใหม่",
+                  text: "เริ่มใหม่",
+                },
+              },
+              {
+                type: "action",
+                action: {
+                  type: "message",
+                  label: "เปิดผู้ช่วยอัตโนมัติ",
+                  text: "กลับมาใช้บอต",
+                },
+              },
+            ],
+          },
+        },
+      ],
     }),
   });
 
@@ -74,6 +128,19 @@ function forceMalePoliteTone(message) {
     .replace(/นะคะ/g, "นะครับ")
     .replace(/ค่ะ/g, "ครับ")
     .replace(/คะ/g, "ครับ");
+}
+
+function sanitizeLineText(message) {
+  return forceMalePoliteTone(message)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$1")
+    .replace(/\*\*/g, "")
+    .replace(/__+/g, "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/`{1,3}/g, "")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function normalizeText(input) {
@@ -131,6 +198,7 @@ function defaultProfile() {
     age: null,
     gender: null,
     annualBudget: null,
+    budgetFlexible: false,
     roomBudget: null,
     focus: [],
     healthStatus: null, // none | yes | conflict | unclear
@@ -139,6 +207,7 @@ function defaultProfile() {
     groupBenefit: null,
     occupation: null,
     intent: null,
+    botMode: "ai",
     askedFields: [],
     lastAskedField: null,
     createdAt: new Date().toISOString(),
@@ -307,19 +376,27 @@ const GREETING_KEYWORDS = [
 ];
 
 const CONTACT_KEYWORDS = [
-  "ติดต่อ",
-  "เบอร์โทร",
-  "โทรหา",
-  "โทรกลับ",
-  "ไลน์ไอดี",
-  "line id",
-  "นัดคุย",
-  "ขอคุยกับหมอกึ๊ก",
-  "ขอคุยกับแอดมิน",
+  "คุยกับเจ้าหน้าที่",
+  "ขอคุยกับเจ้าหน้าที่",
   "ขอเจ้าหน้าที่",
-  "แอดมิน",
+  "คุยกับแอดมิน",
+  "ขอคุยกับแอดมิน",
+  "ขอคุยกับหมอกึ๊ก",
   "คุยกับคน",
-  "ให้ติดต่อกลับ",
+  "ให้เจ้าหน้าที่ตอบ",
+  "ให้แอดมินตอบ",
+  "หยุดบอต",
+  "ปิดบอต",
+];
+
+const RESUME_BOT_KEYWORDS = [
+  "กลับมาใช้บอต",
+  "เปิดบอต",
+  "เปิดผู้ช่วยอัตโนมัติ",
+  "ให้บอตตอบ",
+  "ใช้ ai ต่อ",
+  "กลับเข้าโหมดอัตโนมัติ",
+  "resume bot",
 ];
 
 const PLAN_INTENT_KEYWORDS = [
@@ -546,6 +623,10 @@ function isGreeting(text) {
 
 function isContactRequest(text) {
   return containsAny(text, CONTACT_KEYWORDS);
+}
+
+function isResumeBotRequest(text) {
+  return containsAny(text, RESUME_BOT_KEYWORDS);
 }
 
 function isShortAcknowledgement(text) {
@@ -866,18 +947,59 @@ function extractGroupBenefit(text) {
 
 function extractOccupation(text) {
   const normalized = normalizeText(text);
-  const match = normalized.match(
-    /(?:อาชีพ|ทำงานเป็น|ทำงาน|ประกอบอาชีพ)\s*[:：-]?\s*([^,;|]{2,40})/
+  const compact = normalizeCompact(text);
+
+  const explicit = normalized.match(
+    /(?:อาชีพ|ทำงานเป็น|ประกอบอาชีพ|ทำงานด้าน)\s*[:：-]?\s*([^,;|]{2,40})/
   );
 
-  if (!match) {
-    return null;
+  if (explicit) {
+    return explicit[1]
+      .replace(/\s*(งบ|อายุ|เพศ|สนใจ|ไม่มีโรค|มีโรค).*$/g, "")
+      .replace(/ครับ|ค่ะ|คะ|จ้า|นะครับ|นะคะ/g, "")
+      .trim()
+      .slice(0, 40);
   }
 
-  return match[1]
-    .replace(/\s*(งบ|อายุ|เพศ|สนใจ|ไม่มีโรค|มีโรค).*$/g, "")
-    .trim()
-    .slice(0, 40);
+  const occupationAliases = [
+    ["แพทย์", "แพทย์"],
+    ["หมอ", "แพทย์"],
+    ["พยาบาล", "พยาบาล"],
+    ["ทันตแพทย์", "ทันตแพทย์"],
+    ["เภสัชกร", "เภสัชกร"],
+    ["ข้าราชการ", "ข้าราชการ"],
+    ["รับราชการ", "ข้าราชการ"],
+    ["พนักงานบริษัท", "พนักงานบริษัท"],
+    ["พนักงานออฟฟิศ", "พนักงานบริษัท"],
+    ["มนุษย์เงินเดือน", "พนักงานบริษัท"],
+    ["เจ้าของกิจการ", "เจ้าของกิจการ"],
+    ["ธุรกิจส่วนตัว", "เจ้าของกิจการ"],
+    ["ค้าขาย", "ค้าขาย"],
+    ["ฟรีแลนซ์", "ฟรีแลนซ์"],
+    ["ครู", "ครู"],
+    ["อาจารย์", "อาจารย์"],
+    ["วิศวกร", "วิศวกร"],
+    ["สถาปนิก", "สถาปนิก"],
+    ["ตำรวจ", "ตำรวจ"],
+    ["ทหาร", "ทหาร"],
+    ["เกษตรกร", "เกษตรกร"],
+    ["ว่างงาน", "ไม่ได้ประกอบอาชีพ"],
+    ["แม่บ้าน", "แม่บ้าน"],
+    ["นักเรียน", "นักเรียน"],
+    ["นักศึกษา", "นักศึกษา"],
+  ];
+
+  const cleaned = compact
+    .replace(/ครับ|ค่ะ|คะ|จ้า|นะครับ|นะคะ/g, "")
+    .trim();
+
+  for (const [alias, canonical] of occupationAliases) {
+    if (cleaned === normalizeCompact(alias)) {
+      return canonical;
+    }
+  }
+
+  return null;
 }
 
 function extractFocus(text) {
@@ -1054,15 +1176,30 @@ function extractProfileUpdates(message, profile) {
   const health = extractHealthStatus(normalized);
   const benefit = extractGroupBenefit(normalized);
   const occupation = extractOccupation(normalized);
+  const budgetFlexible = containsAny(normalized, [
+    "ไม่จำกัดงบ",
+    "งบไม่จำกัด",
+    "ไม่ติดงบ",
+    "งบได้หมด",
+    "จ่ายได้ไม่จำกัด",
+    "ขอแผนดีสุดไม่จำกัดงบ",
+  ]);
 
   if (age !== null) updates.age = age;
   if (gender) updates.gender = gender;
-  if (annualBudget !== null) updates.annualBudget = annualBudget;
+  if (annualBudget !== null) {
+    updates.annualBudget = annualBudget;
+    updates.budgetFlexible = false;
+  }
   if (roomBudget !== null) updates.roomBudget = roomBudget;
   if (focus.length > 0) updates.focus = focus;
   if (health) Object.assign(updates, health);
   if (benefit) Object.assign(updates, benefit);
   if (occupation) updates.occupation = occupation;
+  if (budgetFlexible) {
+    updates.budgetFlexible = true;
+    updates.annualBudget = null;
+  }
 
   Object.assign(updates, extractContextualAnswer(message, profile));
 
@@ -1102,6 +1239,8 @@ function hasValue(profile, field) {
       return Array.isArray(profile.focus) && profile.focus.length > 0;
     case "groupBenefit":
       return profile.hasGroupBenefit !== null;
+    case "annualBudget":
+      return profile.budgetFlexible === true || profile.annualBudget !== null;
     case "roomBudget":
       return profile.roomBudget !== null;
     default:
@@ -1110,7 +1249,14 @@ function hasValue(profile, field) {
 }
 
 function getRequiredFields(profile) {
-  const fields = ["age", "gender", "annualBudget", "focus", "healthStatus"];
+  const fields = [
+    "age",
+    "gender",
+    "occupation",
+    "annualBudget",
+    "focus",
+    "healthStatus",
+  ];
 
   const wantsHealthOrIpd = (profile.focus || []).some((item) =>
     ["health", "ipd"].includes(item)
@@ -1207,7 +1353,11 @@ function buildProfileContext(profile) {
   return [
     `อายุ: ${profile.age ?? "ยังไม่ระบุ"}`,
     `เพศ: ${formatGender(profile.gender)}`,
-    `งบต่อปี: ${formatMoney(profile.annualBudget)}`,
+    `งบต่อปี: ${
+      profile.budgetFlexible
+        ? "ไม่จำกัดงบ"
+        : formatMoney(profile.annualBudget)
+    }`,
     `ความสนใจ: ${formatFocus(profile.focus)}`,
     `ค่าห้องต่อคืน: ${formatMoney(profile.roomBudget)}`,
     `ประกันกลุ่ม/สวัสดิการ: ${groupBenefit}`,
@@ -1222,7 +1372,14 @@ function buildReceivedSummary(profile, updatedFields) {
   if (updatedFields.includes("age")) parts.push(`อายุ ${profile.age} ปี`);
   if (updatedFields.includes("gender")) parts.push(`เพศ${formatGender(profile.gender)}`);
   if (updatedFields.includes("annualBudget")) {
-    parts.push(`งบต่อปี ${formatMoney(profile.annualBudget)}`);
+    parts.push(
+      profile.budgetFlexible
+        ? "งบไม่จำกัด"
+        : `งบต่อปี ${formatMoney(profile.annualBudget)}`
+    );
+  }
+  if (updatedFields.includes("occupation")) {
+    parts.push(`อาชีพ ${profile.occupation}`);
   }
   if (updatedFields.includes("roomBudget")) {
     parts.push(`ค่าห้อง ${formatMoney(profile.roomBudget)} ต่อคืน`);
@@ -1276,6 +1433,84 @@ function shouldGenerateRecommendation(profile, normalizedMessage) {
   );
 }
 
+function shouldAttachCarePlus(planName) {
+  return [
+    "D Health Lite",
+    "เหมาจ่ายเอ๊กตร้า",
+    "Extra Care Plus",
+  ].includes(planName);
+}
+
+function chooseHealthPlan(profile) {
+  const roomBudget = Number(profile.roomBudget || 0);
+  const annualBudget = Number(profile.annualBudget || 0);
+  const highBudget =
+    profile.budgetFlexible === true || annualBudget >= 30000;
+
+  if (roomBudget >= 10000 && highBudget) {
+    return {
+      planName: "Elite Health Plus",
+      attachCarePlus: false,
+    };
+  }
+
+  return {
+    planName: "D Health Lite",
+    attachCarePlus: true,
+  };
+}
+
+function buildHealthRecommendation(profile) {
+  const choice = chooseHealthPlan(profile);
+  const summary = [
+    `อายุ ${profile.age} ปี`,
+    `เพศ${formatGender(profile.gender)}`,
+    `อาชีพ ${profile.occupation}`,
+    profile.budgetFlexible
+      ? "งบไม่จำกัด"
+      : `งบประมาณ ${formatMoney(profile.annualBudget)} ต่อปี`,
+    `เน้น ${formatFocus(profile.focus)}`,
+    `ค่าห้องประมาณ ${formatMoney(profile.roomBudget)} ต่อคืน`,
+    profile.hasGroupBenefit
+      ? profile.groupBenefit
+        ? `มีประกันกลุ่มประมาณ ${formatMoney(profile.groupBenefit)}`
+        : "มีประกันกลุ่ม แต่ยังไม่ทราบวงเงิน"
+      : "ไม่มีประกันกลุ่ม",
+    "ลูกค้าแจ้งว่าไม่มีประวัติสุขภาพ",
+  ].join(" / ");
+
+  if (choice.planName === "Elite Health Plus") {
+    return (
+      `จากข้อมูลที่แจ้งไว้ ${summary}\n\n` +
+      "เบื้องต้นแนะนำ Elite Health Plus เป็นแผนสุขภาพหลักครับ " +
+      "เพราะต้องการค่าห้องตั้งแต่ 10,000 บาทขึ้นไป และงบอยู่ในระดับที่เหมาะกับแผนนี้ครับ\n\n" +
+      "สำหรับ Elite Health Plus ไม่จำเป็นต้องเสริม Care Plus เพิ่มครับ\n\n" +
+      "ตัวเลขเบี้ยจริงต้องตรวจตามอายุ เพศ อาชีพ และแบบประกันที่เลือกอีกครั้งครับ"
+    );
+  }
+
+  const roomExplanation =
+    Number(profile.roomBudget || 0) <= 10000
+      ? "เหมาะกับการเน้น IPD และความต้องการค่าห้องประมาณ 5,000-10,000 บาท โดยไม่ต้องหาแผนค่าห้องอื่นเพิ่มครับ"
+      : "เนื่องจากงบประมาณยังจำกัดเมื่อเทียบกับค่าห้องที่ต้องการ จึงให้เริ่มจาก D Health Lite และใช้สิทธิ์เครือข่ายช่วยควบคุมส่วนต่างค่าห้องก่อนครับ";
+
+  return (
+    `จากข้อมูลที่แจ้งไว้ ${summary}\n\n` +
+    "เบื้องต้นแนะนำ D Health Lite เป็นแผนสุขภาพหลักครับ " +
+    `${roomExplanation}\n\n` +
+    "หากแอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่ายครับ " +
+    "ส่วนโรงพยาบาลคู่สัญญาบางแห่ง ตัวแทนอาจช่วยขอส่วนลดค่าห้องให้ได้ครับ\n\n" +
+    "แนะนำพิจารณา Care Plus เพิ่มควบคู่กัน เพื่อเสริมความคุ้มครองโรคร้ายแรงตามเงื่อนไขแบบประกันครับ\n\n" +
+    "ตัวเลขเบี้ยจริงต้องตรวจตามอายุ เพศ อาชีพ และแบบประกันที่เลือกอีกครั้งครับ"
+  );
+}
+
+function containsForbiddenProduct(answer) {
+  return FORBIDDEN_PRODUCT_PATTERNS.some((pattern) =>
+    pattern.test(String(answer || ""))
+  );
+}
+
 async function askInsuranceAI(question, profile, requestUrl) {
   const apiUrl = new URL("/api/insurance-chat", requestUrl);
   const profileContext = buildProfileContext(profile);
@@ -1287,14 +1522,17 @@ async function askInsuranceAI(question, profile, requestUrl) {
     },
     body: JSON.stringify({
       question:
+        `${CURRENT_PRODUCT_RULES}\n\n` +
         `ใช้ข้อมูลลูกค้าที่ระบบจำไว้ด้านล่างตอบคำถามล่าสุด ` +
         `ห้ามถามซ้ำข้อมูลที่มีแล้ว หากต้องถามเพิ่มให้ถามเฉพาะข้อมูลที่ยังขาดเพียงข้อเดียว ` +
+        `ถ้ามีอาชีพแล้วห้ามถามอาชีพซ้ำ ` +
         `ห้ามสรุปว่าลูกค้ามีโรคเมื่อสถานะสุขภาพระบุว่าไม่มีประวัติสุขภาพ ` +
-        `ห้ามยืนยันผลรับประกันหรือแต่งตัวเลขเบี้ยที่ไม่มีแหล่งข้อมูลครับ\n\n` +
+        `ห้ามยืนยันผลรับประกันหรือแต่งตัวเลขเบี้ยที่ไม่มีแหล่งข้อมูล ` +
+        `ตอบเป็นภาษาไทย ลงท้ายครับ และห้ามใช้ Markdown ห้ามใส่ ** หรือ URL ครับ\n\n` +
         `ข้อมูลลูกค้า:\n${profileContext}\n\n` +
         `คำถามล่าสุด:\n${question}`,
       resources: [],
-      allowWebSearch: true,
+      allowWebSearch: false,
     }),
   });
 
@@ -1309,7 +1547,24 @@ async function askInsuranceAI(question, profile, requestUrl) {
     throw new Error("Insurance AI returned no answer");
   }
 
-  return data.answer;
+  const answer = sanitizeLineText(data.answer);
+
+  if (containsForbiddenProduct(answer)) {
+    if (
+      profile.healthStatus === "none" &&
+      (profile.focus || []).some((item) => ["health", "ipd"].includes(item)) &&
+      getMissingFields(profile).length === 0
+    ) {
+      return buildHealthRecommendation(profile);
+    }
+
+    return (
+      "ขออภัยครับ ระบบพบชื่อแผนที่ปิดการขายในคำตอบ จึงไม่นำคำตอบนั้นมาแสดงครับ " +
+      "ปัจจุบันให้พิจารณา D Health Lite หรือ Elite Health Plus ตามงบและค่าห้องที่ต้องการครับ"
+    );
+  }
+
+  return answer;
 }
 
 async function processCustomerMessage({ message, userId, requestUrl }) {
@@ -1321,6 +1576,28 @@ async function processCustomerMessage({ message, userId, requestUrl }) {
   }
 
   let profile = await loadProfile(userId);
+
+  if (isResumeBotRequest(normalized)) {
+    profile.botMode = "ai";
+    await saveProfile(userId, profile);
+    return "เปิดผู้ช่วยอัตโนมัติสำหรับแชตนี้อีกครั้งแล้วครับ";
+  }
+
+  if (isContactRequest(normalized)) {
+    profile.botMode = "human";
+    await saveProfile(userId, profile);
+
+    return (
+      "รับทราบครับ ปิดผู้ช่วยอัตโนมัติสำหรับแชตของคุณชั่วคราวแล้วครับ " +
+      "จากนี้เจ้าหน้าที่สามารถเข้ามาตอบเองได้ โดยบอตจะไม่แทรกการสนทนาครับ\n\n" +
+      "เมื่อต้องการกลับมาใช้บอต ให้กดปุ่ม เปิดผู้ช่วยอัตโนมัติ หรือพิมพ์ว่า กลับมาใช้บอต ครับ"
+    );
+  }
+
+  if (profile.botMode === "human") {
+    return null;
+  }
+
   const updates = extractProfileUpdates(message, profile);
   const updatedFields = Object.keys(updates).filter((field) =>
     PROFILE_FIELDS.includes(field)
@@ -1350,13 +1627,6 @@ async function processCustomerMessage({ message, userId, requestUrl }) {
     return (
       "รับข้อมูลแล้วครับ เนื่องจากมีประวัติสุขภาพ การรักษา ยาประจำ หรือประวัติเข้าโรงพยาบาลร่วมด้วย " +
       "ขออนุญาตส่งต่อให้หมอกึ๊กประเมินรายละเอียดโดยตรงครับ"
-    );
-  }
-
-  if (isContactRequest(normalized)) {
-    return (
-      "สามารถพิมพ์รายละเอียดไว้ในแชตนี้ได้เลยครับ หรือแจ้งว่าต้องการให้หมอกึ๊กติดต่อกลับ " +
-      "พร้อมช่วงเวลาที่สะดวกครับ"
     );
   }
 
@@ -1419,6 +1689,14 @@ async function processCustomerMessage({ message, userId, requestUrl }) {
   }
 
   if (shouldGenerateRecommendation(profile, normalized)) {
+    const wantsHealthPlan = (profile.focus || []).some((item) =>
+      ["health", "ipd"].includes(item)
+    );
+
+    if (wantsHealthPlan) {
+      return buildHealthRecommendation(profile);
+    }
+
     return askInsuranceAI(message, profile, requestUrl);
   }
 
@@ -1511,7 +1789,13 @@ export default {
           requestUrl: request.url,
         });
 
-        await replyToLine(event.replyToken, finalReply);
+        if (finalReply) {
+          await replyToLine(event.replyToken, finalReply);
+        } else {
+          console.log("LINE bot paused for this user; no automatic reply", {
+            userId,
+          });
+        }
       } catch (error) {
         console.error("Failed to process LINE message", error);
 
