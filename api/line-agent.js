@@ -15,20 +15,22 @@ const PRODUCT_RULES = `
 5. ถ้างบถึง ใช้ Smart Protection 99/20 ทุน 200,000 บาท และเพิ่ม PA Easy Plan 1 เมื่อยังไม่เกินงบ
 6. Smart Protection 99/20 ต้องแนบสัญญาอุบัติเหตุหรือโรคร้ายแรงเสมอ ห้ามเสนอแบบเดี่ยว หากงบไม่พอให้ใช้ 99/99 + PA หรือถามปรับงบ
 7. หากต้องลดเป็นสัญญาหลัก 99/99 ทุน 100,000 หรือ 50,000 บาท ต้องแนบ PA เสมอ ห้ามเสนอ 99/99 เดี่ยว ๆ
-8. หาก D Health Lite แบบไม่มีความรับผิดส่วนแรกยังเกินงบ และลูกค้ามีประกันกลุ่ม/กรมธรรม์เดิม หรือขอ deductible ให้ถามวงเงินค่ารักษาเดิมก่อน แล้วใช้ deductible 30,000 / 50,000 / 100,000 บาทให้สัมพันธ์กับวงเงินเดิม
+8. เมื่อลูกค้าบอกว่ามีประกันกลุ่ม/กรมธรรม์เดิม ให้ถามวงเงินค่ารักษาเดิมเพียงครั้งเดียวก่อนพิจารณา deductible; ถ้าจำไม่ได้หรือไม่สะดวกบอก ให้เสนอ D Health Lite แบบไม่มีความรับผิดส่วนแรกก่อน และค่อยถามวงเงินเดิมใหม่เมื่อบอกว่าเบี้ยแพงเพื่อเทียบ deductible
 9. ถ้ายังไม่ลงตัวจริง ๆ ค่อยใช้ Extra Care Plus Plan 3 + Care Plus เป็นแผนสำรอง
 10. ค่าห้องตั้งแต่ 10,000 บาทขึ้นไป: ใช้ Elite Health Plus
 11. งบต่ำกว่า 50,000 บาทและไม่ได้ยืนยันว่าต้องการ OPD: Elite Health Plus 20 ล้านบาท
-12. งบตั้งแต่ 50,000 บาทขึ้นไป หรือยืนยันว่าต้องการ OPD: Elite Health Plus 75 ล้านบาท
+12. หากยืนยันว่าต้องการ OPD ให้เสนอ Elite Health Plus 75 ล้านบาทก่อน เพราะมี OPD เหมาจ่าย 40,000 บาท/ปีในแผน
 13. ข้อความ "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เผื่อ OPD" หมายถึง OPD เป็น optional ไม่ใช่การยืนยันว่าต้องการ OPD จึงห้ามบังคับไป Elite 75 ล้านบาท
 14. ห้ามเสนอ Elite 40 ล้านบาทเป็นแผนหลัก หากถามเหตุผล ให้ตอบว่าเบี้ยใกล้กับ 75 ล้านบาทมาก เพิ่มอีกประมาณหลักพันบาทก็ได้วงเงิน 75 ล้านบาทซึ่งคุ้มกว่า
 15. Elite Health Plus ไม่ต้องแนบ Care Plus
-16. ห้ามพูดถึง D Health Plus เพราะปิดการขายแล้ว ใช้ชื่อ D Health Lite เท่านั้น
-17. หากลูกค้าระบุชื่อแผนล่าสุดโดยตรง เช่น "เอา Elite 20 ล้าน", "ขอเบี้ย D Health Lite" คำขอล่าสุดต้องมีลำดับสูงกว่ากฎค่าห้องและข้อมูลเก่า
-18. ถ้าลูกค้าบอกว่าเบี้ยแพง/เกินงบ ให้จัดใหม่โดยถอดความคุ้มครองเสริมก่อนและเลือกชุดที่ใกล้งบที่สุด ห้ามส่งแผนเดิมซ้ำเฉย ๆ
-19. D Health Lite: แอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทนอาจช่วยขอส่วนลดค่าห้องได้
-20. ห้ามแต่งตัวเลขเบี้ย ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
-21. ห้ามใช้ Markdown เครื่องหมาย ** หรือลิงก์ดิบในคำตอบ LINE
+16. OPD รายครั้งและ OPD เหมาจ่ายเป็นสัญญาเพิ่มเติมที่ต้องพ่วงสัญญาหลักประกันชีวิต แต่ไม่ต้องพ่วง D Health Lite หรือ Elite Health Plus; Elite 75 มี OPD ในตัวจึงไม่ต้องซื้อ OPD แยก
+17. หากลูกค้าใช้ Elite 20 แล้วต้องการ OPD ให้เสนอ Elite 75 ก่อน; ถ้าลูกค้าบอกเบี้ยแพง ค่อยใช้ QUOTE เปรียบเทียบ Elite 20 + OPD เหมาจ่าย 20,000 บาท/ปีกับ Elite 75 ตามอายุและเพศจริง
+18. ห้ามพูดถึง D Health Plus เพราะปิดการขายแล้ว ใช้ชื่อ D Health Lite เท่านั้น
+19. หากลูกค้าระบุชื่อแผนล่าสุดโดยตรง เช่น "เอา Elite 20 ล้าน", "ขอเบี้ย D Health Lite" คำขอล่าสุดต้องมีลำดับสูงกว่ากฎค่าห้องและข้อมูลเก่า
+20. ถ้าลูกค้าบอกว่าเบี้ยแพง/เกินงบ ให้จัดใหม่โดยถอดความคุ้มครองเสริมก่อนและเลือกชุดที่ใกล้งบที่สุด ห้ามส่งแผนเดิมซ้ำเฉย ๆ
+21. D Health Lite: แอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทอาจช่วยขอส่วนลดค่าห้องได้
+22. ห้ามแต่งตัวเลขเบี้ย ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
+23. ห้ามใช้ Markdown; อนุญาตเฉพาะ URL https://doctor-insurance.com ในคำตอบรายละเอียด D Care
 22. หากมีประวัติสุขภาพหรือโรคประจำตัว ห้ามตัดจบหรือปฏิเสธทันที ต้องเก็บข้อมูลที่จำเป็น จัดแผนและแจ้งเบี้ยเบื้องต้นให้เสร็จก่อน
 23. หลังเสนอแผนสำหรับผู้มีประวัติสุขภาพแล้ว ให้แจ้งว่าผลรับประกันขึ้นกับบริษัท ปิดผู้ช่วยอัตโนมัติ และส่งต่อให้หมอกึ๊กหรือเจ้าหน้าที่จริงดูแลต่อ
 24. เมื่อลูกค้าสนใจโรคร้ายแรง ต้องถามก่อนว่าเน้นค่ารักษา เงินก้อนเจอจ่ายจบ หรือทั้งสองอย่าง
@@ -36,7 +38,9 @@ const PRODUCT_RULES = `
 26. ถ้าเน้นเงินก้อนหรือทั้งสองอย่าง ให้เสนอเปรียบเทียบ CI Perfect Care, Multiple CI, D Care และความคุ้มครองโรคมะเร็งจากตารางจริง
 27. ถ้าต้องการความคุ้มครองตั้งครรภ์/คลอดบุตร ให้เพิ่ม Maternity Plus; ถ้าต้องการตรวจสุขภาพ วัคซีน ทันตกรรม หรือสายตา ให้เพิ่ม Well-Being Plus ทั้งสองซื้อเดี่ยวไม่ได้ ต้องแนบ D Health Lite หรือ Elite Health Plus
 28. หากกังวลค่าเบี้ย/ค่ารักษาหลังเกษียณ มีสวัสดิการปัจจุบัน หรือเป็นรัฐวิสาหกิจ ให้แนะนำเมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 ซึ่งชำระ 20 ปี และตั้งแต่อายุ 65 ปีเปลี่ยนทุนคงเหลือเป็นค่ารักษา IPD/OPD ได้ตามเงื่อนไข
-29. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ Smart Link 15/3 และ 15/6 พร้อมเลือกทุนตามงบ
+29. D Care คือประกันโรคร้ายแรงแบบเงินก้อน เลือกกลุ่มโรคได้ (มะเร็ง หัวใจและหลอดเลือด ปลูกถ่ายอวัยวะ ระบบประสาทและกล้ามเนื้อ อื่น ๆ หรือกลุ่มโรคยอดฮิต) หากถามรายละเอียด D Care ให้ปิดท้ายด้วย https://doctor-insurance.com
+30. หากลูกค้าบอกว่าทุนสัญญาหลัก Smart Protection 99/20 ขั้นต่ำ 200,000 บาทสูงเกินไป ให้ใช้ 99/99 ทุน 100,000 บาทพร้อม PA; CI Perfect Care ทำได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก ดังนั้น 99/99 ทุน 100,000 บาททำ CI Perfect Care ได้ไม่เกิน 1,000,000 บาท
+31. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ Smart Link 15/3 และ 15/6 พร้อมเลือกทุนตามงบ
 `.trim();
 
 const ANALYSIS_SCHEMA = {
@@ -70,6 +74,7 @@ const ANALYSIS_SCHEMA = {
         },
         hasGroupBenefit: { type: ["boolean", "null"] },
         groupBenefit: { type: ["number", "null"] },
+        groupBenefitAsked: { type: ["boolean", "null"] },
         deductiblePreference: {
           type: ["string", "null"],
           enum: ["yes", "none", "auto", null],
@@ -81,6 +86,10 @@ const ANALYSIS_SCHEMA = {
         requestedHealthPlan: {
           type: ["string", "null"],
           enum: ["auto", "dhl", "elite20", "elite75", "ecp", null],
+        },
+        mainPlanPreference: {
+          type: ["string", "null"],
+          enum: ["auto", "99_20_200k", "99_99_100k", null],
         },
         quoteScope: {
           type: ["string", "null"],
@@ -116,9 +125,11 @@ const ANALYSIS_SCHEMA = {
         "healthStatus",
         "hasGroupBenefit",
         "groupBenefit",
+        "groupBenefitAsked",
         "deductiblePreference",
         "opdPreference",
         "requestedHealthPlan",
+        "mainPlanPreference",
         "quoteScope",
         "optimizeForBudget",
         "requestedProduct",
@@ -144,9 +155,11 @@ const ANALYSIS_SCHEMA = {
           "healthStatus",
           "hasGroupBenefit",
           "groupBenefit",
+          "groupBenefitAsked",
           "deductiblePreference",
           "opdPreference",
           "requestedHealthPlan",
+          "mainPlanPreference",
           "quoteScope",
           "optimizeForBudget",
           "requestedProduct",
@@ -210,7 +223,7 @@ async function callOpenAI(payload) {
 
 function defaultProfile() {
   return {
-    version: 6,
+    version: 7,
     age: null,
     gender: null,
     occupation: null,
@@ -220,9 +233,11 @@ function defaultProfile() {
     healthStatus: null,
     hasGroupBenefit: null,
     groupBenefit: null,
+    groupBenefitAsked: false,
     deductiblePreference: "auto",
     opdPreference: "unknown",
     requestedHealthPlan: "auto",
+    mainPlanPreference: "auto",
     quoteScope: "package",
     optimizeForBudget: false,
     requestedProduct: "auto",
@@ -243,7 +258,7 @@ function migrateProfile(input = {}) {
     if (input.wantsOPD === true) profile.opdPreference = "yes";
     else if (input.wantsOPD === false) profile.opdPreference = "no";
   }
-  profile.version = 6;
+  profile.version = 7;
   return profile;
 }
 
@@ -268,6 +283,18 @@ function parseSpokenAmount(value) {
 function inferContextualUpdates(message, current) {
   const compact = compactText(message);
   const updates = {};
+  if (/มี(?:ประกันกลุ่ม|สวัสดิการบริษัท|สวัสดิการที่ทำงาน|ประกันส่วนตัว|กรมธรรม์(?:สุขภาพ)?เดิม)/.test(compact)) {
+    updates.hasGroupBenefit = true;
+  }
+  if (/ไม่มี(?:ประกันกลุ่ม|สวัสดิการบริษัท|สวัสดิการที่ทำงาน|ประกันส่วนตัว|กรมธรรม์(?:สุขภาพ)?เดิม)/.test(compact)) {
+    updates.hasGroupBenefit = false;
+  }
+  if (/จำ(?:วงเงิน)?ไม่ได้|ไม่ทราบ|ไม่แน่ใจ|ไม่สะดวกบอก|ไม่อยากบอก/.test(compact) && current.groupBenefitAsked) {
+    updates.deductiblePreference = "none";
+  }
+  if (/99\s*\/\s*20.*(?:ต่ำ|น้อย|ลด)|ทุน(?:ชีวิต|สัญญาหลัก)?.*(?:200,?000|สองแสน).*(?:สูง|แพง)|ลดทุน(?:ชีวิต|สัญญาหลัก)?/.test(message)) {
+    updates.mainPlanPreference = "99_99_100k";
+  }
   const roomIsMissing =
     current.requestedHealthPlan === "auto" && current.roomBudget === null;
   const mentionsRoom = /ค่าห้อง|ห้องพัก|ห้องต่อคืน|room/i.test(message);
@@ -373,6 +400,7 @@ function mergeProfile(current, analysis, message, contextualUpdates = null) {
     else if (field === "deductiblePreference") next[field] = "auto";
     else if (field === "opdPreference") next[field] = "unknown";
     else if (field === "requestedHealthPlan") next[field] = "auto";
+    else if (field === "mainPlanPreference") next[field] = "auto";
     else if (field === "requestedProduct") next[field] = "auto";
     else if (field === "criticalIllnessNeed") next[field] = "unknown";
     else if (field === "quoteScope") next[field] = "package";
@@ -411,6 +439,7 @@ function missingFields(profile) {
   }
   if (healthFlow && !profile.healthStatus) missing.push("healthStatus");
   if (healthFlow && profile.hasGroupBenefit === null) missing.push("hasGroupBenefit");
+  if (healthFlow && profile.hasGroupBenefit === true && profile.groupBenefit === null && profile.deductiblePreference !== "none" && !profile.groupBenefitAsked) missing.push("groupBenefit");
   return missing;
 }
 
@@ -440,6 +469,8 @@ ${PRODUCT_RULES}
 - ไม่มีโรคประจำตัว, ไม่มีประวัติสุขภาพ, สุขภาพแข็งแรง, ผลตรวจปกติ = healthStatus none
 - มีโรคประจำตัว, เคยผ่าตัด, เคยนอนโรงพยาบาล, ใช้ยาประจำ หรือผลตรวจผิดปกติ = healthStatus has_history แต่ยังต้องเก็บข้อมูลและเสนอแผนก่อนส่งต่อเจ้าหน้าที่
 - ห้ามถามข้อมูลที่มีใน CURRENT PROFILE แล้ว เว้นแต่ลูกค้าบอกว่าขอแก้ไข
+- ถ้าลูกค้าบอกว่ามีประกันส่วนตัว/ประกันกลุ่ม/สวัสดิการเดิม ให้ hasGroupBenefit true แม้ไม่ได้ใช้คำว่า "ประกันกลุ่ม" และถามวงเงินเดิมเพียงครั้งเดียว
+- ถ้าลูกค้าตอบว่าจำวงเงินเดิมไม่ได้ ไม่ทราบ หรือไม่สะดวกบอก หลังถูกถามวงเงิน ให้ deductiblePreference none; ห้ามถามวงเงินซ้ำ และเสนอแบบไม่มี Deductible ก่อน
 - "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เอา OPD ก็ได้ไม่เอาก็ได้" = opdPreference optional ห้ามตั้งเป็น yes
 - "ไม่เอา OPD", "เอาแค่ IPD" = opdPreference no
 - "ต้องการ OPD", "เอา OPD" = opdPreference yes
@@ -447,6 +478,9 @@ ${PRODUCT_RULES}
 - หากระบุ Elite 20 ล้าน ให้ requestedHealthPlan elite20 หากระบุ Elite 75 ล้าน ให้ elite75
 - หากพูดว่า "เบี้ยแพง", "เกินงบ", "ลดเบี้ย", "จัดใหม่ให้ถูกลง" ให้ optimizeForBudget true, asksForPremium true, shouldRecommendPlan true และตั้ง requestedHealthPlan auto เว้นแต่ข้อความเดียวกันระบุชื่อแผนชัดเจน
 - หากลูกค้าบอก "ไม่เอา OPD ก็ได้" หลังเคยเสนอ Elite 75 ให้ตั้ง requestedHealthPlan auto เพื่อเปิดทางให้ระบบเลือก Elite 20
+- OPD รายครั้งและ OPD เหมาจ่ายพ่วงสัญญาหลักประกันชีวิตได้ ไม่ต้องพ่วง D Health Lite หรือ Elite; Elite 75 มี OPD 40,000 บาท/ปีในตัว
+- หากลูกค้าบอกว่า Elite 20 + OPD หรือมี Elite 20 แล้วอยากได้ OPD ให้เสนอ Elite 75 ก่อน; เมื่อบอกว่าเบี้ยแพง ให้ optimizeForBudget true เพื่อให้ QUOTE เปรียบเทียบ Elite 20 + OPD เหมาจ่าย 20,000 กับ Elite 75
+- หากลูกค้าบ่นว่าทุนหลัก Smart Protection 99/20 ขั้นต่ำ 200,000 บาทสูงเกินไป ให้ mainPlanPreference 99_99_100k
 - หากสนใจโรคร้ายแรงแต่ยังไม่บอกประเภท ให้ criticalIllnessNeed unknown และอย่าเพิ่งเลือกแผน ต้องถามว่าเน้นค่ารักษา เงินก้อน หรือทั้งสอง
 - ถ้าเน้นค่ารักษา ให้ criticalIllnessNeed treatment และ requestedProduct auto
 - ถ้าเน้นเงินก้อน/เจอจ่ายจบ ให้ criticalIllnessNeed lump_sum และ requestedProduct critical_comparison
@@ -510,6 +544,12 @@ function replyMatchesQuote(reply, quote) {
   return true;
 }
 
+function appendDcareDetailLink(reply, message) {
+  const asksDetail = /d\s*care|ดี\s*แคร์/i.test(message) && /(?:มีโรค|โรคอะไร|ต่างกัน|รายละเอียด|คุ้มครอง|กลุ่มโรค)/.test(message);
+  if (!asksDetail || /doctor-insurance\.com/i.test(reply)) return reply;
+  return `${String(reply || "").trim()}\n\nD Care เป็นประกันโรคร้ายแรงแบบเงินก้อนที่เลือกกลุ่มโรคได้ครับ ดูรายละเอียดเพิ่มเติมได้ที่ https://doctor-insurance.com`;
+}
+
 const HEALTH_HANDOFF_NOTE =
   "หมายเหตุ: เนื่องจากมีประวัติสุขภาพหรือโรคประจำตัว แผนและเบี้ยข้างต้นเป็นการวางแผนเบื้องต้น ผลรับประกันขึ้นอยู่กับการพิจารณาของบริษัทครับ จากนี้ผมขอปิดผู้ช่วยอัตโนมัติชั่วคราว และให้คุณหมอกึ๊กหรือเจ้าหน้าที่ติดต่อกลับเพื่อดูแลรายละเอียดต่อครับ";
 
@@ -543,6 +583,7 @@ ${PRODUCT_RULES}
 - ถ้า healthStatus เป็น has_history ต้องเสนอแผนจาก QUOTE ให้ครบก่อน ห้ามตอบเพียงว่าจะส่งต่อเจ้าหน้าที่
 - ถ้า healthStatus เป็น has_history ไม่ต้องถามรายละเอียดโรคเพิ่มและไม่ต้องเขียนข้อความปิดบอตหรือส่งต่อเอง ระบบจะเติมข้อความมาตรฐานท้ายคำตอบให้
 - ไม่มี Markdown ไม่มีลิงก์ดิบ ลงท้ายครับ
+- คำตอบ D Care ที่ถามรายละเอียดให้บอกว่าเป็นเงินก้อน เลือกกลุ่มโรคได้ และใส่ URL https://doctor-insurance.com ท้ายคำตอบได้
 `.trim();
 
   const result = await callOpenAI({
@@ -562,10 +603,10 @@ ${PRODUCT_RULES}
   });
 
   const reply = extractResponseText(result);
-  if (quote?.ok && !replyMatchesQuote(reply, quote)) {
+  if (quote?.comparison || (quote?.ok && !replyMatchesQuote(reply, quote))) {
     return quoteFallbackReply(quote);
   }
-  return reply || (quote ? quoteFallbackReply(quote) : "รับทราบครับ");
+  return appendDcareDetailLink(reply || (quote ? quoteFallbackReply(quote) : "รับทราบครับ"), message);
 }
 
 async function getQuote(requestUrl, profile) {
@@ -639,6 +680,7 @@ export default async function handler(req, res) {
       const missing = missingFields(profile);
       if (missing.length) {
         const field = missing[0];
+        if (field === "groupBenefit") profile.groupBenefitAsked = true;
         const reply = await writeReply({
           message,
           profile,
