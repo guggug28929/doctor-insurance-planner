@@ -558,7 +558,11 @@ export default async function handler(req, res) {
       if (profile.healthStatus === "has_history") {
         profile.botMode = "human";
         action = "quote_handoff";
-        if (!reply.includes("ปิดผู้ช่วยอัตโนมัติ")) {
+        const alreadyMentionsHandoff =
+          /ปิด(?:การทำงานของ)?ผู้ช่วยอัตโนมัติ|ส่งต่อให้.*(?:หมอกึ๊ก|เจ้าหน้าที่)|เจ้าหน้าที่(?:จริง)?ดูแลต่อ/.test(
+            reply
+          );
+        if (!alreadyMentionsHandoff) {
           reply = `${reply}\n\n${HEALTH_HANDOFF_NOTE}`;
         }
       }
