@@ -190,3 +190,40 @@ test("Smart Link 15/3 และ 15/6 แนะนำทุนตามงบ", a
     [[20000, 18900], [100000, 94500]]
   );
 });
+
+test("Elite 20 + OPD เหมาจ่าย 20,000 เทียบกับ Elite 75 จากเบี้ยจริง", async () => {
+  const result = await quote({
+    age: 40,
+    gender: "m",
+    occupation: "แพทย์",
+    annualBudget: 40000,
+    roomBudget: 10000,
+    healthStatus: "none",
+    hasGroupBenefit: false,
+    opdPreference: "yes",
+    optimizeForBudget: true,
+  });
+  assert.equal(result.body.ok, true);
+  assert.equal(result.body.planType, "elite_opd_comparison");
+  assert.equal(result.body.alternatives.length, 2);
+  assert.match(result.body.text, /OPD เหมาจ่าย 20,000/);
+  assert.match(result.body.text, /OPD เหมาจ่าย 40,000/);
+  assert.ok(result.body.alternatives.every((option) => Number.isFinite(option.totalPremium)));
+});
+
+test("99/99 หนึ่งแสนจำกัด CI Perfect Care ไม่เกินหนึ่งล้าน", async () => {
+  const result = await quote({
+    age: 40,
+    gender: "m",
+    annualBudget: 50000,
+    requestedProduct: "critical_comparison",
+    criticalIllnessNeed: "lump_sum",
+    criticalIllnessSumInsured: 2000000,
+    mainPlanPreference: "99_99_100k",
+  });
+  const cipc = result.body.alternatives.find((item) => item.product === "CI Perfect Care");
+  assert.equal(result.body.ok, true);
+  assert.equal(cipc.capital, 1000000);
+  assert.match(result.body.text, /99\/99/);
+  assert.match(result.body.text, /PA Easy Plan 1/);
+});
