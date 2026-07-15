@@ -29,7 +29,8 @@ const PRODUCT_RULES = `
 19. D Health Lite: แอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทนอาจช่วยขอส่วนลดค่าห้องได้
 20. ห้ามแต่งตัวเลขเบี้ย ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
 21. ห้ามใช้ Markdown เครื่องหมาย ** หรือลิงก์ดิบในคำตอบ LINE
-22. หากมีประวัติสุขภาพ ให้ตอบเชิงวางแผนเบื้องต้น และแจ้งว่าผลรับประกันขึ้นกับบริษัท
+22. หากมีประวัติสุขภาพหรือโรคประจำตัว ห้ามตัดจบหรือปฏิเสธทันที ต้องเก็บข้อมูลที่จำเป็น จัดแผนและแจ้งเบี้ยเบื้องต้นให้เสร็จก่อน
+23. หลังเสนอแผนสำหรับผู้มีประวัติสุขภาพแล้ว ให้แจ้งว่าผลรับประกันขึ้นกับบริษัท ปิดผู้ช่วยอัตโนมัติ และส่งต่อให้หมอกึ๊กหรือเจ้าหน้าที่จริงดูแลต่อ
 `.trim();
 
 const ANALYSIS_SCHEMA = {
@@ -214,7 +215,71 @@ function migrateProfile(input = {}) {
   return profile;
 }
 
-function mergeProfile(current, analysis) {
+function compactText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function parseSpokenAmount(value) {
+  const text = String(value || "").normalize("NFKC").toLowerCase();
+  const match = text.match(/(\d[\d,]*(?:\.\d+)?)\s*(ล้าน|แสน|หมื่น|พัน|k)?/i);
+  if (!match) return null;
+
+  const base = Number(match[1].replace(/,/g, ""));
+  if (!Number.isFinite(base)) return null;
+  const multipliers = { ล้าน: 1000000, แสน: 100000, หมื่น: 10000, พัน: 1000, k: 1000 };
+  return Math.round(base * (multipliers[match[2]] || 1));
+}
+
+function inferContextualUpdates(message, current) {
+  const compact = compactText(message);
+  const updates = {};
+  const roomIsMissing =
+    current.requestedHealthPlan === "auto" && current.roomBudget === null;
+  const mentionsRoom = /ค่าห้อง|ห้องพัก|ห้องต่อคืน|room/i.test(message);
+  const soundsLikeRoomAnswer =
+    roomIsMissing &&
+    current.annualBudget !== null &&
+    (/^(?:เอา)?(?:max|สูงสุด)$/i.test(compact) ||
+      /ไม่จำกัด(?:ค่าห้อง|ห้อง)?|ได้หมด(?:เลย)?|เอาmax|เอาสูงสุด/.test(compact) ||
+      parseSpokenAmount(message) !== null);
+
+  if (mentionsRoom || soundsLikeRoomAnswer) {
+    const unlimited = /ไม่จำกัด(?:ค่าห้อง|ห้อง)?|ได้หมด(?:เลย)?|เอาmax|เอาสูงสุด|max/.test(
+      compact
+    );
+    const amount = parseSpokenAmount(message);
+    if (unlimited) updates.roomBudget = 30000;
+    else if (amount !== null) updates.roomBudget = amount;
+
+    // คำตอบเรื่องค่าห้องต้องไม่ย้อนกลับไปแก้งบรายปีที่เก็บไว้แล้ว
+    if (!/งบ|ต่อปี|รายปี/.test(compact) && current.annualBudget !== null) {
+      updates.annualBudget = current.annualBudget;
+      updates.budgetFlexible = current.budgetFlexible;
+    }
+  }
+
+  if (
+    current.healthStatus === null &&
+    /ไม่มีโรคประจำตัว|ไม่มีประวัติสุขภาพ|สุขภาพแข็งแรง|ผลตรวจปกติ|^(?:ไม่มี|ไม่มีครับ|ไม่มีค่ะ)$/.test(
+      compact
+    )
+  ) {
+    updates.healthStatus = "none";
+  } else if (
+    /(?:^|[^ไ])มีโรคประจำตัว|มีประวัติ(?:สุขภาพ|ผ่าตัด|นอนโรงพยาบาล)|เคยผ่าตัด|เคยนอนโรงพยาบาล|ใช้ยาประจำ|กินยาประจำ|ผลตรวจ.*ผิดปกติ/.test(
+      compact
+    )
+  ) {
+    updates.healthStatus = "has_history";
+  }
+
+  return updates;
+}
+
+function mergeProfile(current, analysis, message) {
   const next = migrateProfile(current);
   for (const field of analysis.clearFields || []) {
     if (field === "focus") next[field] = [];
@@ -230,6 +295,10 @@ function mergeProfile(current, analysis) {
     if (value === null || value === undefined) continue;
     next[field] = value;
   }
+
+  // กฎตามบริบททำหน้าที่เป็น safety net เมื่อคำตอบลูกค้าไม่ใช่ตัวเลขล้วน
+  // เช่น "ไม่จำกัดค่าห้อง", "ได้หมด", "เอา max" หรือ "ค่าห้อง 30,000"
+  Object.assign(next, inferContextualUpdates(message, current));
 
   next.focus = Array.isArray(next.focus) ? [...new Set(next.focus)] : [];
   next.updatedAt = new Date().toISOString();
@@ -270,7 +339,12 @@ ${PRODUCT_RULES}
 หน้าที่ของคุณรอบนี้:
 - อ่านข้อความล่าสุดร่วมกับ CURRENT PROFILE แล้วส่ง JSON ตาม schema เท่านั้น
 - เข้าใจภาษาพูด คำย่อ คำสะกดผิด และตัวเลข เช่น 20k, 5พัน, 1แสน
+- ต้องตีความคำตอบตามข้อมูลที่ยังขาดใน CURRENT PROFILE ไม่ใช่ดูเฉพาะรูปแบบข้อความ
+- ถ้า roomBudget ยังว่าง คำว่า "ไม่จำกัดค่าห้อง", "ได้หมด", "เอา max", "เอาสูงสุด" หมายถึงต้องการค่าห้องระดับสูงสุด และห้ามถามค่าห้องซ้ำ
+- ถ้า roomBudget ยังว่างและงบรายปีมีแล้ว ข้อความตัวเลขล้วนหรือ "ค่าห้อง 30,000" ให้ถือเป็น roomBudget ไม่ใช่ annualBudget รอบใหม่
+- ลูกค้าไม่จำเป็นต้องตอบเป็นตัวเลขล้วน เช่น "งั้นเอา 30,000", "เอา max", "ไม่จำกัด" ต้องสรุปความหมายตามคำถามล่าสุด
 - ไม่มีโรคประจำตัว, ไม่มีประวัติสุขภาพ, สุขภาพแข็งแรง, ผลตรวจปกติ = healthStatus none
+- มีโรคประจำตัว, เคยผ่าตัด, เคยนอนโรงพยาบาล, ใช้ยาประจำ หรือผลตรวจผิดปกติ = healthStatus has_history แต่ยังต้องเก็บข้อมูลและเสนอแผนก่อนส่งต่อเจ้าหน้าที่
 - ห้ามถามข้อมูลที่มีใน CURRENT PROFILE แล้ว เว้นแต่ลูกค้าบอกว่าขอแก้ไข
 - "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เอา OPD ก็ได้ไม่เอาก็ได้" = opdPreference optional ห้ามตั้งเป็น yes
 - "ไม่เอา OPD", "เอาแค่ IPD" = opdPreference no
@@ -332,6 +406,9 @@ function replyMatchesQuote(reply, quote) {
   return true;
 }
 
+const HEALTH_HANDOFF_NOTE =
+  "หมายเหตุ: เนื่องจากมีประวัติสุขภาพหรือโรคประจำตัว แผนและเบี้ยข้างต้นเป็นการวางแผนเบื้องต้น ผลรับประกันขึ้นอยู่กับการพิจารณาของบริษัทครับ จากนี้ผมขอปิดผู้ช่วยอัตโนมัติชั่วคราว และให้คุณหมอกึ๊กหรือเจ้าหน้าที่ติดต่อกลับเพื่อดูแลรายละเอียดต่อครับ";
+
 async function writeReply({ message, profile, analysis, quote = null, forcedQuestion = null }) {
   const instructions = `
 ${PRODUCT_RULES}
@@ -344,6 +421,7 @@ ${PRODUCT_RULES}
 - ถ้าลูกค้าขอ D Health Lite แต่ QUOTE เป็น D Health Lite ต้องตอบ D Health Lite ห้ามย้อนกลับไป Elite
 - ถ้าลูกค้าขอ Elite 20 แต่ QUOTE เป็น Elite 20 ต้องทำตามตรง ๆ
 - เมื่อมี QUOTE ให้แจกแจงแต่ละสัญญาและยอดรวม
+- ถ้า healthStatus เป็น has_history ต้องเสนอแผนจาก QUOTE ให้ครบก่อน ห้ามตอบเพียงว่าจะส่งต่อเจ้าหน้าที่
 - ไม่มี Markdown ไม่มีลิงก์ดิบ ลงท้ายครับ
 `.trim();
 
@@ -400,7 +478,7 @@ export default async function handler(req, res) {
 
     const currentProfile = migrateProfile(req.body?.profile || {});
     const analysis = await analyzeTurn(message, currentProfile);
-    const profile = mergeProfile(currentProfile, analysis);
+    const profile = mergeProfile(currentProfile, analysis, message);
 
     if (analysis.intent === "human_handoff") {
       profile.botMode = "human";
@@ -472,14 +550,24 @@ export default async function handler(req, res) {
       }
 
       if (quote?.ok) profile.lastPlanCode = quote.planCode || null;
-      const reply = await writeReply({ message, profile, analysis, quote });
+      let reply = await writeReply({ message, profile, analysis, quote });
+      let action = quote?.ok ? "quote" : "no_quote";
+
+      if (profile.healthStatus === "has_history") {
+        profile.botMode = "human";
+        action = "quote_handoff";
+        if (!reply.includes("ปิดผู้ช่วยอัตโนมัติ")) {
+          reply = `${reply}\n\n${HEALTH_HANDOFF_NOTE}`;
+        }
+      }
 
       // quoteScope และคำสั่งปรับงบเป็นคำสั่งเฉพาะรอบ ไม่ควรค้างไปถามครั้งถัดไป
       profile.quoteScope = "package";
       profile.optimizeForBudget = false;
 
       return sendJson(res, 200, {
-        action: quote?.ok ? "quote" : "no_quote",
+        action,
+        handoffRequired: action === "quote_handoff",
         profile,
         quote,
         reply,
