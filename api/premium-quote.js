@@ -150,6 +150,17 @@ function deductibleLabel(id) {
 }
 
 function normalizeProfile(raw = {}) {
+  const legacyOpd = raw.wantsOPD === true ? "yes" : raw.wantsOPD === false ? "no" : null;
+  const opdPreference = ["yes", "no", "optional", "unknown"].includes(raw.opdPreference)
+    ? raw.opdPreference
+    : legacyOpd || "unknown";
+
+  const requestedHealthPlan = ["auto", "dhl", "elite20", "elite75", "ecp"].includes(
+    raw.requestedHealthPlan
+  )
+    ? raw.requestedHealthPlan
+    : "auto";
+
   return {
     age: n(raw.age),
     gender: normalizeGender(raw.gender),
@@ -157,7 +168,7 @@ function normalizeProfile(raw = {}) {
     annualBudget: n(raw.annualBudget),
     budgetFlexible: raw.budgetFlexible === true,
     roomBudget: n(raw.roomBudget),
-    wantsOPD: raw.wantsOPD === true,
+    opdPreference,
     hasGroupBenefit:
       raw.hasGroupBenefit === true
         ? true
@@ -169,6 +180,9 @@ function normalizeProfile(raw = {}) {
       ? raw.deductiblePreference
       : "auto",
     healthStatus: raw.healthStatus || null,
+    requestedHealthPlan,
+    quoteScope: raw.quoteScope === "health_only" ? "health_only" : "package",
+    optimizeForBudget: raw.optimizeForBudget === true,
   };
 }
 
@@ -184,60 +198,6 @@ function budgetWindow(profile) {
   };
 }
 
-function chooseMainAndPa({ rates, profile, ridersTotal, budget }) {
-  const mainIds = ["99_20_200k", "99_99_100k", "99_99_50k"];
-  const pa = paPremium(rates, profile.age, 1);
-  const cheapestMain = mainPremium(rates, profile.gender, profile.age, "99_99_50k");
-
-  if (cheapestMain === null) {
-    throw new Error("ไม่พบเบี้ยสัญญาหลักขั้นต่ำสำหรับอายุที่แจ้ง");
-  }
-
-  // ใส่ PA Easy Plan 1 ก่อน ถ้ายังอยู่ในกรอบงบ +50%
-  let includePa = pa !== null && ridersTotal + cheapestMain + pa <= budget.max;
-
-  for (const mainId of mainIds) {
-    const premium = mainPremium(rates, profile.gender, profile.age, mainId);
-    if (premium === null) continue;
-    const total = ridersTotal + premium + (includePa ? pa : 0);
-    if (total <= budget.max) {
-      return { mainId, mainPremium: premium, includePa, paPremium: includePa ? pa : 0 };
-    }
-  }
-
-  // ถ้า PA ทำให้เกินงบ ให้ถอด PA ก่อน แล้วไล่ 99/20 -> 99/99 100k -> 99/99 50k
-  includePa = false;
-  for (const mainId of mainIds) {
-    const premium = mainPremium(rates, profile.gender, profile.age, mainId);
-    if (premium === null) continue;
-    const total = ridersTotal + premium;
-    if (total <= budget.max) {
-      return { mainId, mainPremium: premium, includePa, paPremium: 0 };
-    }
-  }
-
-  return null;
-}
-
-function eligibleDeductibles(profile) {
-  const benefit = profile.groupBenefit || 0;
-  const explicitlyWants = profile.deductiblePreference === "yes";
-  const hasExisting = profile.hasGroupBenefit === true || benefit > 0;
-
-  if (!explicitlyWants && !hasExisting) return [];
-  if (!benefit) return null; // ต้องถามวงเงินเดิมก่อน
-
-  const options = [];
-  // เริ่มจาก deductible ที่ใกล้กับวงเงินเดิมที่สุดก่อน แล้วค่อยลดลงหากจำเป็น
-  if (benefit >= 100000) options.push("d100k", "d50k", "d30k");
-  else if (benefit >= 50000) options.push("d50k", "d30k");
-  else if (benefit >= 30000) options.push("d30k");
-
-  // ถ้าวงเงินเดิมต่ำกว่า 30,000 แต่ลูกค้าร้องขอ deductible ให้เริ่มถามยืนยัน 30,000
-  if (options.length === 0 && explicitlyWants) options.push("d30k");
-  return options;
-}
-
 function itemMain(id, premium) {
   const meta = mainMeta(id);
   return {
@@ -249,22 +209,85 @@ function itemMain(id, premium) {
   };
 }
 
-function itemPa(rates, premium) {
-  const coverage = paCoverage(rates, 1);
+function itemPa(rates, premium, plan = 1) {
+  const coverage = paCoverage(rates, plan);
   return {
     key: "pa",
-    product: "PA Easy Plan 1",
-    plan: 1,
+    product: `PA Easy Plan ${plan}`,
+    plan,
     sumInsured: coverage.sumInsured,
     medicalExpense: coverage.medicalExpense,
     premium,
     line:
-      `- อุบัติเหตุ PA Easy Plan 1 ทุน ${money(coverage.sumInsured)} บาท ` +
+      `- อุบัติเหตุ PA Easy Plan ${plan} ทุน ${money(coverage.sumInsured)} บาท ` +
       `ค่ารักษา ${money(coverage.medicalExpense)} บาท/อุบัติเหตุ — เบี้ย ${money(premium)} บาท/ปี`,
   };
 }
 
-function finalizeQuote({ profile, budget, items, planType, planCode, notes = [] }) {
+function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
+  const pa = paPremium(rates, profile.age, 1);
+  const candidates = [];
+
+  const add = ({ mainId, includePa, priority }) => {
+    const main = mainPremium(rates, profile.gender, profile.age, mainId);
+    if (main === null) return;
+    if (includePa && pa === null) return;
+
+    // กฎสำคัญ: 99/99 ต้องแนบ PA เสมอ ส่วน 99/20 ถ้างบไม่พอจริง ๆ ถอด PA ได้
+    if (mainId.startsWith("99_99") && !includePa) return;
+
+    const paCost = includePa ? pa : 0;
+    candidates.push({
+      mainId,
+      mainPremium: main,
+      includePa,
+      paPremium: paCost,
+      priority,
+      total: ridersTotal + main + paCost,
+    });
+  };
+
+  add({ mainId: "99_20_200k", includePa: true, priority: 1 });
+  add({ mainId: "99_20_200k", includePa: false, priority: 2 });
+  add({ mainId: "99_99_100k", includePa: true, priority: 3 });
+  add({ mainId: "99_99_50k", includePa: true, priority: 4 });
+
+  if (!candidates.length) return null;
+
+  // ไม่จำกัดงบ: เลือกชุดความคุ้มครองสูงสุดตามลำดับกฎ
+  if (budget.max === Infinity || !budget.target) {
+    return candidates.sort((a, b) => a.priority - b.priority)[0];
+  }
+
+  // "ถ้างบถึง" หมายถึงยอดรวมต้องไม่เกินงบเป้าหมาย ไม่ใช่ใช้เพดาน +50% เพื่อยัดของเพิ่ม
+  const withinTarget = candidates
+    .filter((candidate) => candidate.total <= budget.target)
+    .sort((a, b) => a.priority - b.priority || b.total - a.total);
+  if (withinTarget.length) return withinTarget[0];
+
+  // หากแผนสุขภาพหลักกินงบไปแล้ว ให้เลือกชุดที่เกินงบน้อยที่สุด แต่ยังไม่เกิน +50%
+  const withinMaximum = candidates
+    .filter((candidate) => candidate.total <= budget.max)
+    .sort((a, b) => a.total - b.total || a.priority - b.priority);
+  return withinMaximum[0] || null;
+}
+
+function eligibleDeductibles(profile) {
+  const benefit = profile.groupBenefit || 0;
+  const explicitlyWants = profile.deductiblePreference === "yes";
+  const hasExisting = profile.hasGroupBenefit === true || benefit > 0;
+
+  if (!explicitlyWants && !hasExisting) return [];
+  if (!benefit) return null;
+
+  if (benefit >= 100000) return ["d100k", "d50k", "d30k"];
+  if (benefit >= 50000) return ["d50k", "d30k"];
+  if (benefit >= 30000) return ["d30k"];
+  if (explicitlyWants) return ["d30k"];
+  return [];
+}
+
+function finalizeQuote({ profile, budget, items, planType, planCode, notes = [], selectionReason = "" }) {
   const total = items.reduce((sum, item) => sum + Number(item.premium || 0), 0);
   const withinBudgetRange =
     budget.max === Infinity || (total >= budget.min && total <= budget.max);
@@ -285,70 +308,107 @@ function finalizeQuote({ profile, budget, items, planType, planCode, notes = [] 
       differenceFromTarget: budget.target ? total - budget.target : null,
     },
     notes,
+    selectionReason,
     text: lines.join("\n"),
     profileUsed: profile,
   };
 }
 
-function buildDhlQuote(rates, profile) {
+function buildDhlPackage(rates, profile, deductible) {
   const budget = budgetWindow(profile);
+  const healthPremium = dhlPremium(rates, profile.gender, profile.age, deductible);
   const carePremium = carePlusPremium(rates, profile.gender, profile.age);
+  if (healthPremium === null) return null;
   if (carePremium === null) throw new Error("ไม่พบเบี้ย Care Plus สำหรับอายุที่แจ้ง");
 
-  const tryDhl = (deductible) => {
-    const healthPremium = dhlPremium(rates, profile.gender, profile.age, deductible);
-    if (healthPremium === null) return null;
-
-    const ridersTotal = healthPremium + carePremium;
-    const mainChoice = chooseMainAndPa({ rates, profile, ridersTotal, budget });
-    if (!mainChoice) return null;
-
-    const items = [
-      itemMain(mainChoice.mainId, mainChoice.mainPremium),
-      {
-        key: "health",
-        product: "D Health Lite",
-        sumInsuredPerConfinement: 5000000,
-        roomPerDay: 4000,
-        deductible,
-        premium: healthPremium,
-        line:
-          `- D Health Lite 5 ล้านบาท/ครั้ง คุ้มครองค่าห้อง 4,000 บาท/วันกรณีนอนโรงพยาบาล ` +
-          `${deductibleLabel(deductible)} — เบี้ย ${money(healthPremium)} บาท/ปี`,
-      },
-      {
-        key: "careplus",
-        product: "Care Plus",
-        cancerAndCkdPerDiseasePerYear: 5000000,
-        premium: carePremium,
-        line:
-          `- Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี ` +
-          `เหมาจ่ายยามุ่งเป้าและยาภูมิคุ้มกันบำบัด — เบี้ย ${money(carePremium)} บาท/ปี`,
-      },
-    ];
-
-    if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium));
-
-    const notes = [
-      "หากแอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย",
-      "โรงพยาบาลคู่สัญญาบางแห่ง ตัวแทนอาจช่วยขอส่วนลดค่าห้องได้",
-    ];
-
+  if (profile.quoteScope === "health_only") {
     return finalizeQuote({
       profile,
       budget,
-      items,
+      items: [
+        {
+          key: "health",
+          product: "D Health Lite",
+          sumInsuredPerConfinement: 5000000,
+          roomPerDay: 4000,
+          deductible,
+          premium: healthPremium,
+          line:
+            `- D Health Lite 5 ล้านบาท/ครั้ง คุ้มครองค่าห้อง 4,000 บาท/วันกรณีนอนโรงพยาบาล ` +
+            `${deductibleLabel(deductible)} — เบี้ย ${money(healthPremium)} บาท/ปี`,
+        },
+      ],
       planType: "dhl",
-      planCode: `dhl_5m_${deductible}`,
-      notes,
+      planCode: `dhl_5m_${deductible}_only`,
+      selectionReason: "คำนวณเฉพาะเบี้ย D Health Lite ตามที่ลูกค้าระบุครับ",
     });
-  };
+  }
 
-  // เริ่มจากไม่มี deductible ก่อนเสมอ
-  const noDeductible = tryDhl("d0");
-  if (noDeductible) return noDeductible;
+  const ridersTotal = healthPremium + carePremium;
+  const mainChoice = buildPackageCandidates({ rates, profile, ridersTotal, budget });
+  if (!mainChoice) return null;
 
-  // ถ้าเกินกรอบงบ และมีสวัสดิการ/เล่มเดิม หรือร้องขอ deductible จึงค่อยใช้ deductible
+  const items = [
+    itemMain(mainChoice.mainId, mainChoice.mainPremium),
+    {
+      key: "health",
+      product: "D Health Lite",
+      sumInsuredPerConfinement: 5000000,
+      roomPerDay: 4000,
+      deductible,
+      premium: healthPremium,
+      line:
+        `- D Health Lite 5 ล้านบาท/ครั้ง คุ้มครองค่าห้อง 4,000 บาท/วันกรณีนอนโรงพยาบาล ` +
+        `${deductibleLabel(deductible)} — เบี้ย ${money(healthPremium)} บาท/ปี`,
+    },
+    {
+      key: "careplus",
+      product: "Care Plus",
+      cancerAndCkdPerDiseasePerYear: 5000000,
+      premium: carePremium,
+      line:
+        `- Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี ` +
+        `เหมาจ่ายยามุ่งเป้าและยาภูมิคุ้มกันบำบัด — เบี้ย ${money(carePremium)} บาท/ปี`,
+    },
+  ];
+
+  if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium, 1));
+
+  return finalizeQuote({
+    profile,
+    budget,
+    items,
+    planType: "dhl",
+    planCode: `dhl_5m_${deductible}`,
+    notes: [
+      "หากแอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย",
+      "โรงพยาบาลคู่สัญญาบางแห่ง ตัวแทนอาจช่วยขอส่วนลดค่าห้องได้",
+    ],
+    selectionReason:
+      mainChoice.mainId.startsWith("99_99")
+        ? "เลือกสัญญาหลัก 99/99 พร้อม PA ตามกฎ เพื่อให้ยอดรวมใกล้งบที่สุดครับ"
+        : mainChoice.includePa
+          ? "งบรองรับ Smart Protection 99/20 และ PA Easy Plan 1 ครับ"
+          : "เลือก Smart Protection 99/20 โดยถอด PA ออกเพราะงบไม่พอจริง ๆ ครับ",
+  });
+}
+
+function buildDhlQuote(rates, profile) {
+  const budget = budgetWindow(profile);
+  const noDeductible = buildDhlPackage(rates, profile, "d0");
+
+  // ถ้ายอดไม่เกินงบเป้าหมาย หรือไม่มีสิทธิเดิม/ไม่ได้ขอ deductible ให้ใช้ d0 เลย
+  if (
+    noDeductible &&
+    (budget.max === Infinity ||
+      !budget.target ||
+      noDeductible.totalPremium <= budget.target ||
+      (profile.hasGroupBenefit !== true && profile.deductiblePreference !== "yes"))
+  ) {
+    return noDeductible;
+  }
+
+  // ถ้ายังเกินงบและมีสิทธิเดิม/ขอ deductible ต้องถามวงเงินเดิมก่อน
   const deductibleOptions = eligibleDeductibles(profile);
   if (deductibleOptions === null) {
     return {
@@ -359,16 +419,38 @@ function buildDhlQuote(rates, profile) {
     };
   }
 
-  for (const option of deductibleOptions || []) {
-    const quote = tryDhl(option);
-    if (quote) return quote;
+  const deductibleQuotes = (deductibleOptions || [])
+    .map((option) => buildDhlPackage(rates, profile, option))
+    .filter(Boolean);
+
+  if (deductibleQuotes.length) {
+    if (budget.max === Infinity || !budget.target) return deductibleQuotes[0];
+
+    const underTarget = deductibleQuotes
+      .filter((quote) => quote.totalPremium <= budget.target)
+      .sort((a, b) => b.totalPremium - a.totalPremium);
+    if (underTarget.length) return underTarget[0];
+
+    const underMax = deductibleQuotes
+      .filter((quote) => quote.totalPremium <= budget.max)
+      .sort((a, b) => a.totalPremium - b.totalPremium);
+    if (underMax.length) return underMax[0];
   }
 
-  // Fallback เดิมที่เคยกำหนด: Extra Care Plus Plan 3 + Care Plus + สัญญาหลักขั้นต่ำ
+  if (noDeductible && (budget.max === Infinity || noDeductible.totalPremium <= budget.max)) {
+    return noDeductible;
+  }
+
+  // Fallback: Extra Care Plus Plan 3 + Care Plus
   const ecp = ecpPremium(rates, profile.gender, profile.age, "p3");
-  if (ecp !== null) {
-    const ridersTotal = ecp + carePremium;
-    const mainChoice = chooseMainAndPa({ rates, profile, ridersTotal, budget });
+  const care = carePlusPremium(rates, profile.gender, profile.age);
+  if (ecp !== null && care !== null) {
+    const mainChoice = buildPackageCandidates({
+      rates,
+      profile,
+      ridersTotal: ecp + care,
+      budget,
+    });
     if (mainChoice) {
       const items = [
         itemMain(mainChoice.mainId, mainChoice.mainPremium),
@@ -387,20 +469,21 @@ function buildDhlQuote(rates, profile) {
           key: "careplus",
           product: "Care Plus",
           cancerAndCkdPerDiseasePerYear: 5000000,
-          premium: carePremium,
+          premium: care,
           line:
             `- Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี ` +
-            `เหมาจ่ายยามุ่งเป้าและยาภูมิคุ้มกันบำบัด — เบี้ย ${money(carePremium)} บาท/ปี`,
+            `เหมาจ่ายยามุ่งเป้าและยาภูมิคุ้มกันบำบัด — เบี้ย ${money(care)} บาท/ปี`,
         },
       ];
-      if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium));
+      if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium, 1));
       return finalizeQuote({
         profile,
         budget,
         items,
         planType: "ecp",
         planCode: "ecp_p3",
-        notes: ["เป็นแผนสำรองเมื่อ D Health Lite ยังเกินกรอบงบที่กำหนด"],
+        notes: ["เป็นแผนสำรองเมื่อ D Health Lite ยังไม่ลงตัวกับงบครับ"],
+        selectionReason: "ปรับลงเป็น Extra Care Plus Plan 3 เพื่อให้ใกล้งบมากขึ้นครับ",
       });
     }
   }
@@ -413,13 +496,41 @@ function buildDhlQuote(rates, profile) {
   };
 }
 
-function buildEliteQuote(rates, profile) {
+function buildEliteQuote(rates, profile, forcedPlan = null) {
   const budget = budgetWindow(profile);
-  const elitePlan = profile.wantsOPD || (profile.annualBudget || 0) >= 50000 ? "75m" : "20m";
-  const healthPremium = elitePremium(rates, profile.age, elitePlan);
+  const plan =
+    forcedPlan ||
+    (profile.opdPreference === "yes" || (profile.annualBudget || 0) >= 50000
+      ? "75m"
+      : "20m");
+
+  const healthPremium = elitePremium(rates, profile.age, plan);
   if (healthPremium === null) throw new Error("ไม่พบเบี้ย Elite Health Plus สำหรับอายุที่แจ้ง");
 
-  const mainChoice = chooseMainAndPa({
+  if (profile.quoteScope === "health_only") {
+    return finalizeQuote({
+      profile,
+      budget,
+      items: [
+        {
+          key: "health",
+          product: "Elite Health Plus",
+          plan,
+          annualLimit: plan === "75m" ? 75000000 : 20000000,
+          premium: healthPremium,
+          line:
+            `- Elite Health Plus วงเงิน ${plan === "75m" ? "75" : "20"} ล้านบาท/ปี ` +
+            `${plan === "75m" ? "พร้อมความคุ้มครอง OPD ตามเงื่อนไขแผน" : "เน้นความคุ้มครอง IPD"} ` +
+            `— เบี้ย ${money(healthPremium)} บาท/ปี`,
+        },
+      ],
+      planType: "elite",
+      planCode: `elite_${plan}_only`,
+      selectionReason: `คำนวณเฉพาะเบี้ย Elite Health Plus ${plan === "75m" ? "75" : "20"} ล้านบาทตามที่ลูกค้าระบุครับ`,
+    });
+  }
+
+  const mainChoice = buildPackageCandidates({
     rates,
     profile,
     ridersTotal: healthPremium,
@@ -440,28 +551,55 @@ function buildEliteQuote(rates, profile) {
     {
       key: "health",
       product: "Elite Health Plus",
-      plan: elitePlan,
-      annualLimit: elitePlan === "75m" ? 75000000 : 20000000,
+      plan,
+      annualLimit: plan === "75m" ? 75000000 : 20000000,
       premium: healthPremium,
       line:
-        `- Elite Health Plus วงเงิน ${elitePlan === "75m" ? "75" : "20"} ล้านบาท/ปี ` +
-        `${elitePlan === "75m" ? "พร้อมความคุ้มครอง OPD ตามเงื่อนไขแผน" : "เน้นความคุ้มครอง IPD"} ` +
+        `- Elite Health Plus วงเงิน ${plan === "75m" ? "75" : "20"} ล้านบาท/ปี ` +
+        `${plan === "75m" ? "พร้อมความคุ้มครอง OPD ตามเงื่อนไขแผน" : "เน้นความคุ้มครอง IPD"} ` +
         `— เบี้ย ${money(healthPremium)} บาท/ปี`,
     },
   ];
-  if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium));
+  if (mainChoice.includePa) items.push(itemPa(rates, mainChoice.paPremium, 1));
 
   return finalizeQuote({
     profile,
     budget,
     items,
     planType: "elite",
-    planCode: `elite_${elitePlan}`,
+    planCode: `elite_${plan}`,
     notes: [
       "ไม่แนบ Care Plus เพิ่มเมื่อใช้ Elite Health Plus",
-      "ไม่เสนอ Elite 40 ล้านบาท เพราะเบี้ยใกล้เคียงแผน 75 ล้านบาทมาก และเพิ่มเงินอีกเพียงเล็กน้อยได้วงเงินสูงกว่าอย่างชัดเจน",
+      "ไม่เสนอ Elite 40 ล้านบาทเป็นแผนหลัก เพราะเบี้ยใกล้เคียงแผน 75 ล้านบาทมาก และเพิ่มเงินอีกประมาณหลักพันบาทได้วงเงินสูงกว่าอย่างชัดเจน",
     ],
+    selectionReason:
+      forcedPlan === "20m"
+        ? "ใช้ Elite Health Plus 20 ล้านบาทตามคำขอล่าสุดของลูกค้าครับ"
+        : forcedPlan === "75m"
+          ? "ใช้ Elite Health Plus 75 ล้านบาทตามคำขอล่าสุดของลูกค้าครับ"
+          : plan === "75m"
+            ? "เลือก Elite Health Plus 75 ล้านบาท เพราะงบตั้งแต่ 50,000 บาทขึ้นไปหรือเน้น OPD ครับ"
+            : "เลือก Elite Health Plus 20 ล้านบาท เพราะงบต่ำกว่า 50,000 บาทและไม่ได้ยืนยันว่าต้องการ OPD ครับ",
   });
+}
+
+function resolvePlan(profile) {
+  if (profile.requestedHealthPlan === "dhl") return { type: "dhl" };
+  if (profile.requestedHealthPlan === "ecp") return { type: "ecp" };
+  if (profile.requestedHealthPlan === "elite20") return { type: "elite", plan: "20m" };
+  if (profile.requestedHealthPlan === "elite75") return { type: "elite", plan: "75m" };
+
+  // OPD แบบ optional เช่น "IPD +/- OPD" ไม่ถือว่าเป็นการขอ OPD
+  if ((profile.roomBudget || 0) >= 10000) {
+    return {
+      type: "elite",
+      plan:
+        profile.opdPreference === "yes" || (profile.annualBudget || 0) >= 50000
+          ? "75m"
+          : "20m",
+    };
+  }
+  return { type: "dhl" };
 }
 
 function validate(profile) {
@@ -470,7 +608,9 @@ function validate(profile) {
   if (!profile.gender) missing.push("gender");
   if (!profile.occupation) missing.push("occupation");
   if (profile.annualBudget === null && !profile.budgetFlexible) missing.push("annualBudget");
-  if (profile.roomBudget === null) missing.push("roomBudget");
+  if (profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
+    missing.push("roomBudget");
+  }
   return missing;
 }
 
@@ -488,10 +628,14 @@ export default async function handler(req, res) {
     }
 
     const rates = await loadRates(req);
-    const useElite = profile.roomBudget >= 10000;
-    const quote = useElite
-      ? buildEliteQuote(rates, profile)
-      : buildDhlQuote(rates, profile);
+    const selection = resolvePlan(profile);
+
+    let quote;
+    if (selection.type === "elite") {
+      quote = buildEliteQuote(rates, profile, selection.plan);
+    } else {
+      quote = buildDhlQuote(rates, profile);
+    }
 
     return json(res, 200, quote);
   } catch (error) {
