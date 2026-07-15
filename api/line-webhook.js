@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { brochureReply, isBrochureAcceptance } from "../lib/brochures.js";
 
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 90;
 const EVENT_TTL_SECONDS = 60 * 60 * 24;
@@ -6,7 +7,7 @@ const fallbackClaimedEvents = new Map();
 
 function defaultProfile() {
   return {
-    version: 7,
+    version: 8,
     age: null,
     gender: null,
     occupation: null,
@@ -31,6 +32,7 @@ function defaultProfile() {
     focus: [],
     botMode: "ai",
     lastPlanCode: null,
+    pendingBrochureKeys: [],
     updatedAt: new Date().toISOString(),
   };
 }
@@ -304,6 +306,21 @@ export default {
       let profile = await loadProfile(userId);
 
       try {
+        if (
+          Array.isArray(profile.pendingBrochureKeys) &&
+          profile.pendingBrochureKeys.length &&
+          isBrochureAcceptance(message)
+        ) {
+          const brochureMessage = brochureReply(
+            profile.pendingBrochureKeys,
+            "https://doctor-insurance.com"
+          );
+          profile.pendingBrochureKeys = [];
+          await saveProfile(userId, profile);
+          await replyToLine(event.replyToken, brochureMessage);
+          continue;
+        }
+
         if (RESET_COMMANDS.has(command)) {
           await clearProfile(userId);
           await replyToLine(
