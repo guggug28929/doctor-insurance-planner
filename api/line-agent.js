@@ -13,7 +13,7 @@ const PRODUCT_RULES = `
 3. เริ่มจากประกันสุขภาพเป็นหลักก่อน
 4. ค่าห้องต่ำกว่า 10,000 บาท: D Health Lite 5 ล้านบาท/ครั้ง + Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาท/โรค/ปี
 5. ถ้างบถึง ใช้ Smart Protection 99/20 ทุน 200,000 บาท และเพิ่ม PA Easy Plan 1 เมื่อยังไม่เกินงบ
-6. หาก 99/20 + PA เกินงบ สามารถใช้ 99/20 โดยไม่แนบ PA ได้เมื่อจำเป็นจริง ๆ
+6. Smart Protection 99/20 ต้องแนบสัญญาอุบัติเหตุหรือโรคร้ายแรงเสมอ ห้ามเสนอแบบเดี่ยว หากงบไม่พอให้ใช้ 99/99 + PA หรือถามปรับงบ
 7. หากต้องลดเป็นสัญญาหลัก 99/99 ทุน 100,000 หรือ 50,000 บาท ต้องแนบ PA เสมอ ห้ามเสนอ 99/99 เดี่ยว ๆ
 8. หาก D Health Lite แบบไม่มีความรับผิดส่วนแรกยังเกินงบ และลูกค้ามีประกันกลุ่ม/กรมธรรม์เดิม หรือขอ deductible ให้ถามวงเงินค่ารักษาเดิมก่อน แล้วใช้ deductible 30,000 / 50,000 / 100,000 บาทให้สัมพันธ์กับวงเงินเดิม
 9. ถ้ายังไม่ลงตัวจริง ๆ ค่อยใช้ Extra Care Plus Plan 3 + Care Plus เป็นแผนสำรอง
@@ -31,6 +31,12 @@ const PRODUCT_RULES = `
 21. ห้ามใช้ Markdown เครื่องหมาย ** หรือลิงก์ดิบในคำตอบ LINE
 22. หากมีประวัติสุขภาพหรือโรคประจำตัว ห้ามตัดจบหรือปฏิเสธทันที ต้องเก็บข้อมูลที่จำเป็น จัดแผนและแจ้งเบี้ยเบื้องต้นให้เสร็จก่อน
 23. หลังเสนอแผนสำหรับผู้มีประวัติสุขภาพแล้ว ให้แจ้งว่าผลรับประกันขึ้นกับบริษัท ปิดผู้ช่วยอัตโนมัติ และส่งต่อให้หมอกึ๊กหรือเจ้าหน้าที่จริงดูแลต่อ
+24. เมื่อลูกค้าสนใจโรคร้ายแรง ต้องถามก่อนว่าเน้นค่ารักษา เงินก้อนเจอจ่ายจบ หรือทั้งสองอย่าง
+25. ถ้าเน้นค่ารักษา ใช้ D Health Lite + Care Plus หรือ Elite Health Plus โดย Elite ไม่แนบ Care Plus
+26. ถ้าเน้นเงินก้อนหรือทั้งสองอย่าง ให้เสนอเปรียบเทียบ CI Perfect Care, Multiple CI, D Care และความคุ้มครองโรคมะเร็งจากตารางจริง
+27. ถ้าต้องการความคุ้มครองตั้งครรภ์/คลอดบุตร ให้เพิ่ม Maternity Plus; ถ้าต้องการตรวจสุขภาพ วัคซีน ทันตกรรม หรือสายตา ให้เพิ่ม Well-Being Plus ทั้งสองซื้อเดี่ยวไม่ได้ ต้องแนบ D Health Lite หรือ Elite Health Plus
+28. หากกังวลค่าเบี้ย/ค่ารักษาหลังเกษียณ มีสวัสดิการปัจจุบัน หรือเป็นรัฐวิสาหกิจ ให้แนะนำเมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 ซึ่งชำระ 20 ปี และตั้งแต่อายุ 65 ปีเปลี่ยนทุนคงเหลือเป็นค่ารักษา IPD/OPD ได้ตามเงื่อนไข
+29. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ Smart Link 15/3 และ 15/6 พร้อมเลือกทุนตามงบ
 `.trim();
 
 const ANALYSIS_SCHEMA = {
@@ -81,6 +87,17 @@ const ANALYSIS_SCHEMA = {
           enum: ["package", "health_only", null],
         },
         optimizeForBudget: { type: ["boolean", "null"] },
+        requestedProduct: {
+          type: ["string", "null"],
+          enum: ["auto", "critical_comparison", "flexi_99_20", "smart_link_auto", "smart_link_15_3", "smart_link_15_6", null],
+        },
+        criticalIllnessNeed: {
+          type: ["string", "null"],
+          enum: ["unknown", "treatment", "lump_sum", "both", null],
+        },
+        criticalIllnessSumInsured: { type: ["number", "null"] },
+        wantsMaternity: { type: ["boolean", "null"] },
+        wantsWellBeing: { type: ["boolean", "null"] },
         focus: {
           type: ["array", "null"],
           items: {
@@ -104,6 +121,11 @@ const ANALYSIS_SCHEMA = {
         "requestedHealthPlan",
         "quoteScope",
         "optimizeForBudget",
+        "requestedProduct",
+        "criticalIllnessNeed",
+        "criticalIllnessSumInsured",
+        "wantsMaternity",
+        "wantsWellBeing",
         "focus",
       ],
       additionalProperties: false,
@@ -127,6 +149,11 @@ const ANALYSIS_SCHEMA = {
           "requestedHealthPlan",
           "quoteScope",
           "optimizeForBudget",
+          "requestedProduct",
+          "criticalIllnessNeed",
+          "criticalIllnessSumInsured",
+          "wantsMaternity",
+          "wantsWellBeing",
           "focus",
         ],
       },
@@ -183,7 +210,7 @@ async function callOpenAI(payload) {
 
 function defaultProfile() {
   return {
-    version: 5,
+    version: 6,
     age: null,
     gender: null,
     occupation: null,
@@ -198,6 +225,11 @@ function defaultProfile() {
     requestedHealthPlan: "auto",
     quoteScope: "package",
     optimizeForBudget: false,
+    requestedProduct: "auto",
+    criticalIllnessNeed: "unknown",
+    criticalIllnessSumInsured: null,
+    wantsMaternity: false,
+    wantsWellBeing: false,
     focus: [],
     botMode: "ai",
     lastPlanCode: null,
@@ -211,7 +243,7 @@ function migrateProfile(input = {}) {
     if (input.wantsOPD === true) profile.opdPreference = "yes";
     else if (input.wantsOPD === false) profile.opdPreference = "no";
   }
-  profile.version = 5;
+  profile.version = 6;
   return profile;
 }
 
@@ -276,6 +308,60 @@ function inferContextualUpdates(message, current) {
     updates.healthStatus = "has_history";
   }
 
+  const criticalMention = /โรคร้าย(?:แรง)?|มะเร็ง|ci(?:perfect|\b)/i.test(message);
+  if (criticalMention) {
+    updates.focus = [...new Set([...(current.focus || []), "critical_illness"])];
+    if (/ทั้งสอง|ทั้งคู่|ค่ารักษา.*เงินก้อน|เงินก้อน.*ค่ารักษา/.test(compact)) {
+      updates.criticalIllnessNeed = "both";
+      updates.requestedProduct = "auto";
+    } else if (/เจอจ่ายจบ|เงินก้อน|ชดเชยรายได้/.test(compact)) {
+      updates.criticalIllnessNeed = "lump_sum";
+      updates.requestedProduct = "critical_comparison";
+    } else if (/เน้นค่ารักษา|ค่ารักษาพยาบาล|ยามุ่งเป้า/.test(compact)) {
+      updates.criticalIllnessNeed = "treatment";
+      updates.requestedProduct = "auto";
+    } else if (!current.criticalIllnessNeed || current.criticalIllnessNeed === "unknown") {
+      updates.criticalIllnessNeed = "unknown";
+    }
+    const capital = parseSpokenAmount(message);
+    if (/ทุน|เงินก้อน/.test(compact) && capital >= 100000) {
+      updates.criticalIllnessSumInsured = capital;
+    }
+  } else if ((current.focus || []).includes("critical_illness")) {
+    if (/ทั้งสอง|ทั้งคู่/.test(compact)) {
+      updates.criticalIllnessNeed = "both";
+      updates.requestedProduct = "auto";
+    } else if (/เจอจ่ายจบ|เงินก้อน/.test(compact)) {
+      updates.criticalIllnessNeed = "lump_sum";
+      updates.requestedProduct = "critical_comparison";
+    } else if (/ค่ารักษา|รักษาพยาบาล/.test(compact)) {
+      updates.criticalIllnessNeed = "treatment";
+      updates.requestedProduct = "auto";
+    }
+  }
+
+  if (/ตั้งครรภ์|คลอดบุตร|ค่าคลอด|วางแผนมีลูก|maternity/i.test(message)) {
+    updates.wantsMaternity = true;
+    updates.requestedProduct = "auto";
+  }
+  if (/ตรวจสุขภาพ|วัคซีน|ทันตกรรม|ทำฟัน|สายตา|well.?being/i.test(message)) {
+    updates.wantsWellBeing = true;
+    updates.requestedProduct = "auto";
+  }
+
+  if (
+    /หลังเกษียณ|ตอนเกษียณ|หลังอายุ65|เบี้ยตอนแก่|จ่ายเบี้ย.*ไม่ไหว|รัฐวิสาหกิจ/.test(compact) &&
+    /ค่ารักษา|สุขภาพ|สวัสดิการ|รัฐวิสาหกิจ|เบี้ย/.test(compact)
+  ) {
+    updates.requestedProduct = "flexi_99_20";
+  }
+
+  if (/15\s*\/\s*3/.test(message)) updates.requestedProduct = "smart_link_15_3";
+  else if (/15\s*\/\s*6/.test(message)) updates.requestedProduct = "smart_link_15_6";
+  else if (/ออมทรัพย์|สะสมทรัพย์|ลดหย่อนภาษี/.test(compact) && /ไม่เน้นทุนชีวิต|เน้นออม|ออมทรัพย์|สะสมทรัพย์/.test(compact)) {
+    updates.requestedProduct = "smart_link_auto";
+  }
+
   return updates;
 }
 
@@ -283,10 +369,12 @@ function mergeProfile(current, analysis, message, contextualUpdates = null) {
   const next = migrateProfile(current);
   for (const field of analysis.clearFields || []) {
     if (field === "focus") next[field] = [];
-    else if (field === "budgetFlexible" || field === "optimizeForBudget") next[field] = false;
+    else if (["budgetFlexible", "optimizeForBudget", "wantsMaternity", "wantsWellBeing"].includes(field)) next[field] = false;
     else if (field === "deductiblePreference") next[field] = "auto";
     else if (field === "opdPreference") next[field] = "unknown";
     else if (field === "requestedHealthPlan") next[field] = "auto";
+    else if (field === "requestedProduct") next[field] = "auto";
+    else if (field === "criticalIllnessNeed") next[field] = "unknown";
     else if (field === "quoteScope") next[field] = "package";
     else next[field] = null;
   }
@@ -307,17 +395,22 @@ function mergeProfile(current, analysis, message, contextualUpdates = null) {
 
 function missingFields(profile) {
   const missing = [];
+  if ((profile.focus || []).includes("critical_illness") && profile.criticalIllnessNeed === "unknown") {
+    missing.push("criticalIllnessNeed");
+    return missing;
+  }
   if (profile.age === null) missing.push("age");
-  if (!profile.gender) missing.push("gender");
-  if (!profile.occupation) missing.push("occupation");
+  if (profile.requestedProduct !== "smart_link_auto" && !profile.requestedProduct.startsWith("smart_link_15_") && !profile.gender) missing.push("gender");
+  const healthFlow = profile.requestedProduct === "auto";
+  if (healthFlow && !profile.occupation) missing.push("occupation");
   if (profile.annualBudget === null && profile.budgetFlexible !== true) {
     missing.push("annualBudget");
   }
-  if (profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
+  if (healthFlow && profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
     missing.push("roomBudget");
   }
-  if (!profile.healthStatus) missing.push("healthStatus");
-  if (profile.hasGroupBenefit === null) missing.push("hasGroupBenefit");
+  if (healthFlow && !profile.healthStatus) missing.push("healthStatus");
+  if (healthFlow && profile.hasGroupBenefit === null) missing.push("hasGroupBenefit");
   return missing;
 }
 
@@ -330,6 +423,7 @@ const FIELD_QUESTIONS = {
   healthStatus: "มีโรคประจำตัว ประวัติผ่าตัด นอนโรงพยาบาล ใช้ยาประจำ หรือผลตรวจผิดปกติหรือไม่ครับ",
   hasGroupBenefit: "ปัจจุบันมีประกันกลุ่ม สวัสดิการบริษัท หรือกรมธรรม์สุขภาพเดิมอยู่หรือไม่ครับ",
   groupBenefit: "วงเงินค่ารักษาของประกันกลุ่มหรือกรมธรรม์เดิมประมาณกี่บาทครับ",
+  criticalIllnessNeed: "ถ้ากังวลโรคร้ายแรง ต้องการเน้นค่ารักษาพยาบาล เงินก้อนแบบเจอจ่ายจบ หรือทั้งสองอย่างครับ",
 };
 
 async function analyzeTurn(message, profile) {
@@ -353,6 +447,14 @@ ${PRODUCT_RULES}
 - หากระบุ Elite 20 ล้าน ให้ requestedHealthPlan elite20 หากระบุ Elite 75 ล้าน ให้ elite75
 - หากพูดว่า "เบี้ยแพง", "เกินงบ", "ลดเบี้ย", "จัดใหม่ให้ถูกลง" ให้ optimizeForBudget true, asksForPremium true, shouldRecommendPlan true และตั้ง requestedHealthPlan auto เว้นแต่ข้อความเดียวกันระบุชื่อแผนชัดเจน
 - หากลูกค้าบอก "ไม่เอา OPD ก็ได้" หลังเคยเสนอ Elite 75 ให้ตั้ง requestedHealthPlan auto เพื่อเปิดทางให้ระบบเลือก Elite 20
+- หากสนใจโรคร้ายแรงแต่ยังไม่บอกประเภท ให้ criticalIllnessNeed unknown และอย่าเพิ่งเลือกแผน ต้องถามว่าเน้นค่ารักษา เงินก้อน หรือทั้งสอง
+- ถ้าเน้นค่ารักษา ให้ criticalIllnessNeed treatment และ requestedProduct auto
+- ถ้าเน้นเงินก้อน/เจอจ่ายจบ ให้ criticalIllnessNeed lump_sum และ requestedProduct critical_comparison
+- ถ้าต้องการทั้งค่ารักษาและเงินก้อน ให้ criticalIllnessNeed both และ requestedProduct auto
+- ถ้าพูดถึงตั้งครรภ์ คลอดบุตร ค่าคลอด หรือวางแผนมีลูก ให้ wantsMaternity true
+- ถ้าพูดถึงตรวจสุขภาพ วัคซีน ทันตกรรม ทำฟัน หรือสายตา ให้ wantsWellBeing true
+- ถ้ากังวลเบี้ยหรือค่ารักษาหลังเกษียณ มีสวัสดิการตอนทำงาน หรือเป็นรัฐวิสาหกิจ ให้ requestedProduct flexi_99_20
+- ถ้าต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้ requestedProduct smart_link_auto; ถ้าระบุ 15/3 หรือ 15/6 ให้เลือกค่าที่ตรงกัน
 - หากถามเฉพาะเบี้ยของตัวแผนสุขภาพ เช่น "เฉพาะเบี้ย D Health Lite เท่าไร" ให้ quoteScope health_only มิฉะนั้นใช้ package
 - หากถามเบี้ย ราคา ปีละเท่าไร รวมเท่าไร หรือขอใบเสนอราคา ให้ asksForPremium true
 - หากขอแนะนำแผน ให้ shouldRecommendPlan true
@@ -370,7 +472,7 @@ ${PRODUCT_RULES}
     text: {
       format: {
         type: "json_schema",
-        name: "line_insurance_turn_v5",
+        name: "line_insurance_turn_v6",
         strict: true,
         schema: ANALYSIS_SCHEMA,
       },
@@ -402,7 +504,9 @@ function replyMatchesQuote(reply, quote) {
   if (hasElite && /D\s*Health\s*Lite/i.test(text)) return false;
   if (hasDhl && !/D\s*Health\s*Lite|Extra\s*Care\s*Plus/i.test(text)) return false;
   if (hasElite && !/Elite\s*Health\s*Plus/i.test(text)) return false;
-  if (!text.includes(String(Math.round(quote.totalPremium).toLocaleString("th-TH")))) return false;
+  if (quote.totalPremium !== null && quote.totalPremium !== undefined) {
+    if (!text.includes(String(Math.round(quote.totalPremium).toLocaleString("th-TH")))) return false;
+  }
   return true;
 }
 
@@ -606,3 +710,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export { defaultProfile, inferContextualUpdates, mergeProfile, missingFields };
