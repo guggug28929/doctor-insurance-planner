@@ -409,6 +409,21 @@ function replyMatchesQuote(reply, quote) {
 const HEALTH_HANDOFF_NOTE =
   "หมายเหตุ: เนื่องจากมีประวัติสุขภาพหรือโรคประจำตัว แผนและเบี้ยข้างต้นเป็นการวางแผนเบื้องต้น ผลรับประกันขึ้นอยู่กับการพิจารณาของบริษัทครับ จากนี้ผมขอปิดผู้ช่วยอัตโนมัติชั่วคราว และให้คุณหมอกึ๊กหรือเจ้าหน้าที่ติดต่อกลับเพื่อดูแลรายละเอียดต่อครับ";
 
+function appendHealthHandoff(reply) {
+  const paragraphs = String(reply || "")
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .filter(
+      (paragraph) =>
+        !/ปิด(?:การทำงานของ)?ผู้ช่วยอัตโนมัติ|ส่งต่อให้.*(?:หมอกึ๊ก|เจ้าหน้าที่)|ผล(?:การ)?รับประกัน.*บริษัท/.test(
+          paragraph
+        )
+    );
+
+  return [...paragraphs, HEALTH_HANDOFF_NOTE].join("\n\n");
+}
+
 async function writeReply({ message, profile, analysis, quote = null, forcedQuestion = null }) {
   const instructions = `
 ${PRODUCT_RULES}
@@ -422,6 +437,7 @@ ${PRODUCT_RULES}
 - ถ้าลูกค้าขอ Elite 20 แต่ QUOTE เป็น Elite 20 ต้องทำตามตรง ๆ
 - เมื่อมี QUOTE ให้แจกแจงแต่ละสัญญาและยอดรวม
 - ถ้า healthStatus เป็น has_history ต้องเสนอแผนจาก QUOTE ให้ครบก่อน ห้ามตอบเพียงว่าจะส่งต่อเจ้าหน้าที่
+- ถ้า healthStatus เป็น has_history ไม่ต้องถามรายละเอียดโรคเพิ่มและไม่ต้องเขียนข้อความปิดบอตหรือส่งต่อเอง ระบบจะเติมข้อความมาตรฐานท้ายคำตอบให้
 - ไม่มี Markdown ไม่มีลิงก์ดิบ ลงท้ายครับ
 `.trim();
 
@@ -558,13 +574,7 @@ export default async function handler(req, res) {
       if (profile.healthStatus === "has_history") {
         profile.botMode = "human";
         action = "quote_handoff";
-        const alreadyMentionsHandoff =
-          /ปิด(?:การทำงานของ)?ผู้ช่วยอัตโนมัติ|ส่งต่อให้.*(?:หมอกึ๊ก|เจ้าหน้าที่)|เจ้าหน้าที่(?:จริง)?ดูแลต่อ/.test(
-            reply
-          );
-        if (!alreadyMentionsHandoff) {
-          reply = `${reply}\n\n${HEALTH_HANDOFF_NOTE}`;
-        }
+        reply = appendHealthHandoff(reply);
       }
 
       // quoteScope และคำสั่งปรับงบเป็นคำสั่งเฉพาะรอบ ไม่ควรค้างไปถามครั้งถัดไป
