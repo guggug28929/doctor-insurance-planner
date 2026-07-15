@@ -5,7 +5,7 @@ const EVENT_TTL_SECONDS = 60 * 60 * 24;
 
 function defaultProfile() {
   return {
-    version: 4,
+    version: 6,
     age: null,
     gender: null,
     occupation: null,
@@ -16,7 +16,15 @@ function defaultProfile() {
     hasGroupBenefit: null,
     groupBenefit: null,
     deductiblePreference: "auto",
-    wantsOPD: null,
+    opdPreference: "unknown",
+    requestedHealthPlan: "auto",
+    quoteScope: "package",
+    optimizeForBudget: false,
+    requestedProduct: "auto",
+    criticalIllnessNeed: "unknown",
+    criticalIllnessSumInsured: null,
+    wantsMaternity: false,
+    wantsWellBeing: false,
     focus: [],
     botMode: "ai",
     lastPlanCode: null,
@@ -38,6 +46,7 @@ function verifyLineSignature(rawBody, signature, channelSecret) {
 
 function sanitizeLineText(message) {
   return String(message || "")
+    .replace(/D\s*Health\s*Plus/gi, "D Health Lite")
     .replace(/ดิฉัน/g, "ผม")
     .replace(/ฉัน/g, "ผม")
     .replace(/นะค่ะ/g, "นะครับ")
