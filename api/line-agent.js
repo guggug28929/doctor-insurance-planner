@@ -2,6 +2,8 @@
 // ทุกข้อความลูกค้าผ่าน AI เพื่อทำความเข้าใจบริบท อัปเดตความจำ และสร้างคำตอบ
 // ตัวเลขเบี้ยต้องมาจาก /api/premium-quote เท่านั้น
 
+import { brochureKeysForQuote, brochurePrompt } from "../lib/brochures.js";
+
 const MODEL = process.env.OPENAI_MODEL_LINE || "gpt-5.6-luna";
 
 const PRODUCT_RULES = `
@@ -223,7 +225,7 @@ async function callOpenAI(payload) {
 
 function defaultProfile() {
   return {
-    version: 7,
+    version: 8,
     age: null,
     gender: null,
     occupation: null,
@@ -248,6 +250,7 @@ function defaultProfile() {
     focus: [],
     botMode: "ai",
     lastPlanCode: null,
+    pendingBrochureKeys: [],
     updatedAt: new Date().toISOString(),
   };
 }
@@ -258,7 +261,10 @@ function migrateProfile(input = {}) {
     if (input.wantsOPD === true) profile.opdPreference = "yes";
     else if (input.wantsOPD === false) profile.opdPreference = "no";
   }
-  profile.version = 7;
+  profile.pendingBrochureKeys = Array.isArray(input.pendingBrochureKeys)
+    ? input.pendingBrochureKeys
+    : [];
+  profile.version = 8;
   return profile;
 }
 
@@ -713,9 +719,16 @@ export default async function handler(req, res) {
         });
       }
 
-      if (quote?.ok) profile.lastPlanCode = quote.planCode || null;
+      if (quote?.ok) {
+        profile.lastPlanCode = quote.planCode || null;
+        profile.pendingBrochureKeys = brochureKeysForQuote(quote);
+      }
       let reply = await writeReply({ message, profile, analysis, quote });
       let action = quote?.ok ? "quote" : "no_quote";
+
+      if (quote?.ok && profile.pendingBrochureKeys.length) {
+        reply = `${reply}\n\n${brochurePrompt()}`;
+      }
 
       if (profile.healthStatus === "has_history") {
         profile.botMode = "human";
