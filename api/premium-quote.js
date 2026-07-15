@@ -1,6 +1,8 @@
 // Vercel Serverless Function: /api/premium-quote.js
-// คำนวณเบี้ยจากตาราง rates-data ใน index.html แบบ deterministic
+// คำนวณเบี้ยจาก data/premium-rates.json แบบ deterministic
 // AI มีหน้าที่เข้าใจคำถามและอธิบาย แต่ไม่มีสิทธิ์แต่งตัวเลขเบี้ย
+
+import { readFile } from "node:fs/promises";
 
 let ratesCachePromise = null;
 
@@ -37,27 +39,14 @@ function rateAtPublishedAge(array, age) {
   return rateAtStart(array, age, 11);
 }
 
-async function loadRates(req) {
+async function loadRates() {
   if (!ratesCachePromise) {
     ratesCachePromise = (async () => {
-      const protocol = req.headers["x-forwarded-proto"] || "https";
-      const host = req.headers.host;
-      if (!host) throw new Error("ไม่พบ host สำหรับโหลดตารางเบี้ย");
-
-      const response = await fetch(`${protocol}://${host}/`, {
-        headers: { Accept: "text/html" },
-      });
-      if (!response.ok) {
-        throw new Error(`โหลดหน้าเครื่องคำนวณไม่สำเร็จ: HTTP ${response.status}`);
-      }
-
-      const html = await response.text();
-      const match = html.match(
-        /<script[^>]*id=["']rates-data["'][^>]*>([\s\S]*?)<\/script>/i
+      const text = await readFile(
+        new URL("../data/premium-rates.json", import.meta.url),
+        "utf8"
       );
-      if (!match) throw new Error("ไม่พบ rates-data ในหน้าเครื่องคำนวณ");
-
-      const rates = JSON.parse(match[1].trim());
+      const rates = JSON.parse(text);
       const required = [
         "main_99_20",
         "main_99_99",
@@ -66,6 +55,12 @@ async function loadRates(req) {
         "ehp",
         "pa_rider",
         "ecp",
+        "multiple_ci",
+        "maternity_plus",
+        "well_being_plus",
+        "flexi_99_20",
+        "smart_link_15_3",
+        "smart_link_15_6",
       ];
       for (const key of required) {
         if (!rates?.[key]) throw new Error(`ตารางเบี้ยไม่ครบ: ${key}`);
@@ -183,6 +178,24 @@ function normalizeProfile(raw = {}) {
     requestedHealthPlan,
     quoteScope: raw.quoteScope === "health_only" ? "health_only" : "package",
     optimizeForBudget: raw.optimizeForBudget === true,
+    requestedProduct: [
+      "auto",
+      "critical_comparison",
+      "flexi_99_20",
+      "smart_link_auto",
+      "smart_link_15_3",
+      "smart_link_15_6",
+    ].includes(raw.requestedProduct)
+      ? raw.requestedProduct
+      : "auto",
+    criticalIllnessNeed: ["unknown", "treatment", "lump_sum", "both"].includes(
+      raw.criticalIllnessNeed
+    )
+      ? raw.criticalIllnessNeed
+      : "unknown",
+    criticalIllnessSumInsured: n(raw.criticalIllnessSumInsured),
+    wantsMaternity: raw.wantsMaternity === true,
+    wantsWellBeing: raw.wantsWellBeing === true,
   };
 }
 
@@ -233,8 +246,9 @@ function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
     if (main === null) return;
     if (includePa && pa === null) return;
 
-    // กฎสำคัญ: 99/99 ต้องแนบ PA เสมอ ส่วน 99/20 ถ้างบไม่พอจริง ๆ ถอด PA ได้
+    // 99/99 ต้องแนบ PA; Smart 99/20 ต้องแนบ PA หรือสัญญาโรคร้ายแรงเสมอ
     if (mainId.startsWith("99_99") && !includePa) return;
+    if (mainId === "99_20_200k" && !includePa) return;
 
     const paCost = includePa ? pa : 0;
     candidates.push({
@@ -248,9 +262,8 @@ function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
   };
 
   add({ mainId: "99_20_200k", includePa: true, priority: 1 });
-  add({ mainId: "99_20_200k", includePa: false, priority: 2 });
-  add({ mainId: "99_99_100k", includePa: true, priority: 3 });
-  add({ mainId: "99_99_50k", includePa: true, priority: 4 });
+  add({ mainId: "99_99_100k", includePa: true, priority: 2 });
+  add({ mainId: "99_99_50k", includePa: true, priority: 3 });
 
   if (!candidates.length) return null;
 
@@ -389,7 +402,7 @@ function buildDhlPackage(rates, profile, deductible) {
         ? "เลือกสัญญาหลัก 99/99 พร้อม PA ตามกฎ เพื่อให้ยอดรวมใกล้งบที่สุดครับ"
         : mainChoice.includePa
           ? "งบรองรับ Smart Protection 99/20 และ PA Easy Plan 1 ครับ"
-          : "เลือก Smart Protection 99/20 โดยถอด PA ออกเพราะงบไม่พอจริง ๆ ครับ",
+          : "เลือก Smart Protection 99/20 พร้อมสัญญาเพิ่มเติมตามเงื่อนไขผลิตภัณฑ์ครับ",
   });
 }
 
@@ -583,6 +596,252 @@ function buildEliteQuote(rates, profile, forcedPlan = null) {
   });
 }
 
+function bandPremium(table, genderOrAge, ageOrPlan, maybePlan) {
+  const hasGender = typeof genderOrAge === "string";
+  const bands = hasGender ? table?.[genderOrAge] : table?.bands;
+  const age = Number(hasGender ? ageOrPlan : genderOrAge);
+  const planIndex = Number(hasGender ? maybePlan : ageOrPlan);
+  const row = bands?.find(([min, max]) => age >= min && age <= max);
+  return row ? Number(row[2 + planIndex]) : null;
+}
+
+function appendRequestedHealthExtras(rates, profile, quote) {
+  if (!quote?.ok || !["dhl", "elite"].includes(quote.planType)) return quote;
+  if (!profile.wantsMaternity && !profile.wantsWellBeing) return quote;
+
+  const items = [...quote.items];
+  const notes = [...(quote.notes || [])];
+
+  if (profile.wantsMaternity) {
+    if (profile.gender !== "f" || profile.age < 15 || profile.age > 49) {
+      return {
+        ok: false,
+        noEligiblePlan: true,
+        question: "Maternity Plus รับเฉพาะผู้หญิงอายุ 15-49 ปีครับ รบกวนตรวจสอบอายุและเพศที่แจ้งอีกครั้งครับ",
+      };
+    }
+    const p1 = bandPremium(rates.maternity_plus, profile.age, 0);
+    const p2 = bandPremium(rates.maternity_plus, profile.age, 1);
+    items.push({
+      key: "maternity",
+      product: "Maternity Plus Plan 1",
+      premium: p1,
+      line:
+        `- Maternity Plus Plan 1 ความคุ้มครองภาวะแทรกซ้อนระหว่างตั้งครรภ์/คลอดบุตร ` +
+        `วงเงิน 2 ล้านบาท/ปี — เบี้ย ${money(p1)} บาท/ปี`,
+    });
+    notes.push(
+      `Maternity Plus ซื้อเดี่ยวไม่ได้ ต้องแนบ D Health Lite หรือ Elite Health Plus; ` +
+        `Plan 2 วงเงิน 4 ล้านบาท เบี้ย ${money(p2)} บาท/ปี และมีระยะรอคอย 280 วันครับ`
+    );
+  }
+
+  if (profile.wantsWellBeing) {
+    const p1 = bandPremium(rates.well_being_plus, profile.age, 0);
+    const p2 = bandPremium(rates.well_being_plus, profile.age, 1);
+    if (p1 === null) {
+      return {
+        ok: false,
+        noEligiblePlan: true,
+        question: "Well-Being Plus รับอายุ 11-90 ปีครับ รบกวนตรวจสอบอายุที่แจ้งอีกครั้งครับ",
+      };
+    }
+    items.push({
+      key: "wellbeing",
+      product: "Well-Being Plus Plan 1",
+      premium: p1,
+      line:
+        `- Well-Being Plus Plan 1 ตรวจสุขภาพ 5,000 บาท วัคซีน 4,000 บาท ` +
+        `ทันตกรรม 10,000 บาท และสายตา 5,000 บาท/ปี — เบี้ย ${money(p1)} บาท/ปี`,
+    });
+    notes.push(
+      `Well-Being Plus ซื้อเดี่ยวไม่ได้ ต้องแนบ D Health Lite หรือ Elite Health Plus; ` +
+        `Plan 2 เบี้ย ${money(p2)} บาท/ปี (ตรวจสุขภาพ 10,000 วัคซีน 6,000 ` +
+        `ทันตกรรม 15,000 และสายตา 7,500 บาท) ครับ`
+    );
+  }
+
+  return finalizeQuote({
+    profile,
+    budget: budgetWindow(profile),
+    items,
+    planType: quote.planType,
+    planCode: `${quote.planCode}${profile.wantsMaternity ? "_mat" : ""}${profile.wantsWellBeing ? "_wb" : ""}`,
+    notes,
+    selectionReason: quote.selectionReason,
+  });
+}
+
+function normalizeCriticalCapital(value) {
+  const requested = Number(value || 500000);
+  const supported = [500000, 1000000, 2000000];
+  return supported.reduce((best, capital) =>
+    Math.abs(capital - requested) < Math.abs(best - requested) ? capital : best
+  );
+}
+
+function criticalOptions(rates, profile) {
+  const capital = normalizeCriticalCapital(profile.criticalIllnessSumInsured);
+  const options = [];
+  const cipcBase = rateAtStart(rates.cipc?.[profile.gender], profile.age, rates.cipc?.age_start || 0);
+  const multiple = bandPremium(rates.multiple_ci, profile.gender, profile.age, [500000, 1000000, 2000000].indexOf(capital));
+  const dcareRate = rateAtStart(
+    rates.dcare?.[`${profile.gender}_popular`],
+    profile.age,
+    rates.dcare?.age_start || 0
+  );
+  const cancerKey = `${profile.gender}_${capital === 1000000 ? "1m" : capital === 2000000 ? "2m" : "500k"}`;
+  const cancer = rateAtPublishedAge(rates.cancer?.[cancerKey], profile.age);
+
+  if (cipcBase !== null && profile.age <= 65) {
+    options.push({
+      product: "CI Perfect Care",
+      capital,
+      premium: cipcBase * (capital / 500000),
+      detail: "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน",
+    });
+  }
+  if (multiple !== null) {
+    options.push({
+      product: "Multiple CI",
+      capital,
+      premium: multiple,
+      detail: "คุ้มครอง 35 โรค แบ่ง 4 กลุ่ม รับผลประโยชน์รวมได้สูงสุด 400% ของทุน",
+    });
+  }
+  if (dcareRate !== null && profile.age <= 70) {
+    options.push({
+      product: "D Care (กลุ่มโรคยอดฮิต)",
+      capital,
+      premium: dcareRate * (capital / 1000),
+      detail: "เลือกกลุ่มโรคที่ต้องการ เน้นกลุ่มโรคยอดฮิตเป็นตัวอย่าง",
+    });
+  }
+  if (cancer !== null) {
+    options.push({
+      product: "ความคุ้มครองโรคมะเร็ง",
+      capital,
+      premium: cancer,
+      detail: "เงินก้อนเมื่อเข้าเงื่อนไขโรคมะเร็งตามกรมธรรม์",
+    });
+  }
+  return { capital, options: options.map((option) => ({ ...option, premium: Math.round(option.premium) })) };
+}
+
+function buildCriticalComparison(rates, profile) {
+  const { capital, options } = criticalOptions(rates, profile);
+  if (!options.length) {
+    return { ok: false, noEligiblePlan: true, question: "ไม่พบตารางเบี้ยโรคร้ายแรงสำหรับอายุที่แจ้งครับ" };
+  }
+  const main = mainPremium(rates, profile.gender, profile.age, "99_20_200k");
+  if (main === null) {
+    return { ok: false, noEligiblePlan: true, question: "ไม่พบสัญญาหลักที่รองรับอายุที่แจ้งครับ" };
+  }
+  const lines = [
+    `ตัวเลือกเงินก้อนโรคร้ายแรง ทุน ${money(capital)} บาท`,
+    `สัญญาหลัก Smart Protection 99/20 ทุน 200,000 บาท เบี้ย ${money(main)} บาท/ปี`,
+    ...options.map(
+      (option) =>
+        `- ${option.product}: เบี้ยสัญญาเพิ่มเติม ${money(option.premium)} บาท/ปี ` +
+        `(รวมสัญญาหลัก ${money(main + option.premium)} บาท/ปี) — ${option.detail}`
+    ),
+  ];
+  return {
+    ok: true,
+    comparison: true,
+    planType: "critical_comparison",
+    planCode: `critical_${capital}`,
+    totalPremium: null,
+    alternatives: options.map((option) => ({ ...option, totalWithMain: main + option.premium })),
+    text: lines.join("\n"),
+    notes: ["Smart Protection 99/20 ต้องแนบอุบัติเหตุหรือโรคร้ายแรง; ชุดนี้ใช้สัญญาโรคร้ายแรงเป็นสัญญาแนบครับ"],
+    profileUsed: profile,
+  };
+}
+
+function appendCriticalAlternatives(rates, profile, quote) {
+  if (!quote?.ok || profile.criticalIllnessNeed !== "both") return quote;
+  const { capital, options } = criticalOptions(rates, profile);
+  if (!options.length) return quote;
+  quote.alternatives = options;
+  quote.text +=
+    `\n\nตัวเลือกเงินก้อนโรคร้ายแรงเพิ่มเติม ทุน ${money(capital)} บาท ` +
+    `(เลือกหนึ่งแผน เบี้ยด้านล่างยังไม่รวมในยอดชุดสุขภาพ)\n` +
+    options.map((option) => `- ${option.product} — เบี้ย ${money(option.premium)} บาท/ปี`).join("\n");
+  return quote;
+}
+
+function buildFlexiQuote(rates, profile) {
+  if (profile.age < 0 || profile.age > 45) {
+    return { ok: false, noEligiblePlan: true, question: "เมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 รับอายุ 30 วัน-45 ปีครับ" };
+  }
+  const choices = [500000, 1000000, 5000000].map((capital) => {
+    const key = `${profile.gender}_${capital === 500000 ? "500k" : capital === 1000000 ? "1m" : "5m"}`;
+    return { capital, premium: rateAtStart(rates.flexi_99_20[key], profile.age, 0) };
+  });
+  const target = profile.annualBudget;
+  const within = target ? choices.filter((choice) => choice.premium <= target) : choices;
+  const selected = within.length
+    ? within.sort((a, b) => b.capital - a.capital)[0]
+    : choices.sort((a, b) => a.premium - b.premium)[0];
+  return finalizeQuote({
+    profile,
+    budget: budgetWindow(profile),
+    items: [{
+      key: "main",
+      product: "เมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20",
+      capital: selected.capital,
+      premium: selected.premium,
+      line: `- เมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 ทุน ${money(selected.capital)} บาท — เบี้ยคงที่ ${money(selected.premium)} บาท/ปี ชำระ 20 ปี`,
+    }],
+    planType: "flexi",
+    planCode: `flexi_${selected.capital}`,
+    notes: [
+      "อายุ 65-98 ปี สามารถเปลี่ยนผลประโยชน์ชีวิตคงเหลือเป็นค่ารักษา IPD/OPD แบบเหมาจ่ายได้ไม่เกินทุนประกัน",
+      "หากเสียชีวิตหรือครบอายุ 99 ปี จะจ่ายทุนที่เหลือหลังหักค่ารักษาที่ใช้ไปแล้วตามเงื่อนไขกรมธรรม์",
+    ],
+    selectionReason: "เหมาะกับผู้ที่ยังมีสวัสดิการตอนทำงาน แต่กังวลค่ารักษาและภาระเบี้ยหลังเกษียณครับ",
+  });
+}
+
+function savingsChoice(table, age, budget) {
+  const row = table.bands.find(([min, max]) => age >= min && age <= max);
+  if (!row) return null;
+  const choices = table.capitals.map((capital, index) => ({ capital, premium: Number(row[2 + index]) }));
+  const within = budget ? choices.filter((choice) => choice.premium <= budget) : choices;
+  return within.length
+    ? within.sort((a, b) => b.capital - a.capital)[0]
+    : choices.sort((a, b) => a.premium - b.premium)[0];
+}
+
+function buildSavingsQuote(rates, profile) {
+  if (profile.age < 0 || profile.age > 80) {
+    return { ok: false, noEligiblePlan: true, question: "แผน Smart Link 15/3 และ 15/6 รับอายุ 0-80 ปีครับ" };
+  }
+  const keys = profile.requestedProduct === "smart_link_15_3"
+    ? ["smart_link_15_3"]
+    : profile.requestedProduct === "smart_link_15_6"
+      ? ["smart_link_15_6"]
+      : ["smart_link_15_3", "smart_link_15_6"];
+  const options = keys.map((key) => ({ key, choice: savingsChoice(rates[key], profile.age, profile.annualBudget), table: rates[key] }));
+  const lines = ["แผนออมทรัพย์ลดหย่อนภาษี เน้นเงินคืนมากกว่าทุนชีวิต"];
+  for (const option of options) {
+    const label = option.key === "smart_link_15_3" ? "Smart Link 15/3" : "Smart Link 15/6";
+    lines.push(`- ${label} ทุน ${money(option.choice.capital)} บาท เบี้ย ${money(option.choice.premium)} บาท/ปี ชำระ ${option.table.pay_years} ปี คุ้มครอง 15 ปี`);
+  }
+  return {
+    ok: true,
+    comparison: options.length > 1,
+    planType: "savings",
+    planCode: keys.join("_or_"),
+    totalPremium: options.length === 1 ? options[0].choice.premium : null,
+    alternatives: options.map(({ key, choice, table }) => ({ product: key, ...choice, payYears: table.pay_years })),
+    text: lines.join("\n"),
+    notes: ["ใช้สิทธิลดหย่อนภาษีได้ตามหลักเกณฑ์ของกรมสรรพากร และผลประโยชน์/เงินปันผลที่ไม่รับรองให้ยืนยันจากใบเสนอขายครับ"],
+    profileUsed: profile,
+  };
+}
+
 function resolvePlan(profile) {
   if (profile.requestedHealthPlan === "dhl") return { type: "dhl" };
   if (profile.requestedHealthPlan === "ecp") return { type: "ecp" };
@@ -604,11 +863,20 @@ function resolvePlan(profile) {
 
 function validate(profile) {
   const missing = [];
+  const savings = profile.requestedProduct.startsWith("smart_link");
+  const health = profile.requestedProduct === "auto";
   if (profile.age === null) missing.push("age");
-  if (!profile.gender) missing.push("gender");
-  if (!profile.occupation) missing.push("occupation");
+  if (!savings && !profile.gender) missing.push("gender");
+  if (health && !profile.occupation) missing.push("occupation");
   if (profile.annualBudget === null && !profile.budgetFlexible) missing.push("annualBudget");
-  if (profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
+  const isHealth = ![
+    "critical_comparison",
+    "flexi_99_20",
+    "smart_link_auto",
+    "smart_link_15_3",
+    "smart_link_15_6",
+  ].includes(profile.requestedProduct);
+  if (isHealth && profile.requestedHealthPlan === "auto" && profile.roomBudget === null) {
     missing.push("roomBudget");
   }
   return missing;
@@ -627,7 +895,18 @@ export default async function handler(req, res) {
       return json(res, 200, { ok: false, missingFields: missing });
     }
 
-    const rates = await loadRates(req);
+    const rates = await loadRates();
+
+    if (profile.requestedProduct === "critical_comparison") {
+      return json(res, 200, buildCriticalComparison(rates, profile));
+    }
+    if (profile.requestedProduct === "flexi_99_20") {
+      return json(res, 200, buildFlexiQuote(rates, profile));
+    }
+    if (profile.requestedProduct.startsWith("smart_link")) {
+      return json(res, 200, buildSavingsQuote(rates, profile));
+    }
+
     const selection = resolvePlan(profile);
 
     let quote;
@@ -637,6 +916,8 @@ export default async function handler(req, res) {
       quote = buildDhlQuote(rates, profile);
     }
 
+    quote = appendRequestedHealthExtras(rates, profile, quote);
+    quote = appendCriticalAlternatives(rates, profile, quote);
     return json(res, 200, quote);
   } catch (error) {
     console.error("premium-quote error", error);
