@@ -58,6 +58,7 @@ async function loadRates() {
         "multiple_ci",
         "maternity_plus",
         "well_being_plus",
+        "opd_เหมา",
         "flexi_99_20",
         "smart_link_15_3",
         "smart_link_15_6",
@@ -111,6 +112,14 @@ function elitePremium(rates, age, plan) {
 
 function ecpPremium(rates, gender, age, plan = "p3") {
   return rateAtPublishedAge(rates.ecp?.[`${gender}_${plan}`], age);
+}
+
+function opdMaoPremium(rates, gender, age, plan = 20000) {
+  return rateAtStart(
+    rates.opd_เหมา?.[`${gender}_${plan}`],
+    age,
+    rates.opd_เหมา?.age_start || 6
+  );
 }
 
 function paPremium(rates, age, plan = 1) {
@@ -171,11 +180,15 @@ function normalizeProfile(raw = {}) {
           ? false
           : null,
     groupBenefit: n(raw.groupBenefit),
+    groupBenefitAsked: raw.groupBenefitAsked === true,
     deductiblePreference: ["yes", "none", "auto"].includes(raw.deductiblePreference)
       ? raw.deductiblePreference
       : "auto",
     healthStatus: raw.healthStatus || null,
     requestedHealthPlan,
+    mainPlanPreference: ["auto", "99_20_200k", "99_99_100k"].includes(raw.mainPlanPreference)
+      ? raw.mainPlanPreference
+      : "auto",
     quoteScope: raw.quoteScope === "health_only" ? "health_only" : "package",
     optimizeForBudget: raw.optimizeForBudget === true,
     requestedProduct: [
@@ -533,7 +546,7 @@ function buildEliteQuote(rates, profile, forcedPlan = null) {
           premium: healthPremium,
           line:
             `- Elite Health Plus วงเงิน ${plan === "75m" ? "75" : "20"} ล้านบาท/ปี ` +
-            `${plan === "75m" ? "พร้อมความคุ้มครอง OPD ตามเงื่อนไขแผน" : "เน้นความคุ้มครอง IPD"} ` +
+            `${plan === "75m" ? "พร้อม OPD เหมาจ่าย 40,000 บาท/ปี" : "เน้นความคุ้มครอง IPD"} ` +
             `— เบี้ย ${money(healthPremium)} บาท/ปี`,
         },
       ],
@@ -569,7 +582,7 @@ function buildEliteQuote(rates, profile, forcedPlan = null) {
       premium: healthPremium,
       line:
         `- Elite Health Plus วงเงิน ${plan === "75m" ? "75" : "20"} ล้านบาท/ปี ` +
-        `${plan === "75m" ? "พร้อมความคุ้มครอง OPD ตามเงื่อนไขแผน" : "เน้นความคุ้มครอง IPD"} ` +
+        `${plan === "75m" ? "พร้อม OPD เหมาจ่าย 40,000 บาท/ปี" : "เน้นความคุ้มครอง IPD"} ` +
         `— เบี้ย ${money(healthPremium)} บาท/ปี`,
     },
   ];
@@ -594,6 +607,76 @@ function buildEliteQuote(rates, profile, forcedPlan = null) {
             ? "เลือก Elite Health Plus 75 ล้านบาท เพราะงบตั้งแต่ 50,000 บาทขึ้นไปหรือเน้น OPD ครับ"
             : "เลือก Elite Health Plus 20 ล้านบาท เพราะงบต่ำกว่า 50,000 บาทและไม่ได้ยืนยันว่าต้องการ OPD ครับ",
   });
+}
+
+function withOpdMao(rates, profile, quote, plan = 20000) {
+  if (!quote?.ok) return quote;
+  const premium = opdMaoPremium(rates, profile.gender, profile.age, plan);
+  if (premium === null) {
+    return { ok: false, noEligiblePlan: true, question: "ไม่พบเบี้ย OPD เหมาจ่ายสำหรับอายุที่แจ้งครับ" };
+  }
+  return finalizeQuote({
+    profile,
+    budget: budgetWindow(profile),
+    items: [
+      ...quote.items,
+      {
+        key: "opd_mao",
+        product: "OPD เหมาจ่าย",
+        plan,
+        annualLimit: plan,
+        premium,
+        line: `- OPD เหมาจ่าย วงเงิน ${money(plan)} บาท/ปี — เบี้ย ${money(premium)} บาท/ปี`,
+      },
+    ],
+    planType: "elite",
+    planCode: `${quote.planCode}_opd_${plan}`,
+    notes: [
+      ...(quote.notes || []),
+      "OPD เหมาจ่ายเป็นสัญญาเพิ่มเติมที่พ่วงสัญญาหลักประกันชีวิตได้ ไม่จำเป็นต้องพ่วงแผน IPD",
+    ],
+    selectionReason: `${quote.selectionReason} และเพิ่ม OPD เหมาจ่าย ${money(plan)} บาท/ปีครับ`,
+  });
+}
+
+function buildEliteOpdValueComparison(rates, profile) {
+  const elite20 = withOpdMao(rates, profile, buildEliteQuote(rates, profile, "20m"), 20000);
+  const elite75 = buildEliteQuote(rates, profile, "75m");
+  if (!elite20?.ok) return elite20;
+  if (!elite75?.ok) return elite75;
+  const alternatives = [
+    {
+      product: "Elite Health Plus 20 ล้านบาท + OPD เหมาจ่าย 20,000 บาท/ปี",
+      totalPremium: elite20.totalPremium,
+      items: elite20.items,
+      opdAnnualLimit: 20000,
+    },
+    {
+      product: "Elite Health Plus 75 ล้านบาท",
+      totalPremium: elite75.totalPremium,
+      items: elite75.items,
+      opdAnnualLimit: 40000,
+    },
+  ];
+  return {
+    ok: true,
+    comparison: true,
+    planType: "elite_opd_comparison",
+    planCode: "elite20_opd20k_vs_elite75",
+    totalPremium: null,
+    alternatives,
+    text: [
+      "เปรียบเทียบจากอายุและเพศที่แจ้ง",
+      `- Elite Health Plus 20 ล้านบาท + OPD เหมาจ่าย 20,000 บาท/ปี — รวม ${money(elite20.totalPremium)} บาท/ปี`,
+      `- Elite Health Plus 75 ล้านบาท (มี OPD เหมาจ่าย 40,000 บาท/ปี) — รวม ${money(elite75.totalPremium)} บาท/ปี`,
+    ].join("\n"),
+    notes: [
+      "Elite 75 มี OPD เหมาจ่าย 40,000 บาท/ปีในแผน จึงไม่ต้องซื้อ OPD แยก",
+      "OPD เหมาจ่ายเป็นสัญญาเพิ่มเติมที่พ่วงสัญญาหลักประกันชีวิตได้ ไม่จำเป็นต้องพ่วงแผน IPD",
+    ],
+    selectionReason: "ลูกค้ากังวลเบี้ยหลังต้องการ OPD จึงเทียบยอดจริงของ Elite 20 + OPD เหมาจ่าย 20,000 บาทกับ Elite 75 ให้ครับ",
+    profileUsed: profile,
+  };
 }
 
 function bandPremium(table, genderOrAge, ageOrPlan, maybePlan) {
@@ -680,7 +763,7 @@ function normalizeCriticalCapital(value) {
   );
 }
 
-function criticalOptions(rates, profile) {
+function criticalOptions(rates, profile, mainCapital = 200000) {
   const capital = normalizeCriticalCapital(profile.criticalIllnessSumInsured);
   const options = [];
   const cipcBase = rateAtStart(rates.cipc?.[profile.gender], profile.age, rates.cipc?.age_start || 0);
@@ -694,11 +777,15 @@ function criticalOptions(rates, profile) {
   const cancer = rateAtPublishedAge(rates.cancer?.[cancerKey], profile.age);
 
   if (cipcBase !== null && profile.age <= 65) {
+    const ciCapital = Math.min(capital, mainCapital * 10);
     options.push({
       product: "CI Perfect Care",
-      capital,
-      premium: cipcBase * (capital / 500000),
-      detail: "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน",
+      capital: ciCapital,
+      premium: cipcBase * (ciCapital / 500000),
+      detail:
+        ciCapital < capital
+          ? "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน (จำกัดตาม 10 เท่าของทุนสัญญาหลัก)"
+          : "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน",
     });
   }
   if (multiple !== null) {
@@ -729,21 +816,25 @@ function criticalOptions(rates, profile) {
 }
 
 function buildCriticalComparison(rates, profile) {
-  const { capital, options } = criticalOptions(rates, profile);
+  const mainId = profile.mainPlanPreference === "99_99_100k" ? "99_99_100k" : "99_20_200k";
+  const main = mainPremium(rates, profile.gender, profile.age, mainId);
+  const mainInfo = mainMeta(mainId);
+  const pa = mainId === "99_99_100k" ? paPremium(rates, profile.age, 1) : 0;
+  if (main === null || pa === null) {
+    return { ok: false, noEligiblePlan: true, question: "ไม่พบสัญญาหลักที่รองรับอายุที่แจ้งครับ" };
+  }
+  const { capital, options } = criticalOptions(rates, profile, mainInfo.capital);
   if (!options.length) {
     return { ok: false, noEligiblePlan: true, question: "ไม่พบตารางเบี้ยโรคร้ายแรงสำหรับอายุที่แจ้งครับ" };
   }
-  const main = mainPremium(rates, profile.gender, profile.age, "99_20_200k");
-  if (main === null) {
-    return { ok: false, noEligiblePlan: true, question: "ไม่พบสัญญาหลักที่รองรับอายุที่แจ้งครับ" };
-  }
   const lines = [
     `ตัวเลือกเงินก้อนโรคร้ายแรง ทุน ${money(capital)} บาท`,
-    `สัญญาหลัก Smart Protection 99/20 ทุน 200,000 บาท เบี้ย ${money(main)} บาท/ปี`,
+    `สัญญาหลัก ${mainInfo.label} ทุน ${money(mainInfo.capital)} บาท เบี้ย ${money(main)} บาท/ปี`,
+    ...(pa ? [`- PA Easy Plan 1 เบี้ย ${money(pa)} บาท/ปี (สัญญาหลัก 99/99 ต้องแนบ PA)`] : []),
     ...options.map(
       (option) =>
         `- ${option.product}: เบี้ยสัญญาเพิ่มเติม ${money(option.premium)} บาท/ปี ` +
-        `(รวมสัญญาหลัก ${money(main + option.premium)} บาท/ปี) — ${option.detail}`
+        `(รวมสัญญาหลัก ${money(main + pa + option.premium)} บาท/ปี) — ${option.detail}`
     ),
   ];
   return {
@@ -752,9 +843,13 @@ function buildCriticalComparison(rates, profile) {
     planType: "critical_comparison",
     planCode: `critical_${capital}`,
     totalPremium: null,
-    alternatives: options.map((option) => ({ ...option, totalWithMain: main + option.premium })),
+    alternatives: options.map((option) => ({ ...option, totalWithMain: main + pa + option.premium })),
     text: lines.join("\n"),
-    notes: ["Smart Protection 99/20 ต้องแนบอุบัติเหตุหรือโรคร้ายแรง; ชุดนี้ใช้สัญญาโรคร้ายแรงเป็นสัญญาแนบครับ"],
+    notes: [
+      mainId === "99_20_200k"
+        ? "Smart Protection 99/20 ต้องแนบอุบัติเหตุหรือโรคร้ายแรง; ชุดนี้ใช้สัญญาโรคร้ายแรงเป็นสัญญาแนบครับ"
+        : "99/99 ต้องแนบ PA และ CI Perfect Care ทำได้ไม่เกิน 10 เท่าของทุนสัญญาหลักครับ",
+    ],
     profileUsed: profile,
   };
 }
@@ -845,11 +940,12 @@ function buildSavingsQuote(rates, profile) {
 function resolvePlan(profile) {
   if (profile.requestedHealthPlan === "dhl") return { type: "dhl" };
   if (profile.requestedHealthPlan === "ecp") return { type: "ecp" };
-  if (profile.requestedHealthPlan === "elite20") return { type: "elite", plan: "20m" };
+  if (profile.requestedHealthPlan === "elite20" && profile.opdPreference === "yes") return { type: "elite", plan: "75m" };
   if (profile.requestedHealthPlan === "elite75") return { type: "elite", plan: "75m" };
 
   // OPD แบบ optional เช่น "IPD +/- OPD" ไม่ถือว่าเป็นการขอ OPD
   if ((profile.roomBudget || 0) >= 10000) {
+    if (profile.optimizeForBudget && profile.opdPreference === "yes") return { type: "elite_opd_comparison" };
     return {
       type: "elite",
       plan:
@@ -912,6 +1008,8 @@ export default async function handler(req, res) {
     let quote;
     if (selection.type === "elite") {
       quote = buildEliteQuote(rates, profile, selection.plan);
+    } else if (selection.type === "elite_opd_comparison") {
+      quote = buildEliteOpdValueComparison(rates, profile);
     } else {
       quote = buildDhlQuote(rates, profile);
     }
