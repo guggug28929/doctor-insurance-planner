@@ -39,7 +39,7 @@ Rules:
 - Store only the minimum health information needed; do not persist full medical records.
 - The latest explicit customer statement overrides older memory.
 - Do not ask a question already answered in the same turn or in stored memory.
-- LINE replies are natural Thai, concise, end politely with `ครับ`, contain no Markdown or raw links, and must never say `D Health Plus` (use `D Health Lite`).
+- LINE replies are natural Thai, concise, end politely with `ครับ`, contain no Markdown, and must never say `D Health Plus` (use `D Health Lite`).  For a detailed D Care question, append only the approved Doctor Gug plan URL: `https://doctor-insurance.com`.
 
 ## Health-history behavior
 
@@ -67,6 +67,8 @@ For room preference below 10,000 baht:
 - if eligible and within budget, use Smart Protection 99/20, capital 200,000, with PA Easy Plan 1;
 - Smart Protection 99/20 must always attach accident or critical-illness coverage. Never offer it alone;
 - a 99/99 main plan must attach PA;
+- when a customer says they have employer benefits or an existing private policy, acknowledge it and ask the existing medical limit once before considering deductible; store that answer and never ask it again;
+- if they do not know or do not want to disclose the limit, offer the no-deductible version first. Revisit the existing limit only after they explicitly say the premium is too high, then compare a deductible version if they can remember it;
 - deductible is used only when the customer requests it or has existing group/policy benefits and the existing amount is known;
 - Extra Care Plus Plan 3 + Care Plus is the last health fallback.
 
@@ -74,7 +76,9 @@ For room preference at least 10,000 baht:
 
 - use Elite Health Plus;
 - below 50,000 annual budget without confirmed OPD: Elite 20 million;
-- at least 50,000 or confirmed OPD: Elite 75 million;
+- confirmed OPD: recommend Elite 75 million first; it includes annual OPD cover of 40,000 baht, so do not add separate OPD to it;
+- if the customer already has Elite 20 million and wants OPD, recommend Elite 75 million first. If they say the premium is high, calculate and compare the exact age/sex-specific totals of Elite 20 million + OPD annual lump-sum 20,000 baht against Elite 75 million. Do not claim which is cheaper without this calculation;
+- OPD per-visit and annual-lump-sum OPD are standalone health riders: they require a life main contract, not D Health Lite or Elite Health Plus. They must not be described as requiring IPD cover;
 - optional OPD wording does not force Elite 75;
 - do not attach Care Plus to Elite;
 - do not recommend Elite 40 as the primary choice because its premium is close to 75 million.
@@ -94,6 +98,8 @@ Do not skip this question if the preference is unknown.
 - Medical expenses: use the normal D Health Lite + Care Plus or Elite Health Plus flow.
 - Lump sum: compare CI Perfect Care, Multiple CI, D Care, and cancer coverage with premiums from the database.
 - Both: quote the health package and show lump-sum alternatives separately so alternatives are not accidentally added together.
+- D Care is a lump-sum critical-illness rider that lets the customer select disease groups (cancer, cardiovascular, organ transplant, neuro/muscle, other, or the standalone popular-disease group). Direct detail questions should include the approved Doctor Gug URL.
+- If a customer says the minimum 200,000-baht main capital of Smart Protection 99/20 is too high, switch to 99/99 capital 100,000 baht with PA. For CI Perfect Care, its capital must not exceed ten times the main-policy capital; therefore a 99/99 capital of 100,000 baht limits CI Perfect Care to 1,000,000 baht.
 
 ## Maternity and well-being riders
 
