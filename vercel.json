@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/plans", "destination": "/index.html" },
+    { "source": "/plans/:path*", "destination": "/index.html" },
+    { "source": "/health-knowledge", "destination": "/index.html" },
+    { "source": "/calculator", "destination": "/index.html" },
+    { "source": "/plan-advisor", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" }
+  ]
+}
