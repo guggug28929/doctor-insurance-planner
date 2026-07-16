@@ -899,6 +899,7 @@
       <button data-page="calc">คำนวณเบี้ยประกัน</button>
       <button data-page="plans">แผนประกันทั้งหมด</button>
       <button data-page="knowledge">ความรู้ประกันสุขภาพ</button>
+      <button data-page="contact">ติดต่อหมอกึ๊ก</button>
     </div>
   </div>
 </div>
@@ -1298,6 +1299,23 @@
     <h2>ทำไมควรทำประกันผ่านตัวแทน</h2>
     <p>เอกสารกรมธรรม์เต็มไปด้วยศัพท์เทคนิค เช่น Deductible, Co-payment, Waiting Period ตัวแทนช่วยแปลให้เข้าใจง่าย ช่วยเลือกแผนให้ตรงกับสุขภาพ งบประมาณ และอาชีพของแต่ละคน
     รวมถึงช่วยประสานงานตอนเคลมและติดตามการต่ออายุในระยะยาว ซึ่งเป็นสิ่งที่การซื้อผ่านช่องทางออนไลน์ทำแทนไม่ได้ทั้งหมด แม้จะได้เบี้ยส่วนลดในปีแรกก็ตาม</p>
+  </div>
+</div>
+</div>
+
+<!-- ============ PAGE: CONTACT ============ -->
+<div id="page-contact" class="page">
+<div class="wrap">
+  <div class="content-card">
+    <h2>ติดต่อหมอกึ๊ก DoctorGugInsurance</h2>
+    <p style="color:var(--muted);">ปรึกษาเรื่องประกันชีวิต สุขภาพ โรคร้ายแรง อุบัติเหตุ หรือขอใบเสนอราคาได้โดยตรงครับ</p>
+    <div class="contact-box">
+      <a class="contact-pill" href="tel:0852312027">📞 085-231-2027</a>
+      <a class="contact-pill" href="https://line.me/ti/p/~nuengburut" target="_blank" rel="noopener">💬 Line ID: nuengburut</a>
+      <a class="contact-pill" href="https://www.facebook.com/Nuengburut.Tiamtanom" target="_blank" rel="noopener">📘 Facebook</a>
+      <button class="contact-pill" style="border:none;cursor:pointer;" onclick="showPage('ai')">🤖 ให้ผู้ช่วยออกแบบแผน</button>
+    </div>
+    <div class="license-line">เลขที่ใบอนุญาตตัวแทนประกันชีวิต 6601072160 &nbsp;•&nbsp; เลขที่ IC License 132335</div>
   </div>
 </div>
 </div>
@@ -3247,10 +3265,51 @@ const PLAN_DETAILS = {
   },
 };
 
-function showPlanDetail(id){
+const PAGE_ROUTES = {
+  home: '/',
+  ai: '/plan-advisor',
+  calc: '/calculator',
+  plans: '/plans',
+  knowledge: '/health-knowledge',
+  contact: '/contact',
+};
+
+const PLAN_ROUTES = {
+  main9920: '/plans/smart-protection-99-20',
+  main9999: '/plans/lifetime-protection-99-99',
+  flexi9920: '/plans/flexi-protection-99-20',
+  smartlink153: '/plans/smart-linked-15-3',
+  smartlink156: '/plans/smart-linked-15-6',
+  dhl: '/plans/d-health-lite',
+  ehp: '/plans/elite-health-plus',
+  maternity: '/plans/maternity-plus',
+  wellbeing: '/plans/well-being-plus',
+  maochai: '/plans/maochai-extra',
+  ecp: '/plans/extra-care-plus',
+  opd: '/plans/opd',
+  careplus: '/plans/care-plus',
+  cipc: '/plans/ci-perfect-care',
+  multipleci: '/plans/multiple-ci',
+  cancer: '/plans/cancer-protection',
+  dcare: '/plans/d-care',
+  hb: '/plans/hb-rider',
+  pa: '/plans/pa-easy-plan',
+};
+
+function normalizedPathname(){
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  return path === '/index.html' ? '/' : path;
+}
+
+function replaceOrPushPath(path, replace = false){
+  if(normalizedPathname() === path) return;
+  window.history[replace ? 'replaceState' : 'pushState']({}, '', path);
+}
+
+function showPlanDetail(id, options = {}){
   const p = PLAN_DETAILS[id];
   const el = document.getElementById('planDetailContent');
-  if(!p){ el.innerHTML = '<p>ไม่พบข้อมูลแผนนี้</p>'; showPage('plan-detail'); return; }
+  if(!p){ el.innerHTML = '<p>ไม่พบข้อมูลแผนนี้</p>'; showPage('plans', options); return; }
   el.innerHTML = `
     <div class="content-card">
       <div class="cat">${p.category}</div>
@@ -3279,7 +3338,8 @@ function showPlanDetail(id){
       ${p.faq.map(f=>`<details class="faq" open><summary>${f.q}</summary><p>${f.a}</p></details>`).join('')}
     </div>` : ''}
   `;
-  showPage('plan-detail');
+  showPage('plan-detail', {updateUrl:false});
+  if(options.updateUrl !== false) replaceOrPushPath(PLAN_ROUTES[id] || '/plans');
 }
 
 
@@ -3957,18 +4017,33 @@ function applyAiPackage(idx){
   renderAll();
 }
 
-function showPage(name){
+function showPage(name, options = {}){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-'+name);
-  if(target) target.classList.add('active');
+  if(!target) return;
+  target.classList.add('active');
   document.querySelectorAll('#navbar button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
-  window.scrollTo({top:0, behavior:'instant'});
+  if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
+  window.scrollTo({top:0, behavior:'auto'});
 }
 
 document.getElementById('navbar').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-page]');
   if(btn) showPage(btn.dataset.page);
 });
+
+function routeFromLocation(){
+  const path = normalizedPathname();
+  const planId = Object.keys(PLAN_ROUTES).find(id => PLAN_ROUTES[id] === path);
+  if(planId){
+    showPlanDetail(planId, {updateUrl:false});
+    return;
+  }
+  const page = Object.keys(PAGE_ROUTES).find(name => PAGE_ROUTES[name] === path) || 'home';
+  showPage(page, {updateUrl:false});
+}
+
+window.addEventListener('popstate', routeFromLocation);
 
 function faqNormalizeText(s){
   return (s||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
@@ -4119,6 +4194,7 @@ document.addEventListener('keydown', function(e){
 });
 
 renderAll();
+routeFromLocation();
 </script>
 </body>
 </html>
