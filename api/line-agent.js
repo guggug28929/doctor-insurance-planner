@@ -275,10 +275,52 @@ function compactText(value) {
     .trim();
 }
 
+function parseThaiNumberWords(value) {
+  const phrase = String(value || "").match(
+    /(?:(?:ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|ล้าน|แสน|หมื่น|พัน|ร้อย|สิบ)\s*)+/
+  )?.[0];
+  const tokens = phrase?.match(
+    /ศูนย์|หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|ล้าน|แสน|หมื่น|พัน|ร้อย|สิบ/g
+  );
+  if (!tokens?.length) return null;
+
+  const digits = {
+    ศูนย์: 0,
+    หนึ่ง: 1,
+    เอ็ด: 1,
+    สอง: 2,
+    ยี่: 2,
+    สาม: 3,
+    สี่: 4,
+    ห้า: 5,
+    หก: 6,
+    เจ็ด: 7,
+    แปด: 8,
+    เก้า: 9,
+  };
+  const units = { ล้าน: 1000000, แสน: 100000, หมื่น: 10000, พัน: 1000, ร้อย: 100 };
+  let total = 0;
+  let currentDigit = null;
+
+  for (const token of tokens) {
+    if (Object.hasOwn(digits, token)) {
+      currentDigit = digits[token];
+    } else if (token === "สิบ") {
+      total += (currentDigit ?? 1) * 10;
+      currentDigit = null;
+    } else {
+      total += (currentDigit ?? 1) * units[token];
+      currentDigit = null;
+    }
+  }
+  total += currentDigit ?? 0;
+  return total > 0 ? total : null;
+}
+
 function parseSpokenAmount(value) {
   const text = String(value || "").normalize("NFKC").toLowerCase();
   const match = text.match(/(\d[\d,]*(?:\.\d+)?)\s*(ล้าน|แสน|หมื่น|พัน|k)?/i);
-  if (!match) return null;
+  if (!match) return parseThaiNumberWords(text);
 
   const base = Number(match[1].replace(/,/g, ""));
   if (!Number.isFinite(base)) return null;
@@ -286,15 +328,117 @@ function parseSpokenAmount(value) {
   return Math.round(base * (multipliers[match[2]] || 1));
 }
 
+function parseAmountAfterLabel(message, patterns) {
+  const text = String(message || "").normalize("NFKC");
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const amount = parseSpokenAmount(match[1]);
+    if (amount !== null) return amount;
+  }
+  return null;
+}
+
+function inferAge(message) {
+  const text = String(message || "").normalize("NFKC");
+  const labeled = text.match(/(?:อายุ|วัย|age)\s*[:=]?\s*([^\n,;/]{1,24})/i);
+  const labeledAge = labeled ? parseSpokenAmount(labeled[1]) : null;
+  if (Number.isInteger(labeledAge) && labeledAge >= 0 && labeledAge <= 100) return labeledAge;
+
+  const suffixed = text.match(/(?:^|[\s,;/])(\d{1,3})\s*(?:ปี|ขวบ)(?:\s|$|[,.!?])/);
+  if (suffixed) {
+    const age = Number(suffixed[1]);
+    if (age >= 0 && age <= 100) return age;
+  }
+  return null;
+}
+
+function inferGender(message) {
+  const text = String(message || "").normalize("NFKC").toLowerCase();
+  if (/ผู้หญิง|เพศ\s*หญิง/.test(text)) return "f";
+  if (/ผู้ชาย|เพศ\s*ชาย/.test(text)) return "m";
+  if (/(?:^|[\s,;/])(?:หญิง|ผญ|ญ)(?=$|[\s,;/]|\d|อายุ|วัย)/.test(text)) return "f";
+  if (/(?:^|[\s,;/])(?:ชาย|ผช|ช)(?=$|[\s,;/]|\d|อายุ|วัย)/.test(text)) return "m";
+  return null;
+}
+
+function inferOccupation(message) {
+  const text = String(message || "").normalize("NFKC").trim();
+  const labeled = text.match(/(?:อาชีพ|ทำงานเป็น)\s*[:=]?\s*([^\n,;/]{1,50})/i);
+  if (labeled) {
+    const value = labeled[1]
+      .split(/\s+(?=อายุ|เพศ|งบ|ค่าห้อง|สุขภาพ|โรค|ประวัติ|สนใจ|ต้องการ)/i)[0]
+      .replace(/(?:ครับ|ค่ะ|คะ)$/i, "")
+      .trim();
+    if (value) return value;
+  }
+
+  const knownOccupations = [
+    ["ทันตแพทย์", "ทันตแพทย์"],
+    ["สัตวแพทย์", "สัตวแพทย์"],
+    ["เภสัชกร", "เภสัชกร"],
+    ["พยาบาล", "พยาบาล"],
+    ["แพทย์", "แพทย์"],
+    ["คุณหมอ", "แพทย์"],
+    ["หมอ", "แพทย์"],
+    ["วิศวกร", "วิศวกร"],
+    ["ข้าราชการ", "ข้าราชการ"],
+    ["รัฐวิสาหกิจ", "พนักงานรัฐวิสาหกิจ"],
+    ["พนักงานบริษัท", "พนักงานบริษัท"],
+    ["ธุรกิจส่วนตัว", "ธุรกิจส่วนตัว"],
+    ["ฟรีแลนซ์", "ฟรีแลนซ์"],
+    ["ครู", "ครู"],
+  ];
+  const compact = compactText(text);
+  for (const [keyword, occupation] of knownOccupations) {
+    if (compact.includes(keyword)) return occupation;
+  }
+  return null;
+}
+
 function inferContextualUpdates(message, current) {
   const compact = compactText(message);
   const updates = {};
+
+  // ลูกค้าสามารถตอบหลายช่องในบอลลูนเดียวได้ ต้องเก็บทุกข้อมูลที่ระบุชัด
+  // ก่อนคำนวณ missingFields เพื่อไม่ย้อนถามอายุ เพศ อาชีพ งบ หรือค่าห้องซ้ำ
+  const age = inferAge(message);
+  const gender = inferGender(message);
+  const occupation = inferOccupation(message);
+  const annualBudget = parseAmountAfterLabel(message, [
+    /(?:งบ(?:ประมาณ)?(?:ต่อปี|รายปี)?|เบี้ย(?:ที่อยากจ่าย)?(?:ต่อปี|รายปี)|จ่าย(?:เบี้ย)?(?:ไหว)?(?:ปีละ|ต่อปี)|ปีละ)\s*[:=]?\s*([^\n;]+)/i,
+  ]);
+  const explicitRoomBudget = parseAmountAfterLabel(message, [
+    /(?:ค่าห้อง|ห้องพัก|ห้องต่อคืน)\s*(?:ประมาณ|ไม่เกิน|ได้|เอา)?\s*[:=]?\s*([^\n;]+)/i,
+  ]);
+  if (age !== null) updates.age = age;
+  if (gender) updates.gender = gender;
+  if (occupation) updates.occupation = occupation;
+  if (annualBudget !== null) {
+    updates.annualBudget = annualBudget;
+    updates.budgetFlexible = false;
+  } else if (/ไม่จำกัดงบ|งบไม่จำกัด|ไม่ติดงบ/.test(compact)) {
+    updates.budgetFlexible = true;
+  }
+  if (explicitRoomBudget !== null) updates.roomBudget = explicitRoomBudget;
+
   if (/มี(?:ประกันกลุ่ม|สวัสดิการบริษัท|สวัสดิการที่ทำงาน|ประกันส่วนตัว|กรมธรรม์(?:สุขภาพ)?เดิม)/.test(compact)) {
     updates.hasGroupBenefit = true;
   }
-  if (/ไม่มี(?:ประกันกลุ่ม|สวัสดิการบริษัท|สวัสดิการที่ทำงาน|ประกันส่วนตัว|กรมธรรม์(?:สุขภาพ)?เดิม)/.test(compact)) {
+  if (/ไม่มี(?:ประกันกลุ่ม|สวัสดิการ(?:บริษัท|ที่ทำงาน)?|ประกันส่วนตัว|ประกันสุขภาพเดิม|กรมธรรม์(?:สุขภาพ)?เดิม|สิทธิรักษาเดิม)/.test(compact)) {
     updates.hasGroupBenefit = false;
   }
+
+  const simpleNegative = /^(?:ไม่มี|ไม่มีครับ|ไม่มีค่ะ|ไม่มีคะ|ไม่เคย|no)$/i.test(compact);
+  const simplePositive = /^(?:มี|มีครับ|มีค่ะ|มีคะ|ใช่|ใช่ครับ|ใช่ค่ะ|yes)$/i.test(compact);
+  if (simpleNegative) {
+    if (current.healthStatus === null) updates.healthStatus = "none";
+    else if (current.hasGroupBenefit === null) updates.hasGroupBenefit = false;
+  } else if (simplePositive) {
+    if (current.healthStatus === null) updates.healthStatus = "has_history";
+    else if (current.hasGroupBenefit === null) updates.hasGroupBenefit = true;
+  }
+
   if (/จำ(?:วงเงิน)?ไม่ได้|ไม่ทราบ|ไม่แน่ใจ|ไม่สะดวกบอก|ไม่อยากบอก/.test(compact) && current.groupBenefitAsked) {
     updates.deductiblePreference = "none";
   }
@@ -311,7 +455,7 @@ function inferContextualUpdates(message, current) {
       /ไม่จำกัด(?:ค่าห้อง|ห้อง)?|ได้หมด(?:เลย)?|เอาmax|เอาสูงสุด/.test(compact) ||
       parseSpokenAmount(message) !== null);
 
-  if (mentionsRoom || soundsLikeRoomAnswer) {
+  if ((mentionsRoom || soundsLikeRoomAnswer) && explicitRoomBudget === null) {
     const unlimited = /ไม่จำกัด(?:ค่าห้อง|ห้อง)?|ได้หมด(?:เลย)?|เอาmax|เอาสูงสุด|max/.test(
       compact
     );
@@ -330,7 +474,7 @@ function inferContextualUpdates(message, current) {
   // คลุมเครือแล้วมาชี้แจงภายหลังว่า "ไม่มีโรคประจำตัว". ห้ามปล่อยให้
   // คำย่อย "มีโรคประจำตัว" ในประโยคนี้ไปตั้งสถานะเป็น has_history.
   const explicitlyNoHealthHistory =
-    /ไม่มีโรคประจำตัว|ไม่มีประวัติสุขภาพ|สุขภาพแข็งแรง|ผลตรวจปกติ|^(?:ไม่มี|ไม่มีครับ|ไม่มีค่ะ)$/.test(
+    /ไม่มีโรคประจำตัว|ไม่มีโรค|ไม่มีประวัติ(?:สุขภาพ|ผ่าตัด|นอนโรงพยาบาล)?|ไม่เคย(?:ผ่าตัด|นอนโรงพยาบาล|แอดมิต|ใช้ยาประจำ|กินยาประจำ)|สุขภาพ(?:แข็งแรง|ปกติ|ดี)|ผลตรวจปกติ/.test(
       compact
     );
   if (explicitlyNoHealthHistory) {
@@ -395,6 +539,19 @@ function inferContextualUpdates(message, current) {
   else if (/15\s*\/\s*6/.test(message)) updates.requestedProduct = "smart_link_15_6";
   else if (/ออมทรัพย์|สะสมทรัพย์|ลดหย่อนภาษี/.test(compact) && /ไม่เน้นทุนชีวิต|เน้นออม|ออมทรัพย์|สะสมทรัพย์/.test(compact)) {
     updates.requestedProduct = "smart_link_auto";
+  }
+
+  if (/สนใจ.*(?:ประกันสุขภาพ|ค่ารักษา)|(?:ประกันสุขภาพ|ค่ารักษา).*(?:แนะนำ|สนใจ|ต้องการ)|\bipd\b/i.test(message)) {
+    updates.focus = [...new Set([...(updates.focus || current.focus || []), "ipd"])];
+    if (!updates.requestedProduct) updates.requestedProduct = "auto";
+  }
+
+  if (/d\s*health(?:\s*lite)?|ดี\s*เฮลท์(?:\s*ไลท์)?/i.test(message)) {
+    updates.requestedHealthPlan = "dhl";
+  } else if (/elite.*75|อีลิท.*75/i.test(message)) {
+    updates.requestedHealthPlan = "elite75";
+  } else if (/elite.*20|อีลิท.*20/i.test(message)) {
+    updates.requestedHealthPlan = "elite20";
   }
 
   return updates;
@@ -470,7 +627,12 @@ ${PRODUCT_RULES}
 หน้าที่ของคุณรอบนี้:
 - อ่านข้อความล่าสุดร่วมกับ CURRENT PROFILE แล้วส่ง JSON ตาม schema เท่านั้น
 - เข้าใจภาษาพูด คำย่อ คำสะกดผิด และตัวเลข เช่น 20k, 5พัน, 1แสน
+- ข้อความหนึ่งบอลลูนอาจตอบหลายคำถามพร้อมกัน ต้องตรวจทุกประโยคและใส่ทุกข้อเท็จจริงที่พบลงใน updates ห้ามเลือกเก็บเพียงช่องเดียว
+- ตัวอย่าง "ญ 30 ปี ไม่มีโรคประจำตัว อาชีพแพทย์ งบ30,000/ปี ค่าห้อง4,000 สนใจประกันสุขภาพ" ต้องอัปเดต gender=f, age=30, healthStatus=none, occupation=แพทย์, annualBudget=30000, roomBudget=4000, focus=["ipd"] พร้อมกัน
+- คำที่มีความหมายใกล้กันต้องเข้าใจ เช่น ญ/หญิง/ผู้หญิง/ผญ, ช/ชาย/ผู้ชาย/ผช, หมอ/แพทย์, สุขภาพปกติ/ไม่มีประวัติ/ไม่เคยผ่าตัด และงบปีละ/งบต่อปี/จ่ายไหวปีละ
 - ต้องตีความคำตอบตามข้อมูลที่ยังขาดใน CURRENT PROFILE ไม่ใช่ดูเฉพาะรูปแบบข้อความ
+- คำตอบสั้น "ไม่มี" ให้ผูกกับคำถามที่ยังขาดตามลำดับ: ถ้ายังขาด healthStatus หมายถึงไม่มีประวัติสุขภาพ; ถ้ามี healthStatus แล้วแต่ยังขาด hasGroupBenefit หมายถึงไม่มีประกันกลุ่มหรือสวัสดิการเดิม
+- หลังวิเคราะห์ครบทั้งบอลลูน ให้ถามเฉพาะช่องที่ยังไม่มีจริง ๆ และห้ามถามอายุ เพศ อาชีพ งบ ค่าห้อง หรือประวัติสุขภาพที่ลูกค้าเขียนไว้แล้ว
 - ถ้า roomBudget ยังว่าง คำว่า "ไม่จำกัดค่าห้อง", "ได้หมด", "เอา max", "เอาสูงสุด" หมายถึงต้องการค่าห้องระดับสูงสุด และห้ามถามค่าห้องซ้ำ
 - ถ้า roomBudget ยังว่างและงบรายปีมีแล้ว ข้อความตัวเลขล้วนหรือ "ค่าห้อง 30,000" ให้ถือเป็น roomBudget ไม่ใช่ annualBudget รอบใหม่
 - ลูกค้าไม่จำเป็นต้องตอบเป็นตัวเลขล้วน เช่น "งั้นเอา 30,000", "เอา max", "ไม่จำกัด" ต้องสรุปความหมายตามคำถามล่าสุด
