@@ -7,9 +7,10 @@ const fallbackClaimedEvents = new Map();
 
 function defaultProfile() {
   return {
-    version: 8,
+    version: 9,
     age: null,
     gender: null,
+    insuredGenderContext: null,
     occupation: null,
     annualBudget: null,
     budgetFlexible: false,
@@ -20,6 +21,7 @@ function defaultProfile() {
     groupBenefitAsked: false,
     deductiblePreference: "auto",
     opdPreference: "unknown",
+    opdTypePreference: "auto",
     requestedHealthPlan: "auto",
     mainPlanPreference: "auto",
     quoteScope: "package",
