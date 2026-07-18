@@ -211,6 +211,50 @@ test("Elite 20 + OPD เหมาจ่าย 20,000 เทียบกับ El
   assert.ok(result.body.alternatives.every((option) => Number.isFinite(option.totalPremium)));
 });
 
+test("ค่าห้อง 4,000 และต้องการ OPD คง D Health Lite แล้วเพิ่ม OPD รายครั้งตามงบ", async () => {
+  const result = await quote({
+    age: 30,
+    gender: "f",
+    occupation: "แพทย์",
+    annualBudget: 30000,
+    roomBudget: 4000,
+    healthStatus: "none",
+    hasGroupBenefit: false,
+    opdPreference: "yes",
+    opdTypePreference: "auto",
+    requestedHealthPlan: "auto",
+    quoteScope: "package",
+  });
+
+  assert.equal(result.body.ok, true);
+  assert.equal(result.body.planType, "dhl");
+  assert.match(result.body.text, /D Health Lite/);
+  assert.match(result.body.text, /OPD รายครั้ง/);
+  assert.doesNotMatch(result.body.text, /Elite Health Plus/);
+  assert.ok(result.body.totalPremium <= 30000);
+});
+
+test("ลูกค้าที่ระบุ OPD เหมาจ่ายได้รับตัวเลือกเหมาจ่ายโดยไม่ย้ายไป Elite", async () => {
+  const result = await quote({
+    age: 30,
+    gender: "f",
+    occupation: "แพทย์",
+    annualBudget: 50000,
+    roomBudget: 4000,
+    healthStatus: "none",
+    hasGroupBenefit: false,
+    opdPreference: "yes",
+    opdTypePreference: "lump_sum",
+    requestedHealthPlan: "dhl",
+    quoteScope: "package",
+  });
+
+  assert.equal(result.body.ok, true);
+  assert.equal(result.body.planType, "dhl");
+  assert.match(result.body.text, /OPD เหมาจ่าย/);
+  assert.doesNotMatch(result.body.text, /Elite Health Plus/);
+});
+
 test("99/99 หนึ่งแสนจำกัด CI Perfect Care ไม่เกินหนึ่งล้าน", async () => {
   const result = await quote({
     age: 40,
