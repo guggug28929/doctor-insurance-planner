@@ -58,6 +58,7 @@ async function loadRates() {
         "multiple_ci",
         "maternity_plus",
         "well_being_plus",
+        "opd_ครั้ง",
         "opd_เหมา",
         "flexi_99_20",
         "smart_link_15_3",
@@ -122,6 +123,14 @@ function opdMaoPremium(rates, gender, age, plan = 20000) {
   );
 }
 
+function opdPerVisitPremium(rates, gender, age, plan = 1000) {
+  return rateAtStart(
+    rates.opd_ครั้ง?.[`${gender}_${plan}`],
+    age,
+    rates.opd_ครั้ง?.age_start || 6
+  );
+}
+
 function paPremium(rates, age, plan = 1) {
   const numericAge = Number(age);
   let band = 60;
@@ -158,6 +167,9 @@ function normalizeProfile(raw = {}) {
   const opdPreference = ["yes", "no", "optional", "unknown"].includes(raw.opdPreference)
     ? raw.opdPreference
     : legacyOpd || "unknown";
+  const opdTypePreference = ["auto", "per_visit", "lump_sum"].includes(raw.opdTypePreference)
+    ? raw.opdTypePreference
+    : "auto";
 
   const requestedHealthPlan = ["auto", "dhl", "elite20", "elite75", "ecp"].includes(
     raw.requestedHealthPlan
@@ -173,6 +185,7 @@ function normalizeProfile(raw = {}) {
     budgetFlexible: raw.budgetFlexible === true,
     roomBudget: n(raw.roomBudget),
     opdPreference,
+    opdTypePreference,
     hasGroupBenefit:
       raw.hasGroupBenefit === true
         ? true
@@ -639,6 +652,78 @@ function withOpdMao(rates, profile, quote, plan = 20000) {
   });
 }
 
+function standaloneOpdOptions(rates, profile, baseQuote) {
+  const type = profile.opdTypePreference === "lump_sum" ? "lump_sum" : "per_visit";
+  const plans = type === "lump_sum" ? [15000, 20000, 25000, 30000, 50000, 100000] : [1000, 1500, 2000, 2500, 3000];
+  const getPremium = type === "lump_sum" ? opdMaoPremium : opdPerVisitPremium;
+
+  return plans
+    .map((plan) => {
+      const premium = getPremium(rates, profile.gender, profile.age, plan);
+      if (premium === null) return null;
+      return { type, plan, premium, totalPremium: baseQuote.totalPremium + premium };
+    })
+    .filter(Boolean);
+}
+
+function appendStandaloneOpd(rates, profile, quote) {
+  if (!quote?.ok || quote.planType !== "dhl" || profile.opdPreference !== "yes") return quote;
+  if (profile.quoteScope === "health_only") {
+    return {
+      ok: false,
+      needsInfo: "quoteScope",
+      question: "OPD รายครั้งและ OPD เหมาจ่ายต้องพ่วงสัญญาหลักประกันชีวิตครับ รบกวนให้จัดเป็นแพ็กเกจเพื่อคำนวณยอดรวมครับ",
+    };
+  }
+
+  const budget = budgetWindow(profile);
+  const options = standaloneOpdOptions(rates, profile, quote);
+  const withinTarget = options.filter((option) => budget.target && option.totalPremium <= budget.target);
+  const withinMaximum = options.filter(
+    (option) => budget.max === Infinity || option.totalPremium <= budget.max
+  );
+  const selectable = (withinTarget.length ? withinTarget : withinMaximum)
+    .sort((a, b) => b.plan - a.plan || a.totalPremium - b.totalPremium)[0];
+
+  if (!selectable) {
+    return {
+      ok: false,
+      noPlanWithinBudget: true,
+      question:
+        "ยังไม่พบ OPD ที่รวมกับแพ็กเกจ D Health Lite แล้วอยู่ในกรอบงบที่แจ้งครับ ต้องการเพิ่มงบหรือเลือกวงเงิน OPD ที่ต่ำลงไหมครับ",
+    };
+  }
+
+  const label = selectable.type === "per_visit" ? "OPD รายครั้ง" : "OPD เหมาจ่าย";
+  const coverage = selectable.type === "per_visit" ? `${money(selectable.plan)} บาท/ครั้ง` : `${money(selectable.plan)} บาท/ปี`;
+  const key = selectable.type === "per_visit" ? "opd_per_visit" : "opd_mao";
+
+  return finalizeQuote({
+    profile,
+    budget,
+    items: [
+      ...quote.items,
+      {
+        key,
+        product: label,
+        plan: selectable.plan,
+        premium: selectable.premium,
+        line: `- ${label} วงเงิน ${coverage} — เบี้ย ${money(selectable.premium)} บาท/ปี`,
+      },
+    ],
+    planType: "dhl",
+    planCode: `${quote.planCode}_${key}_${selectable.plan}`,
+    notes: [
+      ...(quote.notes || []),
+      "OPD เป็นสัญญาเพิ่มเติมที่พ่วงสัญญาหลักประกันชีวิตในแพ็กเกจนี้ได้ จึงไม่จำเป็นต้องเปลี่ยนไป Elite Health Plus 75 ล้านบาทครับ",
+    ],
+    selectionReason:
+      profile.opdTypePreference === "lump_sum"
+        ? `${quote.selectionReason} และเพิ่ม OPD เหมาจ่ายที่รวมแล้วยังอยู่ในกรอบงบครับ`
+        : `${quote.selectionReason} และเพิ่ม OPD รายครั้งที่รวมแล้วยังอยู่ในกรอบงบครับ`,
+  });
+}
+
 function buildEliteOpdValueComparison(rates, profile) {
   const elite20 = withOpdMao(rates, profile, buildEliteQuote(rates, profile, "20m"), 20000);
   const elite75 = buildEliteQuote(rates, profile, "75m");
@@ -1014,6 +1099,7 @@ export default async function handler(req, res) {
       quote = buildDhlQuote(rates, profile);
     }
 
+    quote = appendStandaloneOpd(rates, profile, quote);
     quote = appendRequestedHealthExtras(rates, profile, quote);
     quote = appendCriticalAlternatives(rates, profile, quote);
     return json(res, 200, quote);
