@@ -72,7 +72,81 @@ function sanitizeLineText(message) {
     .slice(0, 4900);
 }
 
-async function replyToLine(replyToken, message) {
+function messageQuickReply(label, text = label) {
+  return {
+    type: "action",
+    action: {
+      type: "message",
+      label,
+      text,
+    },
+  };
+}
+
+function quickRepliesForMissingField(field) {
+  if (field === "gender") {
+    // คำสั่งเจ้าของงาน: แสดงเพียงสองเพศตามเอกสารที่ใช้สมัคร
+    return [messageQuickReply("ชาย", "เพศชาย"), messageQuickReply("หญิง", "เพศหญิง")];
+  }
+  if (field === "healthStatus") {
+    return [
+      messageQuickReply("ไม่มีประวัติ", "ไม่มีโรคประจำตัว"),
+      messageQuickReply("มีประวัติ", "มีโรคประจำตัว"),
+    ];
+  }
+  if (field === "hasGroupBenefit") {
+    return [
+      messageQuickReply("ไม่มี", "ไม่มีประกันกลุ่ม"),
+      messageQuickReply("มี", "มีประกันกลุ่ม"),
+    ];
+  }
+  if (field === "criticalIllnessNeed") {
+    return [
+      messageQuickReply("เน้นค่ารักษา", "เน้นค่ารักษาพยาบาล"),
+      messageQuickReply("เน้นเงินก้อน", "เน้นเงินก้อนเจอจ่ายจบ"),
+      messageQuickReply("ทั้งสองอย่าง", "ทั้งสองอย่าง"),
+    ];
+  }
+  return [];
+}
+
+function quickRepliesForQuote(result) {
+  const items = [];
+  if (Array.isArray(result?.profile?.pendingBrochureKeys) && result.profile.pendingBrochureKeys.length) {
+    items.push(messageQuickReply("ขอรายละเอียด"));
+  }
+  items.push(messageQuickReply("ดูแผนอื่น"));
+  items.push(messageQuickReply("เริ่มใหม่"));
+  return items;
+}
+
+function quickRepliesForBrochureDetails() {
+  return [
+    messageQuickReply("คุยกับเจ้าหน้าที่"),
+    messageQuickReply("ดูแผนอื่น"),
+    messageQuickReply("เริ่มใหม่"),
+  ];
+}
+
+function quickRepliesForResult(result) {
+  if (result?.action === "ask_missing") {
+    return quickRepliesForMissingField(result.missingField);
+  }
+  if (result?.action === "quote" || result?.action === "quote_handoff") {
+    return quickRepliesForQuote(result);
+  }
+  return [];
+}
+
+async function replyToLine(replyToken, message, quickReplyItems = []) {
+  const textMessage = {
+    type: "text",
+    text: sanitizeLineText(message),
+  };
+  if (Array.isArray(quickReplyItems) && quickReplyItems.length) {
+    textMessage.quickReply = { items: quickReplyItems.slice(0, 13) };
+  }
+
   const response = await fetch("https://api.line.me/v2/bot/message/reply", {
     method: "POST",
     headers: {
@@ -81,40 +155,7 @@ async function replyToLine(replyToken, message) {
     },
     body: JSON.stringify({
       replyToken,
-      messages: [
-        {
-          type: "text",
-          text: sanitizeLineText(message),
-          quickReply: {
-            items: [
-              {
-                type: "action",
-                action: {
-                  type: "message",
-                  label: "คุยกับเจ้าหน้าที่",
-                  text: "คุยกับเจ้าหน้าที่",
-                },
-              },
-              {
-                type: "action",
-                action: {
-                  type: "message",
-                  label: "เริ่มใหม่",
-                  text: "เริ่มใหม่",
-                },
-              },
-              {
-                type: "action",
-                action: {
-                  type: "message",
-                  label: "เปิดผู้ช่วยอัตโนมัติ",
-                  text: "กลับมาใช้บอต",
-                },
-              },
-            ],
-          },
-        },
-      ],
+      messages: [textMessage],
     }),
   });
 
@@ -308,6 +349,22 @@ export default {
       let profile = await loadProfile(userId);
 
       try {
+        if (command === "ดูแผนอื่น" && profile.lastPlanCode) {
+          profile.pendingBrochureKeys = [];
+          await saveProfile(userId, profile);
+          await replyToLine(
+            event.replyToken,
+            "ได้เลยครับ ต้องการปรับงบ ค่าห้อง เพิ่ม OPD หรืออยากเน้นความคุ้มครองด้านไหนเป็นพิเศษครับ",
+            [
+              messageQuickReply("ลดเบี้ย", "อยากลดเบี้ย"),
+              messageQuickReply("เพิ่ม OPD", "ต้องการ OPD"),
+              messageQuickReply("ปรับค่าห้อง", "อยากปรับค่าห้อง"),
+              messageQuickReply("เริ่มใหม่"),
+            ]
+          );
+          continue;
+        }
+
         if (
           Array.isArray(profile.pendingBrochureKeys) &&
           profile.pendingBrochureKeys.length &&
@@ -319,7 +376,11 @@ export default {
           );
           profile.pendingBrochureKeys = [];
           await saveProfile(userId, profile);
-          await replyToLine(event.replyToken, brochureMessage);
+          await replyToLine(
+            event.replyToken,
+            brochureMessage,
+            quickRepliesForBrochureDetails()
+          );
           continue;
         }
 
@@ -366,7 +427,11 @@ export default {
         }
 
         if (result.reply) {
-          await replyToLine(event.replyToken, result.reply);
+          await replyToLine(
+            event.replyToken,
+            result.reply,
+            quickRepliesForResult(result)
+          );
         }
       } catch (error) {
         console.error("Failed to process LINE message", error);
@@ -383,4 +448,10 @@ export default {
 
     return new Response("OK", { status: 200 });
   },
+};
+
+export {
+  quickRepliesForBrochureDetails,
+  quickRepliesForMissingField,
+  quickRepliesForResult,
 };
