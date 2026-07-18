@@ -27,6 +27,7 @@ const PRODUCT_RULES = `
 15. Elite Health Plus ไม่ต้องแนบ Care Plus
 16. OPD รายครั้งและ OPD เหมาจ่ายเป็นสัญญาเพิ่มเติมที่ต้องพ่วงสัญญาหลักประกันชีวิต แต่ไม่ต้องพ่วง D Health Lite หรือ Elite Health Plus; Elite 75 มี OPD ในตัวจึงไม่ต้องซื้อ OPD แยก
 17. หากลูกค้าใช้ Elite 20 แล้วต้องการ OPD ให้เสนอ Elite 75 ก่อน; ถ้าลูกค้าบอกเบี้ยแพง ค่อยใช้ QUOTE เปรียบเทียบ Elite 20 + OPD เหมาจ่าย 20,000 บาท/ปีกับ Elite 75 ตามอายุและเพศจริง
+17ก. หากค่าห้องต่ำกว่า 10,000 บาทและลูกค้าต้องการ OPD ให้คง D Health Lite + Care Plus ตามงบ แล้วให้ QUOTE คำนวณ OPD รายครั้งก่อน (หรือ OPD เหมาจ่ายเมื่อระบุชัด) จากแผนที่รวมแล้วยังอยู่ในงบ ห้ามย้ายไป Elite 75 ล้านบาทจนเกินงบเพียงเพราะต้องการ OPD
 18. ห้ามพูดถึง D Health Plus เพราะปิดการขายแล้ว ใช้ชื่อ D Health Lite เท่านั้น
 19. หากลูกค้าระบุชื่อแผนล่าสุดโดยตรง เช่น "เอา Elite 20 ล้าน", "ขอเบี้ย D Health Lite" คำขอล่าสุดต้องมีลำดับสูงกว่ากฎค่าห้องและข้อมูลเก่า
 20. ถ้าลูกค้าบอกว่าเบี้ยแพง/เกินงบ ให้จัดใหม่โดยถอดความคุ้มครองเสริมก่อนและเลือกชุดที่ใกล้งบที่สุด ห้ามส่งแผนเดิมซ้ำเฉย ๆ
@@ -66,6 +67,10 @@ const ANALYSIS_SCHEMA = {
       properties: {
         age: { type: ["number", "null"] },
         gender: { type: ["string", "null"], enum: ["m", "f", null] },
+        insuredGenderContext: {
+          type: ["string", "null"],
+          enum: ["self", "male_known", "female_known", "other_unknown", null],
+        },
         occupation: { type: ["string", "null"] },
         annualBudget: { type: ["number", "null"] },
         budgetFlexible: { type: ["boolean", "null"] },
@@ -84,6 +89,10 @@ const ANALYSIS_SCHEMA = {
         opdPreference: {
           type: ["string", "null"],
           enum: ["yes", "no", "optional", "unknown", null],
+        },
+        opdTypePreference: {
+          type: ["string", "null"],
+          enum: ["auto", "per_visit", "lump_sum", null],
         },
         requestedHealthPlan: {
           type: ["string", "null"],
@@ -120,6 +129,7 @@ const ANALYSIS_SCHEMA = {
       required: [
         "age",
         "gender",
+        "insuredGenderContext",
         "occupation",
         "annualBudget",
         "budgetFlexible",
@@ -130,6 +140,7 @@ const ANALYSIS_SCHEMA = {
         "groupBenefitAsked",
         "deductiblePreference",
         "opdPreference",
+        "opdTypePreference",
         "requestedHealthPlan",
         "mainPlanPreference",
         "quoteScope",
@@ -150,6 +161,7 @@ const ANALYSIS_SCHEMA = {
         enum: [
           "age",
           "gender",
+          "insuredGenderContext",
           "occupation",
           "annualBudget",
           "budgetFlexible",
@@ -160,6 +172,7 @@ const ANALYSIS_SCHEMA = {
           "groupBenefitAsked",
           "deductiblePreference",
           "opdPreference",
+          "opdTypePreference",
           "requestedHealthPlan",
           "mainPlanPreference",
           "quoteScope",
@@ -225,9 +238,10 @@ async function callOpenAI(payload) {
 
 function defaultProfile() {
   return {
-    version: 8,
+    version: 9,
     age: null,
     gender: null,
+    insuredGenderContext: null,
     occupation: null,
     annualBudget: null,
     budgetFlexible: false,
@@ -238,6 +252,7 @@ function defaultProfile() {
     groupBenefitAsked: false,
     deductiblePreference: "auto",
     opdPreference: "unknown",
+    opdTypePreference: "auto",
     requestedHealthPlan: "auto",
     mainPlanPreference: "auto",
     quoteScope: "package",
@@ -261,10 +276,13 @@ function migrateProfile(input = {}) {
     if (input.wantsOPD === true) profile.opdPreference = "yes";
     else if (input.wantsOPD === false) profile.opdPreference = "no";
   }
+  if (!["auto", "per_visit", "lump_sum"].includes(profile.opdTypePreference)) {
+    profile.opdTypePreference = "auto";
+  }
   profile.pendingBrochureKeys = Array.isArray(input.pendingBrochureKeys)
     ? input.pendingBrochureKeys
     : [];
-  profile.version = 8;
+  profile.version = 9;
   return profile;
 }
 
@@ -353,12 +371,44 @@ function inferAge(message) {
   return null;
 }
 
-function inferGender(message) {
+function inferExplicitGender(message) {
   const text = String(message || "").normalize("NFKC").toLowerCase();
   if (/ผู้หญิง|เพศ\s*หญิง/.test(text)) return "f";
   if (/ผู้ชาย|เพศ\s*ชาย/.test(text)) return "m";
   if (/(?:^|[\s,;/])(?:หญิง|ผญ|ญ)(?=$|[\s,;/]|\d|อายุ|วัย)/.test(text)) return "f";
   if (/(?:^|[\s,;/])(?:ชาย|ผช|ช)(?=$|[\s,;/]|\d|อายุ|วัย)/.test(text)) return "m";
+  return null;
+}
+
+function inferPoliteParticleGender(message) {
+  const text = String(message || "").normalize("NFKC").trim().toLowerCase();
+  if (/(?:คะ|ค่ะ|ขา)[.!?…]*$/.test(text)) return "f";
+  if (/(?:ครับ|คับ|ฮะ)[.!?…]*$/.test(text)) return "m";
+  return null;
+}
+
+function inferInsuredGenderContext(message) {
+  const text = compactText(message);
+  const hasInsuranceContext = /(?:ทำประกัน|ซื้อประกัน|สนใจประกัน|ประกันสุขภาพ|วางแผน.*ประกัน|ผู้เอาประกัน)/.test(text);
+  if (!hasInsuranceContext) return null;
+
+  // These relations remain unambiguous in wording such as "สามีของดิฉัน".
+  if (/(?:พ่อ|ลุง|ปู่|ตา|สามี|ผัว|ลูกชาย|พี่ชาย|น้องชาย)/.test(text)) {
+    return "male_known";
+  }
+  if (/(?:แม่|ป้า|ย่า|ยาย|ภรรยา|เมีย|ลูกสาว|พี่สาว|น้องสาว)/.test(text)) {
+    return "female_known";
+  }
+  if (/(?:แฟน|คนรัก|คู่ชีวิต|ทอม|กะเทย|ข้ามเพศ|สาวประเภทสอง)/.test(text)) {
+    return "other_unknown";
+  }
+
+  // Short relations such as "อา" must be read only after a target reference,
+  // otherwise ordinary words such as "อาชีพ" would be misclassified.
+  const reference = text.match(/(?:ทำประกันให้|ซื้อให้|ผู้เอาประกัน|สำหรับ|ให้|ของ)(?:คุณ)?(.+)$/);
+  if (!reference) return null;
+  const relation = reference[1];
+  if (/(?:น้า|อา|ญาติ|พี่|น้อง)/.test(relation)) return "other_unknown";
   return null;
 }
 
@@ -403,7 +453,9 @@ function inferContextualUpdates(message, current) {
   // ลูกค้าสามารถตอบหลายช่องในบอลลูนเดียวได้ ต้องเก็บทุกข้อมูลที่ระบุชัด
   // ก่อนคำนวณ missingFields เพื่อไม่ย้อนถามอายุ เพศ อาชีพ งบ หรือค่าห้องซ้ำ
   const age = inferAge(message);
-  const gender = inferGender(message);
+  const explicitGender = inferExplicitGender(message);
+  const politeGender = inferPoliteParticleGender(message);
+  const insuredGenderContext = inferInsuredGenderContext(message);
   const occupation = inferOccupation(message);
   const annualBudget = parseAmountAfterLabel(message, [
     /(?:งบ(?:ประมาณ)?(?:ต่อปี|รายปี)?|เบี้ย(?:ที่อยากจ่าย)?(?:ต่อปี|รายปี)|จ่าย(?:เบี้ย)?(?:ไหว)?(?:ปีละ|ต่อปี)|ปีละ)\s*[:=]?\s*([^\n;]+)/i,
@@ -412,7 +464,22 @@ function inferContextualUpdates(message, current) {
     /(?:ค่าห้อง|ห้องพัก|ห้องต่อคืน)\s*(?:ประมาณ|ไม่เกิน|ได้|เอา)?\s*[:=]?\s*([^\n;]+)/i,
   ]);
   if (age !== null) updates.age = age;
-  if (gender) updates.gender = gender;
+  if (insuredGenderContext) updates.insuredGenderContext = insuredGenderContext;
+  if (insuredGenderContext === "male_known") {
+    updates.gender = "m";
+  } else if (insuredGenderContext === "female_known") {
+    updates.gender = "f";
+  } else if (insuredGenderContext === "other_unknown") {
+    // คำลงท้ายของผู้ส่งไม่ใช่เพศของแฟน/น้า/อา จึงห้ามเดา
+    updates.gender = null;
+  } else if (explicitGender) {
+    updates.gender = explicitGender;
+    if (!current.insuredGenderContext) updates.insuredGenderContext = "self";
+  } else if (current.insuredGenderContext !== "other_unknown" && current.gender === null && politeGender) {
+    // ผู้เอาประกันเป็นผู้ส่งเอง: คะ/ค่ะ/ขา และ ครับ/คับ ช่วยลดคำถามซ้ำได้
+    updates.gender = politeGender;
+    if (!current.insuredGenderContext) updates.insuredGenderContext = "self";
+  }
   if (occupation) updates.occupation = occupation;
   if (annualBudget !== null) {
     updates.annualBudget = annualBudget;
@@ -554,16 +621,52 @@ function inferContextualUpdates(message, current) {
     updates.requestedHealthPlan = "elite20";
   }
 
+  if (/(?:ipd\s*(?:\+\/-|±)\s*opd|opd(?:มีก็ได้|ก็ได้ไม่เอาก็ได้)|เผื่อopd)/i.test(compact)) {
+    updates.opdPreference = "optional";
+  } else if (/(?:ไม่เอาopd|เอาแค่ipd|ไม่ต้องการopd)/i.test(compact)) {
+    updates.opdPreference = "no";
+  } else if (/(?:opd|ผู้ป่วยนอก)/i.test(message)) {
+    updates.opdPreference = "yes";
+    updates.focus = [...new Set([...(updates.focus || current.focus || []), "opd"])];
+  }
+
+  if (/(?:opd|ผู้ป่วยนอก).*(?:รายครั้ง|ต่อครั้ง)|(?:รายครั้ง|ต่อครั้ง).*(?:opd|ผู้ป่วยนอก)/i.test(message)) {
+    updates.opdTypePreference = "per_visit";
+  } else if (/(?:opd|ผู้ป่วยนอก).*(?:เหมาจ่าย|วงเงิน(?:ต่อ)?ปี)|(?:เหมาจ่าย|วงเงิน(?:ต่อ)?ปี).*(?:opd|ผู้ป่วยนอก)/i.test(message)) {
+    updates.opdTypePreference = "lump_sum";
+  }
+
   return updates;
+}
+
+function canClearProfileField(message, field) {
+  const text = compactText(message);
+  if (!/(?:ล้าง|ลืม|ยกเลิก|ไม่ใช้ข้อมูลเดิม|ขอแก้|แก้ข้อมูล|แก้ไขข้อมูล)/.test(text)) {
+    return false;
+  }
+  const labels = {
+    age: /อายุ/,
+    gender: /เพศ/,
+    occupation: /อาชีพ|งาน/,
+    annualBudget: /งบ|เบี้ย/,
+    roomBudget: /ห้อง/,
+    healthStatus: /สุขภาพ|โรค|ประวัติ/,
+    hasGroupBenefit: /สวัสดิการ|ประกันกลุ่ม|ประกันเดิม/,
+  };
+  return labels[field]?.test(text) || false;
 }
 
 function mergeProfile(current, analysis, message, contextualUpdates = null) {
   const next = migrateProfile(current);
   for (const field of analysis.clearFields || []) {
+    // โมเดลไม่มีสิทธิ์ล้างข้อมูลที่ยืนยันแล้วจากข้อความทั่วไป เช่น "อาชีพแพทย์"
+    // ยอมให้ล้างเฉพาะเมื่อลูกค้าบอกชัดว่าต้องการแก้/ล้างข้อมูลช่องนั้นเท่านั้น
+    if (!canClearProfileField(message, field)) continue;
     if (field === "focus") next[field] = [];
     else if (["budgetFlexible", "optimizeForBudget", "wantsMaternity", "wantsWellBeing"].includes(field)) next[field] = false;
     else if (field === "deductiblePreference") next[field] = "auto";
     else if (field === "opdPreference") next[field] = "unknown";
+    else if (field === "opdTypePreference") next[field] = "auto";
     else if (field === "requestedHealthPlan") next[field] = "auto";
     else if (field === "mainPlanPreference") next[field] = "auto";
     else if (field === "requestedProduct") next[field] = "auto";
@@ -572,14 +675,22 @@ function mergeProfile(current, analysis, message, contextualUpdates = null) {
     else next[field] = null;
   }
 
+  const explicitGender = inferExplicitGender(message);
   for (const [field, value] of Object.entries(analysis.updates || {})) {
     if (value === null || value === undefined) continue;
+    // คำลงท้ายของข้อความใหม่ไม่อาจลบหรือสลับเพศที่ลูกค้ายืนยันไว้แล้วได้
+    if (field === "gender" && current.gender && !explicitGender) continue;
     next[field] = value;
   }
 
   // กฎตามบริบททำหน้าที่เป็น safety net เมื่อคำตอบลูกค้าไม่ใช่ตัวเลขล้วน
   // เช่น "ไม่จำกัดค่าห้อง", "ได้หมด", "เอา max" หรือ "ค่าห้อง 30,000"
-  Object.assign(next, contextualUpdates || inferContextualUpdates(message, current));
+  const contextual = contextualUpdates || inferContextualUpdates(message, current);
+  if (next.insuredGenderContext === "other_unknown" && !explicitGender && contextual.gender === undefined) {
+    // อย่าให้ AI เดาเพศแฟน/น้า/อาจากคำว่า ครับ/ค่ะ ของผู้ส่ง
+    next.gender = current.gender;
+  }
+  Object.assign(next, contextual);
 
   next.focus = Array.isArray(next.focus) ? [...new Set(next.focus)] : [];
   next.updatedAt = new Date().toISOString();
@@ -620,6 +731,13 @@ const FIELD_QUESTIONS = {
   criticalIllnessNeed: "ถ้ากังวลโรคร้ายแรง ต้องการเน้นค่ารักษาพยาบาล เงินก้อนแบบเจอจ่ายจบ หรือทั้งสองอย่างครับ",
 };
 
+function fieldQuestion(field, profile) {
+  if (field === "gender" && profile.insuredGenderContext === "other_unknown") {
+    return "รบกวนแจ้งเพศตามเอกสารที่ใช้สมัครของผู้เอาประกันครับ";
+  }
+  return FIELD_QUESTIONS[field];
+}
+
 async function analyzeTurn(message, profile) {
   const instructions = `
 ${PRODUCT_RULES}
@@ -630,6 +748,11 @@ ${PRODUCT_RULES}
 - ข้อความหนึ่งบอลลูนอาจตอบหลายคำถามพร้อมกัน ต้องตรวจทุกประโยคและใส่ทุกข้อเท็จจริงที่พบลงใน updates ห้ามเลือกเก็บเพียงช่องเดียว
 - ตัวอย่าง "ญ 30 ปี ไม่มีโรคประจำตัว อาชีพแพทย์ งบ30,000/ปี ค่าห้อง4,000 สนใจประกันสุขภาพ" ต้องอัปเดต gender=f, age=30, healthStatus=none, occupation=แพทย์, annualBudget=30000, roomBudget=4000, focus=["ipd"] พร้อมกัน
 - คำที่มีความหมายใกล้กันต้องเข้าใจ เช่น ญ/หญิง/ผู้หญิง/ผญ, ช/ชาย/ผู้ชาย/ผช, หมอ/แพทย์, สุขภาพปกติ/ไม่มีประวัติ/ไม่เคยผ่าตัด และงบปีละ/งบต่อปี/จ่ายไหวปีละ
+- หากผู้เอาประกันเป็นผู้ส่งเอง คำลงท้าย คะ/ค่ะ/ขา ให้ตีความเพศหญิง และ ครับ/คับ/ฮะ ให้ตีความเพศชายเมื่อยังไม่ทราบเพศ
+- หากซื้อให้พ่อ/ลุง/ปู่/ตา/สามี/ผัว/ลูกชาย/พี่ชาย/น้องชาย ให้ตั้ง gender=m และห้ามถามเพศซ้ำ
+- หากซื้อให้แม่/ป้า/ย่า/ยาย/ภรรยา/เมีย/ลูกสาว/พี่สาว/น้องสาว ให้ตั้ง gender=f และห้ามถามเพศซ้ำ
+- หากซื้อให้แฟน/คนรัก/คู่ชีวิต/น้า/อา/ญาติ หรือผู้มีความหลากหลายทางเพศ ห้ามเดาจากคำลงท้ายของผู้ส่ง ให้ถามเพศตามเอกสารที่ใช้สมัครของผู้เอาประกันเพียงครั้งเดียว
+- ห้ามล้างหรือเปลี่ยนเพศ อายุ อาชีพ งบ ค่าห้อง หรือสุขภาพที่ CURRENT PROFILE มีอยู่แล้ว เว้นแต่ลูกค้าบอกแก้ข้อมูลช่องนั้นอย่างชัดเจน
 - ต้องตีความคำตอบตามข้อมูลที่ยังขาดใน CURRENT PROFILE ไม่ใช่ดูเฉพาะรูปแบบข้อความ
 - คำตอบสั้น "ไม่มี" ให้ผูกกับคำถามที่ยังขาดตามลำดับ: ถ้ายังขาด healthStatus หมายถึงไม่มีประวัติสุขภาพ; ถ้ามี healthStatus แล้วแต่ยังขาด hasGroupBenefit หมายถึงไม่มีประกันกลุ่มหรือสวัสดิการเดิม
 - หลังวิเคราะห์ครบทั้งบอลลูน ให้ถามเฉพาะช่องที่ยังไม่มีจริง ๆ และห้ามถามอายุ เพศ อาชีพ งบ ค่าห้อง หรือประวัติสุขภาพที่ลูกค้าเขียนไว้แล้ว
@@ -644,11 +767,13 @@ ${PRODUCT_RULES}
 - "IPD +/- OPD", "OPD มีก็ได้ไม่มีก็ได้", "เอา OPD ก็ได้ไม่เอาก็ได้" = opdPreference optional ห้ามตั้งเป็น yes
 - "ไม่เอา OPD", "เอาแค่ IPD" = opdPreference no
 - "ต้องการ OPD", "เอา OPD" = opdPreference yes
+- "OPD รายครั้ง" หรือ "OPD ต่อครั้ง" = opdTypePreference per_visit; "OPD เหมาจ่าย" = opdTypePreference lump_sum; หากบอกเพียง OPD ให้ opdTypePreference auto
 - หากลูกค้าระบุ D Health, D Health Lite, ดีเฮลท์ หรือขอเบี้ย D Health ให้ requestedHealthPlan dhl โดยคำขอล่าสุดชนะ roomBudget เดิม
 - หากระบุ Elite 20 ล้าน ให้ requestedHealthPlan elite20 หากระบุ Elite 75 ล้าน ให้ elite75
 - หากพูดว่า "เบี้ยแพง", "เกินงบ", "ลดเบี้ย", "จัดใหม่ให้ถูกลง" ให้ optimizeForBudget true, asksForPremium true, shouldRecommendPlan true และตั้ง requestedHealthPlan auto เว้นแต่ข้อความเดียวกันระบุชื่อแผนชัดเจน
 - หากลูกค้าบอก "ไม่เอา OPD ก็ได้" หลังเคยเสนอ Elite 75 ให้ตั้ง requestedHealthPlan auto เพื่อเปิดทางให้ระบบเลือก Elite 20
 - OPD รายครั้งและ OPD เหมาจ่ายพ่วงสัญญาหลักประกันชีวิตได้ ไม่ต้องพ่วง D Health Lite หรือ Elite; Elite 75 มี OPD 40,000 บาท/ปีในตัว
+- หากค่าห้องต่ำกว่า 10,000 บาทและยืนยันต้องการ OPD ให้คง D Health Lite + Care Plus ตามงบ แล้วให้ QUOTE เลือก OPD รายครั้งที่รวมแล้วยังอยู่ในงบก่อน; ถ้าลูกค้าระบุว่าเอา OPD เหมาจ่ายจึงเลือกแบบเหมาจ่าย ห้ามเปลี่ยนไป Elite 75 ที่เกินงบ
 - หากลูกค้าบอกว่า Elite 20 + OPD หรือมี Elite 20 แล้วอยากได้ OPD ให้เสนอ Elite 75 ก่อน; เมื่อบอกว่าเบี้ยแพง ให้ optimizeForBudget true เพื่อให้ QUOTE เปรียบเทียบ Elite 20 + OPD เหมาจ่าย 20,000 กับ Elite 75
 - หากลูกค้าบ่นว่าทุนหลัก Smart Protection 99/20 ขั้นต่ำ 200,000 บาทสูงเกินไป ให้ mainPlanPreference 99_99_100k
 - หากสนใจโรคร้ายแรงแต่ยังไม่บอกประเภท ให้ criticalIllnessNeed unknown และอย่าเพิ่งเลือกแผน ต้องถามว่าเน้นค่ารักษา เงินก้อน หรือทั้งสอง
@@ -855,7 +980,7 @@ export default async function handler(req, res) {
           message,
           profile,
           analysis,
-          forcedQuestion: FIELD_QUESTIONS[field],
+          forcedQuestion: fieldQuestion(field, profile),
         });
         return sendJson(res, 200, {
           action: "ask_missing",
@@ -872,7 +997,7 @@ export default async function handler(req, res) {
           profile,
           analysis,
           quote,
-          forcedQuestion: quote.question || FIELD_QUESTIONS[quote.needsInfo],
+          forcedQuestion: quote.question || fieldQuestion(quote.needsInfo, profile),
         });
         return sendJson(res, 200, {
           action: "ask_missing",
