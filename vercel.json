@@ -1,4 +1,19 @@
 {
+  "redirects": [
+    { "source": "/brochures/cancer.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/cancer.pdf", "permanent": false },
+    { "source": "/brochures/care-plus.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/care-plus.pdf", "permanent": false },
+    { "source": "/brochures/ci-perfect-care.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/ci-perfect-care.pdf", "permanent": false },
+    { "source": "/brochures/d-care.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/d-care.pdf", "permanent": false },
+    { "source": "/brochures/d-health-lite.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/d-health-lite.pdf", "permanent": false },
+    { "source": "/brochures/elite-health-plus.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/elite-health-plus.pdf", "permanent": false },
+    { "source": "/brochures/extra-care-plus.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/extra-care-plus.pdf", "permanent": false },
+    { "source": "/brochures/hb-rider.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/hb-rider.pdf", "permanent": false },
+    { "source": "/brochures/maochai-extra.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/maochai-extra.pdf", "permanent": false },
+    { "source": "/brochures/multiple-ci.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/multiple-ci.pdf", "permanent": false },
+    { "source": "/brochures/opd-maochai.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/opd-maochai.pdf", "permanent": false },
+    { "source": "/brochures/opd-per-visit.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/opd-per-visit.pdf", "permanent": false },
+    { "source": "/brochures/pa-easy.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/pa-easy.pdf", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/plans", "destination": "/index.html" },
     { "source": "/plans/:path*", "destination": "/index.html" },
