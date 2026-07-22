@@ -189,6 +189,19 @@ const ANALYSIS_SCHEMA = {
     },
     asksForPremium: { type: "boolean" },
     shouldRecommendPlan: { type: "boolean" },
+    knowledgeTopics: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: [
+          "waiting_period",
+          "health_exclusions",
+          "fax_claim",
+          "copayment",
+          "general_faq",
+        ],
+      },
+    },
     directReply: { type: "string" },
   },
   required: [
@@ -197,6 +210,7 @@ const ANALYSIS_SCHEMA = {
     "clearFields",
     "asksForPremium",
     "shouldRecommendPlan",
+    "knowledgeTopics",
     "directReply",
   ],
   additionalProperties: false,
@@ -789,6 +803,13 @@ ${PRODUCT_RULES}
 - หากถามเบี้ย ราคา ปีละเท่าไร รวมเท่าไร หรือขอใบเสนอราคา ให้ asksForPremium true
 - หากขอแนะนำแผน ให้ shouldRecommendPlan true
 - หากขอคุยกับเจ้าหน้าที่ ให้ intent human_handoff
+- ใส่ knowledgeTopics ทุกหัวข้อความรู้ที่เกี่ยวข้องกับคำถามล่าสุด เพื่อให้ระบบแนบลิงก์อ่านต่อ:
+  - waiting_period เมื่อถามระยะรอคอย 30/120/180 วัน โรคที่ก่อตัวนาน หรือถามโรคเรื้อรังใน OPD เช่น ภูมิแพ้ โรคกระเพาะ เบาหวาน ความดัน หัวใจ ไทรอยด์ หรือลมชัก
+  - health_exclusions เมื่อถามข้อยกเว้น 21 ข้อ สิ่งที่ไม่คุ้มครอง หรือการเว้นโรค
+  - fax_claim เมื่อถาม Fax Claim, Direct Claim, โรงพยาบาลคู่สัญญา, การสำรองจ่าย, Pre-claim หรือการสืบประวัติเพื่อเคลม
+  - copayment เมื่อถาม Copayment, ร่วมจ่ายปีต่ออายุ, Simple Disease หรือเกณฑ์เคลม 200%/400%
+  - general_faq เมื่อขอรวม FAQ หรือความรู้ประกันสุขภาพแบบรวม
+- knowledgeTopics เป็น array และใส่ได้หลายหัวข้อ หากไม่เกี่ยวข้องให้ส่ง []
 - directReply ห้ามแต่งตัวเลขเบี้ย
 `.trim();
 
@@ -839,6 +860,98 @@ function appendDcareDetailLink(reply, message) {
   return `${String(reply || "").trim()}\n\nD Care เป็นประกันโรคร้ายแรงแบบเงินก้อนที่เลือกกลุ่มโรคได้ครับ ดูรายละเอียดเพิ่มเติมได้ที่ https://doctor-insurance.com/plans/d-care`;
 }
 
+const KNOWLEDGE_LINKS = Object.freeze({
+  waiting_period: {
+    label: "ระยะรอคอย",
+    url: "https://www.doctor-insurance.com/health-knowledge#waiting-period",
+  },
+  health_exclusions: {
+    label: "ข้อยกเว้นประกันสุขภาพ 21 ข้อ",
+    url: "https://www.doctor-insurance.com/health-knowledge#health-exclusions",
+  },
+  fax_claim: {
+    label: "การ Fax Claim",
+    url: "https://www.doctor-insurance.com/health-knowledge#fax-claim",
+  },
+  copayment: {
+    label: "เงื่อนไข Copayment",
+    url: "https://www.doctor-insurance.com/health-knowledge#copayment",
+  },
+  general_faq: {
+    label: "รวมคำถามยอดฮิตเกี่ยวกับประกัน",
+    url: "https://www.doctor-insurance.com/health-knowledge",
+  },
+});
+
+const KNOWLEDGE_TOPIC_ORDER = [
+  "waiting_period",
+  "health_exclusions",
+  "fax_claim",
+  "copayment",
+  "general_faq",
+];
+
+function inferKnowledgeTopics(message) {
+  const text = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
+  const topics = new Set();
+  const chronicOpd =
+    /(?:opd|ผู้ป่วยนอก).*(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก)/i.test(text) ||
+    /(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก).*(?:opd|ผู้ป่วยนอก)/i.test(text);
+
+  if (
+    /ระยะ(?:เวลา)?รอคอย|waiting\s*period|รอ\s*(?:30|120|180)\s*วัน|ก่อตัวนาน|ฟักตัวนาน/i.test(text) ||
+    chronicOpd
+  ) {
+    topics.add("waiting_period");
+  }
+  if (/ข้อยกเว้น|21\s*ข้อ|ไม่คุ้มครอง|เว้นโรค|ยกเว้นโรค/i.test(text)) {
+    topics.add("health_exclusions");
+  }
+  if (
+    /แฟกซ์\s*เคลม|fax\s*claim|direct\s*claim|pre[-\s]?(?:claim|authorization)|สำรองจ่าย|โรงพยาบาลคู่สัญญา|สืบประวัติ.*(?:เคลม|90\s*วัน)/i.test(
+      text
+    )
+  ) {
+    topics.add("fax_claim");
+  }
+  if (
+    /co[-\s]?pay(?:ment)?|โค\s*เพย์|ร่วมจ่าย(?:ในปีต่ออายุ|ปีต่ออายุ|30%|50%)|simple\s*disease|ยอดเคลม.*(?:200%|400%)/i.test(
+      text
+    )
+  ) {
+    topics.add("copayment");
+  }
+  if (/รวมคำถาม|คำถามยอดฮิต|faq|ความรู้(?:ด้าน)?ประกันสุขภาพ/i.test(text)) {
+    topics.add("general_faq");
+  }
+
+  return KNOWLEDGE_TOPIC_ORDER.filter((topic) => topics.has(topic));
+}
+
+function knowledgeTopicsForTurn(analysis, message) {
+  const topics = new Set([
+    ...(Array.isArray(analysis?.knowledgeTopics) ? analysis.knowledgeTopics : []),
+    ...inferKnowledgeTopics(message),
+  ]);
+  for (const topic of [...topics]) {
+    if (!KNOWLEDGE_LINKS[topic]) topics.delete(topic);
+  }
+  if (topics.size > 1) topics.delete("general_faq");
+  return KNOWLEDGE_TOPIC_ORDER.filter((topic) => topics.has(topic));
+}
+
+function appendKnowledgeLinks(reply, analysis, message) {
+  const base = String(reply || "").trim();
+  const lines = knowledgeTopicsForTurn(analysis, message)
+    .map((topic) => KNOWLEDGE_LINKS[topic])
+    .filter((item) => !base.includes(item.url))
+    .map(
+      (item) =>
+        "ดูรายละเอียดเรื่อง" + item.label + "เพิ่มเติมได้ที่ " + item.url + " ครับ"
+    );
+  return lines.length ? base + "\n\n" + lines.join("\n") : base;
+}
+
 const HEALTH_HANDOFF_NOTE =
   "หมายเหตุ: เนื่องจากมีประวัติสุขภาพหรือโรคประจำตัว แผนและเบี้ยข้างต้นเป็นการวางแผนเบื้องต้น ผลรับประกันขึ้นอยู่กับการพิจารณาของบริษัทครับ จากนี้ผมขอปิดผู้ช่วยอัตโนมัติชั่วคราว และให้คุณหมอกึ๊กหรือเจ้าหน้าที่ติดต่อกลับเพื่อดูแลรายละเอียดต่อครับ";
 
@@ -860,7 +973,9 @@ function appendHealthHandoff(reply) {
 async function writeReply({ message, profile, analysis, quote = null, forcedQuestion = null }) {
   // การวิเคราะห์ข้อความยังใช้ AI แต่คำตอบใบเสนอใช้ formatter แบบ deterministic
   // เพื่อรับประกันว่าชื่อ คำบรรยาย เบี้ย และลิงก์ตรงกับรายการจากเครื่องคำนวณทุกครั้ง
-  if (quote?.ok) return quoteFallbackReply(quote);
+  if (quote?.ok) {
+    return appendKnowledgeLinks(quoteFallbackReply(quote), analysis, message);
+  }
 
   const instructions = `
 ${PRODUCT_RULES}
@@ -898,7 +1013,11 @@ ${PRODUCT_RULES}
   if (quote?.comparison || (quote?.ok && !replyMatchesQuote(reply, quote))) {
     return quoteFallbackReply(quote);
   }
-  return appendDcareDetailLink(reply || (quote ? quoteFallbackReply(quote) : "รับทราบครับ"), message);
+  const baseReply = appendDcareDetailLink(
+    reply || (quote ? quoteFallbackReply(quote) : "รับทราบครับ"),
+    message
+  );
+  return appendKnowledgeLinks(baseReply, analysis, message);
 }
 
 async function getQuote(requestUrl, profile) {
@@ -1035,9 +1154,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const reply =
+    const reply = appendKnowledgeLinks(
       analysis.directReply?.trim() ||
-      (await writeReply({ message, profile, analysis }));
+        (await writeReply({ message, profile, analysis })),
+      analysis,
+      message
+    );
 
     return sendJson(res, 200, {
       action: "reply",
@@ -1052,4 +1174,11 @@ export default async function handler(req, res) {
   }
 }
 
-export { defaultProfile, inferContextualUpdates, mergeProfile, missingFields };
+export {
+  appendKnowledgeLinks,
+  defaultProfile,
+  inferContextualUpdates,
+  inferKnowledgeTopics,
+  mergeProfile,
+  missingFields,
+};
