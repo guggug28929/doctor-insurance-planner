@@ -190,6 +190,11 @@
     margin:16px 0;
     overflow:hidden;
     box-shadow:0 3px 14px rgba(143,13,64,.06);
+    scroll-margin-top:24px;
+  }
+  #page-knowledge .faq.faq-direct-target{
+    border-color:var(--pink);
+    box-shadow:0 0 0 3px rgba(200,30,92,.12),0 3px 14px rgba(143,13,64,.08);
   }
   #page-knowledge .faq summary{
     cursor:pointer;
@@ -688,7 +693,8 @@
 
   .brochure-strip{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(240px,340px));
+    justify-content:start;
     gap:12px;
     margin-top:16px;
   }
@@ -699,7 +705,9 @@
     background:#fffafc;
     box-shadow:0 2px 10px rgba(200,30,92,.06);
   }
-  .brochure-card img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;}
+  .brochure-card img{width:100%;display:block;object-fit:contain;object-position:center;background:#fff;}
+  .brochure-card img.cover-portrait{aspect-ratio:4/5;}
+  .brochure-card img.cover-landscape{aspect-ratio:16/9;}
   .brochure-caption{font-size:.72rem;color:var(--muted);padding:8px 10px;line-height:1.45;}
   .dhl-premium-table th.group-head{text-align:center;background:var(--pink);}
   .dhl-premium-table th.sub-head{text-align:center;background:var(--pink-deep);}
@@ -1288,7 +1296,7 @@
     </ul>
     <div class="contact-box">
       <a class="contact-pill" href="tel:0852312027">📞 085-231-2027</a>
-      <a class="contact-pill" href="https://line.me/ti/p/~nuengburut" target="_blank" rel="noopener">💬 Line ID: nuengburut</a>
+      <a class="contact-pill" href="https://line.me/R/ti/p/@doctorguginsurance" target="_blank" rel="noopener">💬 LINE ID: @doctorguginsurance</a>
       <a class="contact-pill" href="https://www.facebook.com/Nuengburut.Tiamtanom" target="_blank" rel="noopener">📘 FB: Nuengburut Tiamtanom</a>
       <button class="contact-pill" style="border:none;cursor:pointer;" onclick="showPage('ai')">🤖 เริ่มจากผู้ช่วยออกแบบแผน</button>
     </div>
@@ -1311,7 +1319,7 @@
     <p style="color:var(--muted);">ปรึกษาเรื่องประกันชีวิต สุขภาพ โรคร้ายแรง อุบัติเหตุ หรือขอใบเสนอราคาได้โดยตรงครับ</p>
     <div class="contact-box">
       <a class="contact-pill" href="tel:0852312027">📞 085-231-2027</a>
-      <a class="contact-pill" href="https://line.me/ti/p/~nuengburut" target="_blank" rel="noopener">💬 Line ID: nuengburut</a>
+      <a class="contact-pill" href="https://line.me/R/ti/p/@doctorguginsurance" target="_blank" rel="noopener">💬 LINE ID: @doctorguginsurance</a>
       <a class="contact-pill" href="https://www.facebook.com/Nuengburut.Tiamtanom" target="_blank" rel="noopener">📘 Facebook</a>
       <button class="contact-pill" style="border:none;cursor:pointer;" onclick="showPage('ai')">🤖 ให้ผู้ช่วยออกแบบแผน</button>
     </div>
@@ -1712,7 +1720,7 @@
         <p>โรคที่เป็นแล้วหายสนิท ไม่ส่งผลต่อสุขภาพโดยรวม เช่น ไข้หวัด ไข้หวัดใหญ่ COVID-19 ที่ไม่ลงปอด มีดบาด หรืออุบัติเหตุหมาแมวกัดที่แผลหายดีแล้ว</p>
       </details>
 
-      <details class="faq">
+      <details class="faq" id="health-exclusions">
         <summary>ข้อยกเว้นประกันสุขภาพทั่วไป 21 ข้อ</summary>
         <p>ข้อยกเว้นประกันสุขภาพทั่วไป (New Health Standard) มีทั้งหมด 21 ข้อ โดยการประกันภัยนี้ไม่คุ้มครองค่าใช้จ่ายจากการรักษาพยาบาล หรือความเสียหายที่เกิดจากการบาดเจ็บหรือการป่วย รวมทั้งภาวะแทรกซ้อน อาการ หรือภาวะความผิดปกติที่เกิดจาก:</p>
         <ol>
@@ -1742,7 +1750,7 @@
         <p><b>การทบทวนข้อเสนอเพื่อถอดข้อยกเว้น:</b> ก่อนอนุมัติประกัน ให้นำใบรับรองแพทย์ เอกสารการแพทย์ หรือผลตรวจที่บ่งบอกว่าหายจากโรคหรืออาการคงที่แล้ว ยื่นให้ตัวแทนส่งฝ่ายพิจารณา หลังอนุมัติประกัน ให้ใช้วิธีเดียวกัน แต่โดยมากสามารถยื่นทบทวนได้เมื่อผ่านอย่างน้อย 6 เดือน–1 ปีกรมธรรม์ แล้วแต่เคส และการถอดข้อยกเว้นขึ้นกับโรคและความรุนแรง</p>
       </details>
 
-      <details class="faq">
+      <details class="faq" id="waiting-period">
         <summary>ระยะรอคอยประกันสุขภาพคืออะไร</summary>
         <p><b>ระยะเวลารอคอย</b> คือช่วงเวลาที่ผู้เอาประกันสุขภาพไม่สามารถเคลมค่ารักษาได้ แม้กรมธรรม์เริ่มมีผลบังคับแล้ว โดยนับตั้งแต่วันที่กรมธรรม์เริ่มคุ้มครอง หรือในกรณีต่ออายุกรมธรรม์ที่ขาดส่งเบี้ยแล้วกลับมาเริ่มใช้อีกครั้ง ทั้งนี้เพื่อป้องกันการเคลมโรคที่มีอยู่ก่อนขอเอาประกันหรือก่อนต่ออายุกรมธรรม์</p>
         <p><b>ทำไมต้องมีระยะรอคอย?</b> บริษัทประกันกำหนดเพื่อคัดกรองความเจ็บป่วยที่มีมาก่อนทำประกัน (Pre-existing conditions) เช่น หากมีอาการป่วยหรือโรคก่อนสมัคร แม้ยังไม่ได้พบแพทย์ แล้วเคลมทันทีหลังกรมธรรม์มีผลบังคับ บริษัทก็อาจปฏิเสธความคุ้มครอง เพราะถือว่าเป็นโรคเดิมที่มีอยู่ก่อนการทำประกัน เนื่องจากประกันคือการจ่ายเบี้ยเพื่อถ่ายโอนความเสี่ยงที่ยังไม่เกิดขึ้น หากความเสี่ยงเกิดแล้ว บริษัทประกันก็ไม่สามารถรับประกันได้</p>
@@ -1764,7 +1772,7 @@
         </ul>
       </details>
 
-      <details class="faq">
+      <details class="faq" id="fax-claim">
         <summary>การแฟกซ์เคลม (ไม่ต้องสำรองจ่าย) คืออะไร</summary>
         <h3>รูปแบบการเคลมประกันสุขภาพ</h3>
         <p><b>✅ Fax Claim (การแฟกซ์เคลม)</b></p>
@@ -1789,7 +1797,7 @@
         </ul>
       </details>
 
-      <details class="faq">
+      <details class="faq" id="copayment">
         <summary>เงื่อนไข Copayment ในปีต่ออายุคืออะไร</summary>
         <p>Copayment คือระบบที่ผู้เอาประกันต้องร่วมจ่ายค่ารักษาพยาบาลในบางกรณี โดยคิดเป็นเปอร์เซ็นต์จากค่ารักษาจริง เช่น 30% ของค่าใช้จ่ายทั้งหมด หากบิลค่ารักษา 200,000 บาท ผู้เอาประกันร่วมจ่าย 60,000 บาท และบริษัทประกันออกให้ 140,000 บาท</p>
         <p>เป็นเงื่อนไขที่มีในประกันสุขภาพแบบ IPD ทุกแผน ทุกบริษัท ที่มีผลบังคับตั้งแต่ 20 มีนาคม 2568 เป็นต้นไป แต่จะยังไม่บังคับใช้ในปีแรก จะบังคับใช้ในปีต่ออายุสำหรับผู้เอาประกันบางรายที่เคลมเยอะจนเข้าเงื่อนไข ต่างจาก Deductible ที่ผู้เอาประกันจ่ายส่วนแรกตามจำนวนที่กำหนด แล้วส่วนเกินบริษัทจ่ายตามเงื่อนไข เช่น แผนมี Deductible 20,000 บาท หากบิล 50,000 บาท ผู้เอาประกันจ่าย 20,000 บาทแรก ส่วนที่เกินบริษัทออกให้ 30,000 บาท</p>
@@ -2802,10 +2810,34 @@ function ecpBenefitTable(){
   ]);
 }
 
+const PLAN_COVER_IMAGES = {
+  main9920: {src:'/plan-covers/smart-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  main9999: {src:'/plan-covers/lifetime-protection-9999.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  flexi9920: {src:'/plan-covers/flexi-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  smartlink153: {src:'/plan-covers/smart-linked-15-3.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  smartlink156: {src:'/plan-covers/smart-linked-15-6.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  dhl: {src:'/plan-covers/d-health-lite.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ D Health Lite'},
+  ehp: {src:'/plan-covers/elite-health-plus.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ Elite Health Plus'},
+  maternity: {src:'/plan-covers/maternity-plus.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  wellbeing: {src:'/plan-covers/well-being-plus.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  maochai: {src:'/plan-covers/maochai-extra.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เหมาจ่าย Extra'},
+  ecp: {src:'/plan-covers/extra-care-plus.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ Extra Care Plus'},
+  opdMaochai: {src:'/plan-covers/opd-maochai.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ OPD เหมาจ่าย'},
+  opdPerVisit: {src:'/plan-covers/opd-per-visit.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ OPD รายครั้ง'},
+  careplus: {src:'/plan-covers/care-plus.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ Care Plus'},
+  cipc: {src:'/plan-covers/ci-perfect-care.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ CI Perfect Care'},
+  multipleci: {src:'/plan-covers/multiple-ci.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ Multiple CI'},
+  cancer: {src:'/plan-covers/cancer.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ ความคุ้มครองโรคมะเร็ง'},
+  dcare: {src:'/plan-covers/d-care.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ D Care'},
+  hb: {src:'/plan-covers/hb-rider.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ HB'},
+  pa: {src:'/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
+};
+
 const PLAN_DETAILS = {
   main9920: {
     title: 'สมาร์ท โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
     overview: 'ประกันชีวิตตลอดชีพ ชำระเบี้ยเพียง 20 ปี แต่คุ้มครองไปจนถึงอายุ 99 ปี เป็นสัญญาหลักที่ต้องมีก่อนจึงจะพ่วงสัญญาสุขภาพ/โรคร้ายแรง/อุบัติเหตุได้',
+    images: [PLAN_COVER_IMAGES.main9920],
     coverage: [
       'เสียชีวิตทุกกรณี (ยกเว้นข้อยกเว้นทั่วไป เช่น ฆ่าตัวตายภายใน 1 ปีแรก) รับเงิน 100% ของทุนประกัน หรือมูลค่าเวนคืน/มูลค่าตามกรมธรรม์ที่สูงกว่า',
       'อยู่ครบกำหนดสัญญา (อายุ 99 ปี) รับเงินคืนเท่าทุนประกัน',
@@ -2830,6 +2862,7 @@ const PLAN_DETAILS = {
   main9999: {
     title: 'คุ้มครองตลอดชีพ 99/99', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
     overview: 'ประกันชีวิตตลอดชีพ ชำระเบี้ยยาวไปจนถึงอายุ 99 ปี เบี้ยตั้งต้นถูกกว่าทุกแบบ เหมาะกับคนที่อยากทุ่มงบไปกับสัญญาสุขภาพ/โรคร้ายเป็นหลัก และรับทำได้ถึงอายุ 90 ปี',
+    images: [PLAN_COVER_IMAGES.main9999],
     coverage: [
       'เสียชีวิตทุกกรณี (ยกเว้นข้อยกเว้นทั่วไป) รับเงิน 100% ของทุนประกัน หรือมูลค่าที่สูงกว่า',
       'อยู่ครบกำหนดสัญญา (อายุ 99 ปี) รับเงินคืนเท่าทุนประกัน',
@@ -2850,6 +2883,7 @@ const PLAN_DETAILS = {
   flexi9920: {
     title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20', category: 'ประกันชีวิตเพื่อเตรียมค่ารักษาหลังเกษียณ',
     overview: 'ประกันชีวิตชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ และตั้งแต่อายุ 65 ปีสามารถใช้วงเงินผลประโยชน์ชีวิตที่เหลือเป็นค่ารักษาพยาบาลแบบ IPD/OPD ได้ตามเงื่อนไข เหมาะกับผู้ที่ต้องการเตรียมค่ารักษาหลังเกษียณตั้งแต่ยังทำงานอยู่',
+    images: [PLAN_COVER_IMAGES.flexi9920],
     coverage: [
       'ปีกรมธรรม์แรกจนถึงอายุ 64 ปี: กรณีเสียชีวิต จ่าย 100% ของทุนประกันชีวิตตามเงื่อนไข',
       'อายุ 65–98 ปี: ใช้ค่ารักษาพยาบาลทั้ง IPD และ OPD ได้ตามจริงจากวงเงินผลประโยชน์ที่เหลือ โดยรวมไม่เกินทุนประกัน',
@@ -2877,6 +2911,7 @@ const PLAN_DETAILS = {
   smartlink153: {
     title: 'สมาร์ท ลิงค์ 15/3 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ คุ้มครอง 15 ปี ชำระเบี้ย 3 ปี มีเงินคืนที่รับประกันตามกรมธรรม์และมีโอกาสรับเงินปันผลเพิ่มเติมซึ่งไม่รับประกัน',
+    images: [PLAN_COVER_IMAGES.smartlink153],
     coverage: [
       'สิ้นปีกรมธรรม์ที่ 1–14 รับเงินคืนปีละ 1% ของทุนประกัน',
       'ครบสัญญาปีที่ 15 รับ 300% ของทุนประกัน พร้อมเงินปันผลถ้ามี',
@@ -2897,6 +2932,7 @@ const PLAN_DETAILS = {
   smartlink156: {
     title: 'สมาร์ท ลิงค์ 15/6 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ คุ้มครอง 15 ปี ชำระเบี้ย 6 ปี มีเงินคืนตามรอบที่รับประกันและมีโอกาสรับเงินปันผลเพิ่มเติมซึ่งไม่รับประกัน',
+    images: [PLAN_COVER_IMAGES.smartlink156],
     coverage: [
       'สิ้นปีกรมธรรม์ที่ 2, 4, 6, 8, 10, 12 และ 14 รับเงินคืนครั้งละ 5% ของทุนประกัน',
       'ครบสัญญาปีที่ 15 รับ 600% ของทุนประกัน พร้อมเงินปันผลถ้ามี',
@@ -2916,7 +2952,7 @@ const PLAN_DETAILS = {
   dhl: {
     title: 'D Health Lite', category: 'สุขภาพเหมาจ่าย (วงเงินต่อครั้งการรักษา)',
     overview: 'ประกันสุขภาพเหมาจ่ายราคาประหยัด เลือกวงเงิน 1 ล้าน หรือ 5 ล้านบาทต่อครั้งการรักษา และเลือกรูปแบบส่วนร่วมจ่ายเพื่อลดเบี้ยได้ (Deductible หรือ Copayment)',
-    images: [{src:BROCHURE_IMAGES.dhl, caption:'ตัวอย่างภาพจากโบรชัวร์ D Health Lite'}],
+    images: [PLAN_COVER_IMAGES.dhl],
     coverage: [
       'ค่าห้อง ค่าอาหาร ค่าพยาบาล ผู้ป่วยใน ตามจริงสูงสุด 4,000 บาท/วัน (แผน 5 ล้าน)',
       'ค่าแพทย์ผ่าตัดและหัตถการ ค่ายา ค่าตรวจวินิจฉัยระหว่างพักรักษา',
@@ -2944,7 +2980,7 @@ const PLAN_DETAILS = {
   ehp: {
     title: 'Elite Health Plus', category: 'สุขภาพเหมาจ่าย (วงเงินต่อปีกรมธรรม์)',
     overview: 'ประกันสุขภาพเหมาจ่ายระดับพรีเมียม (New Health Standard) วงเงินคุ้มครองสูงสุดในกลุ่มผลิตภัณฑ์ 20-100 ล้านบาทต่อปีกรมธรรม์ เลือกพื้นที่คุ้มครองได้ตั้งแต่เฉพาะไทยจนถึงทั่วโลก เหมาะกับกลุ่มลูกค้าไฮเอนด์ที่ต้องการอิสระในการเลือกโรงพยาบาลและห้องพัก',
-    images: [{src:BROCHURE_IMAGES.elite, caption:'ตัวอย่างภาพจากโบรชัวร์ Elite Health Plus'}],
+    images: [PLAN_COVER_IMAGES.ehp],
     coverage: [
       'ค่าห้องและค่าอาหาร (ผู้ป่วยใน): จ่ายตามแผน (10,000/12,000/15,000/25,000 บาท/วัน) หรือไม่เกินค่าห้องเดี่ยวมาตรฐานของโรงพยาบาล แล้วแต่จำนวนใดสูงกว่า ครอบคลุมห้องเดี่ยวมาตรฐานทุกโรงพยาบาลในไทย',
       'ค่ารักษาผู้ป่วยใน (IPD) ครบทั้ง 13 หมวดตามมาตรฐาน คปภ. จ่ายตามจริงทุกหมวด รวมค่าแพทย์ ค่าผ่าตัด/หัตถการ ค่าห้องผ่าตัด ค่ายา ค่าตรวจวินิจฉัย และค่าผ่าตัดใหญ่แบบไม่นอนโรงพยาบาล (Day Surgery)',
@@ -2982,6 +3018,7 @@ const PLAN_DETAILS = {
     title: 'Maternity Plus', category: 'ประกันสุขภาพ – ความคุ้มครองการตั้งครรภ์และคลอดบุตร',
     benefitTitle: 'ตารางผลประโยชน์ Maternity Plus',
     overview: 'สลักหลังเสริมสำหรับผู้หญิงที่วางแผนตั้งครรภ์ คุ้มครองค่าคลอดธรรมชาติ ผ่าตัดคลอด และภาวะแทรกซ้อนระหว่างตั้งครรภ์หรือหลังคลอดตามเงื่อนไข',
+    images: [PLAN_COVER_IMAGES.maternity],
     coverage: [
       'แผน 1: ค่าคลอดปกติ/ผ่าตัดที่วางแผนล่วงหน้าสูงสุด 60,000 บาท และผ่าตัดคลอดที่จำเป็นทางการแพทย์สูงสุด 80,000 บาท',
       'แผน 2: ค่าคลอดปกติ/ผ่าตัดที่วางแผนล่วงหน้าสูงสุด 150,000 บาท และผ่าตัดคลอดที่จำเป็นทางการแพทย์สูงสุด 200,000 บาท',
@@ -3008,6 +3045,7 @@ const PLAN_DETAILS = {
     title: 'Well-Being Plus', category: 'ประกันสุขภาพ – สวัสดิการสุขภาพเพิ่มเติม',
     benefitTitle: 'ตารางผลประโยชน์ Well-Being Plus',
     overview: 'สลักหลังเสริมสำหรับค่าใช้จ่ายดูแลสุขภาพที่แผน IPD ทั่วไปมักไม่ครอบคลุม ได้แก่ ตรวจสุขภาพ วัคซีน ทันตกรรม และสายตา มีให้เลือก 2 แผน',
+    images: [PLAN_COVER_IMAGES.wellbeing],
     coverage: [
       'แผน 1: ตรวจสุขภาพ 5,000 บาท วัคซีน 4,000 บาท ทันตกรรม 10,000 บาท และสายตา 5,000 บาทต่อปี',
       'แผน 2: ตรวจสุขภาพ 10,000 บาท วัคซีน 6,000 บาท ทันตกรรม 15,000 บาท และสายตา 7,500 บาทต่อปี',
@@ -3033,6 +3071,7 @@ const PLAN_DETAILS = {
   maochai: {
     title: 'เหมาจ่าย Extra', category: 'สุขภาพเหมาจ่าย (วงเงินต่อครั้งการรักษา)',
     overview: 'ประกันสุขภาพเหมาจ่าย จ่ายตั้งแต่บาทแรกไม่มีส่วนร่วมจ่าย มี 4 แผนย่อยแยกตามค่าห้องและวงเงินต่อครั้งการรักษา',
+    images: [PLAN_COVER_IMAGES.maochai],
     coverage: [
       'ค่าห้อง ค่าอาหาร ค่าแพทย์ ค่าผ่าตัด ค่ายา ผู้ป่วยใน จ่ายตามจริงไม่มี Deductible',
       'ผ่าตัดใหญ่แบบไม่นอนโรงพยาบาล (Day Surgery)',
@@ -3053,6 +3092,7 @@ const PLAN_DETAILS = {
   ecp: {
     title: 'Extra Care Plus', category: 'สุขภาพ วงเงินต่อครั้งการรักษา (มีส่วนร่วมจ่าย)',
     overview: 'ประกันสุขภาพเหมาจ่ายที่มีความรับผิดส่วนแรก (Deductible 20,000 บาท/ครั้ง) ทำให้เบี้ยถูกกว่าเหมาจ่าย Extra มาก เหมาะกับคนที่มีสวัสดิการหรือประกันกลุ่มช่วยรับผิดชอบส่วนแรกอยู่แล้ว',
+    images: [PLAN_COVER_IMAGES.ecp],
     coverage: [
       'ค่าห้อง ค่าแพทย์ ค่าผ่าตัด ผู้ป่วยใน ส่วนที่เกินจาก Deductible 20,000 บาท/ครั้ง',
     ],
@@ -3072,7 +3112,7 @@ const PLAN_DETAILS = {
   opd: {
     title: 'OPD รายครั้ง / OPD เหมาจ่ายรายปี', category: 'ผู้ป่วยนอก (สัญญาเพิ่มเติมพ่วงสัญญาหลักประกันชีวิต)',
     overview: 'สัญญาเสริมค่ารักษาผู้ป่วยนอก (ไม่นอนโรงพยาบาล) ใช้ได้เฉพาะที่โรงพยาบาล ไม่รวมคลินิก เลือกได้ระหว่างจ่ายเป็นวงเงินต่อครั้ง หรือเหมาจ่ายรวมทั้งปี',
-    images: [{src:BROCHURE_IMAGES.opd, caption:'ตัวอย่างภาพจากเอกสาร OPD เหมาจ่าย'}],
+    images: [PLAN_COVER_IMAGES.opdPerVisit, PLAN_COVER_IMAGES.opdMaochai],
     coverage: [
       'OPD รายครั้ง: จำกัดวงเงินต่อครั้งตามแผน (1,000-3,000 บาท) สูงสุด 30 ครั้ง/ปี',
       'OPD เหมาจ่าย: วงเงินรวมทั้งปี (15,000-100,000 บาท) ใช้ได้สูงสุด 2 ครั้ง/วัน',
@@ -3101,7 +3141,7 @@ const PLAN_DETAILS = {
   careplus: {
     title: 'Care Plus', category: 'โรคร้ายแรง (มะเร็ง / ไตวายเรื้อรัง)',
     overview: 'ประกันโรคร้ายแรงเฉพาะทาง คุ้มครองมะเร็งทุกชนิดทุกระยะ และ/หรือไตวายเรื้อรังระยะสุดท้ายโดยเฉพาะ จ่ายค่ารักษาตามจริงทั้งผู้ป่วยในและผู้ป่วยนอก วงเงิน 5 ล้านบาทต่อโรคต่อปีกรมธรรม์ เลือกซื้อได้ทั้งมะเร็งอย่างเดียว ไตวายเรื้อรังอย่างเดียว หรือทั้งสองโรค (เลือกทั้งสองโรคเบี้ยถูกกว่าซื้อแยกราว 10%) — เครื่องมือนี้เปิดขายเฉพาะทุน 5 ล้านบาท เพราะทุน 1 ล้านบาทมีคนเลือกน้อยและตารางเบี้ยที่เผยแพร่ไม่ครบทุกช่วงอายุ',
-    images: [{src:BROCHURE_IMAGES.careplus, caption:'ตัวอย่างภาพจากโบรชัวร์ Care Plus'}],
+    images: [PLAN_COVER_IMAGES.careplus],
     coverage: [
       'มะเร็ง: จ่ายค่ารักษาตามจริงสำหรับการรักษาด้วยรังสีรักษา รังสีร่วมรักษา เวชศาสตร์นิวเคลียร์รักษา เคมีบำบัด ภูมิคุ้มกันบำบัด ฮอร์โมนบำบัด การปลูกถ่ายเซลล์ต้นกำเนิด การรักษาแบบออกฤทธิ์จำเพาะเจาะจงต่อเซลล์มะเร็ง (Targeted Therapy) ศัลยกรรมถอนรากถอนโคน และรังสีศัลยกรรม',
       'ไตวายเรื้อรัง: จ่ายค่ารักษาตามจริงสำหรับการล้างไตผ่านทางเส้นเลือด การล้างไตทางช่องท้อง การล้างไตแบบประสิทธิภาพสูง การปลูกถ่ายไต และการผ่าตัดเส้นฟอกไต',
@@ -3136,6 +3176,7 @@ const PLAN_DETAILS = {
   cipc: {
     title: 'CI Perfect Care', category: 'โรคร้ายแรง (ครอบคลุม 36 โรค)',
     overview: 'ประกันโรคร้ายแรงครอบคลุมกว้างที่สุดในกลุ่ม คุ้มครอง 36 โรคร้ายแรงตั้งแต่ระยะเริ่มต้นไปจนถึงระยะรุนแรง จ่ายเป็นเปอร์เซ็นต์ของทุนประกันสะสมได้สูงสุด 100%',
+    images: [PLAN_COVER_IMAGES.cipc],
     coverage: [
       'ระยะเริ่มต้น/ไม่รุนแรง จ่าย 10-50% ของทุนประกัน ตามความรุนแรงของโรค',
       'ระยะรุนแรง/ลุกลาม จ่ายเพิ่มจนครบ 100% ของทุนประกัน',
@@ -3157,6 +3198,7 @@ const PLAN_DETAILS = {
   multipleci: {
     title: 'Multiple CI', category: 'โรคร้ายแรง (4 กลุ่ม 35 โรค)',
     overview: 'สัญญาเพิ่มเติมโรคร้ายแรงแบบจ่ายหลายครั้ง แบ่งความคุ้มครองเป็น 4 กลุ่มโรค จ่าย 100% ของทุนต่อกลุ่ม และจ่ายรวมได้สูงสุด 400% ของทุนประกัน',
+    images: [PLAN_COVER_IMAGES.multipleci],
     coverage: [
       'กลุ่มที่ 1 โรคเกี่ยวกับหลอดเลือดและหัวใจ รวมถึงหัวใจวาย การผ่าตัดหลอดเลือดหัวใจ และโรคหลอดเลือดสมองตามคำจำกัดความ',
       'กลุ่มที่ 2 โรคมะเร็งและเนื้องอกในสมองชนิดไม่ร้ายแรงตามคำจำกัดความ',
@@ -3178,6 +3220,7 @@ const PLAN_DETAILS = {
   cancer: {
     title: 'ความคุ้มครองโรคมะเร็ง (Cancer)', category: 'โรคร้ายแรง (เฉพาะมะเร็ง)',
     overview: 'ประกันคุ้มครองโรคมะเร็งเฉพาะทาง จ่ายเงินก้อนทันทีเมื่อตรวจพบ ทั้งระยะไม่ลุกลามและระยะลุกลาม พร้อมเงินชดเชยรายวันระหว่างรักษา',
+    images: [PLAN_COVER_IMAGES.cancer],
     coverage: [
       'ตรวจพบมะเร็งระยะไม่ลุกลาม (Carcinoma in Situ) รับเงินก้อนตามสัดส่วนของทุนประกัน',
       'ตรวจพบมะเร็งระยะลุกลาม รับเงินก้อนเพิ่มจนครบ 100% ของทุนประกัน',
@@ -3198,6 +3241,7 @@ const PLAN_DETAILS = {
   dcare: {
     title: 'D Care', category: 'โรคร้ายแรง (เลือกกลุ่มโรคเองได้)',
     overview: 'ประกันโรคร้ายแรงแบบเลือกกลุ่มโรคและทุนประกันได้เอง เหมาะกับคนที่กังวลโรคเฉพาะกลุ่ม ไม่ต้องซื้อความคุ้มครองที่ไม่จำเป็น',
+    images: [PLAN_COVER_IMAGES.dcare],
     coverage: [
       'มะเร็ง (Cancer): จ่ายเงินก้อนเมื่อตรวจพบมะเร็งทุกระยะ',
       'หัวใจและหลอดเลือด (CardioVascular): กล้ามเนื้อหัวใจตาย, การผ่าตัดหลอดเลือดหัวใจ ฯลฯ',
@@ -3226,6 +3270,7 @@ const PLAN_DETAILS = {
   hb: {
     title: 'HB (สุขภาพวงเงินแน่นอน)', category: 'ชดเชยรายวัน',
     overview: 'เงินชดเชยรายวันระหว่างนอนโรงพยาบาล จ่ายเป็นเงินก้อนต่อวันโดยไม่ต้องมีใบเสร็จค่ารักษามาเบิก ใช้เสริมรายได้ที่ขาดไปช่วงพักรักษาตัว',
+    images: [PLAN_COVER_IMAGES.hb],
     coverage: [
       'จ่ายเงินชดเชยตามจำนวนวันที่นอนพักรักษาตัวในโรงพยาบาล ไม่ว่าจะมีค่าใช้จ่ายจริงเท่าไหร่',
     ],
@@ -3245,6 +3290,7 @@ const PLAN_DETAILS = {
   pa: {
     title: 'PA Easy Plan Rider', category: 'อุบัติเหตุ',
     overview: 'ประกันอุบัติเหตุ คุ้มครองการเสียชีวิต ทุพพลภาพ และค่ารักษาจากอุบัติเหตุ คุ้มครองทันทีไม่มีระยะเวลารอคอย เบี้ยปรับตามช่วงอายุปัจจุบัน (ไม่ใช่อายุเริ่มทำ) ทุกครั้งที่อายุข้ามช่วง มี 7 แผนให้เลือกตามวงเงินคุ้มครอง',
+    images: [PLAN_COVER_IMAGES.pa],
     coverage: [
       'เสียชีวิต ทุพพลภาพถาวรสิ้นเชิง สูญเสียอวัยวะจากอุบัติเหตุทั่วไป ตามทุนของแผนที่เลือก (300,000 – 10,000,000 บาท)',
       'ถูกฆาตกรรม/ถูกทำร้ายร่างกาย คุ้มครองเท่าทุนประกัน (สูงสุดแผน 6-7 จำกัดไม่เกิน 5,000,000 บาท)',
@@ -3315,7 +3361,7 @@ function showPlanDetail(id, options = {}){
       <div class="cat">${p.category}</div>
       <h2 style="margin-top:4px;">${p.title}</h2>
       <p>${p.overview}</p>
-      ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img src="${typeof img==='string'?img:img.src}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
+      ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img class="cover-${typeof img==='string'?'landscape':(img.format||'landscape')}" src="${typeof img==='string'?img:img.src}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
     </div>
     <div class="content-card">
       <h2>ความคุ้มครองโดยละเอียด</h2>
@@ -4041,9 +4087,25 @@ function routeFromLocation(){
   }
   const page = Object.keys(PAGE_ROUTES).find(name => PAGE_ROUTES[name] === path) || 'home';
   showPage(page, {updateUrl:false});
+  if(page === 'knowledge') requestAnimationFrame(focusKnowledgeFaqFromHash);
 }
 
 window.addEventListener('popstate', routeFromLocation);
+window.addEventListener('hashchange', () => {
+  if(normalizedPathname() === PAGE_ROUTES.knowledge) focusKnowledgeFaqFromHash();
+});
+
+function focusKnowledgeFaqFromHash(){
+  const id = decodeURIComponent(window.location.hash.slice(1));
+  if(!id) return;
+  const target = document.getElementById(id);
+  if(!target || !target.matches('#faqList details.faq')) return;
+  document.querySelectorAll('#faqList details.faq.faq-direct-target')
+    .forEach(item => item.classList.remove('faq-direct-target'));
+  target.open = true;
+  target.classList.add('faq-direct-target');
+  requestAnimationFrame(() => target.scrollIntoView({behavior:'auto', block:'start'}));
+}
 
 function faqNormalizeText(s){
   return (s||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
