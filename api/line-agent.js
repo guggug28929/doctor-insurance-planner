@@ -891,6 +891,18 @@ const KNOWLEDGE_TOPIC_ORDER = [
   "general_faq",
 ];
 
+function isChronicOpdWaitingQuestion(message) {
+  const text = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
+  const mentionsOpd = /opd|ผู้ป่วยนอก/i.test(text);
+  const mentionsChronicCondition =
+    /ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก/i.test(text);
+  const asksWaitingPeriod =
+    /ระยะ(?:เวลา)?รอคอย|waiting\s*period|รอ(?:กี่|นาน|\s*(?:30|120|180)\s*วัน)/i.test(
+      text
+    );
+  return mentionsOpd && mentionsChronicCondition && asksWaitingPeriod;
+}
+
 function inferKnowledgeTopics(message) {
   const text = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
   const topics = new Set();
@@ -941,8 +953,17 @@ function knowledgeTopicsForTurn(analysis, message) {
 }
 
 function appendKnowledgeLinks(reply, analysis, message) {
-  const base = String(reply || "").trim();
-  const lines = knowledgeTopicsForTurn(analysis, message)
+  const topics = knowledgeTopicsForTurn(analysis, message);
+  let base = String(reply || "").trim();
+  if (
+    topics.length === 1 &&
+    topics[0] === "waiting_period" &&
+    isChronicOpdWaitingQuestion(message)
+  ) {
+    base =
+      "สำหรับแผน OPD โรคเรื้อรัง เช่น ภูมิแพ้ โรคกระเพาะ เบาหวาน ความดัน หัวใจ ไทรอยด์ และลมชัก มีระยะรอคอย 180 วันครับ";
+  }
+  const lines = topics
     .map((topic) => KNOWLEDGE_LINKS[topic])
     .filter((item) => !base.includes(item.url))
     .map(
@@ -950,6 +971,21 @@ function appendKnowledgeLinks(reply, analysis, message) {
         "ดูรายละเอียดเรื่อง" + item.label + "เพิ่มเติมได้ที่ " + item.url + " ครับ"
     );
   return lines.length ? base + "\n\n" + lines.join("\n") : base;
+}
+
+function isKnowledgeOnlyTurn(analysis, message) {
+  if (!knowledgeTopicsForTurn(analysis, message).length) return false;
+  if (analysis?.asksForPremium || analysis?.shouldRecommendPlan) return false;
+  if (["human_handoff", "resume_ai", "reset"].includes(analysis?.intent)) {
+    return false;
+  }
+
+  const text = String(message || "").replace(/\s+/g, " ").trim();
+  const asksForPlanning =
+    /(?:อยาก|สนใจ|ช่วย|ขอ|แนะนำ|เสนอ|คำนวณ|เช็ก|ดู).{0,18}(?:แผน|ประกัน|เบี้ย|ราคา|แพ็กเกจ)|(?:ซื้อ|ทำ)\s*(?:ประกัน|แผน)|(?:งบ|เบี้ย|ราคา|ค่าห้อง|วงเงิน).{0,18}(?:ต่อปี|เท่าไหร่|กี่บาท|แนะนำ|เสนอ)/i.test(
+      text
+    );
+  return !asksForPlanning;
 }
 
 const HEALTH_HANDOFF_NOTE =
@@ -1050,8 +1086,13 @@ export default async function handler(req, res) {
 
     const currentProfile = migrateProfile(req.body?.profile || {});
     const analysis = await analyzeTurn(message, currentProfile);
-    const contextualUpdates = inferContextualUpdates(message, currentProfile);
-    const profile = mergeProfile(currentProfile, analysis, message, contextualUpdates);
+    const knowledgeOnly = isKnowledgeOnlyTurn(analysis, message);
+    const contextualUpdates = knowledgeOnly
+      ? {}
+      : inferContextualUpdates(message, currentProfile);
+    const profile = knowledgeOnly
+      ? currentProfile
+      : mergeProfile(currentProfile, analysis, message, contextualUpdates);
 
     if (analysis.intent === "human_handoff") {
       profile.botMode = "human";
@@ -1081,11 +1122,12 @@ export default async function handler(req, res) {
     }
 
     const needsPlanning =
-      analysis.asksForPremium ||
-      analysis.shouldRecommendPlan ||
-      analysis.intent === "insurance_advice" ||
-      analysis.intent === "profile_update" ||
-      Object.keys(contextualUpdates).length > 0;
+      !knowledgeOnly &&
+      (analysis.asksForPremium ||
+        analysis.shouldRecommendPlan ||
+        analysis.intent === "insurance_advice" ||
+        analysis.intent === "profile_update" ||
+        Object.keys(contextualUpdates).length > 0);
 
     if (needsPlanning) {
       const missing = missingFields(profile);
@@ -1179,6 +1221,7 @@ export {
   defaultProfile,
   inferContextualUpdates,
   inferKnowledgeTopics,
+  isKnowledgeOnlyTurn,
   mergeProfile,
   missingFields,
 };
