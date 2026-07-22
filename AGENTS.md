@@ -39,8 +39,22 @@ Rules:
 - Store only the minimum health information needed; do not persist full medical records.
 - The latest explicit customer statement overrides older memory.
 - Do not ask a question already answered in the same turn or in stored memory.
-- LINE replies are natural Thai, concise, end politely with `ครับ`, contain no Markdown, and must never say `D Health Plus` (use `D Health Lite`).  For a detailed D Care question, append only the approved Doctor Gug plan URL: `https://doctor-insurance.com`.
+- LINE replies are natural Thai, concise, end politely with `ครับ`, contain no Markdown, and must never say `D Health Plus` (use `D Health Lite`). For a detailed D Care question, append the approved Doctor Gug plan URL: `https://doctor-insurance.com/plans/d-care`.
+- Every successful LINE quote must deterministically show each quoted plan's name, approved description, exact premium, and its matching `https://doctor-insurance.com/plans/...` URL immediately below that plan. End with the exact combined premium. Alternative plans must show separate totals and must never be added together.
+- Customer-facing plan links must use `doctor-insurance.com` only. Source/reference URLs from `muangthai-agent.com` remain metadata and must not be sent to customers.
 - After a successful quote, ask whether the customer wants the brochures. If the customer gives an affirmative Thai reply, send only the hosted brochure links for plans actually included in that quote. The LINE Messaging API cannot send a PDF attachment; use the approved `https://doctor-insurance.com/brochures/` PDF links. Do not send a brochure for an unquoted plan.
+
+## LINE knowledge links
+
+After answering a LINE customer’s knowledge question, append only the matching approved Doctor Gug link:
+
+- waiting periods, 30/120/180 days, long-incubation conditions, or chronic OPD questions such as allergy and gastritis: `https://www.doctor-insurance.com/health-knowledge#waiting-period`
+- the 21 health exclusions, non-covered items, or disease exclusions: `https://www.doctor-insurance.com/health-knowledge#health-exclusions`
+- Fax Claim, Direct Claim, advance payment, network hospitals, Pre-claim, or claim-history investigation: `https://www.doctor-insurance.com/health-knowledge#fax-claim`
+- renewal Copayment, Simple Disease, or 200%/400% claim thresholds: `https://www.doctor-insurance.com/health-knowledge#copayment`
+- broad FAQ requests: `https://www.doctor-insurance.com/health-knowledge`
+
+The AI structured analysis is the primary topic classifier and deterministic semantic matching is the fallback. A turn may include multiple topics. Do not append unrelated links or duplicate a URL already present in the reply.
 
 ## Health-history behavior
 
