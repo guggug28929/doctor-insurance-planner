@@ -1,7 +1,5 @@
 {
   "rewrites": [
-    { "source": "/brochures/d-health-lite.pdf", "destination": "/api/brochure?file=d-health-lite.pdf" },
-    { "source": "/brochures/cancer.pdf", "destination": "/api/brochure?file=cancer.pdf" },
     { "source": "/plans", "destination": "/index.html" },
     { "source": "/plans/:path*", "destination": "/index.html" },
     { "source": "/health-knowledge", "destination": "/index.html" },
