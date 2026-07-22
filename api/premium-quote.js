@@ -928,6 +928,10 @@ function buildCriticalComparison(rates, profile) {
     planType: "critical_comparison",
     planCode: `critical_${capital}`,
     totalPremium: null,
+    items: [
+      itemMain(mainId, main),
+      ...(pa ? [itemPa(rates, pa, 1)] : []),
+    ],
     alternatives: options.map((option) => ({ ...option, totalWithMain: main + pa + option.premium })),
     text: lines.join("\n"),
     notes: [
