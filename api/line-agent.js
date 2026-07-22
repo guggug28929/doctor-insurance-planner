@@ -3,6 +3,7 @@
 // ตัวเลขเบี้ยต้องมาจาก /api/premium-quote เท่านั้น
 
 import { brochureKeysForQuote, brochurePrompt } from "../lib/brochures.js";
+import { formatLineQuote } from "../lib/line-plan-catalog.js";
 
 const MODEL = process.env.OPENAI_MODEL_LINE || "gpt-5.6-luna";
 
@@ -33,7 +34,7 @@ const PRODUCT_RULES = `
 20. ถ้าลูกค้าบอกว่าเบี้ยแพง/เกินงบ ให้จัดใหม่โดยถอดความคุ้มครองเสริมก่อนและเลือกชุดที่ใกล้งบที่สุด ห้ามส่งแผนเดิมซ้ำเฉย ๆ
 21. D Health Lite: แอดมิดโรงพยาบาลในเครือ MTL Smile Network ไม่ต้องเสียส่วนต่างค่าห้องตามเงื่อนไขเครือข่าย ส่วนโรงพยาบาลคู่สัญญาบางแห่งตัวแทอาจช่วยขอส่วนลดค่าห้องได้
 22. ห้ามแต่งตัวเลขเบี้ย ตัวเลขทุกบาทต้องมาจากเครื่องมือ premium quote
-23. ห้ามใช้ Markdown; อนุญาตเฉพาะ URL https://doctor-insurance.com ในคำตอบรายละเอียด D Care
+23. ห้ามใช้ Markdown; ลิงก์สำหรับลูกค้าต้องเป็นหน้าแผนภายใต้ https://doctor-insurance.com เท่านั้น
 22. หากมีประวัติสุขภาพหรือโรคประจำตัว ห้ามตัดจบหรือปฏิเสธทันที ต้องเก็บข้อมูลที่จำเป็น จัดแผนและแจ้งเบี้ยเบื้องต้นให้เสร็จก่อน
 23. หลังเสนอแผนสำหรับผู้มีประวัติสุขภาพแล้ว ให้แจ้งว่าผลรับประกันขึ้นกับบริษัท ปิดผู้ช่วยอัตโนมัติ และส่งต่อให้หมอกึ๊กหรือเจ้าหน้าที่จริงดูแลต่อ
 24. เมื่อลูกค้าสนใจโรคร้ายแรง ต้องถามก่อนว่าเน้นค่ารักษา เงินก้อนเจอจ่ายจบ หรือทั้งสองอย่าง
@@ -41,7 +42,7 @@ const PRODUCT_RULES = `
 26. ถ้าเน้นเงินก้อนหรือทั้งสองอย่าง ให้เสนอเปรียบเทียบ CI Perfect Care, Multiple CI, D Care และความคุ้มครองโรคมะเร็งจากตารางจริง
 27. ถ้าต้องการความคุ้มครองตั้งครรภ์/คลอดบุตร ให้เพิ่ม Maternity Plus; ถ้าต้องการตรวจสุขภาพ วัคซีน ทันตกรรม หรือสายตา ให้เพิ่ม Well-Being Plus ทั้งสองซื้อเดี่ยวไม่ได้ ต้องแนบ D Health Lite หรือ Elite Health Plus
 28. หากกังวลค่าเบี้ย/ค่ารักษาหลังเกษียณ มีสวัสดิการปัจจุบัน หรือเป็นรัฐวิสาหกิจ ให้แนะนำเมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 ซึ่งชำระ 20 ปี และตั้งแต่อายุ 65 ปีเปลี่ยนทุนคงเหลือเป็นค่ารักษา IPD/OPD ได้ตามเงื่อนไข
-29. D Care คือประกันโรคร้ายแรงแบบเงินก้อน เลือกกลุ่มโรคได้ (มะเร็ง หัวใจและหลอดเลือด ปลูกถ่ายอวัยวะ ระบบประสาทและกล้ามเนื้อ อื่น ๆ หรือกลุ่มโรคยอดฮิต) หากถามรายละเอียด D Care ให้ปิดท้ายด้วย https://doctor-insurance.com
+29. D Care คือประกันโรคร้ายแรงแบบเงินก้อน เลือกกลุ่มโรคได้ (มะเร็ง หัวใจและหลอดเลือด ปลูกถ่ายอวัยวะ ระบบประสาทและกล้ามเนื้อ อื่น ๆ หรือกลุ่มโรคยอดฮิต) หากถามรายละเอียด D Care ให้ปิดท้ายด้วย https://doctor-insurance.com/plans/d-care
 30. หากลูกค้าบอกว่าทุนสัญญาหลัก Smart Protection 99/20 ขั้นต่ำ 200,000 บาทสูงเกินไป ให้ใช้ 99/99 ทุน 100,000 บาทพร้อม PA; CI Perfect Care ทำได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก ดังนั้น 99/99 ทุน 100,000 บาททำ CI Perfect Care ได้ไม่เกิน 1,000,000 บาท
 31. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ Smart Link 15/3 และ 15/6 พร้อมเลือกทุนตามงบ
 `.trim();
@@ -812,14 +813,7 @@ ${PRODUCT_RULES}
 }
 
 function quoteFallbackReply(quote) {
-  if (!quote?.ok) return quote?.question || "ยังไม่สามารถจัดแผนในกรอบงบที่แจ้งได้ครับ";
-  const parts = [];
-  if (quote.selectionReason) parts.push(quote.selectionReason);
-  parts.push(quote.text);
-  if (Array.isArray(quote.notes) && quote.notes.length) {
-    parts.push(quote.notes.join("\n"));
-  }
-  return parts.filter(Boolean).join("\n\n");
+  return formatLineQuote(quote);
 }
 
 function replyMatchesQuote(reply, quote) {
@@ -842,7 +836,7 @@ function replyMatchesQuote(reply, quote) {
 function appendDcareDetailLink(reply, message) {
   const asksDetail = /d\s*care|ดี\s*แคร์/i.test(message) && /(?:มีโรค|โรคอะไร|ต่างกัน|รายละเอียด|คุ้มครอง|กลุ่มโรค)/.test(message);
   if (!asksDetail || /doctor-insurance\.com/i.test(reply)) return reply;
-  return `${String(reply || "").trim()}\n\nD Care เป็นประกันโรคร้ายแรงแบบเงินก้อนที่เลือกกลุ่มโรคได้ครับ ดูรายละเอียดเพิ่มเติมได้ที่ https://doctor-insurance.com`;
+  return `${String(reply || "").trim()}\n\nD Care เป็นประกันโรคร้ายแรงแบบเงินก้อนที่เลือกกลุ่มโรคได้ครับ ดูรายละเอียดเพิ่มเติมได้ที่ https://doctor-insurance.com/plans/d-care`;
 }
 
 const HEALTH_HANDOFF_NOTE =
@@ -864,6 +858,10 @@ function appendHealthHandoff(reply) {
 }
 
 async function writeReply({ message, profile, analysis, quote = null, forcedQuestion = null }) {
+  // การวิเคราะห์ข้อความยังใช้ AI แต่คำตอบใบเสนอใช้ formatter แบบ deterministic
+  // เพื่อรับประกันว่าชื่อ คำบรรยาย เบี้ย และลิงก์ตรงกับรายการจากเครื่องคำนวณทุกครั้ง
+  if (quote?.ok) return quoteFallbackReply(quote);
+
   const instructions = `
 ${PRODUCT_RULES}
 
@@ -874,11 +872,10 @@ ${PRODUCT_RULES}
 - ถ้ามี QUOTE ให้ใช้แผน รายการ และตัวเลขจาก QUOTE เท่านั้น ห้ามอ้างแผนก่อนหน้า ห้ามเปลี่ยนชื่อแผน และห้ามเติมตัวเลข
 - ถ้าลูกค้าขอ D Health Lite แต่ QUOTE เป็น D Health Lite ต้องตอบ D Health Lite ห้ามย้อนกลับไป Elite
 - ถ้าลูกค้าขอ Elite 20 แต่ QUOTE เป็น Elite 20 ต้องทำตามตรง ๆ
-- เมื่อมี QUOTE ให้แจกแจงแต่ละสัญญาและยอดรวม
 - ถ้า healthStatus เป็น has_history ต้องเสนอแผนจาก QUOTE ให้ครบก่อน ห้ามตอบเพียงว่าจะส่งต่อเจ้าหน้าที่
 - ถ้า healthStatus เป็น has_history ไม่ต้องถามรายละเอียดโรคเพิ่มและไม่ต้องเขียนข้อความปิดบอตหรือส่งต่อเอง ระบบจะเติมข้อความมาตรฐานท้ายคำตอบให้
-- ไม่มี Markdown ไม่มีลิงก์ดิบ ลงท้ายครับ
-- คำตอบ D Care ที่ถามรายละเอียดให้บอกว่าเป็นเงินก้อน เลือกกลุ่มโรคได้ และใส่ URL https://doctor-insurance.com ท้ายคำตอบได้
+- ไม่มี Markdown ลงท้ายครับ
+- คำตอบ D Care ที่ถามรายละเอียดให้บอกว่าเป็นเงินก้อน เลือกกลุ่มโรคได้ และใส่ URL https://doctor-insurance.com/plans/d-care ท้ายคำตอบได้
 `.trim();
 
   const result = await callOpenAI({
