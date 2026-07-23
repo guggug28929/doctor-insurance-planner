@@ -1,6 +1,9 @@
 {
   "name": "doctor-insurance-chatbot",
   "version": "4.0.0",
+  "dependencies": {
+    "googleapis": "^140.0.1"
+  },
   "private": true,
   "type": "module",
   "scripts": {
