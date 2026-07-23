@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/reminders-cron", "schedule": "0 2 * * *" }
+  ],
   "redirects": [
     { "source": "/brochures/cancer.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/cancer.pdf", "permanent": false },
     { "source": "/brochures/care-plus.pdf", "destination": "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/care-plus.pdf", "permanent": false },
