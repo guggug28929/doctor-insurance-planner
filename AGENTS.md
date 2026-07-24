@@ -11,7 +11,7 @@ Read this file before changing the project. Permanent product rules belong here.
 - `api/line-webhook.js`: LINE signature verification, idempotency, Redis profile persistence, pause/resume/reset, and replies.
 - `api/line-agent.js`: AI interpretation of each normal customer turn, structured profile updates, missing questions, recommendation, and handoff.
 - `api/premium-quote.js`: deterministic product selection and premium calculation.
-- `api/reminders-cron.js`: daily Vercel Cron (09:00 Asia/Bangkok). Reads the MTL case-tracker Google Sheet (birthday, next due date, 30-day pre-reminder columns) and sends LINE push messages for rows that already have a LINE User ID. Rows without a LINE User ID are marked "รอ LINE User ID" and skipped, not errored. Requires env vars GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY, SHEET_ID, SHEET_TAB_NAME (optional), reuses LINE_CHANNEL_ACCESS_TOKEN.
+- `api/reminders-cron.js`: daily Vercel Cron (09:00 Asia/Bangkok). Reads the MTL case-tracker Google Sheet (`MTL_case_tracker_updated_v5_with_birthday`, ID `1mbr4g-spYOqlS3yBZuRnyjR3otTCfq28REobg5F_drg` -- this is the single authoritative file; other similarly-named copies were stray duplicates and have been removed, do not create new ones) (birthday, next due date, 30-day pre-reminder columns) and sends LINE push messages for rows that already have a LINE User ID. Rows without a LINE User ID are marked "รอ LINE User ID" and skipped, not errored. Requires env vars GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY, SHEET_ID, SHEET_TAB_NAME (optional), reuses LINE_CHANNEL_ACCESS_TOKEN.
  
   ## Reminders and loyalty points (Smile Point)
  
