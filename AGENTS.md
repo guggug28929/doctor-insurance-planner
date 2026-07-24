@@ -11,6 +11,12 @@ Read this file before changing the project. Permanent product rules belong here.
 - `api/line-webhook.js`: LINE signature verification, idempotency, Redis profile persistence, pause/resume/reset, and replies.
 - `api/line-agent.js`: AI interpretation of each normal customer turn, structured profile updates, missing questions, recommendation, and handoff.
 - `api/premium-quote.js`: deterministic product selection and premium calculation.
+- `api/reminders-cron.js`: daily Vercel Cron (09:00 Asia/Bangkok). Reads the MTL case-tracker Google Sheet (birthday, next due date, 30-day pre-reminder columns) and sends LINE push messages for rows that already have a LINE User ID. Rows without a LINE User ID are marked "รอ LINE User ID" and skipped, not errored. Requires env vars GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY, SHEET_ID, SHEET_TAB_NAME (optional), reuses LINE_CHANNEL_ACCESS_TOKEN.
+ 
+  ## Reminders and loyalty points (Smile Point)
+ 
+  -  Birthday and premium due-date reminders are implemented in `api/reminders-cron.js` and are considered production-ready once the Google service account env vars are set and the sheet's LINE User ID column is populated.
+    - Smile Club ("Smile Point") reminders are NOT implemented. There is no API or data source connected for real Muang Thai Life Smile Club point balances. Do not fabricate or estimate point values. When a real data source/API is available, add a dedicated column and a separate notification path — do not overload the due-date reminder message with unverified point numbers.
 - `data/premium-rates.json`: the only premium-rate source used by the web planner and APIs.
 - `index.html`: web UI; it must load `data/premium-rates.json` and must not contain a second embedded rate table.
 - `test/`: deterministic calculator and conversation-routing tests.
