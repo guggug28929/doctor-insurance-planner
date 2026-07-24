@@ -16,7 +16,7 @@ Read this file before changing the project. Permanent product rules belong here.
   ## Reminders and loyalty points (Smile Point)
  
   -  Birthday and premium due-date reminders are implemented in `api/reminders-cron.js` and are considered production-ready once the Google service account env vars are set and the sheet's LINE User ID column is populated.
-    - Smile Club ("Smile Point") reminders are NOT implemented. There is no API or data source connected for real Muang Thai Life Smile Club point balances. Do not fabricate or estimate point values. When a real data source/API is available, add a dedicated column and a separate notification path — do not overload the due-date reminder message with unverified point numbers.
+    - Smile Club ("Smile Point") expiry reminders ARE implemented in `api/reminders-cron.js`, but the balance and expiry date for each case must be filled in manually by the agent (columns AB `แต้ม Smile Point`, AC `วันหมดอายุแต้ม`, AD `สถานะแจ้งเตือนแต้ม`) because Muang Thai Life has no public API for per-customer Smile Club point data (verified against https://www.muangthai.co.th/th/smileclub -- a public rewards catalog page; real balances require login via MTL Click app or the agent portal). The AI must never fabricate or estimate a point value or expiry date -- only use what the agent entered in the sheet. Once entered, a LINE reminder fires automatically when the expiry is within 30 days.
 - `data/premium-rates.json`: the only premium-rate source used by the web planner and APIs.
 - `index.html`: web UI; it must load `data/premium-rates.json` and must not contain a second embedded rate table.
 - `test/`: deterministic calculator and conversation-routing tests.
