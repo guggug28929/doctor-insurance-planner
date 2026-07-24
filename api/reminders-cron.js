@@ -3,16 +3,17 @@ import { google } from "googleapis";
 // -----------------------------------------------------------------------
 // Daily reminder cron: birthday (HBD) + premium due-date reminders.
 //
-// Reads the MTL case-tracker Google Sheet and, for every row that already
-// has a LINE User ID captured, pushes a LINE message when:
+// Reads the MTL case-tracker Google Sheet
+// (MTL_case_tracker_updated_v5_with_contact_info -- the authoritative file
+// with birthday, phone, and email filled in for all cases) and, for every
+// row that already has a LINE User ID captured, pushes a LINE message when:
 //   - today matches the customer's birthday (วันเกิด)
 //   - today matches the 30-day pre-reminder date (วันแจ้งเตือน (30 วันก่อน))
 //
 // Smile Point reminders are intentionally NOT implemented yet: there is no
 // data source or API access to real Muang Thai Life Smile Club point
-// balances. A "Smile Point (แต้มสะสม)" column exists in the sheet as a
-// placeholder for when that data becomes available; until then this cron
-// does not touch it and sends nothing Smile-Point related.
+// balances. Do not add a Smile Point column or logic here until a real
+// data source/API exists -- see AGENTS.md.
 //
 // Required environment variables (set in Vercel > Settings > Environment
 // Variables -- never commit real values):
@@ -20,10 +21,19 @@ import { google } from "googleapis";
 //   GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY   service account private_key
 //                                  (paste with literal \n, code unescapes it)
 //   SHEET_ID                       the case-tracker spreadsheet ID
+//                                  (MTL_case_tracker_updated_v5_with_contact_info)
 //   SHEET_TAB_NAME                 tab/sheet name (default: "Sheet1")
 //   LINE_CHANNEL_ACCESS_TOKEN      already configured for line-webhook.js
 //
 // The service account must be shared as an Editor on the spreadsheet.
+//
+// Column layout of MTL_case_tracker_updated_v5_with_contact_info:
+//   A เลขเคส, B ชื่อ, C นามสกุล, D วันเกิด, E เบอร์โทร, F อีเมล,
+//   G ประเภทช่องทาง, H ชื่อบัญชีติดต่อ, I เลขที่ใบคำขอ,
+//   J เลขที่พิจารณา/กรมธรรม์, K สถานะ, L ตรวจเลขใบคำขอ, M คีย์ป้องกันซ้ำ,
+//   N วันเริ่มมีผลบังคับ, O วันครบกำหนดครั้งถัดไป,
+//   P วันแจ้งเตือน (30 วันก่อน), Q ยอดเบี้ย (บาท), R LINE User ID,
+//   S สถานะส่ง LINE, T อีเมลแจ้งตัวแทน, ... (through AA).
 // -----------------------------------------------------------------------
 
 const COLUMNS = {
@@ -31,11 +41,13 @@ const COLUMNS = {
   FIRST_NAME: 1,
   LAST_NAME: 2,
   BIRTHDAY: 3,
-  NEXT_DUE_DATE: 12,
-  PRE_REMINDER_DATE: 13,
-  PREMIUM_AMOUNT: 14,
-  LINE_USER_ID: 15,
-  LINE_SEND_STATUS: 16,
+  PHONE: 4,
+  EMAIL: 5,
+  NEXT_DUE_DATE: 14,
+  PRE_REMINDER_DATE: 15,
+  PREMIUM_AMOUNT: 16,
+  LINE_USER_ID: 17,
+  LINE_SEND_STATUS: 18,
 };
 
 const HEADER_ROWS = 1;
@@ -55,7 +67,9 @@ function formatThaiDate(date) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-// Sheet dates are stored as DD/MM/YYYY text.
+// Sheet dates are stored as DD/MM/YYYY text (birthday uses Buddhist Era
+// year, but only day+month are compared for birthday matching, so the era
+// does not matter there).
 function parseSheetDate(value) {
   if (!value) return null;
   const match = String(value).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -126,7 +140,7 @@ function premiumDueMessage(firstName, dueDateText, amountText) {
 }
 
 async function readRows(sheets, spreadsheetId, tab) {
-  const range = `${tab}!A${HEADER_ROWS + 1}:Y`;
+  const range = `${tab}!A${HEADER_ROWS + 1}:AA`;
   const result = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range,
