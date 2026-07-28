@@ -36,7 +36,7 @@ function quote(profile) {
   });
 }
 
-test("เลือก Elite 20 + 99/99 + PA เมื่อ OPD เป็น optional และงบ 40,000", async (t) => {
+test("เลือก Elite 20 + 99/99 โดยไม่บังคับ PA เมื่อ OPD เป็น optional และงบ 40,000", async (t) => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () =>
     new Response(indexHtml, {
@@ -66,13 +66,11 @@ test("เลือก Elite 20 + 99/99 + PA เมื่อ OPD เป็น opt
   assert.equal(result.body.planCode, "elite_20m");
   assert.match(result.body.text, /Elite Health Plus.*20/);
   assert.match(result.body.text, /99\/99/);
-  assert.match(result.body.text, /PA/);
-  assert.equal(result.body.totalPremium, 43325);
+  assert.doesNotMatch(result.body.text, /PA/);
+  assert.equal(result.body.totalPremium, 42025);
 
   const mainItem = result.body.items.find((item) => item.key === "main");
-  const paItem = result.body.items.find((item) => item.key === "pa");
   assert.match(mainItem.product, /99\/99/);
-  assert.ok(paItem, "99/99 ต้องมี PA แนบเสมอ");
 });
 
 test("คำขอ D Health Lite โดยตรงชนะกฎค่าห้องที่เคยเลือก Elite", async () => {
@@ -269,5 +267,5 @@ test("99/99 หนึ่งแสนจำกัด CI Perfect Care ไม่เ
   assert.equal(result.body.ok, true);
   assert.equal(cipc.capital, 1000000);
   assert.match(result.body.text, /99\/99/);
-  assert.match(result.body.text, /PA Easy Plan 1/);
+  assert.doesNotMatch(result.body.text, /PA Easy Plan 1/);
 });
