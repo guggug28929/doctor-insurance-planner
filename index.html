@@ -538,6 +538,26 @@
     max-height:70vh;
     box-shadow:0 2px 14px rgba(200,30,92,.05);
   }
+  .table-export-actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    padding:10px 12px;
+    background:#fffafc;
+    border-bottom:1px solid var(--line);
+  }
+  .table-export-actions .meta{margin:0;}
+  .btn-export-excel{
+    width:auto;
+    margin:0;
+    padding:9px 14px;
+    background:linear-gradient(120deg,#217346,#2e9b5f);
+    box-shadow:0 3px 10px rgba(33,115,70,.22);
+    font-size:.82rem;
+  }
+  .btn-export-excel:hover{filter:brightness(1.06);}
   table{
     border-collapse:collapse;
     width:100%;
@@ -2366,9 +2386,32 @@ function renderAll(){
     return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}<td class="total-col">${fmt(r.total)}</td><td class="total-col">${fmt(r.cumulative)}</td></tr>`;
   }).join('');
 
-  tableWrap.innerHTML = `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table><p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
+  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเป็นไฟล์ Excel เพื่อส่งให้ลูกค้าได้</p><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table><p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
+}
+
+// Excel-compatible export of the exact table currently shown to the customer.
+// The generated .xls is an HTML workbook, so it opens in Excel without adding a runtime dependency.
+function exportPremiumTableExcel(){
+  const table = document.querySelector('#tableWrap table');
+  if(!table){
+    alert('กรุณาคำนวณตารางเบี้ยก่อนดาวน์โหลดครับ');
+    return;
+  }
+  const inp = readInputs();
+  const title = `ตารางเบี้ยประกัน ${inp.mainPlan === '99_20' ? '99/20' : '99/99'}`;
+  const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
+  const workbook = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif}h2{color:#9d0b48}p{color:#555}table{border-collapse:collapse}th,td{border:1px solid #d9b9c7;padding:6px 8px;text-align:right}th{background:#9d0b48;color:#fff}th:first-child,td:first-child{text-align:center}</style></head><body><h2>${title}</h2><p>${details}</p>${table.outerHTML}<p>หมายเหตุ: เบี้ยและเงื่อนไขควรยืนยันกับบริษัทประกันอีกครั้งก่อนเสนอขาย</p></body></html>`;
+  const blob = new Blob(["\uFEFF", workbook], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ตารางเบี้ย-${inp.mainPlan === '99_20' ? '99-20' : '99-99'}-อายุ${inp.entryAge}.xls`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ---- pre-table plain-language summary of everything selected ----
