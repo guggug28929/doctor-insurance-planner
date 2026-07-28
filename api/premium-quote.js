@@ -84,9 +84,18 @@ function mainPremium(rates, gender, age, id) {
 
   const base50k = rateAtStart(rates.main_99_99?.[gender], age, 0);
   if (base50k === null) return null;
-  if (id === "99_99_100k") return base50k * 2;
+  if (id === "99_99_100k") return smartProtection99Premium(rates, gender, age, 100000);
   if (id === "99_99_50k") return base50k;
   return null;
+}
+
+function smartProtection99Premium(rates, gender, age, capital, period = "annual") {
+  const amount = Number(capital);
+  if (!Number.isFinite(amount) || amount <= 50000) return null;
+  const tier = amount < 500000 ? "under_500k" : amount < 1000000 ? "under_1m" : "from_1m";
+  const table = rates.smart_protection_99_99?.tiers?.[tier]?.[gender]?.[period];
+  const rate = rateAtStart(table, age, 0);
+  return rate === null ? null : rate * amount / 1000;
 }
 
 function mainMeta(id) {
@@ -94,7 +103,7 @@ function mainMeta(id) {
     return { label: "Smart Protection 99/20", capital: 200000, payYears: 20 };
   }
   if (id === "99_99_100k") {
-    return { label: "สัญญาหลัก 99/99", capital: 100000, payYears: 99 };
+    return { label: "Smart Protection 99/99", capital: 100000, payYears: 99 };
   }
   return { label: "สัญญาหลัก 99/99", capital: 50000, payYears: 99 };
 }
@@ -201,9 +210,10 @@ function normalizeProfile(raw = {}) {
       : "auto",
     healthStatus: raw.healthStatus || null,
     requestedHealthPlan,
-    mainPlanPreference: ["auto", "99_20_200k", "99_99_100k"].includes(raw.mainPlanPreference)
+    mainPlanPreference: ["auto", "99_20_200k", "99_99_50k", "99_99_100k", "99_99_smart"].includes(raw.mainPlanPreference)
       ? raw.mainPlanPreference
       : "auto",
+    mainCapital: n(raw.mainCapital),
     quoteScope: raw.quoteScope === "health_only" ? "health_only" : "package",
     optimizeForBudget: raw.optimizeForBudget === true,
     requestedProduct: [
@@ -274,9 +284,9 @@ function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
     if (main === null) return;
     if (includePa && pa === null) return;
 
-    // 99/99 ต้องแนบ PA; Smart 99/20 ต้องแนบ PA หรือสัญญาโรคร้ายแรงเสมอ
-    if (mainId.startsWith("99_99") && !includePa) return;
+    // 99/99 ไม่บังคับ PA; Smart 99/20 ต้องแนบ PA หรือสัญญาโรคร้ายแรงเสมอ
     if (mainId === "99_20_200k" && !includePa) return;
+    if (mainId === "99_99_100k" && main < 200000 && ridersTotal <= Math.min(main * 2, 20000)) return;
 
     const paCost = includePa ? pa : 0;
     candidates.push({
@@ -290,8 +300,8 @@ function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
   };
 
   add({ mainId: "99_20_200k", includePa: true, priority: 1 });
-  add({ mainId: "99_99_100k", includePa: true, priority: 2 });
-  add({ mainId: "99_99_50k", includePa: true, priority: 3 });
+  add({ mainId: "99_99_100k", includePa: false, priority: 2 });
+  add({ mainId: "99_99_50k", includePa: false, priority: 3 });
 
   if (!candidates.length) return null;
 
@@ -906,10 +916,8 @@ function buildCriticalComparison(rates, profile) {
   const mainId = profile.mainPlanPreference === "99_99_100k" ? "99_99_100k" : "99_20_200k";
   const main = mainPremium(rates, profile.gender, profile.age, mainId);
   const mainInfo = mainMeta(mainId);
-  const pa = mainId === "99_99_100k" ? paPremium(rates, profile.age, 1) : 0;
-  if (main === null || pa === null) {
-    return { ok: false, noEligiblePlan: true, question: "ไม่พบสัญญาหลักที่รองรับอายุที่แจ้งครับ" };
-  }
+  const pa = 0;
+  if (main === null) return { ok: false, noEligiblePlan: true, question: "ไม่พบสัญญาหลักที่รองรับอายุที่แจ้งครับ" };
   const { capital, options } = criticalOptions(rates, profile, mainInfo.capital);
   if (!options.length) {
     return { ok: false, noEligiblePlan: true, question: "ไม่พบตารางเบี้ยโรคร้ายแรงสำหรับอายุที่แจ้งครับ" };
@@ -917,7 +925,7 @@ function buildCriticalComparison(rates, profile) {
   const lines = [
     `ตัวเลือกเงินก้อนโรคร้ายแรง ทุน ${money(capital)} บาท`,
     `สัญญาหลัก ${mainInfo.label} ทุน ${money(mainInfo.capital)} บาท เบี้ย ${money(main)} บาท/ปี`,
-    ...(pa ? [`- PA Easy Plan 1 เบี้ย ${money(pa)} บาท/ปี (สัญญาหลัก 99/99 ต้องแนบ PA)`] : []),
+    ...(pa ? [`- PA Easy Plan 1 เบี้ย ${money(pa)} บาท/ปี`] : []),
     ...options.map(
       (option) =>
         `- ${option.product}: เบี้ยสัญญาเพิ่มเติม ${money(option.premium)} บาท/ปี ` +
