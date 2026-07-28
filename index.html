@@ -2403,8 +2403,24 @@ function exportPremiumTableExcel(){
   }
   const inp = readInputs();
   const title = `ตารางเบี้ยประกัน ${inp.mainPlan === '99_20' ? '99/20' : '99/99'}`;
+  const mainLabel = inp.mainPlan === '99_20' ? 'สัญญาหลัก 99/20' : 'สัญญาหลัก 99/99';
+  const healthLabels = inp.healthList.map(cfg => {
+    if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
+    if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan}`;
+    if(cfg.type === 'maochai') return `เหมาจ่าย Extra — แผน ${cfg.plan}`;
+    return `Extra Care Plus — แผน ${cfg.plan}`;
+  });
+  const opdLabels = inp.opdList.map(cfg => cfg.type === 'krang' ? `OPD รายครั้ง — ${fmt(cfg.plan)} บาท/ครั้ง` : `OPD เหมาจ่ายรายปี — ${fmt(cfg.plan)} บาท/ปี`);
+  const riderLabels = [];
+  if(inp.paPlan !== 'none') riderLabels.push(`PA Easy Plan แผน ${inp.paPlan}`);
+  if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
+  if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
+  if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
+  inp.dcareSelections.forEach(d => riderLabels.push(`D Care — ${d.label.split(' (')[0]}, ทุน ${fmt(d.capital)} บาท`));
+  if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
-  const workbook = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif}h2{color:#9d0b48}p{color:#555}table{border-collapse:collapse}th,td{border:1px solid #d9b9c7;padding:6px 8px;text-align:right}th{background:#9d0b48;color:#fff}th:first-child,td:first-child{text-align:center}</style></head><body><h2>${title}</h2><p>${details}</p>${table.outerHTML}<p>หมายเหตุ: เบี้ยและเงื่อนไขควรยืนยันกับบริษัทประกันอีกครั้งก่อนเสนอขาย</p></body></html>`;
+  const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
+  const workbook = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif}h2{color:#9d0b48}h3{color:#9d0b48;margin:18px 0 6px}p{color:#555}ul{margin:4px 0 14px;padding-left:22px}li{padding:3px 0}table{border-collapse:collapse}th,td{border:1px solid #d9b9c7;padding:6px 8px;text-align:right}th{background:#9d0b48;color:#fff}th:first-child,td:first-child{text-align:center}</style></head><body><h2>${title}</h2><p>${details}</p>${selectedSummary}${table.outerHTML}<p>หมายเหตุ: เบี้ยและเงื่อนไขควรยืนยันกับบริษัทประกันอีกครั้งก่อนเสนอขาย</p></body></html>`;
   const blob = new Blob(["\uFEFF", workbook], {type:'application/vnd.ms-excel;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
