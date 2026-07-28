@@ -2007,7 +2007,7 @@ function updateMainCapitalHint(){
     document.getElementById('mainCapitalHint').textContent = 'ทุนประกันขั้นต่ำแผน 99/20 คือ 200,000 บาท';
   } else {
     capitalInput.min = 50000;
-    document.getElementById('mainCapitalHint').textContent = 'ทุนประกันขั้นต่ำแผน 99/99 คือ 50,000 บาท • บังคับแนบ PA rider และเบี้ยสัญญาเพิ่มเติมรวมต้องไม่น้อยกว่า 5,000 บาท/ปี';
+    document.getElementById('mainCapitalHint').textContent = 'ทุน 50,000 บาท: คุ้มครองตลอดชีพ 99/99 • ตั้งแต่ 50,001 บาท: Smart Protection 99/99 ตาม Tier ทุนประกัน';
   }
 }
 updateMainCapitalHint();
@@ -2056,10 +2056,16 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge){
     if(base===null) return null;
     return base * capital / denom;
   } else {
-    const g = RATES.main_99_99;
-    const base = rateAtStart(g[gender], entryAge, 0);
+    if(capital === 50000){
+      const g = RATES.main_99_99;
+      const base = rateAtStart(g[gender], entryAge, 0);
+      if(base===null) return null;
+      return base;
+    }
+    const tier = capital < 500000 ? 'under_500k' : capital < 1000000 ? 'under_1m' : 'from_1m';
+    const base = rateAtStart(RATES.smart_protection_99_99?.tiers?.[tier]?.[gender]?.annual || [], entryAge, 0);
     if(base===null) return null;
-    return base * capital / 50000;
+    return base * capital / 1000;
   }
 }
 
@@ -2309,7 +2315,7 @@ function renderAll(){
   const careplusPlanNames = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
 
   const cols = [];
-  cols.push({key:'main', label: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : 'สัญญาหลัก 99/99'});
+  cols.push({key:'main', label: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99')});
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) cols.push({key:'health_'+i, label:healthLabels[i]}); });
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) cols.push({key:'opd_'+i, label:opdLabels[i]}); });
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
@@ -2403,7 +2409,7 @@ async function exportPremiumTableExcel(){
   }
   const inp = readInputs();
   const title = `ตารางเบี้ยประกัน ${inp.mainPlan === '99_20' ? '99/20' : '99/99'}`;
-  const mainLabel = inp.mainPlan === '99_20' ? 'สัญญาหลัก 99/20' : 'สัญญาหลัก 99/99';
+  const mainLabel = inp.mainPlan === '99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99');
   const healthLabels = inp.healthList.map(cfg => {
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
     if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan}`;
@@ -2460,7 +2466,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   // main contract
   items.push({
-    name: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : 'สัญญาหลัก 99/99',
+    name: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99'),
     premium: y1.main,
     coverage: `เสียชีวิตหรืออยู่ครบสัญญา รับทุนประกัน ${fmt(inp.mainCapital)} บาท`
   });
@@ -2577,16 +2583,18 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
     ciBox.classList.remove('show');
   }
 
-  // 99/99 requires PA (message shown near main capital; border handled together with
-  // the PA-availability check below so the two don't overwrite each other)
-  const paRequiredBad = inp.mainPlan === '99_99' && inp.paPlan === 'none';
-  document.getElementById('paRequiredErr').textContent = paRequiredBad ? 'แผน 99/99 ต้องแนบ PA rider' : '';
+  // PA is not mandatory for any 99/99 version. 99/20 keeps its existing CI/PA rule above.
+  const paRequiredBad = false;
+  document.getElementById('paRequiredErr').textContent = '';
 
   // 99/99 rider total >= 5000 (shown live under the main plan card)
   const riderTotalInfo = document.getElementById('riderTotalInfo');
-  if(inp.mainPlan === '99_99'){
-    const ok = riderTotalYear1 >= 5000;
-    riderTotalInfo.innerHTML = `เบี้ยสัญญาเพิ่มเติมรวม (ปีแรก): <strong style="color:${ok?'var(--ok)':'var(--danger)'}">${fmt(riderTotalYear1)} บาท</strong> ${ok?'(ผ่านเกณฑ์ ≥ 5,000)':'(ต้อง ≥ 5,000 บาท/ปี)'}`;
+  if(inp.mainPlan === '99_99' && inp.mainCapital > 50000 && inp.mainCapital < 200000){
+    const mainPremium = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge) || 0;
+    const threshold = Math.min(mainPremium * 2, 20000);
+    const required = Math.max(5000, threshold);
+    const ok = riderTotalYear1 >= 5000 && riderTotalYear1 > threshold;
+    riderTotalInfo.innerHTML = `เบี้ยสัญญาเพิ่มเติมรวม (ปีแรก): <strong style="color:${ok?'var(--ok)':'var(--danger)'}">${fmt(riderTotalYear1)} บาท</strong> ${ok?`(ผ่านเกณฑ์ > ${fmt(required)} บาท)`:`(ต้องไม่น้อยกว่า 5,000 และมากกว่า ${fmt(required)} บาท)`}`;
   } else {
     riderTotalInfo.innerHTML = '';
   }
