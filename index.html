@@ -948,6 +948,21 @@
       <label>ปีเกิด (พ.ศ.)</label>
       <input type="number" id="birthYear" value="2529" min="1900" max="2600">
       <div class="hint" id="ageInfo"></div>
+      <label>ขั้นอาชีพ <span class="info-icon">i<span class="tooltip">ขั้นอาชีพใช้ประเมินความเสี่ยงจากลักษณะงาน: ขั้น 1 งานสำนักงาน/บริหาร เช่น แพทย์ นักบัญชี โปรแกรมเมอร์; ขั้น 2 งานบริการหรือค้าขายที่มีการเดินทางบ้าง เช่น พนักงานขาย ครู; ขั้น 3 งานช่าง/ภาคสนาม เช่น ช่างไฟ ช่างก่อสร้าง; ขั้น 4 งานเสี่ยงสูง เช่น ทำงานบนที่สูง งานประมง หรืองานกับวัตถุอันตราย โปรดตรวจเกณฑ์รับประกันของแต่ละแผนอีกครั้ง</span></span></label>
+      <select id="occupationClass">
+        <option value="1" selected>ขั้นอาชีพ 1</option>
+        <option value="2">ขั้นอาชีพ 2</option>
+        <option value="3">ขั้นอาชีพ 3</option>
+        <option value="4">ขั้นอาชีพ 4</option>
+      </select>
+      <label>งวดชำระเบี้ย</label>
+      <select id="paymentFrequency">
+        <option value="annual" selected>รายปี</option>
+        <option value="semiannual">ราย 6 เดือน</option>
+        <option value="quarterly">ราย 3 เดือน</option>
+        <option value="monthly">รายเดือน</option>
+      </select>
+      <div class="hint">งวดที่ถี่ขึ้นอาจมีเบี้ยรวมทั้งปีสูงกว่ารายปีตามอัตราที่เผยแพร่ของแผน</div>
     </div>
 
     <div class="card">
@@ -1428,7 +1443,7 @@
 
     <div class="plan-card">
       <div class="cat">ประกันชีวิตแบบสะสมทรัพย์</div>
-      <h3>สมาร์ท ลิงค์ 15/3 (Global)</h3>
+      <h3>เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ย 3 ปี • คุ้มครอง 15 ปี</p>
       <ul>
         <li>เงินคืนปีที่ 1–14 ปีละ 1% และครบสัญญา 300% ของทุน ตามเงื่อนไข</li>
@@ -1439,7 +1454,7 @@
 
     <div class="plan-card">
       <div class="cat">ประกันชีวิตแบบสะสมทรัพย์</div>
-      <h3>สมาร์ท ลิงค์ 15/6 (Global)</h3>
+      <h3>เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ย 6 ปี • คุ้มครอง 15 ปี</p>
       <ul>
         <li>เงินคืน 5% ของทุนในปีคู่ที่กำหนด และครบสัญญา 600% ของทุน ตามเงื่อนไข</li>
@@ -2156,11 +2171,35 @@ function paPremium(plan, age){
   return (v===null || v===undefined) ? null : v;
 }
 
+const PAYMENT_FREQUENCIES = {
+  annual: {label:'รายปี', periods:1},
+  semiannual: {label:'ราย 6 เดือน', periods:2},
+  quarterly: {label:'ราย 3 เดือน', periods:4},
+  monthly: {label:'รายเดือน', periods:12},
+};
+function paymentFrequencyInfo(value){ return PAYMENT_FREQUENCIES[value] || PAYMENT_FREQUENCIES.annual; }
+// Smart Protection 99/99 publishes installment rates per 1,000. For other
+// products the local authoritative tables currently publish annual rates only;
+// keep their annual amount unchanged rather than inventing an installment factor.
+function paymentFactor(inp){
+  const freq = paymentFrequencyInfo(inp.paymentFrequency);
+  if(freq.periods === 1) return 1;
+  if(inp.mainPlan !== '99_99' || inp.mainCapital <= 50000) return 1;
+  const tier = inp.mainCapital < 500000 ? 'under_500k' : inp.mainCapital < 1000000 ? 'under_1m' : 'from_1m';
+  const rates = RATES.smart_protection_99_99?.tiers?.[tier]?.[inp.gender];
+  const annual = rates?.annual?.[inp.entryAge];
+  const selected = rates?.[inp.paymentFrequency]?.[inp.entryAge];
+  if(!annual || !selected) return 1;
+  return (selected * freq.periods) / annual;
+}
+
 // ---- gather inputs ----
 function readInputs(){
   const gender = document.querySelector('input[name=gender]:checked').value;
   const birthYear = parseInt(document.getElementById('birthYear').value, 10);
   const entryAge = currentBEYear() - birthYear;
+  const occupationClass = document.getElementById('occupationClass')?.value || '1';
+  const paymentFrequency = document.getElementById('paymentFrequency')?.value || 'annual';
   const mainPlan = document.querySelector('input[name=mainPlan]:checked').value;
   const mainCapital = parseFloat(document.getElementById('mainCapital').value) || 0;
 
@@ -2212,7 +2251,7 @@ function readInputs(){
   const hbIncome = parseFloat(document.getElementById('hb_income').value) || 0;
   const hbAmount = parseFloat(document.getElementById('hb_amount').value) || 0;
 
-  return {gender, birthYear, entryAge, mainPlan, mainCapital, healthList, opdList,
+  return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount};
 }
@@ -2306,6 +2345,8 @@ function renderAll(){
 
   const entryAge = inp.entryAge;
   const gender = inp.gender;
+  const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
+  const paymentFactorValue = paymentFactor(inp);
 
   // labels are static; premiums for every rider below are recalculated EACH policy year
   // using the insured's attained age that year (rates increase with age).
@@ -2356,7 +2397,9 @@ function renderAll(){
       if(typeof v === 'number') total += v;
     });
     row.total = total;
-    cumulative += total;
+    row.installmentTotal = (total * paymentFactorValue) / paymentInfo.periods;
+    row.annualPayable = row.installmentTotal * paymentInfo.periods;
+    cumulative += row.annualPayable;
     row.cumulative = cumulative;
     rows.push(row);
   }
@@ -2364,8 +2407,15 @@ function renderAll(){
   // rider-only total (excluding main) for the 99/99 >=5000 rule, using first policy year
   const riderTotalYear1 = rows[0].total - (rows[0].values.main || 0);
   const issues = validateInputs(inp);
-  if(inp.mainPlan === '99_99' && riderTotalYear1 < 5000){
-    issues.push(`เบี้ยสัญญาเพิ่มเติมรวม (ไม่รวมเบี้ยสัญญาหลัก) ปีแรก = ${fmt(riderTotalYear1)} บาท ต่ำกว่าเกณฑ์ขั้นต่ำ 5,000 บาท/ปี สำหรับแผน 99/99`);
+  // The additional-rider minimum applies only to Smart Protection 99/99
+  // (capital > 50,000 and < 200,000). The legacy 50,000-baht 99/99 plan
+  // is exempt, and 200,000+ Smart Protection is exempt as well.
+  if(inp.mainPlan === '99_99' && inp.mainCapital > 50000 && inp.mainCapital < 200000){
+    const mainPremium = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge).premium;
+    const threshold = Math.min(mainPremium * 2, 20000);
+    if(riderTotalYear1 < 5000 || riderTotalYear1 <= threshold){
+      issues.push(`เบี้ยสัญญาเพิ่มเติมรวม (ไม่รวมเบี้ยสัญญาหลัก) ปีแรก = ${fmt(riderTotalYear1)} บาท ต้องไม่น้อยกว่า 5,000 บาท และมากกว่า ${fmt(threshold)} บาท สำหรับ Smart Protection 99/99 ทุนต่ำกว่า 200,000 บาท`);
+    }
   }
 
   if(issues.length){
@@ -2376,31 +2426,44 @@ function renderAll(){
 
   applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1);
 
-  const firstYearTotal = rows[0].total;
+  const firstYearTotal = rows[0].annualPayable;
   const lastCumulative = rows[rows.length-1].cumulative;
   summaryEl.innerHTML = `
-    <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี</div></div>
+    <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี • อาชีพขั้น ${inp.occupationClass}</div></div>
+    <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${paymentInfoValueUnsupported(inp) ? ' (ตารางแผนนี้มีรายปีเท่านั้น)' : ''}</div></div>
     <div class="stat"><div class="k">เบี้ยปีแรก (รวมทุกสัญญา)</div><div class="v">${fmt(firstYearTotal)} บาท</div></div>
     <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี (ถึงอายุ 98)</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
   `;
 
-  let thead = '<tr><th>อายุ</th><th>ปี กธ.</th>' + cols.map(c=>`<th>${c.label}</th>`).join('') + '<th class="total-col">เบี้ยรวม/ปี</th><th class="total-col">เบี้ยรวมสะสม</th></tr>';
+  const totalHeaders = paymentInfo.periods === 1
+    ? '<th class="total-col">เบี้ยรวม/ปี</th><th class="total-col">เบี้ยรวมสะสม</th>'
+    : `<th class="total-col">เบี้ยชำระต่องวด (${paymentInfo.label})</th><th class="total-col">เบี้ยรวมทั้งปี</th><th class="total-col">เบี้ยรวมสะสม</th>`;
+  let thead = '<tr><th>อายุ</th><th>ปี กธ.</th>' + cols.map(c=>`<th>${c.label}</th>`).join('') + totalHeaders + '</tr>';
   let tbody = rows.map(r => {
     const cells = cols.map(c => {
       const v = r.values[c.key];
       return (v===null || v===undefined) ? '<td class="dash">-</td>' : `<td>${fmt(v)}</td>`;
     }).join('');
-    return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}<td class="total-col">${fmt(r.total)}</td><td class="total-col">${fmt(r.cumulative)}</td></tr>`;
+    const totalCells = paymentInfo.periods === 1
+      ? `<td class="total-col">${fmt(r.annualPayable)}</td><td class="total-col">${fmt(r.cumulative)}</td>`
+      : `<td class="total-col">${fmt(r.installmentTotal)}</td><td class="total-col">${fmt(r.annualPayable)}</td><td class="total-col">${fmt(r.cumulative)}</td>`;
+    return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}${totalCells}</tr>`;
   }).join('');
 
-  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเป็นไฟล์ Excel เพื่อส่งให้ลูกค้าได้</p><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table><p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
+  const frequencyNote = paymentInfoValueUnsupported(inp)
+    ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ฐานข้อมูลปัจจุบันมีอัตราเผยแพร่รายปีสำหรับแผนที่เลือก จึงยังไม่ปรับตัวคูณรายงวดเอง ตัวเลขรายงวดด้านล่างเป็นการแบ่งเบี้ยรายปีตามจำนวนงวดเพื่อใช้จัดรูปแบบเท่านั้น ควรตรวจอัตรารายงวดจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
+    : '';
+  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเป็นไฟล์ Excel เพื่อส่งให้ลูกค้าได้</p><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
 }
 
-// Excel-compatible export of the exact table currently shown to the customer.
-// The generated .xls is an HTML workbook, so it opens in Excel without adding a runtime dependency.
+function paymentInfoValueUnsupported(inp){
+  return inp.paymentFrequency !== 'annual' && paymentFactor(inp) === 1 && !(inp.mainPlan === '99_99' && inp.mainCapital > 50000);
+}
+
+// Export the exact table currently shown as a standards-compliant .xlsx workbook.
 async function exportPremiumTableExcel(){
   const table = document.querySelector('#tableWrap table');
   if(!table){
@@ -2424,12 +2487,13 @@ async function exportPremiumTableExcel(){
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
   inp.dcareSelections.forEach(d => riderLabels.push(`D Care — ${d.label.split(' (')[0]}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
-  const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
+  const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
+  const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • ขั้นอาชีพ ${inp.occupationClass} • งวดชำระ ${paymentInfo.label} • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
   const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
   const escXml = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
   const cell = value => `<c t="inlineStr"><is><t>${escXml(value)}</t></is></c>`;
   const rowsXml = [...table.querySelectorAll('tr')].map(tr => `<row>${[...tr.children].map(td => cell(td.textContent.trim())).join('')}</row>`).join('');
-  const summaryXml = [title, details, `แผนหลัก: ${mainLabel}`, `ทุนประกันสัญญาหลัก: ${fmt(inp.mainCapital)} บาท`, `แผนสุขภาพ: ${healthLabels.join(' • ') || 'ไม่ได้เลือก'}`, `แผน OPD: ${opdLabels.join(' • ') || 'ไม่ได้เลือก'}`, `สัญญาเพิ่มเติม/อุบัติเหตุ: ${riderLabels.join(' • ') || 'ไม่ได้เลือก'}`].map(v => `<row>${cell(v)}</row>`).join('');
+  const summaryXml = [title, details, `แผนหลัก: ${mainLabel}`, `ทุนประกันสัญญาหลัก: ${fmt(inp.mainCapital)} บาท`, `ขั้นอาชีพ: ${inp.occupationClass}`, `งวดชำระ: ${paymentInfo.label}`, `แผนสุขภาพ: ${healthLabels.join(' • ') || 'ไม่ได้เลือก'}`, `แผน OPD: ${opdLabels.join(' • ') || 'ไม่ได้เลือก'}`, `สัญญาเพิ่มเติม/อุบัติเหตุ: ${riderLabels.join(' • ') || 'ไม่ได้เลือก'}`].map(v => `<row>${cell(v)}</row>`).join('');
   const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${summaryXml}${rowsXml}</sheetData></worksheet>`;
   const files = {
     '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
@@ -2997,7 +3061,7 @@ const PLAN_DETAILS = {
   },
 
   smartlink153: {
-    title: 'สมาร์ท ลิงค์ 15/3 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
+    title: 'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ คุ้มครอง 15 ปี ชำระเบี้ย 3 ปี มีเงินคืนที่รับประกันตามกรมธรรม์และมีโอกาสรับเงินปันผลเพิ่มเติมซึ่งไม่รับประกัน',
     images: [PLAN_COVER_IMAGES.smartlink153],
     coverage: [
@@ -3018,7 +3082,7 @@ const PLAN_DETAILS = {
   },
 
   smartlink156: {
-    title: 'สมาร์ท ลิงค์ 15/6 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
+    title: 'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ คุ้มครอง 15 ปี ชำระเบี้ย 6 ปี มีเงินคืนตามรอบที่รับประกันและมีโอกาสรับเงินปันผลเพิ่มเติมซึ่งไม่รับประกัน',
     images: [PLAN_COVER_IMAGES.smartlink156],
     coverage: [
@@ -3440,6 +3504,18 @@ function replaceOrPushPath(path, replace = false){
   window.history[replace ? 'replaceState' : 'pushState']({}, '', path);
 }
 
+// Vercel serves /plan-covers from public/ at the site root. When the same
+// index.html is opened directly from Finder (file://), the equivalent local
+// path includes the public/ directory; resolve both forms so plan covers do
+// not appear as broken images during local review.
+function planCoverUrl(src){
+  if(typeof src !== 'string') return src;
+  if(window.location.protocol === 'file:' && src.startsWith('/plan-covers/')){
+    return `./public${src}`;
+  }
+  return src;
+}
+
 function showPlanDetail(id, options = {}){
   const p = PLAN_DETAILS[id];
   const el = document.getElementById('planDetailContent');
@@ -3449,7 +3525,7 @@ function showPlanDetail(id, options = {}){
       <div class="cat">${p.category}</div>
       <h2 style="margin-top:4px;">${p.title}</h2>
       <p>${p.overview}</p>
-      ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img class="cover-${typeof img==='string'?'landscape':(img.format||'landscape')}" src="${typeof img==='string'?img:img.src}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
+      ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img class="cover-${typeof img==='string'?'landscape':(img.format||'landscape')}" src="${planCoverUrl(typeof img==='string'?img:img.src)}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
     </div>
     <div class="content-card">
       <h2>ความคุ้มครองโดยละเอียด</h2>
