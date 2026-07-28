@@ -520,6 +520,30 @@
     border-top:2px dashed var(--line);
     margin:16px 0;
   }
+  .copy-summary-box{
+    margin-bottom:14px;
+    padding:14px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 2px 14px rgba(200,30,92,.05);
+  }
+  .copy-summary-box textarea{
+    display:block;
+    width:100%;
+    min-height:290px;
+    box-sizing:border-box;
+    resize:vertical;
+    border:1px solid #e7c7d2;
+    border-radius:10px;
+    padding:12px;
+    background:#fffafc;
+    color:var(--ink);
+    font: .86rem/1.65 "Prompt",sans-serif;
+    white-space:pre-wrap;
+  }
+  .copy-summary-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:9px;}
+  .copy-summary-actions .btn{width:auto;margin:0;padding:9px 15px;font-size:.82rem;}
   .validation-box{
     border-radius:12px;
     padding:14px 16px;
@@ -2427,11 +2451,12 @@ function renderAll(){
   applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1);
 
   const firstYearTotal = rows[0].annualPayable;
+  const firstPeriodTotal = rows[0].installmentTotal;
   const lastCumulative = rows[rows.length-1].cumulative;
   summaryEl.innerHTML = `
     <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี • อาชีพขั้น ${inp.occupationClass}</div></div>
     <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${paymentInfoValueUnsupported(inp) ? ' (ตารางแผนนี้มีรายปีเท่านั้น)' : ''}</div></div>
-    <div class="stat"><div class="k">เบี้ยปีแรก (รวมทุกสัญญา)</div><div class="v">${fmt(firstYearTotal)} บาท</div></div>
+    <div class="stat"><div class="k">${paymentInfo.periods === 1 ? 'เบี้ยปีแรก (รวมทุกสัญญา)' : `เบี้ยต่องวด (รวมทุกสัญญา)`}</div><div class="v">${fmt(paymentInfo.periods === 1 ? firstYearTotal : firstPeriodTotal)} บาท${paymentInfo.periods === 1 ? '' : '/'+paymentInfo.label}</div></div>
     <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี (ถึงอายุ 98)</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
   `;
@@ -2525,6 +2550,8 @@ async function exportPremiumTableExcel(){
 function renderContractSummary(inp, rows, cols, entryAge, gender){
   const el = document.getElementById('contractSummary');
   const y1 = rows[0].values; // first-year premium per column key
+  const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
+  const paymentFactorValue = paymentFactor(inp);
 
   const items = [];
 
@@ -2537,7 +2564,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   // health riders
   const healthDesc = {
-    dhl: 'ค่ารักษาผู้ป่วยใน/ผู้ป่วยนอกตามวงเงินที่เลือก (จ่ายต่อครั้งการรักษา)',
+    dhl: 'เหมาจ่าย IPD ตามวงเงินต่อครั้ง ไม่มีความรับผิดส่วนแรก ค่าห้อง/ค่าแพทย์/ผ่าตัด/ICU/ค่ายาจ่ายตามจริงในวงเงิน',
     ehp: 'ค่ารักษาผู้ป่วยใน วงเงินต่อปีกรมธรรม์ ครอบคลุมห้องเดี่ยวมาตรฐาน/พิเศษ',
     maochai: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา ตามวงเงินแผนที่เลือก',
     ecp: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา มีส่วนร่วมจ่าย Deductible 20,000/ครั้ง',
@@ -2584,6 +2611,33 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   const mainItem = items.shift(); // main contract stays in its own box
   const totalY1 = mainItem.premium + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
+  const displayPremium = value => paymentInfo.periods === 1
+    ? `${fmt(value)} บาท/ปี`
+    : `${fmt((value * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`;
+  const mainLabel = inp.mainPlan==='99_20'
+    ? 'เมืองไทย สมาร์ท โพรเทคชั่น 99/20'
+    : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'สมาร์ทโพรเทคชั่น 99/99');
+  const summaryLines = [
+    `👤 เพศ${gender==='m'?'ชาย':'หญิง'} | อายุ ${entryAge} ปี`,
+    '',
+    '━━━━━━━━━━━━━━━━',
+    '📋 รายละเอียดแผน',
+    `  ✓ แผนหลัก: ${mainLabel} | ทุนประกัน: ${fmt(inp.mainCapital)} บาท`,
+    `    เบี้ย ${displayPremium(mainItem.premium)}`,
+    `    📌 ${mainItem.coverage}`,
+    ...items.flatMap(it => [``, `  ✓ ${it.name}`, `    เบี้ย ${displayPremium(it.premium)}`, `    📌 ${it.coverage}`]),
+    '',
+    '━━━━━━━━━━━━━━━━',
+    paymentInfo.periods === 1
+      ? `💳 เบี้ยประกัน ${fmt(totalY1)} บาท/ปี (เฉลี่ยวันละ ${fmt(Math.round(totalY1 / 365))} บาท)`
+      : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`,
+    '',
+    'สอบถามเพิ่มเติมหรือต้องการใบเสนอราคาได้เลย',
+    '━━━━━━━━━━━━━━━━',
+    '💳 สิทธิพิเศษเพิ่มเติม',
+    'ผ่อน 0% สูงสุด 10 เดือน และรับเครดิตเงินคืนตามเงื่อนไขบัตรเครดิตที่ร่วมรายการ',
+    'ดูรายละเอียด: https://www.muangthai.co.th/th/campaign/promotion'
+  ].join('\n');
 
   // combined critical-illness coverage across every CI-related rider chosen
   const ciLines = [];
@@ -2600,7 +2654,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
           <div style="font-family:'Kanit',sans-serif;font-weight:700;color:var(--ink);">${mainItem.name}</div>
           <div class="meta">${mainItem.coverage}</div>
         </div>
-        <div style="font-family:'Kanit',sans-serif;font-weight:700;color:var(--pink-deep);white-space:nowrap;">${fmt(mainItem.premium)} บาท/ปี</div>
+        <div style="font-family:'Kanit',sans-serif;font-weight:700;color:var(--pink-deep);white-space:nowrap;">${displayPremium(mainItem.premium)}</div>
       </div>
       ${items.length ? `
       <hr class="summary-divider">
@@ -2610,16 +2664,38 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
             <div style="font-weight:600;color:var(--ink);">${it.name}</div>
             <div class="meta">${it.coverage}</div>
           </div>
-          <div style="font-weight:700;color:var(--pink-deep);white-space:nowrap;font-family:'Kanit',sans-serif;">${fmt(it.premium)} บาท/ปี</div>
+          <div style="font-weight:700;color:var(--pink-deep);white-space:nowrap;font-family:'Kanit',sans-serif;">${displayPremium(it.premium)}</div>
         </div>
       `).join('')}` : ''}
       <hr class="summary-divider">
-      <p style="margin:0;"><b>เบี้ยรวมปีแรกทุกสัญญา:</b> ${fmt(totalY1)} บาท/ปี &nbsp;•&nbsp; <b>เสียชีวิต (สัญญาหลัก):</b> รับ ${fmt(inp.mainCapital)} บาท</p>
+      <p style="margin:0;"><b>${paymentInfo.periods === 1 ? 'เบี้ยรวมปีแรกทุกสัญญา:' : `เบี้ยรวมทุกแผน/${paymentInfo.label}:`}</b> ${paymentInfo.periods === 1 ? `${fmt(totalY1)} บาท/ปี` : `${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`} &nbsp;•&nbsp; <b>เสียชีวิต (สัญญาหลัก):</b> รับ ${fmt(inp.mainCapital)} บาท</p>
       ${ciLines.length ? `<p style="margin-top:6px;"><b>ความคุ้มครองโรคร้ายแรงรวมทุกสัญญา:</b> ${ciLines.join(' &nbsp;•&nbsp; ')}</p>` : ''}
     </div>
+    <div class="copy-summary-box">
+      <h2 style="margin:0 0 8px;">ข้อความสรุปแผนสำหรับคัดลอก</h2>
+      <p class="meta" style="margin:0 0 9px;">ปรับตามแผน ทุน เพศ อายุ และงวดชำระที่เลือก สามารถแก้ไขข้อความก่อนส่งให้ลูกค้าได้</p>
+      <textarea id="copySummaryText" aria-label="ข้อความสรุปแผนสำหรับคัดลอก" readonly></textarea>
+      <div class="copy-summary-actions"><button type="button" class="btn" onclick="copyContractSummary()">คัดลอกข้อความ</button></div>
+    </div>
   `;
+  document.getElementById('copySummaryText').value = summaryLines;
 
   renderAdvisor(inp, rows, items, mainItem, totalY1, entryAge);
+}
+
+async function copyContractSummary(){
+  const field = document.getElementById('copySummaryText');
+  if(!field) return;
+  try{
+    await navigator.clipboard.writeText(field.value);
+  }catch(_){
+    field.removeAttribute('readonly');
+    field.select();
+    document.execCommand('copy');
+    field.setAttribute('readonly','readonly');
+  }
+  const btn = document.querySelector('.copy-summary-actions button');
+  if(btn){ const old = btn.textContent; btn.textContent = 'คัดลอกแล้วครับ'; setTimeout(()=>{btn.textContent=old;}, 1600); }
 }
 
 // ---- inline, real-time field-level validation (so the person sees the problem
