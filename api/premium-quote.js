@@ -133,6 +133,8 @@ function opdPerVisitPremium(rates, gender, age, plan = 1000) {
 
 function paPremium(rates, age, plan = 1) {
   const numericAge = Number(age);
+  // PA Easy Plan รับทำและต่ออายุได้ถึงอายุ 85 ปีเท่านั้น
+  if (!Number.isFinite(numericAge) || numericAge > 85) return null;
   let band = 60;
   if (numericAge > 75) band = 85;
   else if (numericAge > 70) band = 75;
