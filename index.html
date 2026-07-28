@@ -2141,6 +2141,8 @@ function paBandIndex(age){
 }
 function paPremium(plan, age){
   if(plan === 'none') return null;
+  // PA Easy Plan รับทำและต่ออายุได้ถึงอายุ 85 ปีเท่านั้น
+  if(!Number.isFinite(Number(age)) || Number(age) > 85) return null;
   const idx = paBandIndex(age);
   const bandAge = RATES.pa_rider.age_bands[idx];
   const arr = RATES.pa_rider.plans[String(bandAge)];
