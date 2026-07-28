@@ -2611,13 +2611,31 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   const mainItem = items.shift(); // main contract stays in its own box
   const totalY1 = mainItem.premium + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
-  const paymentUnitLabel = paymentInfo.periods === 1 ? 'ปี' : (paymentInfo.periods === 12 ? 'เดือน' : paymentInfo.label.replace('ราย ','') );
+  const paymentUnitLabel = paymentInfo.periods === 1 ? 'ปี' : (paymentInfo.periods === 12 ? 'เดือน' : paymentInfo.label);
   const displayPremium = value => paymentInfo.periods === 1
     ? `${fmt(value)} บาท/ปี`
     : `${fmt((value * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`;
   const mainLabel = inp.mainPlan==='99_20'
     ? 'เมืองไทย สมาร์ท โพรเทคชั่น 99/20'
     : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'สมาร์ทโพรเทคชั่น 99/99');
+  const detailUrlFor = (name, item = {}) => {
+    if(name.includes('99/20')) return 'https://www.doctor-insurance.com/plans/smart-protection-99-20';
+    if(name.includes('99/99')) return 'https://www.doctor-insurance.com/plans/lifetime-protection-99-99';
+    if(name === 'D Health Lite') return 'https://www.doctor-insurance.com/plans/d-health-lite';
+    if(name === 'Elite Health Plus') return 'https://www.doctor-insurance.com/plans/elite-health-plus';
+    if(name === 'เหมาจ่าย Extra') return 'https://www.doctor-insurance.com/plans/maochai-extra';
+    if(name === 'Extra Care Plus') return 'https://www.doctor-insurance.com/plans/extra-care-plus';
+    if(name.startsWith('OPD ')) return 'https://www.doctor-insurance.com/plans/opd';
+    if(name.startsWith('Care Plus')) return 'https://www.doctor-insurance.com/plans/care-plus';
+    if(name === 'CI Perfect Care') return 'https://www.doctor-insurance.com/plans/ci-perfect-care';
+    if(name.startsWith('D Care')) return 'https://www.doctor-insurance.com/plans/d-care';
+    if(name.includes('Cancer')) return 'https://www.doctor-insurance.com/plans/cancer-protection';
+    if(name.startsWith('PA Easy Plan')) return 'https://www.doctor-insurance.com/plans/pa-easy-plan';
+    if(name.startsWith('HB ')) return 'https://www.doctor-insurance.com/plans/hb-rider';
+    return 'https://www.doctor-insurance.com/plans';
+  };
+  mainItem.detailUrl = detailUrlFor(mainLabel);
+  items.forEach(it => { it.detailUrl = detailUrlFor(it.name, it); });
   const mainTerm = inp.mainPlan === '99_20'
     ? 'จ่ายเบี้ย 20 ปี เบี้ยคงที่ แต่คุ้มครองถึงอายุ 99 ปี'
     : 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก คุ้มครองถึงอายุ 99 ปี';
@@ -2636,6 +2654,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       }
     }
   });
+  const compactCoverage = coverage => String(coverage || '').replace(/\s*มีสิทธิ์เข้า MTL Smile Hospital Network.*$/, '');
   const summaryLines = [
     `👤 เพศ${gender==='m'?'ชาย':'หญิง'} | อายุ ${entryAge} ปี | ชำระเบี้ย${paymentInfo.label}`,
     '',
@@ -2644,16 +2663,20 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     `  ✓ แผนหลัก: ${mainLabel} | ทุนประกัน: ${fmt(inp.mainCapital)} บาท`,
     `    เบี้ย ${displayPremium(mainItem.premium)}`,
     `    📌 ${mainItem.coverage}`,
-    ...items.flatMap(it => [``, `  ✓ ${it.name}`, `    เบี้ย ${displayPremium(it.premium)}`, `    📌 ${it.coverage}`]),
+    `รายละเอียด >> ${mainItem.detailUrl}`,
+    ...items.flatMap(it => [``, `  ✓ ${it.name}`, `    เบี้ย ${displayPremium(it.premium)}`, `    📌 ${it.coverage}`, `รายละเอียด >> ${it.detailUrl}`]),
     '',
     'หมายเหตุ: สัญญาเพิ่มเติม เบี้ยอาจเพิ่มขึ้นตามอายุของผู้เอาประกัน (ตามความเสี่ยงและเงินเฟ้อ) และต้องชำระเบี้ยต่อเนื่องตราบเท่าที่ยังต้องการความคุ้มครอง',
     '',
     '━━━━━━━━━━━━━━━━',
     paymentInfo.periods === 1
       ? `💳 เบี้ยประกัน ${fmt(totalY1)} บาท/ปี (เฉลี่ยวันละ ${fmt(Math.round(totalY1 / 365))} บาท)`
-      : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`,
+    : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`,
     '',
     'สอบถามเพิ่มเติมหรือต้องการใบเสนอราคาได้เลย',
+    '',
+    'รวมคำถามยอดฮิตเกี่ยวกับประกัน',
+    'https://www.doctor-insurance.com/health-knowledge',
     '━━━━━━━━━━━━━━━━',
     '💳 สิทธิพิเศษเพิ่มเติม',
     'ผ่อน 0% สูงสุด 10 เดือน และรับเครดิตเงินคืนตามเงื่อนไขบัตรเครดิตที่ร่วมรายการ',
@@ -2683,7 +2706,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;padding:9px 0;${i<items.length-1?'border-bottom:1px solid var(--line);':''}">
           <div>
             <div style="font-weight:600;color:var(--ink);">${it.name}</div>
-            <div class="meta">${it.coverage}</div>
+            <div class="meta">${compactCoverage(it.coverage)}</div>
           </div>
           <div style="font-weight:700;color:var(--pink-deep);white-space:nowrap;font-family:'Kanit',sans-serif;">${displayPremium(it.premium)}</div>
         </div>
