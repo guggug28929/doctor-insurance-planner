@@ -2395,7 +2395,7 @@ function renderAll(){
 
 // Excel-compatible export of the exact table currently shown to the customer.
 // The generated .xls is an HTML workbook, so it opens in Excel without adding a runtime dependency.
-function exportPremiumTableExcel(){
+async function exportPremiumTableExcel(){
   const table = document.querySelector('#tableWrap table');
   if(!table){
     alert('กรุณาคำนวณตารางเบี้ยก่อนดาวน์โหลดครับ');
@@ -2420,12 +2420,31 @@ function exportPremiumTableExcel(){
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
   const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
-  const workbook = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif}h2{color:#9d0b48}h3{color:#9d0b48;margin:18px 0 6px}p{color:#555}ul{margin:4px 0 14px;padding-left:22px}li{padding:3px 0}table{border-collapse:collapse}th,td{border:1px solid #d9b9c7;padding:6px 8px;text-align:right}th{background:#9d0b48;color:#fff}th:first-child,td:first-child{text-align:center}</style></head><body><h2>${title}</h2><p>${details}</p>${selectedSummary}${table.outerHTML}<p>หมายเหตุ: เบี้ยและเงื่อนไขควรยืนยันกับบริษัทประกันอีกครั้งก่อนเสนอขาย</p></body></html>`;
-  const blob = new Blob(["\uFEFF", workbook], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const escXml = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  const cell = value => `<c t="inlineStr"><is><t>${escXml(value)}</t></is></c>`;
+  const rowsXml = [...table.querySelectorAll('tr')].map(tr => `<row>${[...tr.children].map(td => cell(td.textContent.trim())).join('')}</row>`).join('');
+  const summaryXml = [title, details, `แผนหลัก: ${mainLabel}`, `ทุนประกันสัญญาหลัก: ${fmt(inp.mainCapital)} บาท`, `แผนสุขภาพ: ${healthLabels.join(' • ') || 'ไม่ได้เลือก'}`, `แผน OPD: ${opdLabels.join(' • ') || 'ไม่ได้เลือก'}`, `สัญญาเพิ่มเติม/อุบัติเหตุ: ${riderLabels.join(' • ') || 'ไม่ได้เลือก'}`].map(v => `<row>${cell(v)}</row>`).join('');
+  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${summaryXml}${rowsXml}</sheetData></worksheet>`;
+  const files = {
+    '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
+    '_rels/.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+    'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="ตารางเบี้ย" sheetId="1" r:id="rId1"/></sheets></workbook>',
+    'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+    'xl/worksheets/sheet1.xml': sheetXml,
+  };
+  const encoder = new TextEncoder();
+  const crc32 = data => { let c=0xffffffff; for(const b of data){ c^=b; for(let k=0;k<8;k++) c=(c>>>1)^((c&1)?0xedb88320:0); } return (c^0xffffffff)>>>0; };
+  const chunks=[], central=[]; let offset=0;
+  const u16=n=>new Uint8Array([n&255,(n>>>8)&255]), u32=n=>new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);
+  const concat=a=>{const out=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let p=0;for(const x of a){out.set(x,p);p+=x.length;}return out;};
+  for(const [name,text] of Object.entries(files)){ const nb=encoder.encode(name), db=encoder.encode(text), head=concat([new Uint8Array([80,75,3,4,20,0,0,0,0,0,0,0,0,0]),u32(crc32(db)),u32(db.length),u32(db.length),u16(nb.length),u16(0),nb]); chunks.push(head,db); central.push({nb,crc:crc32(db),len:db.length,offset}); offset+=head.length+db.length; }
+  const cdOffset=offset; for(const x of central) { const h=concat([new Uint8Array([80,75,1,2,20,0,20,0,0,0,0,0,0,0]),u32(x.crc),u32(x.len),u32(x.len),u16(x.nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(x.offset),x.nb]); chunks.push(h); offset+=h.length; }
+  chunks.push(concat([new Uint8Array([80,75,5,6,0,0,0,0]),u16(central.length),u16(central.length),u32(offset-cdOffset),u32(cdOffset),u16(0)]));
+  const blob = new Blob([concat(chunks)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `ตารางเบี้ย-${inp.mainPlan === '99_20' ? '99-20' : '99-99'}-อายุ${inp.entryAge}.xls`;
+  link.download = `ตารางเบี้ย-${inp.mainPlan === '99_20' ? '99-20' : '99-99'}-อายุ${inp.entryAge}.xlsx`;
   document.body.appendChild(link);
   link.click();
   link.remove();
