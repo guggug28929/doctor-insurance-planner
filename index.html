@@ -2564,7 +2564,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   // health riders
   const healthDesc = {
-    dhl: 'เหมาจ่าย IPD ตามวงเงินต่อครั้ง ไม่มีความรับผิดส่วนแรก ค่าห้อง/ค่าแพทย์/ผ่าตัด/ICU/ค่ายาจ่ายตามจริงในวงเงิน',
+    dhl: 'เหมาจ่าย IPD ตามวงเงินต่อครั้ง ไม่มีความรับผิดส่วนแรก ค่าห้อง/ค่าแพทย์/ผ่าตัด/ICU/ค่ายาจ่ายตามจริงในวงเงิน มีสิทธิ์เข้า MTL Smile Hospital Network — เพิ่มผลประโยชน์สูงสุด 1.2 เท่า และขยายวันค่าห้อง/ค่าหมอเป็น 365 วัน/ครั้ง',
     ehp: 'ค่ารักษาผู้ป่วยใน วงเงินต่อปีกรมธรรม์ ครอบคลุมห้องเดี่ยวมาตรฐาน/พิเศษ',
     maochai: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา ตามวงเงินแผนที่เลือก',
     ecp: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา มีส่วนร่วมจ่าย Deductible 20,000/ครั้ง',
@@ -2611,14 +2611,33 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   const mainItem = items.shift(); // main contract stays in its own box
   const totalY1 = mainItem.premium + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
+  const paymentUnitLabel = paymentInfo.periods === 1 ? 'ปี' : (paymentInfo.periods === 12 ? 'เดือน' : paymentInfo.label.replace('ราย ','') );
   const displayPremium = value => paymentInfo.periods === 1
     ? `${fmt(value)} บาท/ปี`
-    : `${fmt((value * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`;
+    : `${fmt((value * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`;
   const mainLabel = inp.mainPlan==='99_20'
     ? 'เมืองไทย สมาร์ท โพรเทคชั่น 99/20'
     : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'สมาร์ทโพรเทคชั่น 99/99');
+  const mainTerm = inp.mainPlan === '99_20'
+    ? 'จ่ายเบี้ย 20 ปี เบี้ยคงที่ แต่คุ้มครองถึงอายุ 99 ปี'
+    : 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก คุ้มครองถึงอายุ 99 ปี';
+  mainItem.coverage = `${mainItem.coverage} (${mainTerm})`;
+  items.forEach(it => {
+    if(it.name === 'D Health Lite'){
+      const dhl = inp.healthList.find(cfg => cfg.type === 'dhl');
+      const limit = dhl?.sum === '1m' ? '1,000,000' : '5,000,000';
+      it.coverage = `เหมาจ่าย IPD ${limit} บาท/ครั้ง ${it.coverage}`;
+    } else if(it.name.startsWith('Care Plus')){
+      it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD)`;
+    } else if(it.name.startsWith('D Care')){
+      const d = inp.dcareSelections.find(cfg => it.name === 'D Care - '+cfg.label.split(' (')[0]);
+      if(d){
+        it.coverage = `${it.coverage} เจอจ่ายจบเงินก้อน: ระยะเริ่มต้น 100% = ${fmt(d.capital)} บาท, ระยะรุนแรง 200% = ${fmt(d.capital*2)} บาท`;
+      }
+    }
+  });
   const summaryLines = [
-    `👤 เพศ${gender==='m'?'ชาย':'หญิง'} | อายุ ${entryAge} ปี`,
+    `👤 เพศ${gender==='m'?'ชาย':'หญิง'} | อายุ ${entryAge} ปี | ชำระเบี้ย${paymentInfo.label}`,
     '',
     '━━━━━━━━━━━━━━━━',
     '📋 รายละเอียดแผน',
@@ -2627,10 +2646,12 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     `    📌 ${mainItem.coverage}`,
     ...items.flatMap(it => [``, `  ✓ ${it.name}`, `    เบี้ย ${displayPremium(it.premium)}`, `    📌 ${it.coverage}`]),
     '',
+    'หมายเหตุ: สัญญาเพิ่มเติม เบี้ยอาจเพิ่มขึ้นตามอายุของผู้เอาประกัน (ตามความเสี่ยงและเงินเฟ้อ) และต้องชำระเบี้ยต่อเนื่องตราบเท่าที่ยังต้องการความคุ้มครอง',
+    '',
     '━━━━━━━━━━━━━━━━',
     paymentInfo.periods === 1
       ? `💳 เบี้ยประกัน ${fmt(totalY1)} บาท/ปี (เฉลี่ยวันละ ${fmt(Math.round(totalY1 / 365))} บาท)`
-      : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`,
+      : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`,
     '',
     'สอบถามเพิ่มเติมหรือต้องการใบเสนอราคาได้เลย',
     '━━━━━━━━━━━━━━━━',
