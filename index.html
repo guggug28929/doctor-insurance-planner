@@ -753,6 +753,16 @@
   .brochure-card img.cover-portrait{aspect-ratio:4/5;}
   .brochure-card img.cover-landscape{aspect-ratio:16/9;}
   .brochure-caption{font-size:.72rem;color:var(--muted);padding:8px 10px;line-height:1.45;}
+  .ci-benefit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px;}
+  .ci-benefit-grid .ci-benefit{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fffafc;}
+  .ci-benefit .amount{font-size:1.35rem;font-weight:900;color:var(--pink-deep);margin:3px 0;}
+  .plan-detail-faq details{border:1px solid var(--line);border-radius:10px;padding:0 14px;margin:9px 0;background:#fff;}
+  .plan-detail-faq summary{cursor:pointer;font-weight:800;padding:13px 0;color:var(--brand-deep);}
+  .plan-detail-faq p,.plan-detail-faq ul{line-height:1.65;color:var(--text);}
+  .plan-detail-faq .disease-stage{display:inline-block;margin:0 5px 4px 0;padding:2px 7px;border-radius:999px;background:#fff0f5;color:var(--pink-deep);font-size:.76rem;font-weight:800;}
+  #ridersPanel.riders-locked{opacity:.45;filter:grayscale(.6);pointer-events:none;}
+  #riderLockNotice{display:none;margin:0 0 12px;}
+  #riderLockNotice.show{display:block;}
   .dhl-premium-table th.group-head{text-align:center;background:var(--pink);}
   .dhl-premium-table th.sub-head{text-align:center;background:var(--pink-deep);}
   .dhl-premium-table td:first-child{text-align:center;color:var(--muted);font-weight:600;}
@@ -995,6 +1005,8 @@
       <div class="radio-group">
         <label><input type="radio" name="mainPlan" value="99_20" checked> 99/20 (จ่าย 20 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากพ้นภาระเบี้ยเร็ว จ่ายหนักกว่าต่อปีแต่จ่ายแค่ 20 ปีจบ เหมาะกับคนมีกำลังจ่ายช่วงทำงาน แล้วอยากปลอดหนี้เบี้ยตอนใกล้เกษียณ</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
+        <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
+        <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
       </div>
       <label>ทุนประกัน (บาท)</label>
       <input type="number" id="mainCapital" value="200000" step="10000" min="50000">
@@ -1004,6 +1016,8 @@
       <div class="hint" id="riderTotalInfo"></div>
     </div>
 
+    <div class="notice-box" id="riderLockNotice"><strong>แผน 15/3 และ 15/6 แนบสัญญาเพิ่มเติมไม่ได้</strong><br>ระบบจึงปิดตัวเลือกสุขภาพ OPD โรคร้ายแรง อุบัติเหตุ และ HB ทั้งหมด และใช้ตารางเบี้ยรายปีเท่านั้น</div>
+    <div id="ridersPanel">
     <div class="card">
       <h2>สัญญาเพิ่มเติมสุขภาพ <span class="tag">เลือกได้หลายแผน (แผนต่างกัน)</span></h2>
 
@@ -1194,6 +1208,8 @@
         <div class="hint" id="hbHint"></div>
         <div class="field-err" id="hbErr"></div>
       </div>
+    </div>
+
     </div>
 
     <button class="btn" onclick="renderAll()">คำนวณตารางเบี้ย</button>
@@ -2038,14 +2054,47 @@ document.getElementById('use_hb').addEventListener('change', function(){
   document.getElementById('hb_fields').classList.toggle('hidden', !this.checked);
 });
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
+const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6']);
+function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
+function savingsMainData(plan){ return plan === '15_3' ? RATES.smart_link_15_3 : RATES.smart_link_15_6; }
+function mainPlanDisplayName(plan, capital){
+  if(plan === '99_20') return 'สัญญาหลัก 99/20';
+  if(plan === '99_99') return capital === 50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99';
+  return plan === '15_3' ? 'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)' : 'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)';
+}
+function applySavingsPlanLock(plan){
+  const locked = isSavingsMainPlan(plan);
+  const panel = document.getElementById('ridersPanel');
+  const notice = document.getElementById('riderLockNotice');
+  const frequency = document.getElementById('paymentFrequency');
+  panel.classList.toggle('riders-locked', locked);
+  notice.classList.toggle('show', locked);
+  frequency.disabled = locked;
+  if(locked){
+    frequency.value = 'annual';
+    panel.querySelectorAll('input[type="checkbox"]').forEach(el => { el.checked = false; });
+    panel.querySelectorAll('.sub-fields').forEach(el => el.classList.add('hidden'));
+    document.getElementById('pa_plan').value = 'none';
+    document.getElementById('dcare_list').querySelectorAll('input[type="checkbox"]').forEach(el => { el.checked = false; });
+  }
+}
 function updateMainCapitalHint(){
   const plan = document.querySelector('input[name=mainPlan]:checked').value;
   const capitalInput = document.getElementById('mainCapital');
-  if(plan === '99_20'){
+  applySavingsPlanLock(plan);
+  if(isSavingsMainPlan(plan)){
+    const product = savingsMainData(plan);
+    capitalInput.min = Math.min(...product.capitals);
+    capitalInput.step = 1000;
+    if(!product.capitals.includes(Number(capitalInput.value))) capitalInput.value = product.capitals[0];
+    document.getElementById('mainCapitalHint').textContent = `${mainPlanDisplayName(plan)}: ชำระรายปีเท่านั้น • เลือกทุนได้ ${product.capitals.map(fmt).join(' / ')} บาท • ไม่สามารถแนบสัญญาเพิ่มเติมได้`;
+  } else if(plan === '99_20'){
     capitalInput.min = 200000;
+    capitalInput.step = 10000;
     document.getElementById('mainCapitalHint').textContent = 'ทุนประกันขั้นต่ำแผน 99/20 คือ 200,000 บาท';
   } else {
     capitalInput.min = 50000;
+    capitalInput.step = 10000;
     document.getElementById('mainCapitalHint').textContent = 'ทุน 50,000 บาท: คุ้มครองตลอดชีพ 99/99 • ตั้งแต่ 50,001 บาท: Smart Protection 99/99 ตาม Tier ทุนประกัน';
   }
 }
@@ -2086,6 +2135,12 @@ function currentBEYear(){
 
 // ---- main premium (level for life, fixed at entry age; published age 0-70 for 99/20, 0-90 for 99/99) ----
 function mainPremiumAtEntry(plan, capital, gender, entryAge){
+  if(isSavingsMainPlan(plan)){
+    const product = savingsMainData(plan);
+    const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
+    const idx = product.capitals.indexOf(capital);
+    return band && idx >= 0 ? band[idx+2] : null;
+  }
   if(plan === '99_20'){
     const g = RATES.main_99_20;
     let base, denom;
@@ -2172,7 +2227,7 @@ function dcarePremium(catKey, capital, gender, age){
 }
 
 function hbPremium(amount, age){
-  const rate = rateAt(RATES.hb.rate_per_1000, age);
+  const rate = rateAtStart(RATES.hb.rate_per_1000, age, 0);
   if(rate===null) return null;
   return rate * amount / 1000;
 }
@@ -2202,9 +2257,11 @@ const PAYMENT_FREQUENCIES = {
   monthly: {label:'รายเดือน', periods:12},
 };
 function paymentFrequencyInfo(value){ return PAYMENT_FREQUENCIES[value] || PAYMENT_FREQUENCIES.annual; }
-// Smart Protection 99/99 publishes installment rates per 1,000. For other
-// products the local authoritative tables currently publish annual rates only;
-// keep their annual amount unchanged rather than inventing an installment factor.
+// IMPORTANT: Never derive an instalment premium by dividing or multiplying an
+// annual premium. Every product has its own published instalment table.
+// This helper is retained for the verified 99/99 data model only; renderAll()
+// blocks non-annual quotes until every selected contract has its own verified
+// published rates in data/premium-rates.json.
 function paymentFactor(inp){
   const freq = paymentFrequencyInfo(inp.paymentFrequency);
   if(freq.periods === 1) return 1;
@@ -2284,6 +2341,15 @@ function readInputs(){
 function validateInputs(inp){
   const issues = [];
   const hasIPD = inp.healthList.length > 0;
+
+  if(isSavingsMainPlan(inp.mainPlan)){
+    const product = savingsMainData(inp.mainPlan);
+    if(inp.paymentFrequency !== 'annual') issues.push('แผน 15/3 และ 15/6 เปิดรับเฉพาะเบี้ยรายปี');
+    if(!product.capitals.includes(inp.mainCapital)) issues.push(`ทุนประกันของ ${mainPlanDisplayName(inp.mainPlan)} ต้องเลือกจากตารางที่เผยแพร่`);
+    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb;
+    if(hasRider) issues.push('แผน 15/3 และ 15/6 ไม่สามารถแนบสัญญาเพิ่มเติมได้');
+    return issues;
+  }
 
   // main capital minimum
   if(inp.mainPlan === '99_20' && inp.mainCapital < 200000){
@@ -2365,6 +2431,21 @@ function renderAll(){
     validationEl.innerHTML = '';
     return;
   }
+
+  // Do not show an estimated monthly / quarterly / semiannual quote.  The
+  // calculator previously divided annual premiums for contracts whose real
+  // instalment tables had not yet been captured, which can understate the
+  // annual cost.  A non-annual quote is enabled only after exact per-product
+  // published tables are stored and validated.
+  if(inp.paymentFrequency !== 'annual'){
+    ageInfoEl.textContent = `ปี พ.ศ. ปัจจุบัน ${currentBEYear()}  •  อายุผู้เอาประกันปัจจุบัน ${inp.entryAge} ปี`;
+    validationEl.innerHTML = '<div class="validation-box bad"><strong>ยังไม่สามารถออกเบี้ยรายงวดได้</strong><br>ระบบจะไม่คำนวณจากเบี้ยรายปีหารเป็นงวด เพราะแต่ละสัญญามีอัตรารายเดือน/ราย 3 เดือน/ราย 6 เดือนของตัวเอง กรุณาเลือก “รายปี” ชั่วคราวจนกว่าตารางงวดจริงของทุกสัญญาที่เลือกจะได้รับการตรวจสอบและบันทึกครบ</div>';
+    tableWrap.innerHTML = '<div class="empty-state">ไม่มีการแสดงหรือส่งออกตัวเลขรายงวดที่ยังไม่ยืนยันจากตารางเบี้ยจริง</div>';
+    summaryEl.innerHTML = '';
+    const contractSummary = document.getElementById('contractSummary');
+    if(contractSummary) contractSummary.innerHTML = '';
+    return;
+  }
   ageInfoEl.textContent = `ปี พ.ศ. ปัจจุบัน ${currentBEYear()}  •  อายุผู้เอาประกันปัจจุบัน ${inp.entryAge} ปี (ใช้เป็นอายุเริ่มทำสัญญา)`;
 
   const entryAge = inp.entryAge;
@@ -2380,7 +2461,7 @@ function renderAll(){
   const careplusPlanNames = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
 
   const cols = [];
-  cols.push({key:'main', label: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99')});
+  cols.push({key:'main', label: mainPlanDisplayName(inp.mainPlan, inp.mainCapital)});
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) cols.push({key:'health_'+i, label:healthLabels[i]}); });
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) cols.push({key:'opd_'+i, label:opdLabels[i]}); });
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
@@ -2392,8 +2473,9 @@ function renderAll(){
 
   const rows = [];
   let cumulative = 0;
-  const payTermMain = inp.mainPlan === '99_20' ? 20 : 99;
-  for(let age = entryAge; age <= 98; age++){
+  const payTermMain = inp.mainPlan === '99_20' ? 20 : inp.mainPlan === '99_99' ? 99 : savingsMainData(inp.mainPlan).pay_years;
+  const endAge = isSavingsMainPlan(inp.mainPlan) ? Math.min(98, entryAge + savingsMainData(inp.mainPlan).coverage_years - 1) : 98;
+  for(let age = entryAge; age <= endAge; age++){
     const policyYear = age - entryAge + 1;
     const row = {age, policyYear, values:{}};
 
@@ -2435,7 +2517,7 @@ function renderAll(){
   // (capital > 50,000 and < 200,000). The legacy 50,000-baht 99/99 plan
   // is exempt, and 200,000+ Smart Protection is exempt as well.
   if(inp.mainPlan === '99_99' && inp.mainCapital > 50000 && inp.mainCapital < 200000){
-    const mainPremium = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge).premium;
+    const mainPremium = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge);
     const threshold = Math.min(mainPremium * 2, 20000);
     if(riderTotalYear1 < 5000 || riderTotalYear1 <= threshold){
       issues.push(`เบี้ยสัญญาเพิ่มเติมรวม (ไม่รวมเบี้ยสัญญาหลัก) ปีแรก = ${fmt(riderTotalYear1)} บาท ต้องไม่น้อยกว่า 5,000 บาท และมากกว่า ${fmt(threshold)} บาท สำหรับ Smart Protection 99/99 ทุนต่ำกว่า 200,000 บาท`);
@@ -2457,7 +2539,7 @@ function renderAll(){
     <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี • อาชีพขั้น ${inp.occupationClass}</div></div>
     <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${paymentInfoValueUnsupported(inp) ? ' (ตารางแผนนี้มีรายปีเท่านั้น)' : ''}</div></div>
     <div class="stat"><div class="k">${paymentInfo.periods === 1 ? 'เบี้ยปีแรก (รวมทุกสัญญา)' : `เบี้ยต่องวด (รวมทุกสัญญา)`}</div><div class="v">${fmt(paymentInfo.periods === 1 ? firstYearTotal : firstPeriodTotal)} บาท${paymentInfo.periods === 1 ? '' : '/'+paymentInfo.label}</div></div>
-    <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี (ถึงอายุ 98)</div></div>
+    <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี ${isSavingsMainPlan(inp.mainPlan) ? `(คุ้มครอง 15 ปี)` : '(ถึงอายุ 98)'}</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
   `;
 
@@ -2496,8 +2578,8 @@ async function exportPremiumTableExcel(){
     return;
   }
   const inp = readInputs();
-  const title = `ตารางเบี้ยประกัน ${inp.mainPlan === '99_20' ? '99/20' : '99/99'}`;
-  const mainLabel = inp.mainPlan === '99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99');
+  const title = `ตารางเบี้ยประกัน ${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)}`;
+  const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
   const healthLabels = inp.healthList.map(cfg => {
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
     if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan}`;
@@ -2539,7 +2621,7 @@ async function exportPremiumTableExcel(){
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `ตารางเบี้ย-${inp.mainPlan === '99_20' ? '99-20' : '99-99'}-อายุ${inp.entryAge}.xlsx`;
+  link.download = `ตารางเบี้ย-${inp.mainPlan.replace('_','-')}-อายุ${inp.entryAge}.xlsx`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -2557,7 +2639,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   // main contract
   items.push({
-    name: inp.mainPlan==='99_20' ? 'สัญญาหลัก 99/20' : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99'),
+    name: mainPlanDisplayName(inp.mainPlan, inp.mainCapital),
     premium: y1.main,
     coverage: `เสียชีวิตหรืออยู่ครบสัญญา รับทุนประกัน ${fmt(inp.mainCapital)} บาท`
   });
@@ -3105,6 +3187,54 @@ const PLAN_COVER_IMAGES = {
   pa: {src:'/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
 };
 
+function ciPerfectCareBenefitTable(){
+  return `<div class="ci-benefit-grid">
+    <div class="ci-benefit"><div>ระยะเริ่มต้น</div><div class="amount">25% ของทุน</div><div>จ่ายเมื่อเข้าเกณฑ์โรคระยะเริ่มต้นตามคำนิยาม</div></div>
+    <div class="ci-benefit"><div>ระยะกลาง</div><div class="amount">50% ของทุน</div><div>หักเงินที่เคยจ่ายระยะเริ่มต้นของโรคเดียวกัน</div></div>
+    <div class="ci-benefit"><div>ระยะรุนแรง</div><div class="amount">100% ของทุน</div><div>หักเงินที่เคยจ่ายก่อนหน้า แล้วสัญญาสิ้นสุด</div></div>
+    <div class="ci-benefit"><div>เสียชีวิตทุกกรณี</div><div class="amount">สูงสุด 100% ของทุน</div><div>หักเงินระยะเริ่มต้น/กลางที่เคยได้รับ; ไม่มีสิทธิซ้ำหลังจ่ายระยะรุนแรงครบ</div></div>
+  </div>
+  <div class="notice-box" style="margin-top:12px;"><strong>ผลประโยชน์รวมสูงสุด:</strong> การเสียชีวิตและโรคร้ายแรงรวมกันไม่เกิน 100% ของทุนประกันตลอดสัญญา หากเหตุเดียวเข้าได้หลายโรค จะจ่ายเฉพาะรายการที่สูงสุด</div>
+  <div class="ci-benefit-grid">
+    <div class="ci-benefit"><div>ขยายหลอดเลือดแดงหัวใจ</div><div class="amount">เพิ่ม 10% ของทุน</div><div>บอลลูน/ใส่ stent/เลเซอร์หรือสวนสายเพื่อขยายหลอดเลือดตามเกณฑ์ความตีบในกรมธรรม์; จ่ายครั้งเดียว</div></div>
+    <div class="ci-benefit"><div>ภาวะแทรกซ้อนเบาหวาน</div><div class="amount">เพิ่ม 10% ของทุน</div><div>จอประสาทตาจากเบาหวานที่ต้องเลเซอร์, โรคไตจากเบาหวานตามค่า eGFR/โปรตีนในปัสสาวะ หรือการตัดแขนขาจากเนื้อเน่า; จ่ายได้เพียงหนึ่งรายการตลอดสัญญา และไม่คุ้มครองหากเคยเป็นเบาหวานก่อนเริ่มคุ้มครอง</div></div>
+  </div>`;
+}
+
+function ciPerfectCareDetailSections(){
+  const groups = [
+    {title:'สมอง ระบบประสาท และการรับรู้', items:[
+      ['อัลไซเมอร์/สมองเสื่อม','เริ่มต้น: วินิจฉัยโดยอายุรแพทย์ประสาทวิทยาและผล Mini-mental ต่ำกว่า 20/30 พร้อมการสูญเสียความจำ เหตุผล และการรับรู้; รุนแรง: มีความบกพร่องทางระบบประสาทจนทำกิจวัตรประจำวันเองไม่ได้ถาวรอย่างน้อย 3 กิจกรรม'],
+      ['เยื่อหุ้มสมองและไขสันหลังอักเสบจากเชื้อแบคทีเรีย','ระยะรุนแรง: ต้องยืนยันจากการเจาะน้ำไขสันหลัง มีความบกพร่องทางระบบประสาทต่อเนื่องอย่างน้อย 60 วัน และทำกิจวัตรเองไม่ได้ถาวรอย่างน้อย 1 กิจกรรม'],
+      ['เนื้องอกในสมองชนิดไม่ใช่มะเร็ง','เริ่มต้น: ผ่าตัดเนื้องอกต่อมใต้สมองผ่านรูจมูก; กลาง: ผ่าเปิดกะโหลกเอาเนื้องอกต่อมใต้สมอง; รุนแรง: CT/MRI ยืนยันก้อนเป็นอันตรายถึงชีวิต กดสมอง/มีอาการทางระบบประสาท และผ่าตัดหรือ Gamma Knife'],
+      ['บาดเจ็บศีรษะรุนแรง / โคม่า','ต้องเป็นอาการตามนิยามหลังการบาดเจ็บ โดยโคม่าหรือความบกพร่องต้องต่อเนื่องตามระยะเวลาที่กรมธรรม์กำหนด และได้รับการวินิจฉัยโดยแพทย์ผู้เชี่ยวชาญ'],
+      ['Multiple Sclerosis / Motor Neuron Disease / Muscular Dystrophy / Parkinson / Viral Encephalitis / Poliomyelitis','เป็นโรคระยะรุนแรงหรือมีระยะตามที่ระบุในนิยาม ต้องยืนยันการวินิจฉัยโดยอายุรแพทย์ประสาทวิทยา และมีความบกพร่องถาวร/ต่อเนื่องตามเกณฑ์ของแต่ละโรค'],
+      ['โรคหลอดเลือดสมอง / ภาวะอะแพลลิก','ต้องมีหลักฐานภาพ CT/MRI หรือหลักฐานการวินิจฉัยที่กำหนด พร้อมความบกพร่องทางระบบประสาทต่อเนื่องตามระยะเวลาในกรมธรรม์'],
+    ]},
+    {title:'หัวใจ หลอดเลือด และปอด', items:[
+      ['กล้ามเนื้อหัวใจตายเฉียบพลัน','ต้องมีอาการทางคลินิกพร้อมผลคลื่นไฟฟ้าหัวใจและ/หรือ cardiac biomarkers ตามเกณฑ์การวินิจฉัยในกรมธรรม์'],
+      ['ผ่าตัดหลอดเลือดหัวใจ / ผ่าตัดลิ้นหัวใจ','มีระยะเริ่มต้น/กลางสำหรับหัตถการที่ระบุ และรุนแรงเมื่อเป็นการผ่าตัดตามนิยาม; การตรวจสวนหลอดเลือดเพื่อวินิจฉัยอย่างเดียวไม่ใช่ผลประโยชน์'],
+      ['Cardiomyopathy / ความดันหลอดเลือดปอดสูงปฐมภูมิ / COPD ระยะสุดท้าย','ต้องยืนยันโดยแพทย์ผู้เชี่ยวชาญ และแสดงความรุนแรงจากผลตรวจ/การทำงานหัวใจหรือปอดตามเกณฑ์ของโรค'],
+      ['ผ่าตัดเอออร์ตา','เป็นการผ่าตัดหลอดเลือดแดงใหญ่ตามคำนิยาม ไม่รวมการผ่าตัดแขนงย่อยของเอออร์ตาหรือหัตถการที่อยู่นอกนิยาม'],
+    ]},
+    {title:'มะเร็ง เลือด และอวัยวะสำคัญ', items:[
+      ['มะเร็ง','เริ่มต้น: non-invasive/CIS ตามรายงานพยาธิวิทยา; กลาง: มะเร็งเฉพาะอวัยวะระยะต้นที่ยังไม่ลุกลามและต้องมีหลักฐานชิ้นเนื้อ; รุนแรง: invasive cancer ลุกลามผ่าน basement membrane/กระจาย โดยมีข้อยกเว้นชนิดหรือระยะที่ระบุในสัญญา'],
+      ['Aplastic Anemia','เริ่มต้น: ไขกระดูกล้มเหลวชนิดกลับเป็นปกติได้ พร้อมการให้เลือด/การรักษาและผลเลือดตามเกณฑ์; รุนแรง: ไขกระดูกล้มเหลวถาวร ยืนยันด้วย bone marrow biopsy และต้องรักษาตามวิธีที่ระบุ'],
+      ['ตับวาย / ไตวายเรื้อรัง / ไวรัสตับอักเสบขั้นรุนแรง / Medullary Cystic Disease / Lupus Nephritis','ต้องเป็นระยะท้ายหรือมีผลตรวจยืนยันการทำงานอวัยวะตามเกณฑ์ของโรค; การรักษาหรือการล้างไต/ปลูกถ่ายต้องเป็นไปตามนิยาม'],
+      ['เปลี่ยนอวัยวะสำคัญหรือปลูกถ่ายไขกระดูก','ต้องเป็นการปลูกถ่ายหัวใจ ปอด ตับ ไต ตับอ่อน หรือไขกระดูก/อวัยวะตามที่นิยามกำหนด และไม่ใช่เพียงการอยู่ในรายชื่อรอปลูกถ่าย'],
+    ]},
+    {title:'ตา หู การสื่อสาร และความพิการ', items:[
+      ['ตาบอด / สูญเสียการได้ยิน / สูญเสียความสามารถในการพูด','ต้องสูญเสียอย่างถาวรทั้งสองข้างหรือเป็นไปตามระดับการวัดและการวินิจฉัยของแพทย์ผู้เชี่ยวชาญตามนิยาม'],
+      ['ทุพพลภาพถาวรสิ้นเชิง / อัมพาต','ต้องทำกิจวัตรประจำวันด้วยตนเองไม่ได้ตามจำนวนกิจกรรมและระยะเวลาที่กรมธรรม์กำหนด หรือเป็นอัมพาตถาวรตามเกณฑ์'],
+      ['แผลไหม้ฉกรรจ์','เริ่มต้นและรุนแรงแบ่งตามความลึกและสัดส่วนพื้นที่ผิวหนังที่ไหม้; ต้องได้รับการวินิจฉัยโดยศัลยแพทย์และเกิดจากอัคคีภัย/ความร้อนตามนิยาม'],
+    ]},
+    {title:'36 โรคที่คุ้มครองตามชื่อในกรมธรรม์', items:[
+      ['รายชื่อครบถ้วน','อัลไซเมอร์, Aplastic Anemia, เยื่อหุ้มสมองอักเสบแบคทีเรีย, เนื้องอกสมองไม่ใช่มะเร็ง, ตาบอด, มะเร็ง, Cardiomyopathy, ตับวาย, COPD/ปอดระยะสุดท้าย, โคม่า, ผ่าตัดหลอดเลือดหัวใจ, หัวใจวายเฉียบพลัน, ผ่าตัดลิ้นหัวใจ, ไตวายเรื้อรัง, สูญเสียการได้ยิน, TPD, สูญเสียการพูด, แผลไหม้ฉกรรจ์, บาดเจ็บศีรษะรุนแรง, ปลูกถ่ายอวัยวะ/ไขกระดูก, Motor Neuron Disease, Multiple Sclerosis, Muscular Dystrophy, Fulminant Viral Hepatitis, อัมพาต, Parkinson, Primary Pulmonary Arterial Hypertension, Major Stroke, ผ่าตัดเอออร์ตา, Lupus Nephritis, Viral Encephalitis, Aplallic Syndrome, Poliomyelitis, Medullary Cystic Disease, Progressive Scleroderma และ Terminal Illness'],
+    ]}
+  ];
+  return `<div class="content-card plan-detail-faq"><h2>เกณฑ์วินิจฉัยรายกลุ่มโรค</h2><p class="meta">กดหัวข้อเพื่ออ่านเกณฑ์สรุป แต่ละเคสต้องให้แพทย์ผู้เชี่ยวชาญวินิจฉัยและบริษัทพิจารณาจากหลักฐานจริงตามคำจำกัดความในกรมธรรม์</p>${groups.map(g=>`<details><summary>${g.title}</summary>${g.items.map(i=>`<p><strong>${i[0]}</strong><br>${i[1]}</p>`).join('')}</details>`).join('')}<p class="meta">เอกสารอ้างอิง: สัญญาเพิ่มเติม CI Perfect Care ที่ผู้ใช้ส่งให้ ฉบับ 33 หน้า โดยเฉพาะนิยามโรคและหน้าผลประโยชน์ ไม่ควรใช้ข้อความสรุปนี้แทนเอกสารกรมธรรม์ฉบับจริง</p></div>`;
+}
+
 const PLAN_DETAILS = {
   main9920: {
     title: 'สมาร์ท โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
@@ -3447,19 +3577,25 @@ const PLAN_DETAILS = {
 
   cipc: {
     title: 'CI Perfect Care', category: 'โรคร้ายแรง (ครอบคลุม 36 โรค)',
-    overview: 'ประกันโรคร้ายแรงครอบคลุมกว้างที่สุดในกลุ่ม คุ้มครอง 36 โรคร้ายแรงตั้งแต่ระยะเริ่มต้นไปจนถึงระยะรุนแรง จ่ายเป็นเปอร์เซ็นต์ของทุนประกันสะสมได้สูงสุด 100%',
+    overview: 'สัญญาเพิ่มเติมโรคร้ายแรง 36 โรค ครอบคลุมตามนิยามกรมธรรม์ตั้งแต่ระยะเริ่มต้น ระยะกลาง และระยะรุนแรง โดยผลประโยชน์รวมสำหรับการเสียชีวิตและโรคร้ายแรงสูงสุดตลอดสัญญา 100% ของทุนประกัน',
     images: [PLAN_COVER_IMAGES.cipc],
     coverage: [
-      'ระยะเริ่มต้น/ไม่รุนแรง จ่าย 10-50% ของทุนประกัน ตามความรุนแรงของโรค',
-      'ระยะรุนแรง/ลุกลาม จ่ายเพิ่มจนครบ 100% ของทุนประกัน',
-      'คุ้มครองกรณีเสียชีวิตทุกกรณีด้วย หากยังไม่เคยเคลมครบ 100%',
-      'เมื่อจ่ายครบ 100% ของทุนประกันแล้ว สัญญาสิ้นสุดความคุ้มครอง',
+      'โรคร้ายแรงระยะเริ่มต้น: จ่าย 25% ของทุนประกัน สำหรับโรคตามนิยามที่จัดอยู่ในระยะเริ่มต้น',
+      'โรคร้ายแรงระยะกลาง: จ่าย 50% ของทุนประกัน หักจำนวนที่เคยจ่ายระยะเริ่มต้นของโรคเดียวกัน (ถ้ามี)',
+      'โรคร้ายแรงระยะรุนแรง: จ่าย 100% ของทุนประกัน หักผลประโยชน์ระยะเริ่มต้น/กลางที่เคยได้รับ (ถ้ามี) แล้วสัญญาสิ้นสุด',
+      'กรณีเสียชีวิต: จ่าย 100% ของทุนประกัน หักผลประโยชน์ระยะเริ่มต้น/กลางที่เคยได้รับ หากยังไม่เคยจ่ายระยะรุนแรง',
+      'สิทธิประโยชน์พิเศษแยกต่างหาก: ผ่าตัดขยายหลอดเลือดหัวใจ 10% และโรคแทรกซ้อนของเบาหวาน 10% ตามเกณฑ์เฉพาะ',
     ],
     conditions: [
       'อายุรับประกันใหม่ 30 วัน – 65 ปี (ต่ออายุได้ถึง 84 ปี)',
       'ทุนประกันขั้นต่ำ 100,000 บาท สูงสุดไม่เกิน 10 เท่าของทุนประกันสัญญาหลัก',
-      'ระยะเวลารอคอยเฉพาะโรคร้ายแรง 90 วันหลังกรมธรรม์อนุมัติ (นานกว่าสัญญาสุขภาพทั่วไป)',
+      'โรคร้ายแรงต้องแสดงอาการหลังพ้น 90 วันนับจากวันเริ่มคุ้มครอง หรือวันต่ออายุ/เพิ่มทุนล่าสุด แล้วแต่วันใดหลังสุด',
+      'หากเหตุการณ์เดียวเข้าเกณฑ์มากกว่าหนึ่งโรค บริษัทจ่ายเพียงรายการที่มีผลประโยชน์สูงสุดรายการเดียว',
+      'เงื่อนไขและคำนิยามจริงให้ยึดตามสัญญาเพิ่มเติม CI Perfect Care; หน้านี้สรุปเพื่ออ่านง่าย ไม่แทนกรมธรรม์',
     ],
+    benefitTable: () => ciPerfectCareBenefitTable(),
+    benefitTitle: 'วิธีจ่ายผลประโยชน์ และเงินคงเหลือ',
+    detailSections: () => ciPerfectCareDetailSections(),
     rateTable: () => renderAgeTable(0, 84, [
       {label:'ชาย (ต่อทุน 500,000บ.)', arr: RATES.cipc.m},
       {label:'หญิง (ต่อทุน 500,000บ.)', arr: RATES.cipc.f},
@@ -3652,6 +3788,7 @@ function showPlanDetail(id, options = {}){
       <ul>${p.coverage.map(c=>`<li>${c}</li>`).join('')}</ul>
     </div>
     ${p.benefitTable ? `<div class="content-card"><h2>${p.benefitTitle || 'ตารางความคุ้มครอง 13 หมวด'}</h2>${p.benefitTable()}</div>` : ''}
+    ${p.detailSections ? p.detailSections() : ''}
     <div class="content-card">
       <h2>เงื่อนไขและข้อควรทราบ</h2>
       <ul>${p.conditions.map(c=>`<li>${c}</li>`).join('')}</ul>
