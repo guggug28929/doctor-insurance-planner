@@ -1,16 +1,14 @@
 // Vercel Serverless Function: /api/insurance-plan.js
-// v21: AI advisor for the Health Plan Designer page
+// v22: switched from OpenAI to Claude (Anthropic) — AI advisor for the Health Plan Designer page
 // Purpose: ให้ AI วิเคราะห์แพ็กเกจที่ frontend คำนวณไว้แล้ว โดยไม่ invent เบี้ย/รายการใหม่เอง
-// Required env: OPENAI_API_KEY
-// Optional env: ALLOWED_ORIGIN, OPENAI_MODEL_PLAN, OPENAI_MODEL_MEDIUM, OPENAI_MODEL_DEFAULT, RATE_LIMIT_PER_HOUR, RATE_LIMIT_PER_DAY
+// Required env: ANTHROPIC_API_KEY
+// Optional env: ALLOWED_ORIGIN, ANTHROPIC_MODEL_PLAN, ANTHROPIC_MODEL_MEDIUM, ANTHROPIC_MODEL_DEFAULT, RATE_LIMIT_PER_HOUR, RATE_LIMIT_PER_DAY
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 const DEFAULT_RATE_LIMIT_HOUR = 8;
 const DEFAULT_RATE_LIMIT_DAY = 25;
 const MAX_PACKAGES = 6;
-
-// If later you allow web search for plan questions, keep domains limited.
-const WEB_SEARCH_ALLOWED_DOMAINS = ['muangthai.co.th', 'www.muangthai-agent.com', 'muangthai-agent.com'];
+const ANTHROPIC_API_VERSION = '2023-06-01';
 
 globalThis.__insurancePlanCache = globalThis.__insurancePlanCache || new Map();
 globalThis.__insurancePlanRateLimit = globalThis.__insurancePlanRateLimit || new Map();
@@ -115,48 +113,35 @@ function makeCacheKey(profile, packages) {
   return normalizeText(JSON.stringify(brief)).slice(0, 1800);
 }
 
-function shouldUseWebSearch(profile) {
-  // For plan design we should normally NOT search web because premiums come from frontend tables.
-  // Keep this available only if later adding date-sensitive wording.
-  const text = normalizeText(JSON.stringify(profile));
-  return ['ล่าสุด', 'อัปเดต', 'เบี้ยล่าสุด', 'เงื่อนไขใหม่', 'ปี 2569', 'ปี 2570'].some(k => text.includes(k));
-}
-
 function modelForPlan(profile, packages) {
   const budget = safeNumber(profile.budget);
-  const hasHealthConditionLikeNeed = false;
   const highNeed = ['high', 'elite20', 'elite75'].includes(profile.ipdNeed);
   const tightBudget = budget > 0 && packages.some(p => p.premium > budget * 1.5);
 
-  if (hasHealthConditionLikeNeed || (highNeed && tightBudget)) {
+  if (highNeed && tightBudget) {
     return {
       tier: 'plan-hard',
-      model: process.env.OPENAI_MODEL_PLAN || process.env.OPENAI_MODEL_HARD || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+      model: process.env.ANTHROPIC_MODEL_PLAN || process.env.ANTHROPIC_MODEL_DEFAULT || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
       maxOutputTokens: 780,
-      useWebSearch: false
     };
   }
   return {
     tier: 'plan-medium',
-    model: process.env.OPENAI_MODEL_PLAN || process.env.OPENAI_MODEL_MEDIUM || process.env.OPENAI_MODEL_DEFAULT || process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+    model: process.env.ANTHROPIC_MODEL_PLAN || process.env.ANTHROPIC_MODEL_MEDIUM || process.env.ANTHROPIC_MODEL_DEFAULT || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
     maxOutputTokens: 620,
-    useWebSearch: false
   };
 }
 
-function extractTextFromResponsesApi(result) {
-  if (typeof result?.output_text === 'string' && result.output_text.trim()) return result.output_text.trim();
-  const chunks = [];
-  const output = Array.isArray(result?.output) ? result.output : [];
-  for (const item of output) {
-    const content = Array.isArray(item?.content) ? item.content : [];
-    for (const c of content) {
-      if (typeof c?.text === 'string' && c.text.trim()) chunks.push(c.text.trim());
-      if (typeof c?.output_text === 'string' && c.output_text.trim()) chunks.push(c.output_text.trim());
-      if (typeof c?.content === 'string' && c.content.trim()) chunks.push(c.content.trim());
-    }
-  }
-  return chunks.join('\n\n').trim();
+// Claude's Messages API returns content as an array of blocks; we only want the
+// text blocks, concatenated in order.
+function extractTextFromClaude(result) {
+  const content = Array.isArray(result?.content) ? result.content : [];
+  return content
+    .filter(c => c?.type === 'text' && typeof c.text === 'string')
+    .map(c => c.text.trim())
+    .filter(Boolean)
+    .join('\n\n')
+    .trim();
 }
 
 function extractJsonObject(text) {
@@ -168,11 +153,12 @@ function extractJsonObject(text) {
   throw new Error('AI response is not valid JSON');
 }
 
-async function callOpenAI(payload) {
-  const upstream = await fetch('https://api.openai.com/v1/responses', {
+async function callClaude(payload) {
+  const upstream = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': ANTHROPIC_API_VERSION,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -180,7 +166,7 @@ async function callOpenAI(payload) {
 
   const result = await upstream.json().catch(() => ({}));
   if (!upstream.ok) {
-    const message = result?.error?.message || `OpenAI API error: HTTP ${upstream.status}`;
+    const message = result?.error?.message || `Anthropic API error: HTTP ${upstream.status}`;
     const err = new Error(message);
     err.status = upstream.status;
     err.detail = result;
@@ -195,7 +181,7 @@ function buildInstructions(route) {
 ข้อบังคับสำคัญ:
 - ให้เลือกและอธิบายจากแพ็กเกจที่ frontend ส่งมาเท่านั้น ห้ามสร้างชื่อแผน/เบี้ย/สัญญาเพิ่มเติมใหม่เอง
 - เบี้ยและรายการ rider จาก frontend ถือเป็น source of truth ห้ามแก้ตัวเลขเอง
-- ตอบกลับเป็น JSON object เท่านั้น ห้ามมี markdown นอก JSON 
+- ตอบกลับเป็น JSON object เท่านั้น ห้ามมี markdown หรือข้อความอื่นนอก JSON ห้ามใส่ code fence
 - หลักการจัดแผน: IPD/สุขภาพหลักก่อน → Care plus → โรคร้ายแรง → OPD ถ้างบพอ → ทุนชีวิตท้ายสุด
 - ถ้างบจำกัดแต่ต้องการความคุ้มครองสูง ให้ให้เหตุผลว่าควรพยายามคง D Health Lite 5 ล้านแบบ Deductible ก่อน ถ้ายังพอจ่ายไหว
 - ถ้างบน้อยมาก ให้ยอม step down เป็น Extra Care Plus แผน 3 + Care Plus + 99/99 ทุน 50,000 และอาจคง PA แผน 1 หากช่วยให้เลือก 99/99 ได้
@@ -205,13 +191,13 @@ function buildInstructions(route) {
 
 JSON schema ที่ต้องตอบ:
 {
-  "recommendationIndex": number หรือ null,
-  "summary": "สรุปสั้น 1-2 ประโยค",
-  "reasons": ["เหตุผล 1", "เหตุผล 2", "เหตุผล 3"],
-  "budgetWarning": "คำเตือนเรื่องงบ ถ้าไม่มีให้เป็นค่าว่าง",
-  "clientMessage": "ข้อความที่ใช้พูดกับลูกค้าแบบสั้น กระชับ",
-  "followUpQuestions": ["คำถามต่อยอดที่ควรถามลูกค้า"],
-  "riskFlags": ["จุดที่ต้องระวัง เช่น ประวัติสุขภาพ/ข้อยกเว้น/งบตึง"]
+"recommendationIndex": number หรือ null,
+"summary": "สรุปสั้น 1-2 ประโยค",
+"reasons": ["เหตุผล 1", "เหตุผล 2", "เหตุผล 3"],
+"budgetWarning": "คำเตือนเรื่องงบ ถ้าไม่มีให้เป็นค่าว่าง",
+"clientMessage": "ข้อความที่ใช้พูดกับลูกค้าแบบสั้น กระชับ",
+"followUpQuestions": ["คำถามต่อยอดที่ควรถามลูกค้า"],
+"riskFlags": ["จุดที่ต้องระวัง เช่น ประวัติสุขภาพ/ข้อยกเว้น/งบตึง"]
 }
 
 ระดับงาน: ${route.tier}`;
@@ -224,7 +210,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
-  if (!process.env.OPENAI_API_KEY) return json(res, 500, { error: 'OPENAI_API_KEY is not configured on server' });
+  if (!process.env.ANTHROPIC_API_KEY) return json(res, 500, { error: 'ANTHROPIC_API_KEY is not configured on server' });
 
   try {
     const rate = checkRateLimit(req);
@@ -252,27 +238,15 @@ export default async function handler(req, res) {
       }
     };
 
-    const basePayload = {
+    const payload = {
       model: route.model,
-      reasoning: { effort: 'low' },
-      max_output_tokens: route.maxOutputTokens,
-      text: { verbosity: 'low' },
-      instructions: buildInstructions(route),
-      input: JSON.stringify(payloadForAi)
+      max_tokens: route.maxOutputTokens,
+      system: buildInstructions(route),
+      messages: [{ role: 'user', content: JSON.stringify(payloadForAi) }],
     };
 
-    let payload = { ...basePayload };
-    if (req.body?.allowWebSearch === true && shouldUseWebSearch(profile)) {
-      payload.tools = [{
-        type: 'web_search',
-        search_context_size: 'low',
-        filters: { allowed_domains: WEB_SEARCH_ALLOWED_DOMAINS }
-      }];
-      payload.tool_choice = 'auto';
-    }
-
-    const result = await callOpenAI(payload);
-    const answerText = extractTextFromResponsesApi(result);
+    const result = await callClaude(payload);
+    const answerText = extractTextFromClaude(result);
     const parsed = extractJsonObject(answerText);
 
     const data = {
@@ -285,7 +259,7 @@ export default async function handler(req, res) {
       riskFlags: Array.isArray(parsed.riskFlags) ? parsed.riskFlags.map(x => String(x).slice(0, 220)).slice(0, 5) : [],
       model: route.model,
       routeTier: route.tier,
-      usedWebSearch: Boolean(payload.tools),
+      usedWebSearch: false,
       usage: result?.usage || null,
     };
 
