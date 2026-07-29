@@ -2124,6 +2124,17 @@ function bandRateAt(bandUpperAges, arr, age){
   }
   return null;
 }
+// Maps the UI's 4-tier occupation class to the 2-tier split SmartWeb actually
+// publishes (กลุ่มอาชีพ 1&2 combined vs กลุ่มอาชีพ 3). Class 4 has no published
+// rate on any of these riders, so it must return null rather than guess.
+function occKeyFor(occupationClass){
+  if(occupationClass === '3') return '3';
+  // Callers that don't pass an occupation class (older helper/advisor call
+  // sites) default to กลุ่มอาชีพ 1&2, matching what the flat legacy tables
+  // they used to read from always represented.
+  if(occupationClass === '1' || occupationClass === '2' || occupationClass == null) return '1_2';
+  return null; // class 4 has no published rate on these riders
+}
 function fmt(n){
   if(n===null || n===undefined) return '-';
   return Math.round(n).toLocaleString('th-TH');
@@ -2134,7 +2145,8 @@ function currentBEYear(){
 }
 
 // ---- main premium (level for life, fixed at entry age; published age 0-70 for 99/20, 0-90 for 99/99) ----
-function mainPremiumAtEntry(plan, capital, gender, entryAge){
+function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
+  freq = freq || 'annual';
   if(isSavingsMainPlan(plan)){
     const product = savingsMainData(plan);
     const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
@@ -2142,6 +2154,10 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge){
     return band && idx >= 0 ? band[idx+2] : null;
   }
   if(plan === '99_20'){
+    // Smart Protection 99/20 (main_99_20) has no published non-annual instalment
+    // table yet. Never derive one from the annual rate — return null so the UI
+    // shows "-" and the frequency-support warning, per AGENTS.md rule 7.
+    if(freq !== 'annual') return null;
     const g = RATES.main_99_20;
     let base, denom;
     if(capital < 500000){ base = rateAtStart(g[gender+'_200k'], entryAge, 0); denom = 200000; }
@@ -2152,72 +2168,111 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge){
   } else {
     if(capital === 50000){
       const g = RATES.main_99_99;
-      const base = rateAtStart(g[gender], entryAge, 0);
+      const table = (g.payment_schedules && g.payment_schedules[freq]) ? g.payment_schedules[freq][gender] : (freq==='annual' ? g[gender] : null);
+      if(!table) return null;
+      const base = rateAtStart(table, entryAge, 0);
       if(base===null) return null;
       return base;
     }
     const tier = capital < 500000 ? 'under_500k' : capital < 1000000 ? 'under_1m' : 'from_1m';
-    const base = rateAtStart(RATES.smart_protection_99_99?.tiers?.[tier]?.[gender]?.annual || [], entryAge, 0);
+    const base = rateAtStart(RATES.smart_protection_99_99?.tiers?.[tier]?.[gender]?.[freq] || [], entryAge, 0);
     if(base===null) return null;
     return base * capital / 1000;
   }
 }
 
-function healthRiderPremium(cfg, gender, age){
+function healthRiderPremium(cfg, gender, age, occupationClass, freq){
+  freq = freq || 'annual';
   if(cfg.type === 'none') return {label:null, premium:null};
   if(cfg.type === 'dhl'){
+    const occ = occKeyFor(occupationClass);
     if(cfg.mode === 'copay'){
-      const table = RATES.dhl_copay;
-      const key = gender + '_' + cfg.sum + '_' + cfg.copay;
-      const v = bandRateAt(table.band_upper_age, table[key], age);
+      if(freq === 'annual' && (!occ || occ === '1_2')){
+        // legacy flat table kept as the exact-match fallback for the default
+        // (กลุ่มอาชีพ 1&2, annual) case so behaviour is unchanged when possible.
+        const table = RATES.dhl_copay;
+        const key = gender + '_' + cfg.sum + '_' + cfg.copay;
+        const v = bandRateAt(table.band_upper_age, table[key], age);
+        return {label:'D Health Lite (Copayment)', premium:v};
+      }
+      if(!occ) return {label:'D Health Lite (Copayment)', premium:null};
+      const sub = RATES.dhl_payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.sum]?.['copay_'+cfg.copay];
+      const v = sub ? rateAtStart(sub[gender], age, 0) : null;
       return {label:'D Health Lite (Copayment)', premium:v};
     }
-    const table = cfg.sum === '1m' ? RATES.dhl_1m : RATES.dhl_5m;
-    const key = gender + '_' + cfg.deduct;
-    const v = rateAtStart(table[key], age, 0); // published age 0-98
+    if(!occ) return {label:'D Health Lite', premium:null};
+    const deductKey = cfg.deduct === 'd0' ? 'no_deduct' : 'deduct_' + cfg.deduct.slice(1);
+    const sub = RATES.dhl_payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.sum]?.[deductKey];
+    const v = sub ? rateAtStart(sub[gender], age, 0) : null; // published age 0-98
     return {label:'D Health Lite', premium:v};
   }
   if(cfg.type === 'ehp'){
+    // Elite Health Plus has no published non-annual instalment table yet.
+    if(freq !== 'annual') return {label:'Elite Health Plus', premium:null};
     const v = rateAt(RATES.ehp[cfg.plan], age); // published age 11-90
     return {label:'Elite Health Plus', premium:v};
   }
   if(cfg.type === 'maochai'){
-    const v = rateAt(RATES.maochai_extra[gender+'_'+cfg.plan], age); // published age 11-90
+    const occ = occKeyFor(occupationClass);
+    if(!occ) return {label:'เหมาจ่าย Extra', premium:null};
+    const table = RATES.maochai_extra.payment_schedules?.occupations?.[occ]?.[freq];
+    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, RATES.maochai_extra.payment_schedules.age_start ?? 11) : null;
     return {label:'เหมาจ่าย Extra', premium:v};
   }
   if(cfg.type === 'ecp'){
-    const v = rateAt(RATES.ecp[gender+'_'+cfg.plan], age); // published age 11-90
+    const occ = occKeyFor(occupationClass);
+    if(!occ) return {label:'Extra Care Plus', premium:null};
+    const table = RATES.ecp.payment_schedules?.occupations?.[occ]?.[freq];
+    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, RATES.ecp.payment_schedules.age_start ?? 11) : null;
     return {label:'Extra Care Plus', premium:v};
   }
   return {label:null, premium:null};
 }
 
-function careplusPremium(sum, plan, gender, age){
-  const key = gender + '_' + sum + '_' + plan; // e.g. m_1m_ca; published age 0-80 only
-  return rateAtStart(RATES.care_plus[key], age, 0);
+function careplusPremium(sum, plan, gender, age, occupationClass, freq){
+  freq = freq || 'annual';
+  const occ = occKeyFor(occupationClass);
+  if(!occ) return null;
+  const table = RATES.care_plus.payment_schedules?.variants?.[plan]?.occupations?.[occ]?.[freq];
+  if(table) return rateAtStart(table[gender+'_'+sum], age, 0); // published age 0-98
+  if(freq === 'annual' && occ === '1_2'){
+    const key = gender + '_' + sum + '_' + plan; // legacy flat fallback, กลุ่มอาชีพ 1&2 annual
+    return rateAtStart(RATES.care_plus[key], age, 0);
+  }
+  return null;
 }
 
-function opdPremium(cfg, gender, age){
+function opdPremium(cfg, gender, age, freq){
+  freq = freq || 'annual';
   if(cfg.type === 'none') return {label:null, premium:null};
   if(cfg.type === 'krang'){
-    const v = rateAtStart(RATES.opd_ครั้ง[gender+'_'+cfg.plan], age, 6); // published age 6-80
+    // SmartWeb only publishes กลุ่มอาชีพ 1&2 for this rider; used for every
+    // occupation class since no กลุ่มอาชีพ 3 table exists (see occupation_note).
+    const table = RATES.opd_ครั้ง.payment_schedules?.[freq];
+    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, 6) : null; // published age 6-98
     return {label:'OPD รายครั้ง', premium:v};
   }
   if(cfg.type === 'mao'){
-    const v = rateAtStart(RATES.opd_เหมา[gender+'_'+cfg.plan], age, 6); // published age 6-90
+    const table = RATES.opd_เหมา.payment_schedules?.[freq];
+    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, 6) : null; // published age 6-98
     return {label:'OPD เหมาจ่าย', premium:v};
   }
   return {label:null, premium:null};
 }
 
-function cipcPremium(capital, gender, age){
-  const base = rateAtStart(RATES.cipc[gender], age, 0); // published age 0-65 issue / renew to 84
+function cipcPremium(capital, gender, age, freq){
+  freq = freq || 'annual';
+  const table = RATES.cipc.payment_schedules?.[freq];
+  const base = table ? rateAtStart(table[gender], age, 0) : null; // published age 0-84
   if(base===null) return null;
   return base * capital / 500000;
 }
 
-function cancerPremium(plan, gender, age){
-  return rateAt(RATES.cancer[gender+'_'+plan], age); // published age 18-60 only; excel table starts at 11
+function cancerPremium(plan, gender, age, freq){
+  freq = freq || 'annual';
+  const table = RATES.cancer.payment_schedules?.[freq];
+  if(!table) return null;
+  return rateAt(table[gender+'_'+plan], age); // published age 18-60 only; excel table starts at 11
 }
 
 function dcarePremium(catKey, capital, gender, age){
@@ -2239,13 +2294,15 @@ function paBandIndex(age){
   if(age<=75) return 3;
   return 4;
 }
-function paPremium(plan, age){
+function paPremium(plan, age, freq){
+  freq = freq || 'annual';
   if(plan === 'none') return null;
   // PA Easy Plan รับทำและต่ออายุได้ถึงอายุ 85 ปีเท่านั้น
   if(!Number.isFinite(Number(age)) || Number(age) > 85) return null;
   const idx = paBandIndex(age);
   const bandAge = RATES.pa_rider.age_bands[idx];
-  const arr = RATES.pa_rider.plans[String(bandAge)];
+  const arr = (freq === 'annual' ? RATES.pa_rider.plans : RATES.pa_rider.payment_schedules?.[freq])?.[String(bandAge)];
+  if(!arr) return null;
   const v = arr[parseInt(plan,10)-1];
   return (v===null || v===undefined) ? null : v;
 }
@@ -2258,21 +2315,10 @@ const PAYMENT_FREQUENCIES = {
 };
 function paymentFrequencyInfo(value){ return PAYMENT_FREQUENCIES[value] || PAYMENT_FREQUENCIES.annual; }
 // IMPORTANT: Never derive an instalment premium by dividing or multiplying an
-// annual premium. Every product has its own published instalment table.
-// This helper is retained for the verified 99/99 data model only; renderAll()
-// blocks non-annual quotes until every selected contract has its own verified
-// published rates in data/premium-rates.json.
-function paymentFactor(inp){
-  const freq = paymentFrequencyInfo(inp.paymentFrequency);
-  if(freq.periods === 1) return 1;
-  if(inp.mainPlan !== '99_99' || inp.mainCapital <= 50000) return 1;
-  const tier = inp.mainCapital < 500000 ? 'under_500k' : inp.mainCapital < 1000000 ? 'under_1m' : 'from_1m';
-  const rates = RATES.smart_protection_99_99?.tiers?.[tier]?.[inp.gender];
-  const annual = rates?.annual?.[inp.entryAge];
-  const selected = rates?.[inp.paymentFrequency]?.[inp.entryAge];
-  if(!annual || !selected) return 1;
-  return (selected * freq.periods) / annual;
-}
+// annual premium with a generic factor. Every premium function above looks up
+// its product's own published instalment table (payment_schedules) directly
+// for the selected frequency and returns null when no such table is published
+// for the selected product/occupation/frequency combination, instead of guessing.
 
 // ---- gather inputs ----
 function readInputs(){
@@ -2429,32 +2475,19 @@ function renderAll(){
     return;
   }
 
-  // Do not show an estimated monthly / quarterly / semiannual quote.  The
-  // calculator previously divided annual premiums for contracts whose real
-  // instalment tables had not yet been captured, which can understate the
-  // annual cost.  A non-annual quote is enabled only after exact per-product
-  // published tables are stored and validated.
-  if(inp.paymentFrequency !== 'annual'){
-    ageInfoEl.textContent = `ปี พ.ศ. ปัจจุบัน ${currentBEYear()}  •  อายุผู้เอาประกันปัจจุบัน ${inp.entryAge} ปี`;
-    validationEl.innerHTML = '<div class="validation-box bad"><strong>ยังไม่สามารถออกเบี้ยรายงวดได้</strong><br>ระบบจะไม่คำนวณจากเบี้ยรายปีหารเป็นงวด เพราะแต่ละสัญญามีอัตรารายเดือน/ราย 3 เดือน/ราย 6 เดือนของตัวเอง กรุณาเลือก “รายปี” ชั่วคราวจนกว่าตารางงวดจริงของทุกสัญญาที่เลือกจะได้รับการตรวจสอบและบันทึกครบ</div>';
-    tableWrap.innerHTML = '<div class="empty-state">ไม่มีการแสดงหรือส่งออกตัวเลขรายงวดที่ยังไม่ยืนยันจากตารางเบี้ยจริง</div>';
-    summaryEl.innerHTML = '';
-    const contractSummary = document.getElementById('contractSummary');
-    if(contractSummary) contractSummary.innerHTML = '';
-    return;
-  }
   ageInfoEl.textContent = `ปี พ.ศ. ปัจจุบัน ${currentBEYear()}  •  อายุผู้เอาประกันปัจจุบัน ${inp.entryAge} ปี (ใช้เป็นอายุเริ่มทำสัญญา)`;
 
   const entryAge = inp.entryAge;
   const gender = inp.gender;
+  const occupationClass = inp.occupationClass;
+  const freq = inp.paymentFrequency;
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
-  const paymentFactorValue = paymentFactor(inp);
 
   // labels are static; premiums for every rider below are recalculated EACH policy year
   // using the insured's attained age that year (rates increase with age).
   // Main whole-life and HB are level premiums fixed at entry age; HB does not step up each year.
-  const healthLabels = inp.healthList.map(cfg => healthRiderPremium(cfg, gender, entryAge).label);
-  const opdLabels = inp.opdList.map(cfg => opdPremium(cfg, gender, entryAge).label);
+  const healthLabels = inp.healthList.map(cfg => healthRiderPremium(cfg, gender, entryAge, occupationClass, freq).label);
+  const opdLabels = inp.opdList.map(cfg => opdPremium(cfg, gender, entryAge, freq).label);
   const careplusPlanNames = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
 
   const cols = [];
@@ -2478,20 +2511,23 @@ function renderAll(){
 
     let mainVal = null;
     if(policyYear <= payTermMain){
-      mainVal = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge);
+      mainVal = mainPremiumAtEntry(inp.mainPlan, inp.mainCapital, gender, entryAge, freq);
     } else {
       mainVal = 0;
     }
     row.values.main = mainVal;
 
-    // riders: rate looked up at THIS row's attained age, so premium climbs every year
-    inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) row.values['health_'+i] = healthRiderPremium(cfg, gender, age).premium; });
-    inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age).premium; });
-    if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age);
-    if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age);
-    if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age);
+    // riders: rate looked up at THIS row's attained age, so premium climbs every year.
+    // Every function below already returns the true published premium for the
+    // selected งวดชำระ (freq) directly from that product's own payment_schedules —
+    // never a division/multiplication of the annual rate.
+    inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) row.values['health_'+i] = healthRiderPremium(cfg, gender, age, occupationClass, freq).premium; });
+    inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age, freq).premium; });
+    if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
+    if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
+    if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
     inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age); });
-    if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age);
+    if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge);
 
     let total = 0;
@@ -2499,16 +2535,30 @@ function renderAll(){
       const v = row.values[c.key];
       if(typeof v === 'number') total += v;
     });
+    // `total` is already the true premium for ONE payment period at the
+    // selected frequency (each function above looked its own instalment
+    // table up directly), so no generic factor/division is applied here.
     row.total = total;
-    row.installmentTotal = (total * paymentFactorValue) / paymentInfo.periods;
+    row.installmentTotal = total;
     row.annualPayable = row.installmentTotal * paymentInfo.periods;
     cumulative += row.annualPayable;
     row.cumulative = cumulative;
     rows.push(row);
   }
 
-  // rider-only total (excluding main) for the 99/99 >=5000 rule, using first policy year
-  const riderTotalYear1 = rows[0].total - (rows[0].values.main || 0);
+  // rider-only total (excluding main) for the 99/99 >=5000 rule, using first policy
+  // year's PUBLISHED ANNUAL premium — this eligibility rule is about the insurer's
+  // standard annual rider total, not the customer's chosen payment frequency, so it
+  // must not fluctuate just because a non-annual งวดชำระ was selected for display.
+  let riderTotalYear1 = 0;
+  inp.healthList.forEach((cfg, i) => { if(healthLabels[i]){ const v = healthRiderPremium(cfg, gender, entryAge, occupationClass, 'annual').premium; if(typeof v === 'number') riderTotalYear1 += v; } });
+  inp.opdList.forEach((cfg, i) => { if(opdLabels[i]){ const v = opdPremium(cfg, gender, entryAge, 'annual').premium; if(typeof v === 'number') riderTotalYear1 += v; } });
+  if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge); if(typeof v === 'number') riderTotalYear1 += v; });
+  if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
   const issues = validateInputs(inp);
   // The additional-rider minimum applies only to Smart Protection 99/99
   // (capital > 50,000 and < 200,000). The legacy 50,000-baht 99/99 plan
@@ -2545,9 +2595,10 @@ function renderAll(){
   const firstYearTotal = rows[0].annualPayable;
   const firstPeriodTotal = rows[0].installmentTotal;
   const lastCumulative = rows[rows.length-1].cumulative;
+  const warnLabels = frequencyOccupationWarnings(inp, cols, rows[0], gender, entryAge);
   summaryEl.innerHTML = `
     <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี • อาชีพขั้น ${inp.occupationClass}</div></div>
-    <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${paymentInfoValueUnsupported(inp) ? ' (ตารางแผนนี้มีรายปีเท่านั้น)' : ''}</div></div>
+    <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${warnLabels.length ? ' (บางแผนยังไม่มีอัตรานี้)' : ''}</div></div>
     <div class="stat"><div class="k">${paymentInfo.periods === 1 ? 'เบี้ยปีแรก (รวมทุกสัญญา)' : `เบี้ยต่องวด (รวมทุกสัญญา)`}</div><div class="v">${fmt(paymentInfo.periods === 1 ? firstYearTotal : firstPeriodTotal)} บาท${paymentInfo.periods === 1 ? '' : '/'+paymentInfo.label}</div></div>
     <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี ${isSavingsMainPlan(inp.mainPlan) ? `(คุ้มครอง 15 ปี)` : '(ถึงอายุ 98)'}</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
@@ -2568,16 +2619,46 @@ function renderAll(){
     return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}${totalCells}</tr>`;
   }).join('');
 
-  const frequencyNote = paymentInfoValueUnsupported(inp)
-    ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ฐานข้อมูลปัจจุบันมีอัตราเผยแพร่รายปีสำหรับแผนที่เลือก จึงยังไม่ปรับตัวคูณรายงวดเอง ตัวเลขรายงวดด้านล่างเป็นการแบ่งเบี้ยรายปีตามจำนวนงวดเพื่อใช้จัดรูปแบบเท่านั้น ควรตรวจอัตรารายงวดจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
+  const frequencyNote = warnLabels.length
+    ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ยังไม่มีตารางเบี้ยที่เผยแพร่สำหรับ "${warnLabels.join(', ')}" ที่งวดชำระ/ขั้นอาชีพนี้ ระบบจึงแสดง "-" แทนแทนที่จะเดาตัวเลข กรุณาเลือก "รายปี" และ/หรือขั้นอาชีพ 1-3 สำหรับแผนดังกล่าว หรือตรวจอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
     : '';
   tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเป็นไฟล์ Excel เพื่อส่งให้ลูกค้าได้</p><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
 }
 
-function paymentInfoValueUnsupported(inp){
-  return inp.paymentFrequency !== 'annual' && paymentFactor(inp) === 1 && !(inp.mainPlan === '99_99' && inp.mainCapital > 50000);
+// Tells whether a column shows "-" specifically because no payment_schedules
+// table is published yet for the SELECTED งวดชำระ/ขั้นอาชีพ (as opposed to the
+// customer's age simply being outside that product's normal range), by
+// comparing against the same lookup forced to annual + กลุ่มอาชีพ 1&2.
+function referenceAnnualValue(colKey, inp, gender, age){
+  if(colKey.startsWith('health_')){
+    const cfg = inp.healthList[parseInt(colKey.slice(7),10)];
+    return cfg ? healthRiderPremium(cfg, gender, age, '1', 'annual').premium : null;
+  }
+  if(colKey.startsWith('opd_')){
+    const cfg = inp.opdList[parseInt(colKey.slice(4),10)];
+    return cfg ? opdPremium(cfg, gender, age, 'annual').premium : null;
+  }
+  if(colKey === 'careplus') return careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, '1', 'annual');
+  if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
+  if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
+  if(colKey === 'pa') return paPremium(inp.paPlan, age, 'annual');
+  return null; // dcare/hb/main have no freq or occupation dependency here
+}
+function frequencyOccupationWarnings(inp, cols, row0, gender, entryAge){
+  const labels = [];
+  cols.forEach(c => {
+    const actual = row0.values[c.key];
+    if(actual !== null && actual !== undefined) return;
+    if(c.key === 'main'){
+      if(inp.mainPlan === '99_20' && inp.paymentFrequency !== 'annual') labels.push(c.label);
+      return;
+    }
+    const ref = referenceAnnualValue(c.key, inp, gender, entryAge);
+    if(ref !== null && ref !== undefined) labels.push(c.label);
+  });
+  return labels;
 }
 
 // Export the exact table currently shown as a standards-compliant .xlsx workbook.
@@ -2641,9 +2722,12 @@ async function exportPremiumTableExcel(){
 // ---- pre-table plain-language summary of everything selected ----
 function renderContractSummary(inp, rows, cols, entryAge, gender){
   const el = document.getElementById('contractSummary');
-  const y1 = rows[0].values; // first-year premium per column key
+  // first-year premium per column key — already the true premium for ONE
+  // payment period at inp.paymentFrequency (each product's own instalment
+  // table was looked up directly when rows were built), so no factor/division
+  // is needed anywhere below.
+  const y1 = rows[0].values;
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
-  const paymentFactorValue = paymentFactor(inp);
 
   const items = [];
 
@@ -2702,11 +2786,14 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   }
 
   const mainItem = items.shift(); // main contract stays in its own box
-  const totalY1 = mainItem.premium + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
+  const totalY1 = (typeof mainItem.premium === 'number' ? mainItem.premium : 0)
+    + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
   const paymentUnitLabel = paymentInfo.periods === 1 ? 'ปี' : (paymentInfo.periods === 12 ? 'เดือน' : paymentInfo.label);
+  // value here is already the true premium for ONE payment period at the
+  // selected frequency, so it is displayed as-is (no factor/division).
   const displayPremium = value => paymentInfo.periods === 1
     ? `${fmt(value)} บาท/ปี`
-    : `${fmt((value * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`;
+    : `${fmt(value)} บาท/${paymentUnitLabel}`;
   const mainLabel = inp.mainPlan==='99_20'
     ? 'เมืองไทย สมาร์ท โพรเทคชั่น 99/20'
     : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'สมาร์ทโพรเทคชั่น 99/99');
@@ -2763,7 +2850,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     '━━━━━━━━━━━━━━━━',
     paymentInfo.periods === 1
       ? `💳 เบี้ยประกัน ${fmt(totalY1)} บาท/ปี (เฉลี่ยวันละ ${fmt(Math.round(totalY1 / 365))} บาท)`
-    : `💳 เบี้ยรวมทุกแผน ${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentUnitLabel}`,
+    : `💳 เบี้ยรวมทุกแผน ${fmt(totalY1)} บาท/${paymentUnitLabel}`,
     '',
     'สอบถามเพิ่มเติมหรือต้องการใบเสนอราคาได้เลย',
     '',
@@ -2804,7 +2891,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
         </div>
       `).join('')}` : ''}
       <hr class="summary-divider">
-      <p style="margin:0;"><b>${paymentInfo.periods === 1 ? 'เบี้ยรวมปีแรกทุกสัญญา:' : `เบี้ยรวมทุกแผน/${paymentInfo.label}:`}</b> ${paymentInfo.periods === 1 ? `${fmt(totalY1)} บาท/ปี` : `${fmt((totalY1 * paymentFactorValue) / paymentInfo.periods)} บาท/${paymentInfo.label}`} &nbsp;•&nbsp; <b>เสียชีวิต (สัญญาหลัก):</b> รับ ${fmt(inp.mainCapital)} บาท</p>
+      <p style="margin:0;"><b>${paymentInfo.periods === 1 ? 'เบี้ยรวมปีแรกทุกสัญญา:' : `เบี้ยรวมทุกแผน/${paymentInfo.label}:`}</b> ${paymentInfo.periods === 1 ? `${fmt(totalY1)} บาท/ปี` : `${fmt(totalY1)} บาท/${paymentInfo.label}`} &nbsp;•&nbsp; <b>เสียชีวิต (สัญญาหลัก):</b> รับ ${fmt(inp.mainCapital)} บาท</p>
       ${ciLines.length ? `<p style="margin-top:6px;"><b>ความคุ้มครองโรคร้ายแรงรวมทุกสัญญา:</b> ${ciLines.join(' &nbsp;•&nbsp; ')}</p>` : ''}
     </div>
     <div class="copy-summary-box">
