@@ -582,6 +582,23 @@
     font-size:.82rem;
   }
   .btn-export-excel:hover{filter:brightness(1.06);}
+  .freq-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .freq-btn{
+    padding:7px 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink);
+    font-size:.82rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .freq-btn:hover{border-color:var(--pink);}
+  .freq-btn.active{
+    background:linear-gradient(120deg, var(--pink-deep), var(--pink));
+    border-color:transparent;
+    color:#fff;
+  }
   table{
     border-collapse:collapse;
     width:100%;
@@ -2154,17 +2171,24 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     return band && idx >= 0 ? band[idx+2] : null;
   }
   if(plan === '99_20'){
-    // Smart Protection 99/20 (main_99_20) has no published non-annual instalment
-    // table yet. Never derive one from the annual rate — return null so the UI
-    // shows "-" and the frequency-support warning, per AGENTS.md rule 7.
-    if(freq !== 'annual') return null;
     const g = RATES.main_99_20;
-    let base, denom;
-    if(capital < 500000){ base = rateAtStart(g[gender+'_200k'], entryAge, 0); denom = 200000; }
-    else if(capital < 1000000){ base = rateAtStart(g[gender+'_500k'], entryAge, 0); denom = 500000; }
-    else { base = rateAtStart(g[gender+'_1m'], entryAge, 0); denom = 1000000; }
-    if(base===null) return null;
-    return base * capital / denom;
+    if(freq === 'annual'){
+      let base, denom;
+      if(capital < 500000){ base = rateAtStart(g[gender+'_200k'], entryAge, 0); denom = 200000; }
+      else if(capital < 1000000){ base = rateAtStart(g[gender+'_500k'], entryAge, 0); denom = 500000; }
+      else { base = rateAtStart(g[gender+'_1m'], entryAge, 0); denom = 1000000; }
+      if(base===null) return null;
+      return base * capital / denom;
+    }
+    // Non-annual instalment rate verified directly against SmartWeb (2026-07-29):
+    // a single per-1,000-baht rate published for ages 0-70 (this product's
+    // new-business age limit), uniform across capital tiers. See
+    // RATES.main_99_20.payment_schedules.source_url/verified_at.
+    const table = g.payment_schedules && g.payment_schedules[gender] ? g.payment_schedules[gender][freq] : null;
+    if(!table) return null;
+    const perThousand = rateAtStart(table, entryAge, g.payment_schedules.age_start ?? 0);
+    if(perThousand===null) return null;
+    return perThousand * capital / 1000;
   } else {
     if(capital === 50000){
       const g = RATES.main_99_99;
@@ -2207,9 +2231,15 @@ function healthRiderPremium(cfg, gender, age, occupationClass, freq){
     return {label:'D Health Lite', premium:v};
   }
   if(cfg.type === 'ehp'){
-    // Elite Health Plus has no published non-annual instalment table yet.
-    if(freq !== 'annual') return {label:'Elite Health Plus', premium:null};
-    const v = rateAt(RATES.ehp[cfg.plan], age); // published age 11-90
+    if(freq === 'annual'){
+      const v = rateAt(RATES.ehp[cfg.plan], age); // published age 11-90, กลุ่มอาชีพ 1&2/3 unified in this legacy table
+      return {label:'Elite Health Plus', premium:v};
+    }
+    const occ = occKeyFor(occupationClass);
+    if(!occ) return {label:'Elite Health Plus', premium:null};
+    const table = RATES.ehp.payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.plan]?.thailand;
+    const clampedAge = age > 98 ? 98 : age;
+    const v = table ? rateAtStart(table, clampedAge, RATES.ehp.payment_schedules.age_start ?? 11) : null;
     return {label:'Elite Health Plus', premium:v};
   }
   if(cfg.type === 'maochai'){
@@ -2275,14 +2305,21 @@ function cancerPremium(plan, gender, age, freq){
   return rateAt(table[gender+'_'+plan], age); // published age 18-60 only; excel table starts at 11
 }
 
-function dcarePremium(catKey, capital, gender, age){
-  const rate = rateAtStart(RATES.dcare[gender+'_'+catKey], age, 0); // published age 0-70, renew to 81
+function dcarePremium(catKey, capital, gender, age, freq){
+  freq = freq || 'annual';
+  // Only the "ระยะเริ่มต้น+รุนแรง" (early_and_severe) stage is modeled by this
+  // calculator's D Care selector today; RATES.dcare[gender+'_'+catKey] (the
+  // legacy flat annual table) is exactly that stage's annual column.
+  const table = freq === 'annual' ? null : RATES.dcare.payment_schedules?.stages?.early_and_severe?.categories?.[catKey]?.[gender]?.[freq];
+  const rate = table ? rateAtStart(table, age, 0) : rateAtStart(RATES.dcare[gender+'_'+catKey], age, 0); // published age 0-70, renew to 81
   if(rate===null) return null;
   return rate * capital / 1000;
 }
 
-function hbPremium(amount, age){
-  const rate = rateAtStart(RATES.hb.rate_per_1000, age, 0);
+function hbPremium(amount, age, freq){
+  freq = freq || 'annual';
+  const table = freq === 'annual' ? RATES.hb.rate_per_1000 : RATES.hb.payment_schedules?.[freq];
+  const rate = table ? rateAtStart(table, age, 0) : null;
   if(rate===null) return null;
   return rate * amount / 1000;
 }
@@ -2305,6 +2342,38 @@ function paPremium(plan, age, freq){
   if(!arr) return null;
   const v = arr[parseInt(plan,10)-1];
   return (v===null || v===undefined) ? null : v;
+}
+
+// เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20 is reference-table only (not wired into the
+// interactive calculator's main-plan selector), but its payment_schedules were
+// scraped from SmartWeb this session, so the plan-detail reference table can
+// still show real instalment premiums per frequency.
+function flexiPremiumAtEntry(capKey, gender, age, freq){
+  freq = freq || 'annual';
+  const g = RATES.flexi_99_20;
+  const table = g && g.payment_schedules && g.payment_schedules[freq] ? g.payment_schedules[freq][gender+'_'+capKey] : null;
+  if(!table) return null;
+  return rateAtStart(table, age, (g.payment_schedules && g.payment_schedules.age_start) ?? 0);
+}
+
+// Maternity Plus / Well-Being Plus are reference-table only (not wired into the
+// interactive calculator's rider selector), but published instalment tables
+// exist in premium-rates.json, so the plan-detail reference tables can show them.
+function maternityPremiumAtEntry(plan, age, occupationClass, freq){
+  freq = freq || 'annual';
+  const occ = occKeyFor(occupationClass);
+  if(!occ) return null;
+  const g = RATES.maternity_plus;
+  const table = g && g.payment_schedules && g.payment_schedules.occupations ? g.payment_schedules.occupations[occ]?.rates?.[freq]?.[plan] : null;
+  if(!table) return null;
+  return rateAtStart(table, age, (g.payment_schedules && g.payment_schedules.age_start) ?? 15);
+}
+function wellbeingPremiumAtEntry(plan, age, freq){
+  freq = freq || 'annual';
+  const g = RATES.well_being_plus;
+  const table = g && g.payment_schedules && g.payment_schedules.rates ? g.payment_schedules.rates[freq]?.[plan] : null;
+  if(!table) return null;
+  return rateAtStart(table, age, (g.payment_schedules && g.payment_schedules.age_start) ?? 11);
 }
 
 const PAYMENT_FREQUENCIES = {
@@ -2526,9 +2595,9 @@ function renderAll(){
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
-    inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age); });
+    inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age, freq); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
-    if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge);
+    if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
 
     let total = 0;
     cols.forEach(c => {
@@ -2644,7 +2713,13 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
   if(colKey === 'pa') return paPremium(inp.paPlan, age, 'annual');
-  return null; // dcare/hb/main have no freq or occupation dependency here
+  if(colKey.startsWith('dcare_')){
+    const key = colKey.slice(6);
+    const d = inp.dcareSelections.find(x => x.key === key);
+    return d ? dcarePremium(d.key, d.capital, gender, age, 'annual') : null;
+  }
+  if(colKey === 'hb') return inp.useHb ? hbPremium(inp.hbAmount, age, 'annual') : null;
+  return null; // main has no occupation dependency here (handled separately above)
 }
 function frequencyOccupationWarnings(inp, cols, row0, gender, entryAge){
   const labels = [];
@@ -3070,6 +3145,15 @@ document.getElementById('inputsPanel').addEventListener('change', renderAll);
 // ---- page navigation ----
 // ---- detailed per-plan pages ----
 function seriesVal(arr, i){ return (i>=0 && i<arr.length) ? arr[i] : null; }
+// Builds an age-indexed array by calling fn(age) for every age in [ageStart,ageEnd],
+// so reference tables on the plan-detail pages can reuse the exact same
+// premium functions (and payment_schedules lookups) as the interactive
+// calculator instead of duplicating the frequency logic.
+function ageSeriesFromFn(ageStart, ageEnd, fn){
+  const arr = [];
+  for(let age=ageStart; age<=ageEnd; age++){ arr.push(fn(age)); }
+  return arr;
+}
 function renderAgeTable(ageStart, ageEnd, series){
   // series: [{label, arr}]; builds a scrollable table, Age + one column per series
   let thead = '<tr><th>อายุ</th>' + series.map(s=>`<th>${s.label}</th>`).join('') + '</tr>';
@@ -3094,9 +3178,13 @@ function renderBandTable(headers, bands){
   return `<div class="table-wrap" style="max-height:420px;"><table><thead>${thead}</thead><tbody>${rowsHtml}</tbody></table></div>`;
 }
 
-function renderMultipleCiTables(){
+function renderMultipleCiTables(freq){
+  freq = freq || 'annual';
   const headers = ['อายุ', 'ทุน 500,000', 'ทุน 1,000,000', 'ทุน 2,000,000'];
-  return `<h3>เพศชาย</h3>${renderBandTable(headers, RATES.multiple_ci.m)}<h3 style="margin-top:18px;">เพศหญิง</h3>${renderBandTable(headers, RATES.multiple_ci.f)}`;
+  const source = freq === 'annual' ? RATES.multiple_ci : (RATES.multiple_ci.payment_schedules && RATES.multiple_ci.payment_schedules[freq]);
+  const bandsM = (source && source.m) || [];
+  const bandsF = (source && source.f) || [];
+  return `<h3>เพศชาย</h3>${renderBandTable(headers, bandsM)}<h3 style="margin-top:18px;">เพศหญิง</h3>${renderBandTable(headers, bandsF)}`;
 }
 
 function dhlCopayVal(gender, sum, copay, age){
@@ -3104,40 +3192,48 @@ function dhlCopayVal(gender, sum, copay, age){
   const key = `${gender}_${sum}_${copay}`;
   return bandRateAt(table.band_upper_age, table[key], age);
 }
-function renderDhlGenderPremiumTable(gender){
+// Reference table for D Health Lite reuses healthRiderPremium() directly (fixed
+// at กลุ่มอาชีพ 1&2, this page's documented default) so the freq lookup logic
+// lives in exactly one place.
+function renderDhlGenderPremiumTable(gender, freq){
+  freq = freq || 'annual';
   const genderName = gender === 'm' ? 'ชาย' : 'หญิง';
   const cols = [
-    {group:'1 ล้านบาท', sub:'Deductible 0', get:age=>rateAtStart(RATES.dhl_1m[gender+'_d0'], age, 0)},
-    {group:'1 ล้านบาท', sub:'Deductible 20k', get:age=>rateAtStart(RATES.dhl_1m[gender+'_d20k'], age, 0)},
-    {group:'1 ล้านบาท', sub:'Deductible 50k', get:age=>rateAtStart(RATES.dhl_1m[gender+'_d50k'], age, 0)},
-    {group:'1 ล้านบาท', sub:'Co-pay 10%', get:age=>dhlCopayVal(gender,'1m','9010',age)},
-    {group:'1 ล้านบาท', sub:'Co-pay 20%', get:age=>dhlCopayVal(gender,'1m','8020',age)},
-    {group:'5 ล้านบาท', sub:'Deductible 0', get:age=>rateAtStart(RATES.dhl_5m[gender+'_d0'], age, 0)},
-    {group:'5 ล้านบาท', sub:'Deductible 30k', get:age=>rateAtStart(RATES.dhl_5m[gender+'_d30k'], age, 0)},
-    {group:'5 ล้านบาท', sub:'Deductible 50k', get:age=>rateAtStart(RATES.dhl_5m[gender+'_d50k'], age, 0)},
-    {group:'5 ล้านบาท', sub:'Deductible 100k', get:age=>rateAtStart(RATES.dhl_5m[gender+'_d100k'], age, 0)},
-    {group:'5 ล้านบาท', sub:'Co-pay 10%', get:age=>dhlCopayVal(gender,'5m','9010',age)},
-    {group:'5 ล้านบาท', sub:'Co-pay 20%', get:age=>dhlCopayVal(gender,'5m','8020',age)},
+    {group:'1 ล้านบาท', sub:'Deductible 0', cfg:{type:'dhl', sum:'1m', deduct:'d0'}},
+    {group:'1 ล้านบาท', sub:'Deductible 20k', cfg:{type:'dhl', sum:'1m', deduct:'d20k'}},
+    {group:'1 ล้านบาท', sub:'Deductible 50k', cfg:{type:'dhl', sum:'1m', deduct:'d50k'}},
+    {group:'1 ล้านบาท', sub:'Co-pay 10%', cfg:{type:'dhl', sum:'1m', mode:'copay', copay:'9010'}},
+    {group:'1 ล้านบาท', sub:'Co-pay 20%', cfg:{type:'dhl', sum:'1m', mode:'copay', copay:'8020'}},
+    {group:'5 ล้านบาท', sub:'Deductible 0', cfg:{type:'dhl', sum:'5m', deduct:'d0'}},
+    {group:'5 ล้านบาท', sub:'Deductible 30k', cfg:{type:'dhl', sum:'5m', deduct:'d30k'}},
+    {group:'5 ล้านบาท', sub:'Deductible 50k', cfg:{type:'dhl', sum:'5m', deduct:'d50k'}},
+    {group:'5 ล้านบาท', sub:'Deductible 100k', cfg:{type:'dhl', sum:'5m', deduct:'d100k'}},
+    {group:'5 ล้านบาท', sub:'Co-pay 10%', cfg:{type:'dhl', sum:'5m', mode:'copay', copay:'9010'}},
+    {group:'5 ล้านบาท', sub:'Co-pay 20%', cfg:{type:'dhl', sum:'5m', mode:'copay', copay:'8020'}},
   ];
   const groupHeader = `<tr><th rowspan="2">อายุ</th><th class="group-head" colspan="5">วงเงิน 1 ล้านบาท/ครั้ง</th><th class="group-head split-left" colspan="6">วงเงิน 5 ล้านบาท/ครั้ง</th></tr>`;
   const subHeader = `<tr>${cols.map((c,i)=>`<th class="sub-head ${i===5?'split-left':''}">${c.sub}</th>`).join('')}</tr>`;
   let rowsHtml='';
   for(let age=0; age<=98; age++){
-    rowsHtml += `<tr><td>${age}</td>${cols.map((c,i)=>{const v=c.get(age); return `<td class="${i===5?'split-left':''}">${v===null?'-':fmt(v)}</td>`}).join('')}</tr>`;
+    rowsHtml += `<tr><td>${age}</td>${cols.map((c,i)=>{const v=healthRiderPremium(c.cfg, gender, age, '1', freq).premium; return `<td class="${i===5?'split-left':''}">${v===null?'-':fmt(v)}</td>`}).join('')}</tr>`;
   }
   return `<h3>ตารางเบี้ย D Health Lite — เพศ${genderName}</h3><div class="table-wrap dhl-premium-table" style="max-height:460px;"><table><thead>${groupHeader}${subHeader}</thead><tbody>${rowsHtml}</tbody></table></div>`;
 }
-function renderDhlPremiumTables(){
-  return renderDhlGenderPremiumTable('m') + renderDhlGenderPremiumTable('f');
+function renderDhlPremiumTables(freq){
+  freq = freq || 'annual';
+  return renderDhlGenderPremiumTable('m', freq) + renderDhlGenderPremiumTable('f', freq);
 }
 
-function renderPaBandTable(){
+function renderPaBandTable(freq){
+  freq = freq || 'annual';
   const bands = RATES.pa_rider.age_bands;
   const labels = ['อายุ 16-60 ปี','อายุ 61-65 ปี','อายุ 66-70 ปี','อายุ 71-75 ปี','อายุ 76-85 ปี'];
+  const source = freq === 'annual' ? RATES.pa_rider.plans : (RATES.pa_rider.payment_schedules && RATES.pa_rider.payment_schedules[freq]);
   let thead = '<tr><th>ช่วงอายุ</th><th>แผน 1<br>300,000</th><th>แผน 2<br>500,000</th><th>แผน 3<br>1,000,000</th><th>แผน 4<br>2,000,000</th><th>แผน 5<br>3,000,000</th><th>แผน 6<br>5,000,000</th><th>แผน 7<br>10,000,000</th></tr>';
   let rowsHtml = bands.map((b,i) => {
-    const arr = RATES.pa_rider.plans[String(b)];
-    return `<tr><td>${labels[i]}</td>${arr.map(v=>`<td>${v===null?'-':fmt(v)}</td>`).join('')}</tr>`;
+    const arr = source ? source[String(b)] : null;
+    const cells = (arr || [null,null,null,null,null,null,null]).map(v=>`<td>${v===null||v===undefined?'-':fmt(v)}</td>`).join('');
+    return `<tr><td>${labels[i]}</td>${cells}</tr>`;
   }).join('');
   return `<div class="table-wrap"><table><thead>${thead}</thead><tbody>${rowsHtml}</tbody></table></div>`;
 }
@@ -3349,13 +3445,14 @@ const PLAN_DETAILS = {
       'ทุนประกันต่ำกว่า 1 ล้านบาท บริษัทกำหนดให้ต้องแนบสัญญาโรคร้ายแรงหรืออุบัติเหตุอย่างน้อย 1 สัญญา',
       'ต้องแถลงสุขภาพตามความจริง หากปกปิดข้อมูลสำคัญ บริษัทมีสิทธิบอกเลิกสัญญาภายใน 2 ปีแรก',
     ],
-    rateTable: () => renderAgeTable(0, 70, [
-      {label:'ชาย 200,000บ.', arr: RATES.main_99_20.m_200k},
-      {label:'หญิง 200,000บ.', arr: RATES.main_99_20.f_200k},
-      {label:'ชาย 1,000,000บ.', arr: RATES.main_99_20.m_1m},
-      {label:'หญิง 1,000,000บ.', arr: RATES.main_99_20.f_1m},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 70, [
+      {label:'ชาย 200,000บ.', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('99_20',200000,'m',age,freq))},
+      {label:'หญิง 200,000บ.', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('99_20',200000,'f',age,freq))},
+      {label:'ชาย 1,000,000บ.', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('99_20',1000000,'m',age,freq))},
+      {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('99_20',1000000,'f',age,freq))},
     ]),
-    rateNote: 'เบี้ยคงที่ตามอายุ ณ วันทำสัญญา (level premium) ไม่เปลี่ยนแปลงตลอด 20 ปีที่ชำระเบี้ย ทุนประกันอื่นคำนวณแบบเป็นสัดส่วนจากตารางนี้',
+    rateNote: 'เบี้ยคงที่ตามอายุ ณ วันทำสัญญา (level premium) ไม่เปลี่ยนแปลงตลอด 20 ปีที่ชำระเบี้ย ทุนประกันอื่นคำนวณแบบเป็นสัดส่วนจากตารางนี้ ตารางงวดชำระอื่นแสดงถึงอายุ 70 ปีเท่านั้น (อายุรับประกันใหม่สูงสุดของแผนนี้)',
   },
 
   main9999: {
@@ -3372,9 +3469,10 @@ const PLAN_DETAILS = {
       'บริษัทกำหนดให้ต้องแนบทั้งสัญญาสุขภาพหรือโรคร้ายแรง และสัญญาอุบัติเหตุ (PA) อย่างน้อยอย่างละ 1 สัญญา',
       'เบี้ยสัญญาเพิ่มเติมทั้งหมดรวมกัน (ไม่รวมเบี้ยสัญญาหลัก) ต้องไม่น้อยกว่า 5,000 บาท/ปี',
     ],
-    rateTable: () => renderAgeTable(0, 90, [
-      {label:'ชาย (ต่อทุน 50,000บ.)', arr: RATES.main_99_99.m},
-      {label:'หญิง (ต่อทุน 50,000บ.)', arr: RATES.main_99_99.f},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 90, [
+      {label:'ชาย (ต่อทุน 50,000บ.)', arr: ageSeriesFromFn(0,90, age=>mainPremiumAtEntry('99_99',50000,'m',age,freq))},
+      {label:'หญิง (ต่อทุน 50,000บ.)', arr: ageSeriesFromFn(0,90, age=>mainPremiumAtEntry('99_99',50000,'f',age,freq))},
     ]),
     rateNote: 'เบี้ยต่อทุนประกัน 50,000 บาท คงที่ตามอายุ ณ วันทำสัญญา ทุนประกันอื่นคูณเป็นสัดส่วนจากตารางนี้ (เช่น ทุน 200,000 = 4 เท่าของค่าในตาราง)',
   },
@@ -3396,13 +3494,14 @@ const PLAN_DETAILS = {
       'สามารถแนบสัญญาเพิ่มเติมสุขภาพ อุบัติเหตุ หรือโรคร้ายแรงได้ตามหลักเกณฑ์บริษัท',
       'การใช้วงเงินค่ารักษาหลังอายุ 65 ปีจะลดผลประโยชน์กรณีเสียชีวิตและครบสัญญาตามจำนวนที่เบิกไป',
     ],
-    rateTable: () => renderAgeTable(0, 45, [
-      {label:'ชาย ทุน 500,000', arr:RATES.flexi_99_20.m_500k},
-      {label:'ชาย ทุน 1,000,000', arr:RATES.flexi_99_20.m_1m},
-      {label:'ชาย ทุน 5,000,000', arr:RATES.flexi_99_20.m_5m},
-      {label:'หญิง ทุน 500,000', arr:RATES.flexi_99_20.f_500k},
-      {label:'หญิง ทุน 1,000,000', arr:RATES.flexi_99_20.f_1m},
-      {label:'หญิง ทุน 5,000,000', arr:RATES.flexi_99_20.f_5m},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 45, [
+      {label:'ชาย ทุน 500,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('500k','m',age,freq))},
+      {label:'ชาย ทุน 1,000,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('1m','m',age,freq))},
+      {label:'ชาย ทุน 5,000,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('5m','m',age,freq))},
+      {label:'หญิง ทุน 500,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('500k','f',age,freq))},
+      {label:'หญิง ทุน 1,000,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('1m','f',age,freq))},
+      {label:'หญิง ทุน 5,000,000', arr: ageSeriesFromFn(0,45, age=>flexiPremiumAtEntry('5m','f',age,freq))},
     ]),
     rateNote: 'เบี้ยรายปีคงที่ตลอด 20 ปีที่ชำระ แยกตามเพศ อายุแรกเข้า และทุนประกัน',
   },
@@ -3472,7 +3571,8 @@ const PLAN_DETAILS = {
       'หมวด 7 อุบัติเหตุ OPD คุ้มครองเฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ให้ใช้สิทธิ PA หรือ OPD',
       'หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กตามหมวด 13 ไม่สามารถใช้ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD',
     ],
-    rateTable: () => renderDhlPremiumTables(),
+    freqSupported: true,
+    rateTable: (freq='annual') => renderDhlPremiumTables(freq),
     rateNote: 'แยกเป็นตารางชาย/หญิง โดยในแต่ละตารางแบ่งคอลัมน์หลักเป็นวงเงิน 1 ล้านบาท และ 5 ล้านบาท พร้อมคอลัมน์ย่อยตามรูปแบบส่วนร่วมจ่ายทั้ง Deductible และ Co-payment',
   },
 
@@ -3500,13 +3600,14 @@ const PLAN_DETAILS = {
       'หมวด 7 อุบัติเหตุ OPD คุ้มครองเฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ให้ใช้สิทธิ PA หรือ OPD',
       'หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กตามหมวด 13 ไม่สามารถใช้ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD',
     ],
-    rateTable: () => renderAgeTable(11, 90, [
-      {label:'20 ล้าน (unisex)', arr: RATES.ehp['20m']},
-      {label:'40 ล้าน (unisex)', arr: RATES.ehp['40m']},
-      {label:'75 ล้าน (unisex)', arr: RATES.ehp['75m']},
-      {label:'100 ล้าน (unisex)', arr: RATES.ehp['100m']},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(11, 90, [
+      {label:'20 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'20m'}, 'm', age, '1', freq).premium)},
+      {label:'40 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'40m'}, 'm', age, '1', freq).premium)},
+      {label:'75 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'75m'}, 'm', age, '1', freq).premium)},
+      {label:'100 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'100m'}, 'm', age, '1', freq).premium)},
     ]),
-    rateNote: 'เบี้ย Elite Health Plus เท่ากันทั้งชายและหญิงในทุกอายุ (unisex) — ตัวเลขที่แสดงเป็นเบี้ยเฉพาะพื้นที่คุ้มครอง "เฉพาะประเทศไทย" หากเลือกพื้นที่คุ้มครองกว้างขึ้นเบี้ยจะสูงขึ้นตามลำดับ (เอเชีย / ทั่วโลกยกเว้นสหรัฐฯ / ทั่วโลก)',
+    rateNote: 'เบี้ย Elite Health Plus เท่ากันทั้งชายและหญิงในทุกอายุ (unisex) — ตัวเลขที่แสดงเป็นเบี้ยเฉพาะพื้นที่คุ้มครอง "เฉพาะประเทศไทย" กลุ่มอาชีพ 1-2 หากเลือกพื้นที่คุ้มครองกว้างขึ้นหรือกลุ่มอาชีพ 3 เบี้ยจะสูงขึ้นตามลำดับ (เอเชีย / ทั่วโลกยกเว้นสหรัฐฯ / ทั่วโลก); ตารางงวดชำระอื่นนอกจากรายปีอ้างอิงกลุ่มอาชีพ 1-2 เช่นกัน',
     faq: [
       {q:'เข้ารักษาในห้องเดี่ยวราคาเริ่มต้นของโรงพยาบาล มีค่าใช้จ่ายส่วนเกินหรือไม่', a:'ไม่มี หากพักห้องเดี่ยวราคาเริ่มต้นของโรงพยาบาลในไทย และค่าอาหาร/ค่าบริการเป็นไปตามมาตรฐานที่โรงพยาบาลจัดให้ ไม่เกินวงเงินสูงสุดต่อปีหรือพักไม่เกิน 365 วัน (ไม่รวมค่าอาหารพิเศษที่สั่งเพิ่มเอง)'},
       {q:'ถ้าเข้าห้องพิเศษ VIP ที่แพงกว่าแผนที่ซื้อไว้ เบิกได้เท่าไหร่', a:'โรงพยาบาลในไทย เบิกได้ไม่เกินวงเงินตามแผน หรือไม่เกินราคาห้องเดี่ยวมาตรฐานของโรงพยาบาลนั้น แล้วแต่จำนวนใดสูงกว่า'},
@@ -3536,8 +3637,12 @@ const PLAN_DETAILS = {
       'ระยะรอคอยการถ่างขยายปากมดลูกหรือขูดมดลูกกรณีแท้ง 90 วัน',
       'เบี้ยในตารางยังไม่รวมเบี้ยสัญญาหลักและแผนสุขภาพที่ต้องทำพร้อมกัน',
     ],
-    rateTable: () => renderBandTable(['อายุ','แผน 1','แผน 2'], RATES.maternity_plus.bands),
-    rateNote: 'เบี้ยรายปีของ Maternity Plus แยกตามช่วงอายุและแผนความคุ้มครอง',
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(15, 49, [
+      {label:'แผน 1', arr: ageSeriesFromFn(15,49, age=>maternityPremiumAtEntry('p1', age, '1', freq))},
+      {label:'แผน 2', arr: ageSeriesFromFn(15,49, age=>maternityPremiumAtEntry('p2', age, '1', freq))},
+    ]),
+    rateNote: 'เบี้ย Maternity Plus แยกตามอายุและแผนความคุ้มครอง แสดงเฉพาะกลุ่มอาชีพ 1-2 (เพศหญิงเท่านั้น)',
   },
 
   wellbeing: {
@@ -3563,8 +3668,12 @@ const PLAN_DETAILS = {
       'ระยะรอคอยวัคซีน ทันตกรรม และสายตา 30 วัน',
       'เบี้ยในตารางยังไม่รวมเบี้ยสัญญาหลักและแผนสุขภาพที่ต้องทำพร้อมกัน',
     ],
-    rateTable: () => renderBandTable(['อายุ','แผน 1','แผน 2'], RATES.well_being_plus.bands),
-    rateNote: 'เบี้ยรายปีของ Well-Being Plus แยกตามช่วงอายุและแผนความคุ้มครอง',
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(11, 90, [
+      {label:'แผน 1', arr: ageSeriesFromFn(11,90, age=>wellbeingPremiumAtEntry('p1', age, freq))},
+      {label:'แผน 2', arr: ageSeriesFromFn(11,90, age=>wellbeingPremiumAtEntry('p2', age, freq))},
+    ]),
+    rateNote: 'เบี้ย Well-Being Plus แยกตามอายุและแผนความคุ้มครอง (unisex)',
   },
 
   maochai: {
@@ -3581,10 +3690,14 @@ const PLAN_DETAILS = {
       'มี 3 แผนย่อยแยกตามค่าห้องและวงเงินต่อครั้งตามระดับ',
       'ระยะเวลารอคอย 30/120 วัน เช่นเดียวกับสัญญาสุขภาพมาตรฐาน',
     ],
-    rateTable: () => renderAgeTable(11, 90, [
-      {label:'ชาย Plan1', arr: RATES.maochai_extra.m_p1}, {label:'หญิง Plan1', arr: RATES.maochai_extra.f_p1},
-      {label:'ชาย Plan2', arr: RATES.maochai_extra.m_p2}, {label:'หญิง Plan2', arr: RATES.maochai_extra.f_p2},
-      {label:'ชาย Plan3', arr: RATES.maochai_extra.m_p3}, {label:'หญิง Plan3', arr: RATES.maochai_extra.f_p3},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(11, 90, [
+      {label:'ชาย Plan1', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p1'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan1', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p1'}, 'f', age, '1', freq).premium)},
+      {label:'ชาย Plan2', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p2'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan2', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p2'}, 'f', age, '1', freq).premium)},
+      {label:'ชาย Plan3', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p3'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan3', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'maochai',plan:'p3'}, 'f', age, '1', freq).premium)},
     ]),
   },
 
@@ -3601,10 +3714,14 @@ const PLAN_DETAILS = {
       'มี Deductible 20,000 บาท ทุกแผน (ไม่มีตัวเลือก D0)',
       'ระยะเวลารอคอย 30/120 วัน',
     ],
-    rateTable: () => renderAgeTable(11, 90, [
-      {label:'ชาย Plan1', arr: RATES.ecp.m_p1}, {label:'หญิง Plan1', arr: RATES.ecp.f_p1},
-      {label:'ชาย Plan2', arr: RATES.ecp.m_p2}, {label:'หญิง Plan2', arr: RATES.ecp.f_p2},
-      {label:'ชาย Plan3', arr: RATES.ecp.m_p3}, {label:'หญิง Plan3', arr: RATES.ecp.f_p3},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(11, 90, [
+      {label:'ชาย Plan1', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p1'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan1', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p1'}, 'f', age, '1', freq).premium)},
+      {label:'ชาย Plan2', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p2'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan2', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p2'}, 'f', age, '1', freq).premium)},
+      {label:'ชาย Plan3', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p3'}, 'm', age, '1', freq).premium)},
+      {label:'หญิง Plan3', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ecp',plan:'p3'}, 'f', age, '1', freq).premium)},
     ]),
   },
 
@@ -3621,20 +3738,14 @@ const PLAN_DETAILS = {
       'ระยะเวลารอคอยเพิ่มอีก 180 วัน สำหรับกลุ่มโรคเรื้อรัง เช่น เบาหวาน ความดัน ไทรอยด์',
       'เป็นสัญญาเพิ่มเติม ต้องพ่วงสัญญาหลักประกันชีวิต แต่ไม่จำเป็นต้องพ่วง D Health Lite หรือ Elite Health Plus',
     ],
-    rateTable: () => '<h3>OPD รายครั้ง</h3>' + renderAgeTable(6, 80, [
-      {label:'ชาย 1,000', arr: RATES.opd_ครั้ง.m_1000}, {label:'หญิง 1,000', arr: RATES.opd_ครั้ง.f_1000},
-      {label:'ชาย 1,500', arr: RATES.opd_ครั้ง.m_1500}, {label:'หญิง 1,500', arr: RATES.opd_ครั้ง.f_1500},
-      {label:'ชาย 2,000', arr: RATES.opd_ครั้ง.m_2000}, {label:'หญิง 2,000', arr: RATES.opd_ครั้ง.f_2000},
-      {label:'ชาย 2,500', arr: RATES.opd_ครั้ง.m_2500}, {label:'หญิง 2,500', arr: RATES.opd_ครั้ง.f_2500},
-      {label:'ชาย 3,000', arr: RATES.opd_ครั้ง.m_3000}, {label:'หญิง 3,000', arr: RATES.opd_ครั้ง.f_3000},
-    ]) + '<h3 style="margin-top:16px;">OPD เหมาจ่ายรายปี</h3>' + renderAgeTable(6, 90, [
-      {label:'ชาย 15,000', arr: RATES.opd_เหมา.m_15000}, {label:'หญิง 15,000', arr: RATES.opd_เหมา.f_15000},
-      {label:'ชาย 20,000', arr: RATES.opd_เหมา.m_20000}, {label:'หญิง 20,000', arr: RATES.opd_เหมา.f_20000},
-      {label:'ชาย 25,000', arr: RATES.opd_เหมา.m_25000}, {label:'หญิง 25,000', arr: RATES.opd_เหมา.f_25000},
-      {label:'ชาย 30,000', arr: RATES.opd_เหมา.m_30000}, {label:'หญิง 30,000', arr: RATES.opd_เหมา.f_30000},
-      {label:'ชาย 50,000', arr: RATES.opd_เหมา.m_50000}, {label:'หญิง 50,000', arr: RATES.opd_เหมา.f_50000},
-      {label:'ชาย 100,000', arr: RATES.opd_เหมา.m_100000}, {label:'หญิง 100,000', arr: RATES.opd_เหมา.f_100000},
-    ]),
+    freqSupported: true,
+    rateTable: (freq='annual') => '<h3>OPD รายครั้ง</h3>' + renderAgeTable(6, 80, [1000,1500,2000,2500,3000].flatMap(plan => [
+      {label:`ชาย ${fmt(plan)}`, arr: ageSeriesFromFn(6,80, age=>opdPremium({type:'krang',plan}, 'm', age, freq).premium)},
+      {label:`หญิง ${fmt(plan)}`, arr: ageSeriesFromFn(6,80, age=>opdPremium({type:'krang',plan}, 'f', age, freq).premium)},
+    ])) + '<h3 style="margin-top:16px;">OPD เหมาจ่ายรายปี</h3>' + renderAgeTable(6, 90, [15000,20000,25000,30000,50000,100000].flatMap(plan => [
+      {label:`ชาย ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'm', age, freq).premium)},
+      {label:`หญิง ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'f', age, freq).premium)},
+    ])),
   },
 
   careplus: {
@@ -3658,9 +3769,12 @@ const PLAN_DETAILS = {
       'ซื้อได้มากกว่า 1 สัญญา แต่ผลประโยชน์สูงสุดต่อการรักษามะเร็ง รวมทุกสัญญาและทุกช่องทางต้องไม่เกิน 5,000,000 บาทต่อคน และผลประโยชน์สูงสุดต่อการรักษาไตวายเรื้อรังก็ไม่เกิน 5,000,000 บาทต่อคนเช่นกัน (แยกกันคนละ 5 ล้าน)',
       'ค่าห้อง/ค่าอาหารไม่รวมอยู่ในความคุ้มครองนี้ ยกเว้นกรณีนอนรักษาแผนกจิตเวชตามส่วนเสริมด้านบน',
     ],
-    rateTable: () => renderAgeTable(0, 98, [
-      {label:'ชาย มะเร็ง', arr: RATES.care_plus.m_5m_ca}, {label:'หญิง มะเร็ง', arr: RATES.care_plus.f_5m_ca},
-      {label:'ชาย มะเร็ง+ไต', arr: RATES.care_plus.m_5m_cackd}, {label:'หญิง มะเร็ง+ไต', arr: RATES.care_plus.f_5m_cackd},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 98, [
+      {label:'ชาย มะเร็ง', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','ca','m',age,'1',freq))},
+      {label:'หญิง มะเร็ง', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','ca','f',age,'1',freq))},
+      {label:'ชาย มะเร็ง+ไต', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','cackd','m',age,'1',freq))},
+      {label:'หญิง มะเร็ง+ไต', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','cackd','f',age,'1',freq))},
     ]),
     rateNote: 'แสดงเฉพาะทุน 5 ล้านบาท (เครื่องคำนวณนี้ตัดตัวเลือกทุน 1 ล้านบาทออกแล้ว)',
     faq: [
@@ -3693,9 +3807,10 @@ const PLAN_DETAILS = {
     benefitTable: () => ciPerfectCareBenefitTable(),
     benefitTitle: 'วิธีจ่ายผลประโยชน์ และเงินคงเหลือ',
     detailSections: () => ciPerfectCareDetailSections(),
-    rateTable: () => renderAgeTable(0, 84, [
-      {label:'ชาย (ต่อทุน 500,000บ.)', arr: RATES.cipc.m},
-      {label:'หญิง (ต่อทุน 500,000บ.)', arr: RATES.cipc.f},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 84, [
+      {label:'ชาย (ต่อทุน 500,000บ.)', arr: ageSeriesFromFn(0,84, age=>cipcPremium(500000,'m',age,freq))},
+      {label:'หญิง (ต่อทุน 500,000บ.)', arr: ageSeriesFromFn(0,84, age=>cipcPremium(500000,'f',age,freq))},
     ]),
     rateNote: 'เบี้ยต่อทุนประกัน 500,000 บาท ทุนประกันอื่นคูณเป็นสัดส่วนจากตารางนี้',
   },
@@ -3718,7 +3833,8 @@ const PLAN_DETAILS = {
       'ระยะรอคอย 90 วัน',
       'ตารางด้านล่างแสดงตัวอย่างทุน 500,000 / 1,000,000 / 2,000,000 บาท',
     ],
-    rateTable: () => renderMultipleCiTables(),
+    freqSupported: true,
+    rateTable: (freq='annual') => renderMultipleCiTables(freq),
     rateNote: 'เบี้ยรายปีแยกตามเพศ ช่วงอายุ และทุนประกัน Multiple CI โดยไม่รวมเบี้ยสัญญาหลัก',
   },
 
@@ -3736,10 +3852,14 @@ const PLAN_DETAILS = {
       'ทุนประกันเลือกได้ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท',
       'ระยะเวลารอคอยเฉพาะโรคมะเร็ง 90 วันหลังกรมธรรม์อนุมัติ',
     ],
-    rateTable: () => renderAgeTable(18, 60, [
-      {label:'ชาย 300,000', arr: RATES.cancer.m_300k}, {label:'หญิง 300,000', arr: RATES.cancer.f_300k},
-      {label:'ชาย 1,000,000', arr: RATES.cancer.m_1m}, {label:'หญิง 1,000,000', arr: RATES.cancer.f_1m},
-      {label:'ชาย 2,000,000', arr: RATES.cancer.m_2m}, {label:'หญิง 2,000,000', arr: RATES.cancer.f_2m},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(18, 60, [
+      {label:'ชาย 300,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('300k','m',age,freq))},
+      {label:'หญิง 300,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('300k','f',age,freq))},
+      {label:'ชาย 1,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('1m','m',age,freq))},
+      {label:'หญิง 1,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('1m','f',age,freq))},
+      {label:'ชาย 2,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('2m','m',age,freq))},
+      {label:'หญิง 2,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('2m','f',age,freq))},
     ]),
   },
 
@@ -3761,15 +3881,15 @@ const PLAN_DETAILS = {
       'กลุ่ม "โรคยอดฮิต" ต้องซื้อเดี่ยว ห้ามซื้อรวมกับกลุ่มอื่น',
       'ระยะเวลารอคอยเฉพาะโรคร้ายแรง 90 วันหลังกรมธรรม์อนุมัติ',
     ],
-    rateTable: () => renderAgeTable(0, 70, [
-      {label:'ชาย มะเร็ง', arr: RATES.dcare.m_cancer}, {label:'หญิง มะเร็ง', arr: RATES.dcare.f_cancer},
-      {label:'ชาย หัวใจ', arr: RATES.dcare.m_cardio}, {label:'หญิง หัวใจ', arr: RATES.dcare.f_cardio},
-      {label:'ชาย ปลูกถ่ายอวัยวะ', arr: RATES.dcare.m_organ}, {label:'หญิง ปลูกถ่ายอวัยวะ', arr: RATES.dcare.f_organ},
-      {label:'ชาย ประสาท/กล้ามเนื้อ', arr: RATES.dcare.m_neuro}, {label:'หญิง ประสาท/กล้ามเนื้อ', arr: RATES.dcare.f_neuro},
-      {label:'ชาย อื่นๆ', arr: RATES.dcare.m_other}, {label:'หญิง อื่นๆ', arr: RATES.dcare.f_other},
-      {label:'ชาย ยอดฮิต', arr: RATES.dcare.m_popular}, {label:'หญิง ยอดฮิต', arr: RATES.dcare.f_popular},
-    ]),
-    rateNote: 'ตัวเลขในตารางคืออัตราเบี้ยต่อทุนประกัน 1,000 บาท เช่น เลือกทุน 500,000 บาท ให้นำอัตรา × 500',
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 70, ['cancer','cardio','organ','neuro','other','popular'].flatMap(cat => {
+      const labels = {cancer:'มะเร็ง',cardio:'หัวใจ',organ:'ปลูกถ่ายอวัยวะ',neuro:'ประสาท/กล้ามเนื้อ',other:'อื่นๆ',popular:'ยอดฮิต'};
+      return [
+        {label:`ชาย ${labels[cat]}`, arr: ageSeriesFromFn(0,70, age=>dcarePremium(cat,1000,'m',age,freq))},
+        {label:`หญิง ${labels[cat]}`, arr: ageSeriesFromFn(0,70, age=>dcarePremium(cat,1000,'f',age,freq))},
+      ];
+    })),
+    rateNote: 'ตัวเลขในตารางคืออัตราเบี้ยต่อทุนประกัน 1,000 บาท (โหมดระยะเริ่มต้น+รุนแรง) เช่น เลือกทุน 500,000 บาท ให้นำอัตรา × 500',
   },
 
   hb: {
@@ -3786,10 +3906,11 @@ const PLAN_DETAILS = {
       'มีประกันสุขภาพเหมาจ่ายคู่กัน เลือกวงเงินได้สูงสุด 8,000 บาท/วัน',
       'ต้องมีทุนประกันชีวิตสัญญาหลักขั้นต่ำตามวงเงินชดเชยที่เลือก (ยิ่งวงเงินชดเชยสูง ยิ่งต้องมีทุนประกันชีวิตสูงตาม)',
     ],
-    rateTable: () => renderAgeTable(11, 64, [
-      {label:'อัตราต่อวงเงิน 1,000 บาท/วัน (unisex)', arr: RATES.hb.rate_per_1000},
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(16, 64, [
+      {label:'อัตราต่อวงเงิน 1,000 บาท/วัน (unisex)', arr: ageSeriesFromFn(16,64, age=>hbPremium(1000, age, freq))},
     ]),
-    rateNote: 'เบี้ย HB เป็นเบี้ยคงที่ตลอดสัญญา โดยยึดอายุแรกที่สมัครประกัน; ในเครื่องคำนวณ ตารางสะสมจึงใช้เบี้ยปีแรกเท่ากันทุกปี',
+    rateNote: 'เบี้ย HB เป็นเบี้ยคงที่ตลอดสัญญา โดยยึดอายุแรกที่สมัครประกัน (รับทำใหม่อายุ 16-64 ปี); ในเครื่องคำนวณ ตารางสะสมจึงใช้เบี้ยปีแรกเท่ากันทุกปี',
   },
 
   pa: {
@@ -3811,7 +3932,8 @@ const PLAN_DETAILS = {
       'เบี้ยปรับเพิ่มขึ้นเมื่ออายุข้ามช่วง 16-60 / 61-65 / 66-70 / 71-75 / 76-85 ปี (คำนวณจากอายุปัจจุบันของผู้เอาประกันในแต่ละปี ไม่ใช่อายุ ณ วันเริ่มทำสัญญา)',
       'ต้องซื้อแนบท้ายกรมธรรม์หลักที่มีผลบังคับอยู่ ระยะเวลาคุ้มครองไม่เกินกว่ากรมธรรม์หลัก',
     ],
-    rateTable: () => renderPaBandTable(),
+    freqSupported: true,
+    rateTable: (freq='annual') => renderPaBandTable(freq),
     rateNote: 'PA Easy Plan รับทำและต่ออายุได้ถึงอายุ 85 ปี ตามเงื่อนไขแผนและช่วงอายุ ตัวเลขในตารางคือเบี้ยรายปีสำหรับกลุ่มอาชีพ 1-2',
   },
 };
@@ -3868,10 +3990,41 @@ function planCoverUrl(src){
   return src;
 }
 
+// ---- payment-frequency selector for the plan-detail reference tables ----
+// Only plans whose PLAN_DETAILS entry sets freqSupported:true have a real,
+// published instalment table (payment_schedules) behind every button; for the
+// remaining plans the static annual-only table keeps showing, per AGENTS.md
+// rule 7 (never derive/guess a non-annual premium).
+const PLAN_DETAIL_FREQ_OPTIONS = [
+  {value:'annual', label:'รายปี'},
+  {value:'semiannual', label:'ราย 6 เดือน'},
+  {value:'quarterly', label:'ราย 3 เดือน'},
+  {value:'monthly', label:'รายเดือน'},
+];
+let currentPlanDetailId = null;
+let planDetailFreq = 'annual';
+function renderPlanDetailFreqSelector(){
+  return `<div class="freq-selector" id="planDetailFreqSelector" role="group" aria-label="เลือกงวดชำระ">${PLAN_DETAIL_FREQ_OPTIONS.map(f=>
+    `<button type="button" class="freq-btn${f.value===planDetailFreq?' active':''}" data-freq="${f.value}" onclick="setPlanDetailFreq('${f.value}')">${f.label}</button>`
+  ).join('')}</div>`;
+}
+function setPlanDetailFreq(freq){
+  planDetailFreq = freq;
+  const p = PLAN_DETAILS[currentPlanDetailId];
+  if(!p) return;
+  const body = document.getElementById('planDetailRateBody');
+  if(body) body.innerHTML = p.rateTable ? p.rateTable(freq) : '<p>ไม่มีตารางเบี้ยแยกสำหรับแผนนี้</p>';
+  const selector = document.getElementById('planDetailFreqSelector');
+  if(selector) selector.querySelectorAll('.freq-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.freq === freq);
+  });
+}
 function showPlanDetail(id, options = {}){
   const p = PLAN_DETAILS[id];
   const el = document.getElementById('planDetailContent');
   if(!p){ el.innerHTML = '<p>ไม่พบข้อมูลแผนนี้</p>'; showPage('plans', options); return; }
+  currentPlanDetailId = id;
+  planDetailFreq = 'annual';
   el.innerHTML = `
     <div class="content-card">
       <div class="cat">${p.category}</div>
@@ -3891,8 +4044,10 @@ function showPlanDetail(id, options = {}){
     </div>
     <div class="content-card">
       <h2>ตารางอัตราเบี้ยอ้างอิง</h2>
-      ${p.rateTable ? p.rateTable() : '<p>ไม่มีตารางเบี้ยแยกสำหรับแผนนี้</p>'}
+      ${p.freqSupported ? `<label style="display:block;margin-bottom:8px;font-size:.82rem;color:var(--muted);">เลือกงวดชำระเพื่อดูอัตราเบี้ยจริงของแผนนี้</label>${renderPlanDetailFreqSelector()}` : ''}
+      <div id="planDetailRateBody">${p.rateTable ? p.rateTable('annual') : '<p>ไม่มีตารางเบี้ยแยกสำหรับแผนนี้</p>'}</div>
       ${p.rateNote ? `<p class="meta" style="margin-top:10px;">${p.rateNote}</p>` : ''}
+      ${!p.freqSupported ? `<p class="meta" style="margin-top:6px;">แผนนี้ยังไม่มีตารางเบี้ยรายงวด (ราย 6 เดือน/3 เดือน/เดือน) ที่เผยแพร่จากบริษัท จึงแสดงเฉพาะเบี้ยรายปี กรุณาสอบถามอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคาแบบผ่อนชำระ</p>` : ''}
       <p class="meta" style="margin-top:6px;">ตัวเลขในตารางนี้ใช้ในเครื่องคำนวณเบี้ยของเว็บนี้ อ้างอิงจากไฟล์คำนวณต้นฉบับและตารางเบี้ยที่เผยแพร่บนเว็บไซต์ทางการของบริษัท เพื่อการนำเสนอเบื้องต้น ไม่ใช่เอกสารเสนอขายอย่างเป็นทางการ</p>
     </div>
     ${p.faq && p.faq.length ? `
