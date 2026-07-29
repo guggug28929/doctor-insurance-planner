@@ -179,6 +179,22 @@ header.top{
 }
 .sheet h2{margin:0 0 3px;font-size:18px;color:var(--brand);}
 .sheet p.sub{margin:0 0 16px;color:var(--muted);font-size:13px;}
+.user-row{
+  display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);
+}
+.user-row:last-child{border-bottom:none;}
+.user-row .who{flex:1;min-width:0;}
+.user-row .who b{display:block;font-size:14px;font-weight:600;word-break:break-all;}
+.user-row .who span{display:block;font-size:12px;color:var(--muted);}
+.user-row .btn{width:auto;flex:none;padding:7px 12px;font-size:13px;border-radius:8px;}
+.tag-new{
+  display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;
+  background:#fde8ef;color:var(--brand);margin-left:6px;vertical-align:middle;
+}
+.tag-blocked{
+  display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;
+  background:#f3e3e6;color:#b3243f;margin-left:6px;vertical-align:middle;
+}
 @media(min-width:640px){
   #settings{align-items:center;}
   .sheet{border-radius:18px;}
@@ -262,6 +278,12 @@ header.top{
       <button class="btn" onclick="saveSettings(true)">เสร็จสิ้น</button>
     </div>
     <div class="hint" id="syncNote" style="margin-top:10px;text-align:center;">&nbsp;</div>
+
+    <div id="adminPanel" style="display:none;margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
+      <h2 style="font-size:16px;">รายชื่อผู้ใช้งาน</h2>
+      <p class="sub">ใครที่มีบัญชี Google และรู้ลิงก์ก็เข้าใช้งานได้ ถ้าเจอคนที่ไม่รู้จัก กดปิดสิทธิ์ได้ที่นี่</p>
+      <div id="userList"><div class="hint">กำลังโหลด…</div></div>
+    </div>
   </div>
 </div>
 
@@ -1009,6 +1031,69 @@ function openSettings(){
   });
   setSyncNote(serverStorage ? 'บันทึกอัตโนมัติ ใช้ได้ทุกเครื่อง' : 'บันทึกอัตโนมัติ');
   document.getElementById('settings').classList.add('show');
+  if(ME && ME.isAdmin){
+    document.getElementById('adminPanel').style.display = 'block';
+    loadUsers();
+  }
+}
+
+/* ================= admin: user list ================= */
+const USERS_URL = '/api/agent-users';
+
+function fmtDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d)) return '';
+  return d.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'});
+}
+function isRecent(iso){
+  const d = new Date(iso);
+  return !isNaN(d) && (Date.now() - d.getTime()) < 1000*60*60*24*3;
+}
+
+async function loadUsers(){
+  const box = document.getElementById('userList');
+  box.innerHTML = '<div class="hint">กำลังโหลด…</div>';
+  try{
+    const r = await fetch(USERS_URL, {credentials:'same-origin'});
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){ box.innerHTML = `<div class="hint">${esc(data.error || 'โหลดรายชื่อไม่สำเร็จ')}</div>`; return; }
+    const users = data.users || [];
+    if(!users.length){ box.innerHTML = '<div class="hint">ยังไม่มีใครเข้าใช้งาน</div>'; return; }
+    box.innerHTML = users.map(u => {
+      const me = u.email === data.me;
+      const newTag = (!u.blocked && isRecent(u.firstSeen)) ? '<span class="tag-new">ใหม่</span>' : '';
+      const blockTag = u.blocked ? '<span class="tag-blocked">ปิดสิทธิ์</span>' : '';
+      const btn = me
+        ? '<span class="hint" style="flex:none;">คุณ</span>'
+        : `<button class="btn ${u.blocked ? '' : 'ghost'}" onclick="setBlocked('${esc(u.email)}', ${u.blocked ? 'false' : 'true'})">${u.blocked ? 'เปิดใช้' : 'ปิดสิทธิ์'}</button>`;
+      return `<div class="user-row">
+        <div class="who">
+          <b>${esc(u.name || u.email)}${newTag}${blockTag}</b>
+          <span>${esc(u.email)} · เข้าครั้งแรก ${fmtDate(u.firstSeen)} · ${u.signIns || 1} ครั้ง</span>
+        </div>
+        ${btn}
+      </div>`;
+    }).join('');
+  }catch(e){
+    box.innerHTML = '<div class="hint">ติดต่อเซิร์ฟเวอร์ไม่ได้</div>';
+  }
+}
+
+async function setBlocked(email, blocked){
+  if(blocked && !confirm(`ปิดสิทธิ์ ${email} ใช่ไหมครับ`)) return;
+  try{
+    const r = await fetch(USERS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body: JSON.stringify({email, blocked})
+    });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){ toast(data.error || 'ทำรายการไม่สำเร็จ'); return; }
+    toast(blocked ? 'ปิดสิทธิ์แล้ว' : 'เปิดใช้งานแล้ว');
+    loadUsers();
+  }catch(e){ toast('ติดต่อเซิร์ฟเวอร์ไม่ได้'); }
 }
 function closeSettings(){
   saveSettings(false);
@@ -1102,13 +1187,12 @@ function showSetupNeeded(config){
   const missing = [];
   if(!config || !config.clientId) missing.push('GOOGLE_CLIENT_ID');
   if(!config || !config.sessionSecret) missing.push('AGENT_SESSION_SECRET');
-  if(!config || !config.allowlist) missing.push('AGENT_ALLOWED_EMAILS');
   gateError('ยังตั้งค่าเซิร์ฟเวอร์ไม่ครบ', 'ต้องเพิ่ม environment variable ใน Vercel: ' + missing.join(', ') + ' แล้ว Redeploy');
   gateHint('');
 }
 
 function enterApp(data){
-  ME = {email:data.email, name:data.name, picture:data.picture};
+  ME = {email:data.email, name:data.name, picture:data.picture, isAdmin:!!data.isAdmin};
   serverStorage = !!(data.config && data.config.serverStorage);
   applyServerSettings(data.settings);
   showApp();
@@ -1138,6 +1222,11 @@ Object.keys(FIELD_MAP).forEach(id => {
     const r = await fetch(AUTH_URL, {credentials:'same-origin'});
     const data = await r.json().catch(()=>({}));
     if(data.signedIn){ enterApp(data); return; }
+    if(data.blocked){
+      gateError('บัญชีนี้ถูกปิดสิทธิ์การใช้งาน', 'หากคิดว่าเป็นความผิดพลาด กรุณาติดต่อผู้ดูแล');
+      gateHint('');
+      return;
+    }
     if(!data.clientId){ showSetupNeeded(data.config); return; }
     serverStorage = !!(data.config && data.config.serverStorage);
     loadGoogleScript(data.clientId);
