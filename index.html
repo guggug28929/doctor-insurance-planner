@@ -750,6 +750,15 @@
   .benefit-table tbody td:not(:first-child){text-align:left;}
   .mini-link{color:var(--pink-deep);font-weight:700;text-decoration:underline;cursor:pointer;}
 
+  /* Compare-page benefit table: center plan-name headers and add column
+     divider lines, scoped so it doesn't affect the plan-detail benefit tables. */
+  .plan-compare-table .benefit-table thead th{text-align:center;}
+  .plan-compare-table .benefit-table thead th:first-child{text-align:left;}
+  .plan-compare-table .benefit-table th:not(:first-child),
+  .plan-compare-table .benefit-table td:not(:first-child){
+    border-left:2px solid var(--line);
+  }
+
   .benefit-icon{
     display:inline-flex;
     align-items:center;
@@ -5460,7 +5469,9 @@ function renderComparePage(){
       </div>
     </div>
     <div class="compare-columns-summary">${summaryHtml}</div>
-    ${renderBenefitTable(headers, rows, 'เบี้ยประมาณการเป็นรายปี คำนวณจากตารางเบี้ยที่เผยแพร่จริงของแต่ละแผน ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>เหมาจ่าย Extra และ Extra Care Plus รวมค่ายา/เวชภัณฑ์กลับบ้านไว้ในหมวด 2 (ไม่มีแถวแยกต่างหากแบบ D Health Lite/Elite)')}
+    <div class="plan-compare-table">
+      ${renderBenefitTable(headers, rows, 'เบี้ยประมาณการเป็นรายปี คำนวณจากตารางเบี้ยที่เผยแพร่จริงของแต่ละแผน ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>เหมาจ่าย Extra และ Extra Care Plus รวมค่ายา/เวชภัณฑ์กลับบ้านไว้ในหมวด 2 (ไม่มีแถวแยกต่างหากแบบ D Health Lite/Elite)')}
+    </div>
   `;
 }
 initComparePlanCards();
