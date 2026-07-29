@@ -1,13 +1,10 @@
 {
   "name": "doctor-insurance-chatbot",
   "version": "4.0.0",
-  "dependencies": {
-    "googleapis": "^140.0.1"
-  },
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check api/line-webhook.js && node --check api/line-agent.js && node --check api/premium-quote.js",
+    "check": "node --check api/line-webhook.js && node --check api/line-agent.js && node --check api/premium-quote.js && node --check api/insurance-chat.js && node --check api/insurance-plan.js",
     "test": "node --test"
   },
   "engines": {

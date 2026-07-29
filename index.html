@@ -5074,17 +5074,17 @@ async function faqChatAsk(){
   }catch(err){
     const errMsg = String(err?.message || err || '');
     let title = 'ยังเชื่อมต่อ AI backend ไม่สำเร็จ';
-    let help = `สาเหตุที่พบบ่อยคือยังไม่ได้ deploy endpoint <code>${faqEscapeHtml(INSURANCE_AI_ENDPOINT)}</code> หรือยังไม่ได้ตั้งค่า <code>OPENAI_API_KEY</code> บน server/serverless`;
-    if(/quota|billing|credit|exceeded/i.test(errMsg)){
-      title = 'เชื่อมต่อ backend สำเร็จแล้ว แต่เครดิต/โควตา OpenAI API ไม่พอ';
-      help = 'ให้ตรวจ Billing / Credit / Usage limit ใน OpenAI Platform หรือเปลี่ยน API key ที่มีเครดิต แล้ว Redeploy Vercel';
+    let help = `สาเหตุที่พบบ่อยคือยังไม่ได้ deploy endpoint <code>${faqEscapeHtml(INSURANCE_AI_ENDPOINT)}</code> หรือยังไม่ได้ตั้งค่า <code>ANTHROPIC_API_KEY</code> บน server/serverless`;
+    if(/quota|billing|credit|exceeded|rate limit/i.test(errMsg)){
+      title = 'เชื่อมต่อ backend สำเร็จแล้ว แต่เครดิต/โควตา Anthropic API ไม่พอ';
+      help = 'ให้ตรวจ Billing / Credit / Usage limit ใน Anthropic Console (console.anthropic.com) หรือเปลี่ยน API key ที่มีเครดิต แล้ว Redeploy Vercel';
     }else if(/รูปแบบ \{ answer \}|no text answer|no text/i.test(errMsg)){
-      title = 'backend เชื่อม OpenAI ได้แล้ว แต่คำตอบที่ส่งกลับมายังไม่ใช่ข้อความสำหรับหน้าเว็บ';
-      help = 'ให้อัปเดตไฟล์ <code>api/insurance-chat.js</code> เป็นเวอร์ชัน v17 ซึ่งมีตัวอ่านคำตอบแบบ fallback และ retry โดยไม่ใช้ web search หากคำตอบว่าง';
+      title = 'backend เชื่อม Claude ได้แล้ว แต่คำตอบที่ส่งกลับมายังไม่ใช่ข้อความสำหรับหน้าเว็บ';
+      help = 'ให้ตรวจไฟล์ <code>api/insurance-chat.js</code> ว่าตัวอ่านคำตอบ (extractTextFromClaude) รองรับรูปแบบ content block ล่าสุดของ Anthropic Messages API หรือยัง';
     }
     answer.innerHTML = `<div class="chat-error"><b>${faqEscapeHtml(title)}</b><br>
       ${help}<br><br>
-      เพื่อความปลอดภัย <b>ห้ามใส่ API key ในไฟล์ HTML ฝั่งลูกค้าโดยตรง</b> ต้องให้หน้าเว็บเรียก backend แล้ว backend ค่อยเรียก OpenAI API<br><br>
+      เพื่อความปลอดภัย <b>ห้ามใส่ API key ในไฟล์ HTML ฝั่งลูกค้าโดยตรง</b> ต้องให้หน้าเว็บเรียก backend แล้ว backend ค่อยเรียก Claude API<br><br>
       รายละเอียด error: ${faqEscapeHtml(errMsg)}</div>`;
   }
 }
