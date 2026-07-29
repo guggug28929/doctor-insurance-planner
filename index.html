@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>หมอกึ๊ก | เครื่องคำนวณและผู้ช่วยออกแบบแผนประกันสุขภาพ</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#c81e5c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="หมอกึ๊ก">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap');
 
@@ -83,6 +92,13 @@
     gap:22px;
     align-items:start;
   }
+  /* Grid tracks default to fitting their content's min-content width (e.g. a wide
+     table), which can push the whole page wider than the viewport and force a
+     page-level horizontal scrollbar. min-width:0 lets each column shrink to the
+     available space instead; wide content (tables) scrolls inside its own
+     .table-wrap rather than the page. */
+  .layout > *{min-width:0;}
+  html, body{overflow-x:hidden;}
   @media (max-width:980px){
     .layout{grid-template-columns:1fr;}
   }
@@ -582,6 +598,18 @@
     font-size:.82rem;
   }
   .btn-export-excel:hover{filter:brightness(1.06);}
+  .brochure-download-row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 14px;}
+  .btn-download-brochure{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:13px 22px;
+    border-radius:12px;
+    background:linear-gradient(120deg, var(--pink-deep), var(--pink));
+    color:#fff;font-weight:700;font-size:.95rem;
+    text-decoration:none;
+    box-shadow:0 4px 14px rgba(0,0,0,.15);
+    transition:filter .15s, transform .15s;
+  }
+  .btn-download-brochure:hover{filter:brightness(1.07);transform:translateY(-1px);}
   .freq-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
   .freq-btn{
     padding:7px 14px;
@@ -3262,6 +3290,10 @@ function renderBenefitTable(headers, rows, note=''){
   const bodyRows = [];
   rows.forEach(r => {
     const label = String(r[0]||'');
+    if(label.startsWith('§')){
+      bodyRows.push(`<tr class="benefit-group"><td colspan="${colspan}"><span class="group-title">${label.slice(1)}</span></td></tr>`);
+      return;
+    }
     const m = label.match(/^(\d+)/);
     const n = m ? parseInt(m[1],10) : null;
     if(n===1 && !seenIpd){
@@ -3300,25 +3332,40 @@ function dhlBenefitTable(){
 }
 function eliteBenefitTable(){
   return renderBenefitTable(['20M','40M','75M','100M'], [
-    ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '10,000/วัน หรือห้องเดี่ยวมาตรฐาน', '12,000/วัน หรือห้องเดี่ยวมาตรฐาน', '15,000/วัน หรือห้องเดี่ยวมาตรฐาน', '25,000/วัน หรือห้องเดี่ยวมาตรฐาน'],
+    ['§ผลประโยชน์ส่วนความคุ้มครองหลัก (13 หมวดมาตรฐาน)'],
+    ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '10,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '12,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '15,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '25,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['2.4 ค่ายากลับบ้าน', 'ตามแผน', 'ตามแผน', 'ตามแผน', 'ตามแผน'],
+    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน (สูงสุดไม่เกิน 30 วัน)', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['4. ค่าผ่าตัด/หัตถการ รวมเปลี่ยนอวัยวะ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['4. ค่าผ่าตัด/หัตถการ รวมผ่าตัดเปลี่ยนอวัยวะ (1 ครั้งตลอดชีวิต)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['5. Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน (ผูกกับการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>'],
-    ['8. เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['9. ล้างไต', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['8. เวชศาสตร์ฟื้นฟู หลังนอนโรงพยาบาล (รวมในวงเงินการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['9. ล้างไตผ่านทางเส้นเลือด', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['10. รังสีรักษา/รังสีร่วมรักษา/เวชศาสตร์นิวเคลียร์รักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['11. เคมีบำบัด', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['11. เคมีบำบัด รวมการรักษาแบบออกฤทธิ์จำเพาะเจาะจงต่อเซลล์มะเร็ง (Targeted Therapy)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['12. รถพยาบาลฉุกเฉิน', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['13. ผ่าตัดเล็ก', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['OPD ทั่วไป', '—', '20,000/ปี', '40,000/ปี', 'จ่ายตามจริง สูงสุด 360 ครั้ง/ปี'],
-    ['ค่าภาพวินิจฉัยขั้นสูง (CT, MRI, PET scan)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก', '—', '10,000/ปี', '40,000/ปี', '40,000/ปี'],
+    ['§ผลประโยชน์ส่วนขยาย 1: กรณีผู้ป่วยใน'],
+    ['ค่าปรึกษาแพทย์เฉพาะทาง ต่อการเข้าพักรักษาตัวเป็นผู้ป่วยในครั้งใดครั้งหนึ่ง เมื่อรวมกับหมวดที่ 3 แล้ว สูงสุดไม่เกิน 365 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['ค่าห้องพักในโรงพยาบาลสำหรับบิดาหรือมารดา (เตียงเสริม)', 'ไม่คุ้มครอง', '5,000 บาท/วัน', '5,000 บาท/วัน', '5,000 บาท/วัน'],
+    ['ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน ต่อรอบปีกรมธรรม์ สูงสุดไม่เกิน 28 วันต่อโรค', 'ไม่คุ้มครอง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['ค่าเครื่องมือทางการแพทย์ และอุปกรณ์เทียม', 'ไม่คุ้มครอง', 'จ่ายตามจริง สูงสุด 100,000 บาทตลอดชีวิต', 'จ่ายตามจริง สูงสุด 150,000 บาทตลอดชีวิต', 'จ่ายตามจริง สูงสุด 200,000 บาทตลอดชีวิต'],
+    ['ค่ารักษาทางจิตเวชในฐานะผู้ป่วยใน ต่อ 1 โรค', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', '75,000 บาท สูงสุด 300,000 บาทตลอดชีวิต', '100,000 บาท สูงสุด 400,000 บาทตลอดชีวิต'],
+    ['§ผลประโยชน์ส่วนขยาย 2: กรณีหลังการเข้ารับรักษาตัวในโรงพยาบาล'],
+    ['ค่าพยาบาลส่วนตัวตามคำแนะนำแพทย์ หลังจากการเข้ารับรักษาตัวในโรงพยาบาล สูงสุดไม่เกิน 40 วันต่อปีกรมธรรม์', 'ไม่คุ้มครอง', '3,000 บาท/วัน', '4,000 บาท/วัน', '5,000 บาท/วัน'],
+    ['§ผลประโยชน์ส่วนขยาย 3: กรณีการรักษาพยาบาลแบบฉุกเฉิน'],
+    ['ค่ารักษาทางทันตกรรมเนื่องจากการบาดเจ็บจากอุบัติเหตุ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['ค่าบริการการช่วยเหลือฉุกเฉินทางการแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['§ผลประโยชน์ส่วนขยาย 4: กรณีผู้ป่วยนอก (ไม่ต้องแอดมิด)'],
+    ['ค่าภาพวินิจฉัยขั้นสูง (CT Scan, MRI, PET Scan)', 'จ่ายตามจริง<span class="benefit-subnote">เหมาจ่ายกรณีไม่ต้องแอดมิด แยกวงเงินจากโควตา OPD ทั่วไปด้านล่าง และไม่ใช่รายการเดียวกับหมวด 6 (ตรวจก่อน-หลังนอน รพ. 30 วัน) ซึ่งต้องผูกกับการแอดมิดครั้งนั้นเท่านั้น</span>', 'จ่ายตามจริง<span class="benefit-subnote">เหมาจ่ายกรณีไม่ต้องแอดมิด แยกวงเงินจากโควตา OPD ทั่วไปด้านล่าง และไม่ใช่รายการเดียวกับหมวด 6 (ตรวจก่อน-หลังนอน รพ. 30 วัน) ซึ่งต้องผูกกับการแอดมิดครั้งนั้นเท่านั้น</span>', 'จ่ายตามจริง<span class="benefit-subnote">เหมาจ่ายกรณีไม่ต้องแอดมิด แยกวงเงินจากโควตา OPD ทั่วไปด้านล่าง และไม่ใช่รายการเดียวกับหมวด 6 (ตรวจก่อน-หลังนอน รพ. 30 วัน) ซึ่งต้องผูกกับการแอดมิดครั้งนั้นเท่านั้น</span>', 'จ่ายตามจริง<span class="benefit-subnote">เหมาจ่ายกรณีไม่ต้องแอดมิด แยกวงเงินจากโควตา OPD ทั่วไปด้านล่าง และไม่ใช่รายการเดียวกับหมวด 6 (ตรวจก่อน-หลังนอน รพ. 30 วัน) ซึ่งต้องผูกกับการแอดมิดครั้งนั้นเท่านั้น</span>'],
+    ['ค่าธรรมเนียมปรึกษาแพทย์เวชปฏิบัติทั่วไปและแพทย์เฉพาะทาง รวมค่าวินิจฉัยและค่ายา สูงสุดไม่เกิน 2 ครั้งต่อวัน (OPD ทั่วไป)', 'ไม่คุ้มครอง', '20,000 บาทต่อปีกรมธรรม์', '40,000 บาทต่อปีกรมธรรม์', 'จ่ายตามจริง สูงสุด 360 ครั้งต่อปีกรมธรรม์'],
+    ['ค่ากายภาพบำบัด สูงสุดไม่เกิน 1 ครั้งต่อวัน', 'ไม่คุ้มครอง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['การฝังเข็ม ธรรมชาติบำบัด กระดูกและกล้ามเนื้อบำบัด และการจัดกระดูก ต่อปีกรมธรรม์', 'ไม่คุ้มครอง', '10,000 บาท', '40,000 บาท', '40,000 บาท'],
+    ['§ความคุ้มครองเสริม (เลือกซื้อเพิ่ม)'],
     ['Maternity Plus / Well-Being Plus', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข'],
-  ], 'Elite Health Plus เป็นวงเงินต่อปีกรมธรรม์ และมีผลประโยชน์เพิ่มเติมมากกว่า 13 หมวดมาตรฐาน เช่น OPD, ภาพวินิจฉัยขั้นสูง (CT, MRI, PET scan), Maternity Plus และ Well-Being Plus<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
+  ], 'ตารางนี้คัดลอกทุกหมวดและทุกตัวเลขจากโบรชัวร์ทางการ "ความคุ้มครองสุขภาพ อีลิท เฮลท์ พลัส" (เมืองไทยประกันชีวิต, เผยแพร่ 21 ก.พ. 2568) แบบไม่ตัดทอน<br><b>ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET):</b> เป็นวงเงินสำหรับกรณี "ไม่ต้องแอดมิด" เท่านั้น แยกจากหมวด 6 ซึ่งจ่ายเฉพาะการตรวจที่เกิดขึ้นภายใน 30 วันก่อน-หลังการแอดมิดครั้งนั้น และแยกวงเงินจากโควตา OPD ทั่วไป (ค่าธรรมเนียมปรึกษาแพทย์ฯ) จึงไม่กินโควต้ากันเอง แตกต่างจาก D Health Lite ที่ไม่มีวงเงินภาพวินิจฉัยขั้นสูงแยกต่างหาก จะเคลมค่าตรวจ CT/MRI ได้ก็ต่อเมื่อเป็นการนอนโรงพยาบาลหรือตรวจก่อน-หลังนอน รพ. ภายใน 30 วันเท่านั้น (ดูหมวด 6 ในตาราง D Health Lite)<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
 }
 function maochaiBenefitTable(){
   return renderBenefitTable(['แผน 1','แผน 2','แผน 3'], [
@@ -3379,6 +3426,39 @@ const PLAN_COVER_IMAGES = {
   hb: {src:'/public/plan-covers/hb-rider.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ HB'},
   pa: {src:'/public/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
 };
+
+// Brochure PDFs currently available under /public/brochures — only these plans
+// get a download button; plans without a published PDF here show nothing.
+const PLAN_BROCHURES = {
+  dhl: [{file:'d-health-lite.pdf', label:'โบรชัวร์ D Health Lite'}],
+  ehp: [{file:'elite-health-plus.pdf', label:'โบรชัวร์ Elite Health Plus'}],
+  maochai: [{file:'maochai-extra.pdf', label:'โบรชัวร์ เหมาจ่าย Extra'}],
+  ecp: [{file:'extra-care-plus.pdf', label:'โบรชัวร์ Extra Care Plus'}],
+  opd: [
+    {file:'opd-per-visit.pdf', label:'โบรชัวร์ OPD รายครั้ง'},
+    {file:'opd-maochai.pdf', label:'โบรชัวร์ OPD เหมาจ่าย'},
+  ],
+  careplus: [{file:'care-plus.pdf', label:'โบรชัวร์ Care Plus'}],
+  cipc: [{file:'ci-perfect-care.pdf', label:'โบรชัวร์ CI Perfect Care'}],
+  multipleci: [{file:'multiple-ci.pdf', label:'โบรชัวร์ Multiple CI'}],
+  cancer: [{file:'cancer.pdf', label:'โบรชัวร์ ความคุ้มครองโรคมะเร็ง'}],
+  dcare: [{file:'d-care.pdf', label:'โบรชัวร์ D Care'}],
+  hb: [{file:'hb-rider.pdf', label:'โบรชัวร์ HB'}],
+  pa: [{file:'pa-easy.pdf', label:'โบรชัวร์ PA Easy Plan'}],
+};
+
+function brochureUrl(file){
+  const src = '/brochures/' + file;
+  if(window.location.protocol === 'file:') return '.' + src;
+  return src;
+}
+
+function renderBrochureButtons(id){
+  const list = PLAN_BROCHURES[id];
+  if(!list || !list.length) return '';
+  const buttons = list.map(b => `<a class="btn-download-brochure" href="${brochureUrl(b.file)}" target="_blank" rel="noopener" download>📄 ดาวน์โหลด${list.length>1?b.label.replace('โบรชัวร์ ',''):'โบรชัวร์ฉบับเต็ม (PDF)'}</a>`).join('');
+  return `<div class="brochure-download-row">${buttons}</div>`;
+}
 
 function ciPerfectCareBenefitTable(){
   return `<div class="ci-benefit-grid">
@@ -4029,6 +4109,7 @@ function showPlanDetail(id, options = {}){
     <div class="content-card">
       <div class="cat">${p.category}</div>
       <h2 style="margin-top:4px;">${p.title}</h2>
+      ${renderBrochureButtons(id)}
       <p>${p.overview}</p>
       ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img class="cover-${typeof img==='string'?'landscape':(img.format||'landscape')}" src="${planCoverUrl(typeof img==='string'?img:img.src)}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
     </div>
