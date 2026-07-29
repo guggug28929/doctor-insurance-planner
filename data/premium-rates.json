@@ -698,10 +698,6 @@
     ],
     "age_start": 0,
     "payment_schedules": {
-      "source": "SmartWeb 029db6.pdf",
-      "unit": "per_1000_sum_insured",
-      "age_start": 0,
-      "age_end": 70,
       "m": {
         "annual": [
           13.85,
@@ -1290,8 +1286,17 @@
           6.958
         ]
       },
-      "source_url": "https://smartweb.muangthai.co.th/search-insurance/94/%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%97%E0%B8%A2-%E0%B8%AA%E0%B8%A1%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%97-%E0%B9%82%E0%B8%9E%E0%B8%A3%E0%B9%80%E0%B8%97%E0%B8%84%E0%B8%8A%E0%B8%B1%E0%B9%88%E0%B8%99-99-20"
-    }
+      "source": "SmartWeb 029db6.pdf",
+      "unit": "per_1000_sum_insured",
+      "age_start": 0,
+      "age_end": 70,
+      "source_url": "https://smartweb.muangthai.co.th/search-insurance/94/%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%97%E0%B8%A2%20%E0%B8%AA%E0%B8%A1%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%97%20%E0%B9%82%E0%B8%9E%E0%B8%A3%E0%B9%80%E0%B8%97%E0%B8%84%E0%B8%8A%E0%B8%B1%E0%B9%88%E0%B8%99%2099-20",
+      "verified_at": "2026-07-29",
+      "note": "อัตราเบี้ยต่อทุนประกัน 1,000 บาท อายุ 0-70 ปี (อายุรับประกันใหม่สูงสุดของแผนนี้) ราย 6 เดือน = รายปี x 0.51, ราย 3 เดือน = รายปี x 0.26, รายเดือน = รายปี x 0.088 ตรวจสอบตรงกับตารางที่เผยแพร่บน SmartWeb แล้วเมื่อ 2026-07-29 (พบข้อมูลนี้อยู่ในไฟล์อยู่ก่อนแล้วโดยไม่มี source เดิม จึงตรวจสอบซ้ำก่อนนำไปใช้)"
+    },
+    "source": "SmartWeb (เมืองไทย สมาร์ท โพรเทคชั่น 99/20) — อัตราเบี้ยประกันภัย",
+    "source_url": "https://smartweb.muangthai.co.th/search-insurance/94/%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%97%E0%B8%A2%20%E0%B8%AA%E0%B8%A1%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%97%20%E0%B9%82%E0%B8%9E%E0%B8%A3%E0%B9%80%E0%B8%97%E0%B8%84%E0%B8%8A%E0%B8%B1%E0%B9%88%E0%B8%99%2099-20",
+    "verified_at": "2026-07-29"
   },
   "main_99_99": {
     "m": [
