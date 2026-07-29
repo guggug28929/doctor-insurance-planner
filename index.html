@@ -1402,8 +1402,8 @@
         <label>ต้องการค่ารักษา IPD ระดับไหน</label>
         <select id="ai_ipdNeed">
           <option value="basic">เริ่มต้น/คุมงบ — วงเงินหลักแสนถึง 1 ล้าน</option>
-          <option value="balanced" selected>สมดุล — วงเงิน 1–5 ล้าน</option>
-          <option value="high">วงเงินสูง — 5 ล้านต่อครั้ง</option>
+          <option value="balanced" selected>สมดุล — เล็ง 5 ล้าน แต่ยอมลดวงเงินได้ถ้างบไม่พอ</option>
+          <option value="high">วงเงินสูง — คง 5 ล้านไว้ก่อน ถ้างบไม่พอใช้ Deductible คุมเบี้ยแทน</option>
           <option value="elite20">พรีเมียม — Elite 20 ล้าน</option>
           <option value="elite75">พรีเมียมมาก — Elite 75/100 ล้าน</option>
         </select>
@@ -5213,6 +5213,7 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
+      rows.n2_4 = '1,000 บาทต่อครั้ง<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = 'ไม่มี';
       rows.copay_pct = 'ไม่มี';
@@ -5231,6 +5232,7 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
+      rows.n2_4 = '1,000 บาทต่อวัน<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = '20,000 บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง';
       rows.copay_pct = 'ไม่มี';

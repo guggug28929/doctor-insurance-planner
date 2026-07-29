@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#7d1f3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agent Reply">
+<title>ชุดข้อความตัวแทน — สำหรับตัวแทนเท่านั้น</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#7d1f3d;
+  --brand-dark:#5e1630;
+  --brand-soft:#fdeef3;
+  --brand-line:#eab9cd;
+  --bg:#fff7fa;
+  --card:#ffffff;
+  --ink:#2b2028;
+  --muted:#7a6a72;
+  --line:#f0dae2;
+  --ok:#1c7a4f;
+  --shadow:0 2px 10px rgba(125,31,61,.07);
+  --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'IBM Plex Sans Thai',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;}
+.wrap{max-width:820px;margin:0 auto;padding:0 14px;}
+
+/* ---------- gate ---------- */
+#gate{
+  position:fixed;inset:0;z-index:100;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.gate-card{
+  width:100%;max-width:380px;background:var(--card);border-radius:18px;
+  box-shadow:var(--shadow);padding:26px 22px;border:1px solid var(--line);
+}
+.gate-card h1{font-size:20px;margin:0 0 4px;color:var(--brand);}
+.gate-card p.sub{margin:0 0 18px;color:var(--muted);font-size:14px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px;}
+.field input,.field textarea,.field select{
+  width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;
+  background:#fff;outline:none;transition:border-color .15s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--brand-line);}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;padding:12px 16px;border:none;border-radius:11px;
+  background:var(--brand);color:#fff;font-weight:600;transition:background .15s,transform .05s;
+}
+.btn:active{transform:scale(.985);}
+.btn:hover{background:var(--brand-dark);}
+.btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand-line);}
+.btn.ghost:hover{background:var(--brand-soft);}
+.btn.sm{width:auto;padding:8px 14px;font-size:14px;border-radius:9px;}
+.gate-err{color:#b3243f;font-size:13px;margin:-6px 0 12px;display:none;}
+
+/* ---------- header ---------- */
+header.top{
+  position:sticky;top:0;z-index:30;background:var(--brand);color:#fff;
+  padding:calc(10px + env(safe-area-inset-top)) 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.top-row{display:flex;align-items:center;gap:10px;}
+.top-title{font-weight:700;font-size:17px;line-height:1.25;flex:1;min-width:0;}
+.top-title small{display:block;font-weight:400;font-size:12px;opacity:.85;}
+.icon-btn{
+  background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:9px;
+  padding:8px 11px;font-size:13px;font-weight:600;flex:none;
+}
+.icon-btn:hover{background:rgba(255,255,255,.28);}
+.search-row{margin-top:9px;position:relative;}
+.search-row input{
+  width:100%;padding:10px 12px 10px 36px;border-radius:10px;border:none;
+  background:rgba(255,255,255,.95);outline:none;
+}
+.search-row .mag{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5;font-size:15px;}
+
+/* ---------- category chips ---------- */
+.chips{
+  display:flex;gap:7px;overflow-x:auto;padding:11px 14px;margin:0 -14px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.chips::-webkit-scrollbar{display:none;}
+.chip{
+  flex:none;padding:7px 14px;border-radius:999px;border:1.5px solid var(--brand-line);
+  background:#fff;color:var(--brand);font-size:14px;font-weight:600;white-space:nowrap;
+}
+.chip.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+
+/* ---------- cards ---------- */
+.cat-head{
+  font-size:13px;font-weight:700;color:var(--brand);letter-spacing:.4px;
+  margin:20px 0 8px;text-transform:none;
+}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:11px;overflow:hidden;
+}
+.card-head{
+  display:flex;align-items:flex-start;gap:10px;padding:14px 15px;cursor:pointer;
+}
+.card-head .txt{flex:1;min-width:0;}
+.card-head h3{margin:0;font-size:15.5px;font-weight:600;line-height:1.35;}
+.card-head p{margin:3px 0 0;font-size:13px;color:var(--muted);line-height:1.45;}
+.card-head .chev{
+  flex:none;color:var(--brand-line);font-size:13px;margin-top:4px;transition:transform .18s;
+}
+.card.open .card-head .chev{transform:rotate(90deg);}
+.card-body{display:none;padding:0 15px 15px;border-top:1px solid var(--line);}
+.card.open .card-body{display:block;}
+.badge{
+  display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:var(--brand-soft);color:var(--brand);margin-top:6px;
+}
+
+/* ---------- options ---------- */
+.opts{margin:13px 0 0;}
+.opt-block{margin-bottom:13px;}
+.opt-label{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.opt-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.tog{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:9px;
+  border:1.5px solid var(--line);background:#fff;font-size:14px;user-select:none;
+}
+.tog.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600;}
+.tog .dot{
+  width:15px;height:15px;border-radius:4px;border:1.5px solid var(--brand-line);
+  flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;
+}
+.tog.on .dot{background:var(--brand);border-color:var(--brand);}
+.tog.radio .dot{border-radius:50%;}
+.opt-block input[type=text]{
+  width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;outline:none;
+}
+.opt-block input[type=text]:focus{border-color:var(--brand-line);}
+
+/* ---------- preview ---------- */
+.preview{
+  margin-top:13px;background:#fbf6f8;border:1px dashed var(--brand-line);border-radius:11px;
+  padding:12px 13px;font-size:14.5px;line-height:1.68;white-space:pre-wrap;word-break:break-word;
+  max-height:280px;overflow-y:auto;
+}
+.preview.collapsed{max-height:150px;position:relative;}
+.act-row{display:flex;gap:8px;margin-top:11px;}
+.act-row .btn{flex:1;}
+.act-row .btn.copied{background:var(--ok);}
+
+/* ---------- misc ---------- */
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;}
+.footnote{color:var(--muted);font-size:12px;text-align:center;padding:22px 10px 34px;line-height:1.6;}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;
+  z-index:80;opacity:0;transition:transform .22s,opacity .22s;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+#settings{
+  position:fixed;inset:0;z-index:60;background:rgba(43,32,40,.45);
+  display:none;align-items:flex-end;justify-content:center;
+}
+#settings.show{display:flex;}
+.sheet{
+  background:var(--card);width:100%;max-width:520px;border-radius:18px 18px 0 0;
+  padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;
+}
+.sheet h2{margin:0 0 3px;font-size:18px;color:var(--brand);}
+.sheet p.sub{margin:0 0 16px;color:var(--muted);font-size:13px;}
+@media(min-width:640px){
+  #settings{align-items:center;}
+  .sheet{border-radius:18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= GATE ================= -->
+<div id="gate">
+  <div class="gate-card">
+    <h1>ชุดข้อความตัวแทน</h1>
+    <p class="sub">หน้านี้สำหรับตัวแทนเท่านั้น กรุณาใส่รหัสเข้าใช้งาน</p>
+    <div class="field">
+      <label>รหัสเข้าใช้งาน</label>
+      <input type="password" id="gateCode" autocomplete="off" inputmode="text" placeholder="รหัสจากผู้ดูแล">
+    </div>
+    <div class="gate-err" id="gateErr">รหัสไม่ถูกต้อง</div>
+    <div class="field">
+      <label>ชื่อที่ใช้แนะนำตัวกับลูกค้า</label>
+      <input type="text" id="gateName" placeholder="เช่น หมอกึ๊ก">
+      <div class="hint">ระบบจะแทนชื่อนี้ลงในข้อความให้อัตโนมัติ แก้ไขภายหลังได้ที่ปุ่มตั้งค่า</div>
+    </div>
+    <button class="btn" onclick="doUnlock()">เข้าใช้งาน</button>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" style="display:none;">
+  <header class="top">
+    <div class="wrap">
+      <div class="top-row">
+        <div class="top-title">
+          ชุดข้อความตัวแทน
+          <small id="whoami">—</small>
+        </div>
+        <button class="icon-btn" onclick="openSettings()">ตั้งค่า</button>
+      </div>
+      <div class="search-row">
+        <span class="mag">⌕</span>
+        <input type="search" id="q" placeholder="ค้นหา เช่น ผลเลือด, COF, เบาหวาน" oninput="render()">
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="chips" id="chips"></div>
+    <div id="list"></div>
+    <div class="footnote">
+      ข้อความทั้งหมดเป็นแนวทางการสื่อสารกับลูกค้า<br>
+      กรุณาตรวจทานให้ตรงกับเคสจริงก่อนส่งทุกครั้ง
+    </div>
+  </div>
+</div>
+
+<!-- ================= SETTINGS ================= -->
+<div id="settings" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <h2>ตั้งค่าตัวแทน</h2>
+    <p class="sub">ข้อมูลนี้เก็บไว้ในเครื่องของคุณเท่านั้น และจะถูกแทนลงในข้อความอัตโนมัติ</p>
+    <div class="field">
+      <label>ชื่อที่ใช้แนะนำตัว</label>
+      <input type="text" id="setName" placeholder="เช่น หมอกึ๊ก">
+    </div>
+    <div class="field">
+      <label>LINE ID</label>
+      <input type="text" id="setLine" placeholder="เช่น nuengburut">
+    </div>
+    <div class="field">
+      <label>ชื่อ Facebook</label>
+      <input type="text" id="setFb" placeholder="เช่น Nuengburut Tiamtanom">
+    </div>
+    <div class="field">
+      <label>เบอร์โทรศัพท์</label>
+      <input type="text" id="setTel" inputmode="tel" placeholder="เช่น 0852312027">
+    </div>
+    <div class="field">
+      <label>อีเมลสำหรับ CC เอกสาร</label>
+      <input type="text" id="setMail" inputmode="email" placeholder="เช่น you@example.com">
+    </div>
+    <div class="field">
+      <label>ลิงก์เว็บเช็คเบี้ยที่ส่งให้ลูกค้า</label>
+      <input type="text" id="setSite" placeholder="www.doctor-insurance.com">
+    </div>
+    <div class="act-row">
+      <button class="btn ghost" onclick="lockOut()">ออกจากระบบ</button>
+      <button class="btn" onclick="saveSettings()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">คัดลอกแล้ว</div>
+
+<script>
+/* =========================================================
+   1) ACCESS CODE — เปลี่ยนรหัสตรงนี้ได้เลย
+   หมายเหตุ: นี่เป็นการ "ปิดไม่ให้คนทั่วไปเจอ" ไม่ใช่ระบบความปลอดภัยระดับสูง
+   ใครที่เปิดซอร์สโค้ดหน้าเว็บดูจะเห็นรหัสได้ จึงไม่ควรใส่ข้อมูลลับลูกค้าในหน้านี้
+   ========================================================= */
+const ACCESS_CODE = 'mtl-agent';
+
+/* ================= state ================= */
+const LS = 'agentReplyKit.v1';
+let S = {name:'', line:'', fb:'', tel:'', mail:'', site:'www.doctor-insurance.com'};
+let activeCat = 'all';
+let optState = {};   // {templateId: {optKey: value}}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS);
+    if(raw) S = Object.assign(S, JSON.parse(raw));
+  }catch(e){}
+}
+function saveState(){
+  try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){}
+}
+
+/* ================= helpers ================= */
+const NAME = () => S.name || '[ชื่อตัวแทน]';
+const SITE = () => S.site || 'www.doctor-insurance.com';
+const LINEID = () => S.line || '[LINE ID]';
+const FB = () => S.fb || '[ชื่อ Facebook]';
+const TEL = () => S.tel || '[เบอร์โทร]';
+const MAIL = () => S.mail || '[อีเมลของคุณ]';
+
+/* รวมบล็อกข้อความ ตัดบล็อกว่างออก แล้วคั่นด้วยบรรทัดว่าง */
+function join(parts){
+  return parts.filter(p => p && p.trim()).map(p => p.trim()).join('\n\n');
+}
+function numbered(items){
+  return items.map((t,i) => `${i+1}. ${t}`).join('\n');
+}
+
+/* ================= LAB CATALOG ================= */
+const LABS = [
+  {k:'fbs',   label:'FBS (น้ำตาลในเลือด)',         name:'FBS',                        fasting:true},
+  {k:'hba1c', label:'HbA1c',                        name:'HbA1c',                      fasting:false},
+  {k:'lipid', label:'Lipid profile (ไขมัน)',        name:'Lipid profile',              fasting:true},
+  {k:'lft',   label:'AST/ALT/ALP/GGT (ตับ)',        name:'AST/ALT/ALP/GGT',            fasting:false},
+  {k:'tft',   label:'Thyroid function test',        name:'Thyroid function test (TSH, FT4)', fasting:false},
+  {k:'cr',    label:'Creatinine/eGFR (ไต)',         name:'Creatinine/eGFR',            fasting:false},
+  {k:'cbc',   label:'CBC (ความสมบูรณ์เม็ดเลือด)',   name:'CBC',                        fasting:false},
+  {k:'ua',    label:'Urinalysis (ปัสสาวะ)',         name:'Urinalysis (UA)',            fasting:false, urine:true},
+  {k:'hbv',   label:'HBsAg / Anti-HCV (ไวรัสตับ)',  name:'HBsAg, Anti-HCV',            fasting:false},
+  {k:'ekg',   label:'EKG (คลื่นไฟฟ้าหัวใจ)',        name:'EKG',                        fasting:false},
+  {k:'cxr',   label:'Chest X-ray',                  name:'Chest X-ray',                fasting:false},
+];
+
+/* ================= reusable blocks ================= */
+const BLK = {
+  urineNote:
+`การเก็บปัสสาวะ ไม่ควรเก็บช่วงมีประจำเดือนนะครับ แนะนำให้เว้นอย่างน้อย 3-5 วันหลังประจำเดือนหมด เพราะเลือดที่ปนมาอาจทำให้ผลออกมาผิดปกติและต้องตรวจซ้ำครับ`,
+
+  meForm:
+`ฟอร์มตรวจสุขภาพโดยแพทย์ ส่วนประวัติจะกรอกมาเองก่อนหรือไปกรอกที่โรงพยาบาลก็ได้ครับ แต่ส่วนตรวจร่างกายไม่ต้องกรอกนะครับ ให้แพทย์เป็นผู้กรอก และการตรวจ ME จะมีตรวจปัสสาวะแบบจุ่มด้วยครับ
+ขอเน้นย้ำข้อที่ถามว่าบุคคลในครอบครัวเคยป่วยเป็นอะไรบ้าง ให้ระบุเฉพาะชื่อโรค โดยไม่ต้องระบุตัวบุคคลครับ`,
+
+  billSelf:
+`หากสะดวกไปตรวจเองแบบสำรองจ่าย ไปตรวจที่โรงพยาบาลไหนก็ได้ครับ ให้แพทย์เซ็นชื่อพร้อมตราประทับโรงพยาบาล และเก็บใบเสร็จไว้เพื่อรอทำเบิกหลังกรมธรรม์อนุมัติ (โดยทั่วไปรอเบิกประมาณ 1 เดือน) ครับ`,
+
+  billContract:
+`หากสะดวกไปตรวจแบบไม่ต้องสำรองจ่ายที่โรงพยาบาลคู่สัญญาตรวจสุขภาพ เดี๋ยวผมส่งฟอร์มสั่งตรวจเพื่อวางบิลบริษัท ใบตรวจสุขภาพ และสำเนาบัตรตัวแทนให้ครับ`,
+
+  labNote:
+`กรณีตรวจแล็บ บริษัทจะขอเฉพาะผลตามที่ร้องขอมาครับ ไม่จำเป็นต้องใช้ใบรับรองแพทย์ เว้นแต่ต้องการยืนยันว่าหายจากอาการนั้นด้วย`,
+
+  fastingNote:
+`รายการที่ต้องงดน้ำงดอาหารก่อนเจาะเลือด: {LIST} ครับ (จิบน้ำเปล่าได้เล็กน้อย งดประมาณ 8-12 ชั่วโมง) สามารถไปตรวจพร้อมกับวันที่ตรวจสุขภาพได้เลย และถ้าตรวจที่โรงพยาบาลคู่สัญญาก็วางบิลบริษัทได้ ไม่ต้องสำรองจ่ายครับ`,
+
+  declareForm:
+`กรณีให้แถลงโรค ให้กรอกในฟอร์ม "คำแถลงเกี่ยวกับสุขภาพ" ตามจริง และเซ็นชื่อในช่องผู้ขอเอาประกันภัยครับ`,
+};
+
+/* ================= TEMPLATES ================= */
+const CATS = [
+  {k:'all',     label:'ทั้งหมด'},
+  {k:'lead',    label:'เริ่มคุย / เสนอแผน'},
+  {k:'apply',   label:'สมัคร / ส่งใบคำขอ'},
+  {k:'uw',      label:'ระหว่างพิจารณา'},
+  {k:'issued',  label:'อนุมัติ / ออกเล่ม'},
+  {k:'service', label:'บริการหลังการขาย'},
+  {k:'special', label:'เงื่อนไขเฉพาะโรค'},
+];
+
+const T = [
+
+/* ---------- 1. LEAD ---------- */
+{
+  id:'new-customer', cat:'lead',
+  title:'ทักลูกค้าใหม่ / ขอข้อมูลเพื่อวางแผน',
+  desc:'ข้อความแรกเมื่อลูกค้าทักเข้ามาสอบถามแผน',
+  opts:[
+    {k:'site', type:'check', label:'ตัวเลือกเสริม', text:'แนบลิงก์เว็บเช็คเบี้ยเบื้องต้น', def:true},
+  ],
+  build(v){
+    return join([
+`สวัสดีครับ ${NAME()} นะครับ จากเมืองไทยประกันชีวิต
+
+รบกวนขอข้อมูลเบื้องต้นครับ
+- ปีเกิด
+- งบประมาณคร่าวๆ ต่อปี
+- ความคุ้มครองที่ต้องการ เช่น IPD, OPD, อุบัติเหตุ, โรคร้ายแรง
+- สิทธิ์สวัสดิการที่มี หรือประกันเดิมที่มีอยู่
+- โรคประจำตัว และประวัติตรวจสุขภาพที่เคยเจอความผิดปกติ เช่น BMI เกิน ไขมัน/น้ำตาล/ความดันสูง อัลตร้าซาวด์เจอซีสต์ ถุงน้ำ ก้อนเนื้อ ประวัติความเครียดหรือซึมเศร้า เป็นต้น
+
+เดี๋ยวผมวางแผนให้ครับ ขอบคุณครับ`,
+`หรือถ้ามีแผนที่สนใจอยู่แล้ว แจ้งได้เลยครับ เดี๋ยวเช็คเบี้ยให้`,
+      v.site ? `ดูแผนและเช็คเบี้ยเบื้องต้นด้วยตัวเองได้ที่ ${SITE()} ครับ` : ''
+    ]);
+  }
+},
+
+/* ---------- 2. APPLY ---------- */
+{
+  id:'send-form', cat:'apply',
+  title:'ส่งใบคำขอให้ลูกค้ากรอก',
+  desc:'รายการข้อมูลส่วนตัว + ประวัติสุขภาพที่ต้องกรอกในใบคำขอ',
+  opts:[
+    {k:'smile', type:'check', label:'ตัวเลือกเสริม', text:'ใส่วิธีกรอกหน้าเมืองไทยสมายล์', def:true},
+  ],
+  build(v){
+    return join([
+`ส่วนข้อมูลส่วนตัว ตามคำถามในใบคำขอ ถ้าสะดวกกรอกในไฟล์ PDF สามารถกรอกแล้วส่งไฟล์กลับมาให้ผมได้ครับ แต่ถ้าไม่สะดวก จะพิมพ์มาในแชทเลยก็ได้ครับ
+
+[ข้อมูลส่วนตัว]
+- คำนำหน้า ชื่อ สกุล ทั้งภาษาไทยและภาษาอังกฤษ
+- วัน/เดือน/ปีเกิด สัญชาติ สถานภาพ
+- เลขบัตรประชาชน 13 หลัก และวันหมดอายุบัตร
+- อาชีพ ลักษณะงาน รายได้ต่อปี
+- การศึกษา (ต่ำกว่าปริญญาตรี / ปริญญาตรี / สูงกว่าปริญญาตรี)
+- เบอร์โทรศัพท์
+- อีเมล
+- ที่อยู่ตามทะเบียนบ้าน / ที่อยู่ปัจจุบัน / ที่อยู่ที่ทำงาน
+- วิธีรับกรมธรรม์ (แบบกระดาษ หรือ แบบอิเล็กทรอนิกส์)
+- ผู้รับผลประโยชน์ สัดส่วนร้อยละ และความสัมพันธ์
+- ประกันชีวิตที่เคยทำก่อนหน้า ทุนชีวิต โรคร้ายแรง ชดเชยรายได้ (ถ้ามี) ระบุบริษัทและทุนประกัน
+- ประวัติเคยถูกเลื่อนรับ เพิ่มเบี้ย หรือเว้นโรค จากบริษัทก่อนหน้า (ถ้ามี)
+
+[ประวัติสุขภาพ]
+- น้ำหนัก ส่วนสูง
+- น้ำหนักเปลี่ยนแปลงในช่วง 6 เดือนที่ผ่านมาหรือไม่
+- ประวัติดื่มแอลกอฮอล์ สูบบุหรี่ สารเสพติด
+- ประวัติโรคตามรายการในใบคำขอ
+- ประวัติเข้าโรงพยาบาลย้อนหลัง 5 ปี และผลตรวจสุขภาพ (ถ้ามี)
+- ประวัติโรคในครอบครัว (กรอกเฉพาะชื่อโรค ไม่ต้องระบุตัวบุคคล)`,
+      v.smile ? `หน้าด้านหลังที่เป็นเมืองไทยสมายล์ ติ๊กเฉพาะกิจกรรมที่ชอบ 3 อย่างครับ ไม่ต้องกรอกชื่อและที่อยู่` : ''
+    ]);
+  }
+},
+{
+  id:'keyin-info', cat:'apply',
+  title:'ขอข้อมูลเพื่อคีย์งาน',
+  desc:'ข้อมูลชุดสั้นที่ต้องใช้ก่อนเปิดงานในระบบ',
+  opts:[],
+  build(){
+    return `เบื้องต้นขอข้อมูลผู้เอาประกันภัยครับ
+- คำนำหน้า ชื่อ สกุล
+- วัน/เดือน/ปีเกิด สัญชาติ สถานภาพ
+- อาชีพ และลักษณะงาน
+- เบอร์โทรศัพท์
+- อีเมล
+
+เดี๋ยวผมส่งลิงก์ให้ยืนยันตัวตนทางอีเมลครับ`;
+  }
+},
+{
+  id:'verify-link', cat:'apply',
+  title:'ส่งลิงก์ยืนยันตัวตน',
+  desc:'พร้อมอธิบายเงื่อนไขชำระเบี้ยก่อน/หลังทราบผลพิจารณา',
+  opts:[
+    {k:'cond', type:'check', label:'ตัวเลือกเสริม', text:'แนบเงื่อนไขการชำระเบี้ยกรณีมีโรคประจำตัว', def:true},
+  ],
+  build(v){
+    return join([
+`ส่งลิงก์ยืนยันตัวตนทางอีเมลเรียบร้อยครับ
+รบกวนถ่ายบัตรประชาชนและเซลฟี่ใบหน้าครับ
+อายุจะคิดตาม ปี พ.ศ. ปัจจุบัน ลบ ปี พ.ศ. เกิด นะครับ`,
+      v.cond ?
+`กรณีมีโรคประจำตัว หากเบี้ยต่ำกว่า 40,000 บาท จะต้องส่งงานโดยชำระเบี้ยเข้าไปก่อนเพื่อพิจารณาครับ หากบริษัทไม่รับ หรือลูกค้าปฏิเสธเงื่อนไข จะคืนเบี้ยให้เต็มจำนวน โดยถ้าชำระผ่านบัตรจะคืนวงเงินเข้าบัตร ถ้าโอนหรือสแกนจ่ายจะคืนเป็นเช็คครับ
+
+กรณีต้องการทราบผลพิจารณาก่อนชำระเบี้ย เงื่อนไขคือเบี้ยตั้งแต่ 40,000 บาทขึ้นไป และต้องนัดพบตัวแทนได้ (คีย์งานออนไลน์ไม่ได้) โดยส่งงานพร้อมประวัติการรักษาเพื่อพิจารณาก่อน เมื่อทราบเงื่อนไขความคุ้มครองแล้วค่อยชำระเบี้ยครับ` : ''
+    ]);
+  }
+},
+{
+  id:'review-link', cat:'apply',
+  title:'ส่งลิงก์ตรวจสอบข้อมูลหลังคีย์งาน',
+  desc:'อธิบายช่องอายุ ช่องเซ็นชื่อ และขั้นตอนชำระเบี้ย',
+  opts:[],
+  build(){
+    return `ส่งลิงก์ให้ตรวจสอบข้อมูลทางอีเมลเรียบร้อยครับ
+
+ในใบคำขอ ช่องอายุจะยึดตาม ปี พ.ศ. ปัจจุบัน ลบ ปี พ.ศ. เกิด นะครับ (ไม่ได้ยึดวันชนวัน) ส่วนช่องเซ็นชื่อที่ยังว่างอยู่ไม่ต้องตกใจครับ
+
+หากข้อมูลถูกต้อง ให้กดยืนยันข้อมูล หน้าถัดไปจะเป็นช่องให้เซ็น (ช่อง "เขียนที่" ระบุที่อยู่ปัจจุบันได้เลยครับ) เมื่อเซ็นเรียบร้อย หน้าถัดไปจะเป็นการชำระเบี้ย สามารถผ่อน 0% ผ่านบัตรเครดิตที่ร่วมรายการได้ครับ
+
+กรณีบริษัทเลื่อนรับหรือปฏิเสธข้อเสนอใหม่ บริษัทจะคืนเบี้ยเต็มจำนวนโดยไม่หักค่าใช้จ่าย เว้นแต่มีการวางบิลบริษัทในการตรวจสุขภาพ บริษัทจะหักค่าใช้จ่ายตามจริงครับ
+
+หากข้อมูลไม่ถูกต้องหรือต้องการแก้ไข ให้กด "ส่งแจ้งกลับข้อมูลไม่ถูกต้อง" ครับ ลิงก์มีอายุ 24 ชั่วโมงครับ`;
+  }
+},
+
+/* ---------- 3. UNDERWRITING ---------- */
+{
+  id:'docs-request', cat:'uw',
+  title:'บริษัทขอเอกสารเพิ่มเติม',
+  desc:'เลือกได้ว่าขออะไรบ้าง ระบบจะใส่คำแนะนำที่เกี่ยวข้องให้อัตโนมัติ',
+  badge:'ปรับแต่งได้',
+  opts:[
+    {k:'d_hist', type:'check', label:'บริษัทขออะไรบ้าง', text:'ประวัติการรักษา', def:true},
+    {k:'d_me',   type:'check', text:'ตรวจสุขภาพโดยแพทย์ (ME)', def:true},
+    {k:'d_lab',  type:'check', text:'ผลตรวจแล็บ', def:false},
+    {k:'d_decl', type:'check', text:'แถลงโรคเพิ่มเติม', def:false},
+    {k:'labs',   type:'checkgroup', label:'เลือกรายการแล็บ', items:LABS.map(l=>({k:l.k,text:l.label})), showIf:v=>v.d_lab},
+    {k:'labOther', type:'text', label:'รายการแล็บอื่นๆ (ถ้ามี)', ph:'เช่น Uric acid, Vitamin D', showIf:v=>v.d_lab},
+    {k:'declTopic', type:'text', label:'แถลงโรคเกี่ยวกับ', ph:'เช่น ก้อนที่เต้านม, อาการปวดหลัง', showIf:v=>v.d_decl},
+    {k:'bill', type:'radio', label:'ช่องทางการตรวจ', items:[
+      {k:'both',     text:'บอกทั้ง 2 ทาง'},
+      {k:'self',     text:'สำรองจ่ายเอง'},
+      {k:'contract', text:'รพ.คู่สัญญา (ไม่สำรองจ่าย)'},
+    ], def:'both', showIf:v=>v.d_me || v.d_lab},
+  ],
+  build(v){
+    const items = [];
+    if(v.d_hist) items.push('ประวัติการรักษา');
+    if(v.d_me)   items.push('ตรวจสุขภาพโดยแพทย์ (ME)');
+
+    const picked = LABS.filter(l => v.labs && v.labs[l.k]);
+    if(v.d_lab){
+      const names = picked.map(l => l.name);
+      if(v.labOther) names.push(v.labOther.trim());
+      items.push(names.length ? `ผลตรวจ ${names.join(', ')}` : 'ผลตรวจแล็บตามที่บริษัทระบุ');
+    }
+    if(v.d_decl){
+      items.push(v.declTopic ? `แถลงโรคเกี่ยวกับ ${v.declTopic.trim()}` : 'แถลงโรคเพิ่มเติม');
+    }
+    if(!items.length) return 'กรุณาเลือกอย่างน้อย 1 รายการที่บริษัทขอครับ';
+
+    const parts = [
+      `สวัสดีครับ พอดีบริษัทขอเอกสารเพิ่มเติมเพื่อประกอบการพิจารณา ดังนี้ครับ\n${numbered(items)}`
+    ];
+
+    if(v.d_me) parts.push(BLK.meForm);
+
+    /* ปัสสาวะ: ME มีตรวจปัสสาวะเสมอ หรือเลือก UA เอง */
+    const needUrine = v.d_me || picked.some(l => l.urine);
+    if(needUrine) parts.push(BLK.urineNote);
+
+    if(v.d_me || v.d_lab){
+      const bill = v.bill || 'both';
+      if(bill === 'both')      parts.push(BLK.billSelf, BLK.billContract);
+      else if(bill === 'self') parts.push(BLK.billSelf);
+      else                     parts.push(BLK.billContract);
+    }
+
+    if(v.d_lab){
+      parts.push(BLK.labNote);
+      const fast = picked.filter(l => l.fasting).map(l => l.name);
+      if(fast.length) parts.push(BLK.fastingNote.replace('{LIST}', fast.join(', ')));
+    }
+
+    if(v.d_decl) parts.push(BLK.declareForm);
+
+    return join(parts);
+  }
+},
+{
+  id:'cof', cat:'uw',
+  title:'ส่งลิงก์ตอบรับ COF (ข้อเสนอใหม่)',
+  desc:'วิธีเซ็นและช่องทางส่งเอกสารกลับบริษัท',
+  opts:[
+    {k:'policy', type:'text', label:'เลขที่กรมธรรม์', ph:'เช่น 1234567890'},
+  ],
+  build(v){
+    const p = v.policy ? v.policy.trim() : '.....';
+    return `ถ้า OK แล้ว รบกวนเซ็นไฟล์นี้ที่หน้าแรก ช่องผู้เอาประกันด้านล่าง และหน้าสุดท้ายฝั่งซ้ายครับ พยานไม่ต้องเซ็น ระบุวันที่เป็นวันนี้ทั้งหน้าแรกและหน้าสุดท้าย (ลายเซ็นต้องเป็นลายเซ็นเดียวกับที่เซ็นในใบคำขอนะครับ)
+
+จากนั้นส่งไฟล์ทางอีเมลไปที่ agency_customer@muangthai.co.th
+และ CC มาที่ ${MAIL()}
+หัวเรื่อง: นำส่ง COF เพื่ออนุมัติกรมธรรม์เลขที่ ${p}
+
+อีเมลที่ใช้ส่งเอกสารต้องเป็นอีเมลที่ลงทะเบียนไว้กับบริษัทนะครับ`;
+  }
+},
+{
+  id:'review-request', cat:'uw',
+  title:'ขอทบทวนเพื่อถอดข้อยกเว้น',
+  desc:'อธิบายทางเลือก พร้อมร่างบันทึกข้อความให้ลูกค้า',
+  opts:[
+    {k:'policy', type:'text', label:'เลขที่กรมธรรม์', ph:'เช่น 1234567890'},
+    {k:'topic',  type:'text', label:'เรื่องที่ขอทบทวน',   ph:'เช่น ข้อยกเว้นข้ออักเสบข้อเข่า'},
+    {k:'rider',  type:'text', label:'สัญญาเพิ่มเติม',     ph:'เช่น D Health Lite'},
+  ],
+  build(v){
+    const p = v.policy ? v.policy.trim() : '.....';
+    const t = v.topic ? v.topic.trim() : '.....';
+    const r = v.rider ? v.rider.trim() : '.....';
+    return `กรณีต้องการยื่นทบทวนเพื่อถอดข้อยกเว้น ทำได้ 2 วิธีครับ
+
+1. ไปตรวจติดตามอาการกับแพทย์ แล้วขอใบรับรองแพทย์ระบุว่าหายจากอาการดังกล่าว
+2. เขียนบันทึกข้อความ โดยร่างลงในสำเนาบัตรประชาชน ตามตัวอย่างนี้ครับ
+
+เรียน ฝ่ายพิจารณารับประกัน
+เรื่อง ขอทบทวนเคส กรมธรรม์เลขที่ ${p}
+
+ข้าพเจ้า ..................... ผู้เอาประกันกรมธรรม์เลขที่ ${p}
+ขอให้ฝ่ายพิจารณาทบทวนข้อเสนอใหม่ เรื่อง ${t} ของสัญญาเพิ่มเติม ${r} ให้รับแบบปกติ
+โดยขอรับรองว่าปัจจุบันข้าพเจ้าไม่มีอาการดังกล่าวแล้ว และแพทย์ไม่ได้นัดติดตามอาการต่อ ตามประวัติที่ได้แนบไป
+
+ลงชื่อ .....................
+วันที่ .....................`;
+  }
+},
+{
+  id:'cancel-pending', cat:'uw',
+  title:'ยกเลิกการทำประกันระหว่างพิจารณา',
+  desc:'ขั้นตอนยกเลิกและช่องทางคืนเบี้ย',
+  opts:[
+    {k:'ch', type:'radio', label:'ช่องทางที่ลูกค้าชำระมา', items:[
+      {k:'both', text:'บอกทั้ง 2 ทาง'},
+      {k:'card', text:'บัตรเครดิต'},
+      {k:'qr',   text:'โอน / สแกน QR'},
+    ], def:'both'},
+  ],
+  build(v){
+    const ch = v.ch || 'both';
+    const card =
+`กรณีชำระผ่านบัตรเครดิต ยอดจะคืนเข้าบัตรเครดิตครับ หากมีการเรียกเก็บยอดไปแล้ว จะไปหักยอดเรียกเก็บในรอบบิลถัดไป (ขึ้นกับธนาคาร)`;
+    const qr =
+`กรณีชำระผ่านการสแกน QR Code จะคืนเงินเป็นเช็คตามที่อยู่จัดส่งเอกสารครับ หากต้องการให้โอนเข้าบัญชีธนาคารแทน รบกวนขอเอกสารดังนี้ครับ
+1. สำเนาสมุดบัญชีธนาคาร พร้อมเซ็นสำเนาถูกต้อง
+2. สำเนาบัตรประชาชน พร้อมเซ็นสำเนาถูกต้อง และเขียนระบุว่า "ต้องการเปลี่ยนช่องทางการคืนเบี้ยประกันเป็นโอนเข้าบัญชีธนาคาร เลขที่บัญชี ..... ชื่อบัญชี ....."
+3. สำเนาสลิปโอนเงินชำระเบี้ย พร้อมเซ็นสำเนาถูกต้อง`;
+    return join([
+`หากต้องการยกเลิกการพิจารณา ใช้สำเนาบัตรประชาชนของลูกค้า เขียนข้อความว่า
+
+"ขอยกเลิกการทำประกันชีวิตระหว่างพิจารณา"
+
+แล้วเซ็นชื่อ สแกนส่งมาได้เลยครับ เดี๋ยวผมอัปโหลดเข้าระบบให้ บริษัทจะคืนเบี้ยผ่านช่องทางที่ชำระเข้ามา ประมาณ 3-5 วันทำการครับ`,
+      (ch === 'both' || ch === 'card') ? card : '',
+      (ch === 'both' || ch === 'qr')   ? qr   : ''
+    ]);
+  }
+},
+
+/* ---------- 4. ISSUED ---------- */
+{
+  id:'waiting-policy', cat:'issued',
+  title:'รอเอกสาร / รอออกเล่มกรมธรรม์',
+  desc:'อัปเดตสถานะระหว่างรอเล่มจริง',
+  opts:[],
+  build(){
+    return `หลังบริษัทได้รับเอกสารตัวจริงที่ส่งทางไปรษณีย์ครบถ้วนแล้ว จึงจะออกเล่มกรมธรรม์ได้ครับ ถ้าเล่มจริงออกแล้วผมจะแจ้งกลับนะครับ
+
+ช่วงนี้เคสค่อนข้างเยอะ อาจใช้เวลาประมาณ 7-14 วันทำการครับ แต่ระหว่างรอส่งมอบเล่ม สามารถดาวน์โหลดสำเนากรมธรรม์อิเล็กทรอนิกส์ในแอป MTL Click ได้ก่อนเลยครับ เนื้อหาเหมือนในเล่มจริงทุกประการ
+
+เดี๋ยวผมเช็คให้นะครับว่าเอกสารส่งถึงเลขาแล้วหรือยัง`;
+  }
+},
+{
+  id:'after-approve', cat:'issued',
+  title:'ข้อควรทราบหลังกรมธรรม์อนุมัติ',
+  desc:'ระยะรอคอย ข้อยกเว้น แฟกซ์เคลม และวิธีใช้สิทธิ์',
+  badge:'ปรับแต่งได้',
+  opts:[
+    {k:'know',  type:'check', label:'เลือกส่วนที่จะส่ง', text:'ข้อควรทราบ + ลิงก์อ้างอิง', def:true},
+    {k:'claim', type:'check', text:'วิธีใช้สิทธิ์เคลม', def:true},
+    {k:'contact', type:'check', text:'ช่องทางติดต่อตัวแทน', def:true},
+  ],
+  build(v){
+    const site = SITE().replace(/^https?:\/\//,'');
+    const know =
+`ข้อควรทราบครับ
+
+ระยะรอคอยโรคทั่วไปทุกแผน 30 วัน โรคที่มีระยะก่อตัวนาน 120 วัน ส่วนอุบัติเหตุไม่มีระยะรอคอย คุ้มครองทันที และแผน OPD บางโรคเรื้อรังมีระยะรอคอย 180 วันครับ
+https://${site}/health-knowledge#waiting-period
+
+ควรแจ้งประวัติสุขภาพตามจริงกับแพทย์และบริษัทประกัน เพื่อให้ความคุ้มครองเป็นไปตามเงื่อนไขกรมธรรม์ครับ
+
+ข้อยกเว้นประกันสุขภาพ 21 ข้อ
+https://${site}/health-knowledge#health-exclusions
+
+การแฟกซ์เคลม โรงพยาบาลคู่สัญญาส่วนใหญ่ไม่ต้องสำรองจ่าย แต่ช่วง 2 ปีแรกอาจมีการสืบประวัติเมื่อเคลมโรคเรื้อรังหรือโรคร้ายแรงครั้งแรก ซึ่งอาจใช้เวลาถึง 90 วันครับ
+https://${site}/health-knowledge#fax-claim
+
+เงื่อนไข Copayment
+https://${site}/health-knowledge#copayment
+https://www.muangthai.co.th/th/copayment
+
+รวมคำถามยอดฮิตเกี่ยวกับประกัน
+https://${site}/health-knowledge`;
+
+    const claim =
+`เวลาใช้สิทธิ์เคลม
+
+- ระบบแฟกซ์เคลมจะทำงานเมื่อกรมธรรม์มีอายุอย่างน้อย 90 วัน
+- โรงพยาบาลเอกชน ให้ยื่นบัตรประกัน หรือแสดง e-Card ในแอป หรือบัตรประชาชน ให้เจ้าหน้าที่ตรวจสอบสิทธิ์ก่อนทุกครั้ง
+- โรงพยาบาลรัฐ หากอยู่ในเวลาทำการหรือใช้แฟกซ์เคลมได้ ให้แจ้งสิทธิ์กับเจ้าหน้าที่ของโรงพยาบาลก่อนทุกครั้ง
+- หากต้องสำรองจ่ายแล้วมาเคลมตรง อย่าลืมขอใบเสร็จ "ตัวจริง" และใบเคลม (รายงานการตรวจรักษาจากแพทย์) ซึ่งโรงพยาบาลเอกชนส่วนใหญ่จะมีให้ ถ้าโรงพยาบาลไม่มีฟอร์มดังกล่าว เช่น โรงพยาบาลรัฐ สามารถดาวน์โหลดได้ที่
+https://1drv.ms/b/c/1e7277a9a291ef6f/IQCZy11I1v7zSpDQx_z8d5yoAQCISRJi9dj43E_JGIGI7bo
+ย้ำว่าใบรับรองแพทย์อย่างเดียวไม่เพียงพอนะครับ ต้องใช้ใบเคลมด้วย
+- หากต้องผ่าตัดหรือทำหัตถการ แต่กรมธรรม์อายุยังน้อย เช่น ไม่ถึง 2 ปี และกังวลว่าอาจต้องสำรองจ่าย สามารถยื่น Pre-claim ได้ โดยแจ้งเจ้าหน้าที่โรงพยาบาลให้ยื่นพรีเคลมกับบริษัทครับ`;
+
+    const contact =
+`หากต้องแอดมิต อย่าลืมติดต่อผมที่ LINE: ${LINEID()} หรือ Facebook: ${FB()} หรือโทร ${TEL()} เพื่อแจ้งสิทธิ์กับเจ้าหน้าที่ประกันสัมพันธ์ ขอส่วนลดค่าห้องโรงพยาบาลครับ ขอบคุณครับ`;
+
+    return join([
+      v.know ? know : '',
+      v.claim ? claim : '',
+      v.contact ? contact : ''
+    ]);
+  }
+},
+
+/* ---------- 5. SERVICE ---------- */
+{
+  id:'pos-change', cat:'service',
+  title:'งาน POS เปลี่ยนแปลงสัญญาหลังอนุมัติ',
+  desc:'รายการเอกสารที่ต้องใช้',
+  opts:[
+    {k:'health', type:'check', label:'ตัวเลือกเสริม', text:'ใส่ใบแถลงสุขภาพ (กรณีอนุมัติเกิน 90 วัน)', def:true},
+  ],
+  build(v){
+    return join([
+`เอกสารที่ต้องใช้ครับ
+
+1. แบบฟอร์มขอเอาประกันภัย เปลี่ยนแปลง หรือยกเลิกสัญญาเพิ่มเติม
+- ระบุอาชีพ ลักษณะงาน รายได้ต่อปี วันเกิด ที่อยู่ เบอร์โทร อีเมล
+- กรอกรายละเอียดในตาราง ว่านับตั้งแต่บริษัทออกกรมธรรม์ ผู้เอาประกันภัยเคยขอเอาประกันที่อื่นหรือไม่ เคยถูกปฏิเสธหรือเลื่อนรับหรือไม่ สุขภาพปัจจุบันเป็นอย่างไร ร่างกายสมประกอบดีหรือไม่ หากมีประวัติเจ็บป่วยให้กรอกในตาราง และระบุส่วนสูงน้ำหนัก
+- เซ็นชื่อหน้าสอง พร้อมลงวันที่
+
+2. ฟอร์มมอบอำนาจให้บริษัทเปลี่ยนแปลงแก้ไขสัญญา
+- กรอกรายละเอียด ทำที่ ชื่อ อายุ เลขบัตรประชาชน ที่อยู่ปัจจุบัน และลงวันที่ให้ตรงกับฟอร์มแรก
+- ช่อง "ขอมอบอำนาจให้..." ไม่ต้องกรอก
+- ลงชื่อผู้มอบอำนาจ พยานไม่ต้องเซ็น
+
+3. สำเนาบัตรประชาชน หน้าแรกหน้าเดียว ขีดคร่อมช่องศาสนา (ถ้ามี) ลงสำเนาถูกต้อง และเขียนระบุว่าใช้สำหรับมอบอำนาจขอเอาประกันภัย หรือยกเลิกสัญญาเพิ่มเติม`,
+      v.health ?
+`4. ใบแถลงสุขภาพ (เฉพาะกรณีอนุมัติเกิน 90 วัน) ให้กรอกตามจริง ช่องที่ถามถึงช่วง 5 ปีที่ผ่านมา ให้กรอกประวัตินับตั้งแต่วันที่ออกเล่มกรมธรรม์ หากไม่มีประวัติเพิ่มเติม ให้เขียนว่า "อ้างอิงตามประวัติเดิมที่เคยแถลง ไม่มีประวัติอัปเดตเพิ่มเติม"` : ''
+    ]);
+  }
+},
+{
+  id:'change-agent', cat:'service',
+  title:'เปลี่ยนตัวแทนผู้ให้บริการ',
+  desc:'เอกสารที่ต้องใช้สำหรับเปลี่ยนตัวแทน',
+  opts:[
+    {k:'policy', type:'text', label:'เลขที่กรมธรรม์เดิม', ph:'เช่น 1234567890'},
+  ],
+  build(v){
+    const p = v.policy ? v.policy.trim() : '.....';
+    return `เอกสารที่ต้องใช้สำหรับเปลี่ยนแปลงตัวแทนประกันชีวิตครับ
+
+1. แบบฟอร์มขอเปลี่ยนแปลงตัวแทนผู้ให้บริการหลังการขาย กรอกรายละเอียดต่างๆ ลงวันที่วันนี้ได้เลย
+2. ฟอร์มมอบอำนาจให้บริษัทเปลี่ยนแปลงตัวแทนผู้ให้บริการหลังการขาย กรอกรายละเอียดต่างๆ ลงวันที่วันนี้ได้เลย
+3. สำเนาบัตรประชาชน หน้าแรกหน้าเดียว ขีดคร่อมช่องศาสนา (ถ้ามี) ลงสำเนาถูกต้อง และเขียนระบุว่าใช้สำหรับมอบอำนาจขอเปลี่ยนแปลงตัวแทนผู้ให้บริการหลังการขาย กรมธรรม์เลขที่ ${p}
+
+ย้ำว่าให้ใส่เลขกรมธรรม์เดิมนะครับ ไม่ใช่เลขกรมธรรม์ใหม่ครับ`;
+  }
+},
+
+/* ---------- 6. SPECIAL ---------- */
+{
+  id:'diabetes', cat:'special',
+  title:'เงื่อนไขเบาหวานที่สมัครประกันสุขภาพได้',
+  desc:'เกณฑ์รับประกันแบบเพิ่มเบี้ย และทางเลือกสำรอง',
+  opts:[
+    {k:'alt', type:'check', label:'ตัวเลือกเสริม', text:'แนะนำแผนสำรองกรณีสมัครไม่ได้', def:true},
+  ],
+  build(v){
+    return join([
+`เงื่อนไขเบาหวานที่ยังสามารถสมัครประกันสุขภาพได้ครับ (แบบเพิ่มเบี้ย 50-100% แต่คุ้มครองเบาหวานและภาวะแทรกซ้อนทั้งหมด) เบี้ยจะค่อนข้างสูงพอสมควรครับ
+
+1. เป็นมาไม่เกิน 10 ปี
+2. ยังไม่ถึงขั้นต้องใช้ยาฉีด
+3. ยังไม่มีภาวะแทรกซ้อน เช่น โปรตีนรั่วในปัสสาวะ เบาหวานขึ้นตา แผลเรื้อรังที่เท้า
+4. คุมได้ดีมาก โดย HbA1c ครั้งล่าสุดภายใน 3 เดือน ต่ำกว่า 7.0%
+5. ต้องไม่มีโรคร่วมอื่น เช่น ไขมันในเลือดสูง ความดันโลหิตสูง BMI เกิน หรือภาวะหยุดหายใจขณะหลับ
+6. กรณีต้องการความคุ้มครองเต้านมด้วย หากเคยตรวจ Mammogram ต้องผลปกติเท่านั้น (BI-RADS 1) หากเป็น BI-RADS 2 จะถูกเพิ่มเบี้ยอีกครับ`,
+      v.alt ? `หากสมัครไม่ได้ ผมจะแนะนำแผนแคร์พลัสมะเร็งครับ เหมาจ่ายมะเร็ง 5 ล้านบาทต่อปี` : ''
+    ]);
+  }
+},
+
+];
+
+/* ================= option state ================= */
+function initOpts(){
+  T.forEach(t => {
+    const o = {};
+    (t.opts||[]).forEach(op => {
+      if(op.type === 'check')      o[op.k] = !!op.def;
+      else if(op.type === 'radio') o[op.k] = op.def || (op.items[0] && op.items[0].k);
+      else if(op.type === 'checkgroup'){
+        o[op.k] = {};
+        op.items.forEach(it => { o[op.k][it.k] = !!it.def; });
+      }
+      else o[op.k] = '';
+    });
+    optState[t.id] = o;
+  });
+}
+
+/* ================= render ================= */
+function render(){
+  const q = (document.getElementById('q').value || '').trim().toLowerCase();
+  const list = document.getElementById('list');
+
+  const visible = T.filter(t => {
+    if(activeCat !== 'all' && t.cat !== activeCat) return false;
+    if(!q) return true;
+    const hay = (t.title + ' ' + t.desc + ' ' + t.build(optState[t.id])).toLowerCase();
+    return hay.includes(q);
+  });
+
+  if(!visible.length){
+    list.innerHTML = '<div class="empty">ไม่พบชุดข้อความที่ตรงกับคำค้นครับ</div>';
+    return;
+  }
+
+  let html = '';
+  let lastCat = null;
+  visible.forEach(t => {
+    if(activeCat === 'all' && t.cat !== lastCat){
+      const c = CATS.find(c => c.k === t.cat);
+      html += `<div class="cat-head">${c ? c.label : ''}</div>`;
+      lastCat = t.cat;
+    }
+    const open = openCards.has(t.id);
+    html += `
+      <div class="card ${open?'open':''}" id="card-${t.id}">
+        <div class="card-head" onclick="toggleCard('${t.id}')">
+          <div class="txt">
+            <h3>${t.title}</h3>
+            <p>${t.desc}</p>
+            ${t.badge?`<span class="badge">${t.badge}</span>`:''}
+          </div>
+          <div class="chev">▶</div>
+        </div>
+        <div class="card-body">
+          ${renderOpts(t)}
+          <div class="preview" id="pv-${t.id}">${esc(t.build(optState[t.id]))}</div>
+          <div class="act-row">
+            <button class="btn" id="cp-${t.id}" onclick="copyT('${t.id}')">คัดลอกข้อความ</button>
+          </div>
+        </div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function renderOpts(t){
+  const ops = t.opts || [];
+  if(!ops.length) return '';
+  const v = optState[t.id];
+  let h = '<div class="opts">';
+  let openBlock = false;
+
+  ops.forEach(op => {
+    if(op.showIf && !op.showIf(v)) return;
+
+    if(op.type === 'check'){
+      if(op.label){
+        if(openBlock) h += '</div></div>';
+        h += `<div class="opt-block"><div class="opt-label">${op.label}</div><div class="opt-grid">`;
+        openBlock = true;
+      }
+      h += `<span class="tog ${v[op.k]?'on':''}" onclick="setOpt('${t.id}','${op.k}',!optState['${t.id}']['${op.k}'])"><span class="dot">${v[op.k]?'✓':''}</span>${op.text}</span>`;
+      return;
+    }
+
+    if(openBlock){ h += '</div></div>'; openBlock = false; }
+
+    if(op.type === 'radio'){
+      h += `<div class="opt-block"><div class="opt-label">${op.label}</div><div class="opt-grid">`;
+      op.items.forEach(it => {
+        h += `<span class="tog radio ${v[op.k]===it.k?'on':''}" onclick="setOpt('${t.id}','${op.k}','${it.k}')"><span class="dot">${v[op.k]===it.k?'●':''}</span>${it.text}</span>`;
+      });
+      h += '</div></div>';
+    }
+    else if(op.type === 'checkgroup'){
+      h += `<div class="opt-block"><div class="opt-label">${op.label}</div><div class="opt-grid">`;
+      op.items.forEach(it => {
+        const on = v[op.k] && v[op.k][it.k];
+        h += `<span class="tog ${on?'on':''}" onclick="setGroup('${t.id}','${op.k}','${it.k}')"><span class="dot">${on?'✓':''}</span>${it.text}</span>`;
+      });
+      h += '</div></div>';
+    }
+    else if(op.type === 'text'){
+      h += `<div class="opt-block"><div class="opt-label">${op.label}</div>
+        <input type="text" value="${escAttr(v[op.k]||'')}" placeholder="${escAttr(op.ph||'')}" oninput="setOpt('${t.id}','${op.k}',this.value,true)"></div>`;
+    }
+  });
+
+  if(openBlock) h += '</div></div>';
+  return h + '</div>';
+}
+
+const openCards = new Set();
+function toggleCard(id){
+  if(openCards.has(id)) openCards.delete(id); else openCards.add(id);
+  render();
+}
+function setOpt(tid, key, val, textOnly){
+  optState[tid][key] = val;
+  if(textOnly) refreshPreview(tid);
+  else render();
+}
+function setGroup(tid, key, item){
+  optState[tid][key][item] = !optState[tid][key][item];
+  render();
+}
+function refreshPreview(tid){
+  const t = T.find(x => x.id === tid);
+  const el = document.getElementById('pv-'+tid);
+  if(t && el) el.textContent = t.build(optState[tid]);
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+/* ================= copy ================= */
+function copyT(id){
+  const t = T.find(x => x.id === id);
+  if(!t) return;
+  const text = t.build(optState[id]);
+  copyText(text).then(ok => {
+    const btn = document.getElementById('cp-'+id);
+    if(ok && btn){
+      btn.classList.add('copied');
+      btn.textContent = 'คัดลอกแล้ว ✓';
+      setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'คัดลอกข้อความ'; }, 1600);
+    }
+    toast(ok ? 'คัดลอกแล้ว พร้อมวางในแชท' : 'คัดลอกไม่สำเร็จ กรุณากดค้างที่ข้อความเพื่อคัดลอกเอง');
+  });
+}
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+/* ================= chips ================= */
+function renderChips(){
+  document.getElementById('chips').innerHTML = CATS.map(c =>
+    `<button class="chip ${activeCat===c.k?'active':''}" onclick="setCat('${c.k}')">${c.label}</button>`
+  ).join('');
+}
+function setCat(k){
+  activeCat = k;
+  renderChips();
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ================= settings ================= */
+function openSettings(){
+  document.getElementById('setName').value = S.name || '';
+  document.getElementById('setLine').value = S.line || '';
+  document.getElementById('setFb').value   = S.fb   || '';
+  document.getElementById('setTel').value  = S.tel  || '';
+  document.getElementById('setMail').value = S.mail || '';
+  document.getElementById('setSite').value = S.site || '';
+  document.getElementById('settings').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settings').classList.remove('show'); }
+function saveSettings(){
+  S.name = document.getElementById('setName').value.trim();
+  S.line = document.getElementById('setLine').value.trim();
+  S.fb   = document.getElementById('setFb').value.trim();
+  S.tel  = document.getElementById('setTel').value.trim();
+  S.mail = document.getElementById('setMail').value.trim();
+  S.site = document.getElementById('setSite').value.trim() || 'www.doctor-insurance.com';
+  saveState();
+  document.getElementById('whoami').textContent = S.name ? `ตัวแทน: ${S.name}` : 'ยังไม่ได้ตั้งชื่อตัวแทน';
+  closeSettings();
+  render();
+  toast('บันทึกแล้ว');
+}
+function lockOut(){
+  try{ sessionStorage.removeItem(LS+'.ok'); }catch(e){}
+  location.reload();
+}
+
+/* ================= gate ================= */
+function doUnlock(){
+  const code = document.getElementById('gateCode').value.trim();
+  if(code !== ACCESS_CODE){
+    document.getElementById('gateErr').style.display = 'block';
+    return;
+  }
+  const nm = document.getElementById('gateName').value.trim();
+  if(nm){ S.name = nm; saveState(); }
+  try{ sessionStorage.setItem(LS+'.ok','1'); }catch(e){}
+  showApp();
+}
+function showApp(){
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('whoami').textContent = S.name ? `ตัวแทน: ${S.name}` : 'ยังไม่ได้ตั้งชื่อตัวแทน';
+  renderChips();
+  render();
+}
+
+/* ================= boot ================= */
+loadState();
+initOpts();
+document.getElementById('gateName').value = S.name || '';
+document.getElementById('gateCode').addEventListener('keydown', e => { if(e.key === 'Enter') doUnlock(); });
+document.getElementById('gateName').addEventListener('keydown', e => { if(e.key === 'Enter') doUnlock(); });
+try{
+  if(sessionStorage.getItem(LS+'.ok') === '1') showApp();
+}catch(e){}
+</script>
+</body>
+</html>
