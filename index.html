@@ -846,6 +846,64 @@
   }
   .plan-card ul{margin:8px 0 0;padding-left:18px;font-size:.82rem;line-height:1.6;}
   .plan-card .meta{font-size:.76rem;color:var(--muted);margin-top:8px;}
+
+  /* ---- Plan compare feature ---- */
+  .group-break.group-break-with-action{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .group-break-text{flex:1;min-width:220px;}
+  .btn-compare-toggle{
+    background:#fff;border:1.5px solid var(--pink-deep);color:var(--pink-deep);
+    font-weight:700;font-size:.82rem;padding:9px 18px;border-radius:999px;cursor:pointer;
+    white-space:nowrap;font-family:inherit;
+  }
+  .btn-compare-toggle:hover{background:var(--pink-soft);}
+  .btn-compare-toggle.active{background:var(--pink-deep);color:#fff;}
+  .plan-card.compare-disabled{opacity:.4;filter:grayscale(.75);transition:opacity .2s,filter .2s;}
+  .compare-checkbox-wrap{
+    display:flex;align-items:center;gap:6px;
+    background:#fff0f5;border:1px solid #eab9cd;border-radius:8px;
+    padding:5px 9px;margin-bottom:10px;font-size:.78rem;font-weight:700;color:var(--pink-deep);
+    cursor:pointer;width:fit-content;
+  }
+  .compare-checkbox-wrap input{width:15px;height:15px;accent-color:var(--pink-deep);cursor:pointer;}
+  .compare-checkbox-wrap.disabled{opacity:.5;cursor:not-allowed;}
+  .compare-checkbox-wrap.disabled input{cursor:not-allowed;}
+  .compare-action-bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:500;
+    background:linear-gradient(120deg,var(--pink-deep),var(--pink));
+    box-shadow:0 -4px 20px rgba(143,13,64,.25);
+    padding:12px 18px;
+  }
+  .compare-action-bar-inner{
+    max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .compare-action-bar-text{color:#fff;font-size:.85rem;font-weight:600;}
+  .compare-action-bar-buttons{display:flex;gap:10px;}
+  .compare-action-bar-buttons .btn{width:auto;padding:9px 20px;}
+  .compare-action-bar-buttons .btn.secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.4);}
+  @media (max-width:780px){
+    .compare-action-bar-inner{flex-direction:column;align-items:stretch;}
+    .compare-action-bar-buttons{justify-content:stretch;}
+    .compare-action-bar-buttons .btn{flex:1;}
+  }
+  .compare-input-card .compare-input-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:8px;}
+  .compare-input-row label{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--ink);font-weight:600;}
+  .compare-input-row input[type=number], .compare-input-row select{
+    border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:.85rem;
+  }
+  .compare-columns-summary{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0;
+  }
+  .compare-col-summary{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;
+    box-shadow:0 2px 14px rgba(200,30,92,.05);text-align:center;
+  }
+  .compare-col-title{font-family:"Kanit",sans-serif;font-weight:700;color:var(--pink-deep);font-size:1rem;margin-bottom:8px;}
+  .compare-tier-select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:.8rem;margin-bottom:10px;font-family:inherit;}
+  .compare-price{font-family:"Kanit",sans-serif;font-size:1.3rem;font-weight:800;color:var(--pink-deep);margin-bottom:8px;}
+  .compare-remove-btn{background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline;padding:0;}
+  .compare-remove-btn:hover{color:var(--danger);}
+  .compare-na{color:var(--muted);font-style:italic;}
+
   details.faq{
     border:1px solid var(--line);
     border-radius:10px;
@@ -1718,6 +1776,18 @@
 <div class="wrap">
   <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
   <div id="planDetailContent" style="margin-top:14px;"></div>
+</div>
+</div>
+
+<!-- ============ PAGE: PLAN COMPARE ============ -->
+<div id="page-compare" class="page">
+<div class="wrap">
+  <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
+  <div id="compareContent" style="margin-top:14px;">
+    <div class="content-card">
+      <p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ กรุณากลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ที่หัวข้อสัญญาเพิ่มเติมสุขภาพ/ชดเชยรายได้</p>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -3312,8 +3382,8 @@ function renderBenefitTable(headers, rows, note=''){
 function carePlusLinkText(){
   return 'เลือกซื้อ <span class="mini-link" onclick="showPlanDetail(\'careplus\')">Care Plus</span> เพื่อเสริมความคุ้มครองโรคมะเร็ง/ไต ซึ่งคุ้มครองมากกว่าแผนประกันสุขภาพทั่วไป';
 }
-function dhlBenefitTable(){
-  return renderBenefitTable(['แผน 1: 1 ล้านบาท/ครั้ง','แผน 2: 5 ล้านบาท/ครั้ง'], [
+function dhlBenefitRows(){
+  return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000 บาท/วัน', '4,000 บาท/วัน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', 'สูงสุด 14 วัน', 'สูงสุด 14 วัน'],
@@ -3328,10 +3398,13 @@ function dhlBenefitTable(){
     ['11. เคมีบำบัด/ยามะเร็ง', carePlusLinkText(), carePlusLinkText()],
     ['12. รถพยาบาลฉุกเฉิน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['13. ผ่าตัดเล็ก', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-  ], 'Deductible/Copayment ใช้กับหมวด 1–8 และ 12–13 ตามแผนที่เลือก; เด็กอายุ 30 วัน–10 ปี เลือกได้เฉพาะแบบ Deductible หรือ Copayment<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
+  ];
 }
-function eliteBenefitTable(){
-  return renderBenefitTable(['20M','40M','75M','100M'], [
+function dhlBenefitTable(){
+  return renderBenefitTable(['แผน 1: 1 ล้านบาท/ครั้ง','แผน 2: 5 ล้านบาท/ครั้ง'], dhlBenefitRows(), 'Deductible/Copayment ใช้กับหมวด 1–8 และ 12–13 ตามแผนที่เลือก; เด็กอายุ 30 วัน–10 ปี เลือกได้เฉพาะแบบ Deductible หรือ Copayment<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
+}
+function eliteBenefitRows(){
+  return [
     ['§ผลประโยชน์ส่วนความคุ้มครองหลัก (13 หมวดมาตรฐาน)'],
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '10,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '12,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '15,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '25,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
@@ -3365,10 +3438,13 @@ function eliteBenefitTable(){
     ['การฝังเข็ม ธรรมชาติบำบัด กระดูกและกล้ามเนื้อบำบัด และการจัดกระดูก ต่อปีกรมธรรม์', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', '10,000 บาท', '40,000 บาท'],
     ['§ความคุ้มครองเสริม (เลือกซื้อเพิ่ม)'],
     ['Maternity Plus / Well-Being Plus', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข', 'เลือกซื้อเพิ่มได้ตามเงื่อนไข'],
-  ], 'ตารางนี้คัดลอกทุกหมวดและทุกตัวเลขจากโบรชัวร์ทางการ "ความคุ้มครองสุขภาพ อีลิท เฮลท์ พลัส" (เมืองไทยประกันชีวิต, เผยแพร่ 21 ก.พ. 2568) แบบไม่ตัดทอน<br><b>ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET):</b> เป็นวงเงินสำหรับกรณี "ไม่ต้องแอดมิด" เท่านั้น แยกจากหมวด 6 ซึ่งจ่ายเฉพาะการตรวจที่เกิดขึ้นภายใน 30 วันก่อน-หลังการแอดมิดครั้งนั้น และแยกวงเงินจากโควตา OPD ทั่วไป (ค่าธรรมเนียมปรึกษาแพทย์ฯ) จึงไม่กินโควต้ากันเอง แตกต่างจาก D Health Lite ที่ไม่มีวงเงินภาพวินิจฉัยขั้นสูงแยกต่างหาก จะเคลมค่าตรวจ CT/MRI ได้ก็ต่อเมื่อเป็นการนอนโรงพยาบาลหรือตรวจก่อน-หลังนอน รพ. ภายใน 30 วันเท่านั้น (ดูหมวด 6 ในตาราง D Health Lite)<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
+  ];
 }
-function maochaiBenefitTable(){
-  return renderBenefitTable(['แผน 1','แผน 2','แผน 3'], [
+function eliteBenefitTable(){
+  return renderBenefitTable(['20M','40M','75M','100M'], eliteBenefitRows(), 'ตารางนี้คัดลอกทุกหมวดและทุกตัวเลขจากโบรชัวร์ทางการ "ความคุ้มครองสุขภาพ อีลิท เฮลท์ พลัส" (เมืองไทยประกันชีวิต, เผยแพร่ 21 ก.พ. 2568) แบบไม่ตัดทอน<br><b>ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET):</b> เป็นวงเงินสำหรับกรณี "ไม่ต้องแอดมิด" เท่านั้น แยกจากหมวด 6 ซึ่งจ่ายเฉพาะการตรวจที่เกิดขึ้นภายใน 30 วันก่อน-หลังการแอดมิดครั้งนั้น และแยกวงเงินจากโควตา OPD ทั่วไป (ค่าธรรมเนียมปรึกษาแพทย์ฯ) จึงไม่กินโควต้ากันเอง แตกต่างจาก D Health Lite ที่ไม่มีวงเงินภาพวินิจฉัยขั้นสูงแยกต่างหาก จะเคลมค่าตรวจ CT/MRI ได้ก็ต่อเมื่อเป็นการนอนโรงพยาบาลหรือตรวจก่อน-หลังนอน รพ. ภายใน 30 วันเท่านั้น (ดูหมวด 6 ในตาราง D Health Lite)<br><b>หมายเหตุหมวด 7:</b> คุ้มครองอุบัติเหตุ OPD เฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ควรใช้ PA หรือ OPD<br><b>หมายเหตุ Follow-up:</b> หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิตรวจ/รักษาต่อเนื่อง 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ตามหมวด 13 ไม่สามารถใช้สิทธิ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD');
+}
+function maochaiBenefitRows(){
+  return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
     ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
@@ -3382,10 +3458,13 @@ function maochaiBenefitTable(){
     ['12. รถพยาบาลฉุกเฉิน', '2,000', '4,000', '4,000'],
     ['13. ผ่าตัดเล็ก', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['ผลประโยชน์สูงสุดต่อครั้ง', '200,000', '200,000', '500,000'],
-  ]);
+  ];
 }
-function ecpBenefitTable(){
-  return renderBenefitTable(['แผน 1','แผน 2','แผน 3'], [
+function maochaiBenefitTable(){
+  return renderBenefitTable(['แผน 1','แผน 2','แผน 3'], maochaiBenefitRows());
+}
+function ecpBenefitRows(){
+  return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
     ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
@@ -3401,7 +3480,10 @@ function ecpBenefitTable(){
     ['13. ผ่าตัดเล็ก', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['ผลประโยชน์สูงสุดต่อครั้ง', '200,000', '200,000', '500,000'],
     ['Deductible', '20,000/ครั้ง', '20,000/ครั้ง', '20,000/ครั้ง'],
-  ]);
+  ];
+}
+function ecpBenefitTable(){
+  return renderBenefitTable(['แผน 1','แผน 2','แผน 3'], ecpBenefitRows());
 }
 
 const PLAN_COVER_IMAGES = {
@@ -4023,6 +4105,7 @@ const PAGE_ROUTES = {
   ai: '/plan-advisor',
   calc: '/calculator',
   plans: '/plans',
+  compare: '/plans/compare',
   knowledge: '/health-knowledge',
   contact: '/contact',
 };
@@ -5009,6 +5092,380 @@ document.addEventListener('keydown', function(e){
 });
 
 renderAll();
+// ============ Plan compare feature ============
+// Maps a benefit-table row label to a stable key shared across products, so
+// rows from different xxxBenefitRows() arrays can be aligned in one unified
+// comparison table. Numbered rows (1., 2.4, ...) use their number; extension
+// rows (no number, Elite-only wording) are matched by a label substring.
+function benefitRowKey(label){
+  const s = String(label||'');
+  const m = s.match(/^(\d+(?:\.\d+)?)/);
+  if(m) return 'n'+m[1].replace('.','_');
+  if(s.includes('บิดาหรือมารดา')) return 'parent_bed';
+  if(s.includes('ฟื้นฟูสภาพในฐานะผู้ป่วยใน')) return 'rehab_ipd';
+  if(s.includes('เครื่องมือทางการแพทย์')) return 'medical_equipment';
+  if(s.includes('จิตเวช')) return 'psychiatric';
+  if(s.includes('พยาบาลส่วนตัว')) return 'private_nurse';
+  if(s.includes('ทันตกรรม')) return 'dental_accident';
+  if(s.includes('ช่วยเหลือฉุกเฉิน')) return 'emergency_assist';
+  if(s.includes('ภาพวินิจฉัยขั้นสูง')) return 'advanced_imaging';
+  if(s.includes('ธรรมเนียมปรึกษาแพทย์')) return 'opd_general';
+  if(s.includes('กายภาพบำบัด')) return 'physiotherapy';
+  if(s.includes('ฝังเข็ม')) return 'acupuncture';
+  return null;
+}
+// Converts one product's raw benefit-rows array (as returned by
+// xxxBenefitRows()) into a {rowKey: cellValue} map for a single column index,
+// so the compare table always reads from the exact same source data used by
+// that plan's own detail page (never a hand-duplicated second copy).
+function benefitRowsToMap(rowsArray, colIndex){
+  const map = {};
+  if(colIndex == null || colIndex < 0) return map;
+  rowsArray.forEach(r => {
+    const label = String(r[0]||'');
+    if(label.startsWith('§')) return;
+    const val = r[colIndex+1];
+    if(val === undefined) return;
+    if(/^10[–-]11/.test(label)){ map.n10 = val; map.n11 = val; return; } // maochai/ecp combined row
+    const key = benefitRowKey(label);
+    if(!key) return;
+    map[key] = val;
+  });
+  return map;
+}
+const DHL_COMPARE_TIERS = (() => {
+  const tiers = [];
+  Object.keys(DHL_DEDUCT_LABELS).forEach(sum => {
+    const sumLabel = sum === '1m' ? '1 ล้านบาท/ครั้ง — ' : '5 ล้านบาท/ครั้ง — ';
+    DHL_DEDUCT_LABELS[sum].forEach(([v,l]) => {
+      tiers.push({value:sum+'_'+v, label:sumLabel+l, cfg:{sum, deduct:v}});
+    });
+    tiers.push({value:sum+'_copay9010', label:sumLabel+'Copayment 10%', cfg:{sum, mode:'copay', copay:'9010'}});
+    tiers.push({value:sum+'_copay8020', label:sumLabel+'Copayment 20%', cfg:{sum, mode:'copay', copay:'8020'}});
+  });
+  return tiers;
+})();
+const COMPARE_PRODUCTS = {
+  dhl: {
+    title:'D Health Lite',
+    tiers: DHL_COMPARE_TIERS,
+    defaultValue: '5m_d0',
+    getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'dhl'}, cfg), gender, age, occ, freq).premium; },
+    getRows(cfg){ return benefitRowsToMap(dhlBenefitRows(), cfg.sum === '1m' ? 0 : 1); },
+  },
+  ehp: {
+    title:'Elite Health Plus',
+    tiers:[
+      {value:'20m', label:'20 ล้านบาท/ปี', cfg:{plan:'20m'}},
+      {value:'40m', label:'40 ล้านบาท/ปี', cfg:{plan:'40m'}},
+      {value:'75m', label:'75 ล้านบาท/ปี', cfg:{plan:'75m'}},
+      {value:'100m', label:'100 ล้านบาท/ปี', cfg:{plan:'100m'}},
+    ],
+    defaultValue:'20m',
+    getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'ehp'}, cfg), gender, age, occ, freq).premium; },
+    getRows(cfg){ return benefitRowsToMap(eliteBenefitRows(), ['20m','40m','75m','100m'].indexOf(cfg.plan)); },
+  },
+  maochai: {
+    title:'เหมาจ่าย Extra',
+    tiers:[
+      {value:'p1', label:'Plan 1 (2 แสน/ครั้ง Room 2,000)', cfg:{plan:'p1'}},
+      {value:'p2', label:'Plan 2 (2 แสน/ครั้ง Room 4,000)', cfg:{plan:'p2'}},
+      {value:'p3', label:'Plan 3 (5 แสน/ครั้ง Room 4,000)', cfg:{plan:'p3'}},
+    ],
+    defaultValue:'p2',
+    getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'maochai'}, cfg), gender, age, occ, freq).premium; },
+    getRows(cfg){ return benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan)); },
+  },
+  ecp: {
+    title:'Extra Care Plus',
+    tiers:[
+      {value:'p1', label:'Plan 1 (2 แสน/ครั้ง Room 2,000 + D20k)', cfg:{plan:'p1'}},
+      {value:'p2', label:'Plan 2 (2 แสน/ครั้ง Room 4,000 + D20k)', cfg:{plan:'p2'}},
+      {value:'p3', label:'Plan 3 (5 แสน/ครั้ง Room 4,000 + D20k)', cfg:{plan:'p3'}},
+    ],
+    defaultValue:'p2',
+    getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'ecp'}, cfg), gender, age, occ, freq).premium; },
+    getRows(cfg){ return benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan)); },
+  },
+  careplus: {
+    title:'Care Plus',
+    tiers:[
+      {value:'ca', label:'มะเร็งอย่างเดียว (ทุน 5 ล้านบาท)', cfg:{plan:'ca'}},
+      {value:'cackd', label:'มะเร็ง + ไตวายเรื้อรัง (ทุน 5 ล้านบาท)', cfg:{plan:'cackd'}},
+    ],
+    defaultValue:'cackd',
+    getPremium(cfg, gender, age, occ, freq){ return careplusPremium('5m', cfg.plan, gender, age, occ, freq); },
+    // Care Plus has no benefitTable(); per the owner's own framing it is
+    // "หมวด 9-11 แต่ได้เยอะกว่า" — it maps onto Elite's dialysis/radiation/
+    // chemo rows, PLUS advanced imaging and psychiatric care when those are
+    // directly related to the cancer/kidney treatment being covered.
+    getRows(cfg){
+      const rows = {
+        n10: 'จ่ายตามจริง',
+        n11: 'จ่ายตามจริง',
+        advanced_imaging: 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการตรวจที่เกี่ยวข้องโดยตรงกับการรักษาตามแผนที่เลือก (มะเร็ง และ/หรือ ไตวายเรื้อรัง)</span>',
+        psychiatric: '50,000 บาทต่อปี<span class="benefit-subnote">เฉพาะภายใน 5 ปีกรมธรรม์แรกนับจากปีที่เริ่มรักษา</span>',
+      };
+      if(cfg.plan === 'cackd') rows.n9 = 'จ่ายตามจริง';
+      return rows;
+    },
+  },
+  opd: {
+    title:'OPD รายครั้ง/เหมาจ่าย',
+    tiers:[
+      ...['1000','1500','2000','2500','3000'].map(v => ({value:'krang_'+v, label:fmt(parseInt(v,10))+' บาท/ครั้ง (OPD รายครั้ง)', cfg:{kind:'krang', plan:v}})),
+      ...['15000','20000','25000','30000','50000','100000'].map(v => ({value:'mao_'+v, label:fmt(parseInt(v,10))+' บาท/ปี (OPD เหมาจ่าย)', cfg:{kind:'mao', plan:v}})),
+    ],
+    defaultValue:'mao_30000',
+    getPremium(cfg, gender, age, occ, freq){ return opdPremium({type:cfg.kind, plan:cfg.plan}, gender, age, freq).premium; },
+    // Per the owner: the OPD product should populate exactly Elite's existing
+    // "OPD ทั่วไป" row, not a separate row.
+    getRows(cfg){
+      return {
+        opd_general: cfg.kind === 'krang'
+          ? `${fmt(parseInt(cfg.plan,10))} บาทต่อครั้ง<span class="benefit-subnote">OPD รายครั้ง จำกัดสูงสุด 30 ครั้งต่อปีกรมธรรม์</span>`
+          : `${fmt(parseInt(cfg.plan,10))} บาทต่อปีกรมธรรม์<span class="benefit-subnote">OPD เหมาจ่ายรายปี ใช้ได้สูงสุด 2 ครั้งต่อวัน</span>`,
+      };
+    },
+  },
+};
+const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd'];
+const COMPARE_MAX = 3;
+const COMPARE_ROW_DEFS = [
+  {section:'ผลประโยชน์หลัก (13 หมวดมาตรฐาน)'},
+  {key:'n1', label:'ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)'},
+  {key:'n2', label:'ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล'},
+  {key:'n2_4', label:'ค่ายา/เวชภัณฑ์กลับบ้าน'},
+  {key:'n3', label:'ค่าแพทย์ตรวจรักษา'},
+  {key:'n4', label:'ค่าผ่าตัด/หัตถการ'},
+  {key:'n5', label:'Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)'},
+  {key:'n6', label:'ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน'},
+  {key:'n7', label:'อุบัติเหตุ OPD ภายใน 24 ชั่วโมง'},
+  {key:'n8', label:'เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล'},
+  {key:'n9', label:'ล้างไตผ่านทางเส้นเลือด'},
+  {key:'n10', label:'รังสีรักษา/รังสีร่วมรักษา/นิวเคลียร์รักษา'},
+  {key:'n11', label:'เคมีบำบัด/Targeted Therapy'},
+  {key:'n12', label:'รถพยาบาลฉุกเฉิน'},
+  {key:'n13', label:'ผ่าตัดเล็ก'},
+  {section:'ผลประโยชน์ส่วนขยาย (เฉพาะบางแผน)'},
+  {key:'parent_bed', label:'ค่าห้องพักบิดา/มารดา (เตียงเสริม)'},
+  {key:'rehab_ipd', label:'ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน'},
+  {key:'medical_equipment', label:'ค่าเครื่องมือแพทย์/อุปกรณ์เทียม'},
+  {key:'psychiatric', label:'ค่ารักษาทางจิตเวช'},
+  {key:'private_nurse', label:'ค่าพยาบาลส่วนตัวหลังออกจากโรงพยาบาล'},
+  {key:'dental_accident', label:'ค่าทันตกรรมจากอุบัติเหตุ'},
+  {key:'emergency_assist', label:'ค่าช่วยเหลือฉุกเฉินทางการแพทย์'},
+  {key:'advanced_imaging', label:'ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET)'},
+  {key:'opd_general', label:'OPD ทั่วไป (ผู้ป่วยนอก)'},
+  {key:'physiotherapy', label:'ค่ากายภาพบำบัด'},
+  {key:'acupuncture', label:'ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก'},
+];
+
+let compareMode = false;
+let compareSelected = [];
+let compareTierByProduct = {};
+
+// Tags every plan-card in the /plans list with its plan id, read straight off
+// the id already used by its own "ดูรายละเอียดเต็ม" button, so nothing about
+// the 19 existing cards needs to be hand-edited for this feature to work.
+function initComparePlanCards(){
+  document.querySelectorAll('#page-plans .plan-card').forEach(card => {
+    const btn = card.querySelector('button[onclick^="showPlanDetail("]');
+    if(!btn) return;
+    const m = btn.getAttribute('onclick').match(/showPlanDetail\('([^']+)'\)/);
+    if(m) card.dataset.planId = m[1];
+  });
+}
+function initCompareToggle(){
+  const groupBreaks = document.querySelectorAll('#page-plans .group-break');
+  let target = null;
+  groupBreaks.forEach(gb => {
+    const h2 = gb.querySelector('h2');
+    if(h2 && h2.textContent.trim() === 'สัญญาเพิ่มเติมสุขภาพ / ชดเชยรายได้') target = gb;
+  });
+  if(!target || document.getElementById('compareModeToggle')) return;
+  target.classList.add('group-break-with-action');
+  const wrap = document.createElement('div');
+  wrap.className = 'group-break-text';
+  while(target.firstChild) wrap.appendChild(target.firstChild);
+  target.appendChild(wrap);
+  const btn = document.createElement('button');
+  btn.id = 'compareModeToggle';
+  btn.className = 'btn-compare-toggle';
+  btn.type = 'button';
+  btn.textContent = 'เลือกแผนที่ต้องการเปรียบเทียบ';
+  btn.addEventListener('click', toggleCompareMode);
+  target.appendChild(btn);
+}
+function toggleCompareMode(){
+  compareMode = !compareMode;
+  if(!compareMode) compareSelected = [];
+  renderCompareModeUI();
+}
+function cancelCompareMode(){
+  compareMode = false;
+  compareSelected = [];
+  renderCompareModeUI();
+}
+function toggleCompareSelect(id){
+  const idx = compareSelected.indexOf(id);
+  if(idx >= 0) compareSelected.splice(idx,1);
+  else {
+    if(compareSelected.length >= COMPARE_MAX) return;
+    compareSelected.push(id);
+  }
+  renderCompareModeUI();
+}
+function renderCompareModeUI(){
+  const toggleBtn = document.getElementById('compareModeToggle');
+  if(toggleBtn){
+    toggleBtn.textContent = compareMode ? 'ปิดโหมดเปรียบเทียบ' : 'เลือกแผนที่ต้องการเปรียบเทียบ';
+    toggleBtn.classList.toggle('active', compareMode);
+  }
+  document.querySelectorAll('#page-plans .plan-card').forEach(card => {
+    const id = card.dataset.planId;
+    let box = card.querySelector('.compare-checkbox-wrap');
+    if(!compareMode){
+      card.classList.remove('compare-disabled');
+      if(box) box.remove();
+      return;
+    }
+    if(!COMPARE_SELECTABLE_IDS.includes(id)){
+      card.classList.add('compare-disabled');
+      if(box) box.remove();
+      return;
+    }
+    card.classList.remove('compare-disabled');
+    if(!box){
+      box = document.createElement('label');
+      box.className = 'compare-checkbox-wrap';
+      box.innerHTML = '<input type="checkbox"><span>เลือกเปรียบเทียบ</span>';
+      card.insertBefore(box, card.firstChild);
+      box.querySelector('input').addEventListener('change', () => toggleCompareSelect(id));
+    }
+    const checked = compareSelected.includes(id);
+    const disabledMore = !checked && compareSelected.length >= COMPARE_MAX;
+    const input = box.querySelector('input');
+    input.checked = checked;
+    input.disabled = disabledMore;
+    box.classList.toggle('disabled', disabledMore);
+  });
+  renderCompareActionBar();
+}
+function renderCompareActionBar(){
+  let bar = document.getElementById('compareActionBar');
+  if(!compareMode || compareSelected.length === 0){
+    if(bar) bar.remove();
+    return;
+  }
+  if(!bar){
+    bar = document.createElement('div');
+    bar.id = 'compareActionBar';
+    bar.className = 'compare-action-bar';
+    document.body.appendChild(bar);
+  }
+  const names = compareSelected.map(id => (COMPARE_PRODUCTS[id] && COMPARE_PRODUCTS[id].title) || id).join(' · ');
+  bar.innerHTML = `
+    <div class="compare-action-bar-inner">
+      <div class="compare-action-bar-text">เลือกแล้ว ${compareSelected.length}/${COMPARE_MAX}: ${names}</div>
+      <div class="compare-action-bar-buttons">
+        <button class="btn secondary" type="button" onclick="cancelCompareMode()">ยกเลิก</button>
+        <button class="btn" type="button" onclick="startComparePage()">เปรียบเทียบแผนที่เลือก</button>
+      </div>
+    </div>`;
+}
+function startComparePage(){
+  if(compareSelected.length === 0) return;
+  compareSelected.forEach(id => {
+    if(!compareTierByProduct[id]) compareTierByProduct[id] = COMPARE_PRODUCTS[id].defaultValue;
+  });
+  compareMode = false;
+  const bar = document.getElementById('compareActionBar');
+  if(bar) bar.remove();
+  showPage('compare');
+  renderComparePage();
+}
+function readCompareInputs(){
+  const genderEl = document.querySelector('input[name=cmp_gender]:checked');
+  const gender = genderEl ? genderEl.value : 'm';
+  const byEl = document.getElementById('cmp_birthYear');
+  const defaultBirthYear = currentBEYear() - 35;
+  const birthYear = byEl ? (parseInt(byEl.value,10) || defaultBirthYear) : defaultBirthYear;
+  const age = currentBEYear() - birthYear;
+  const occEl = document.getElementById('cmp_occClass');
+  const occClass = occEl ? occEl.value : '1';
+  return {gender, birthYear, age, occClass};
+}
+function rerenderComparePage(){ renderComparePage(); }
+function setCompareTier(id, value){ compareTierByProduct[id] = value; renderComparePage(); }
+function removeCompareColumn(id){
+  compareSelected = compareSelected.filter(x => x !== id);
+  if(compareSelected.length === 0){ showPage('plans'); return; }
+  renderComparePage();
+}
+function buildCompareBenefitRows(columns){
+  const colMaps = columns.map(col => col.product.getRows(col.tier.cfg));
+  return COMPARE_ROW_DEFS.map(def => {
+    if(def.section) return ['§'+def.section];
+    const cells = colMaps.map(m => {
+      const v = m[def.key];
+      return v === undefined ? '<span class="compare-na">ไม่มีในแผนนี้</span>' : v;
+    });
+    return [def.label, ...cells];
+  });
+}
+function renderComparePage(){
+  const el = document.getElementById('compareContent');
+  if(!el) return;
+  if(compareSelected.length === 0){
+    el.innerHTML = '<div class="content-card"><p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ กรุณากลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ที่หัวข้อสัญญาเพิ่มเติมสุขภาพ/ชดเชยรายได้</p></div>';
+    return;
+  }
+  const inputs = readCompareInputs();
+  const columns = compareSelected.map(id => {
+    const product = COMPARE_PRODUCTS[id];
+    const tierVal = compareTierByProduct[id] || product.defaultValue;
+    const tier = product.tiers.find(t => t.value === tierVal) || product.tiers[0];
+    const occKey = occKeyFor(inputs.occClass);
+    const premium = occKey ? product.getPremium(tier.cfg, inputs.gender, inputs.age, inputs.occClass, 'annual') : null;
+    return {id, product, tier, premium};
+  });
+  const summaryHtml = columns.map(col => `
+    <div class="compare-col-summary">
+      <div class="compare-col-title">${col.product.title}</div>
+      <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
+        ${col.product.tiers.map(t => `<option value="${t.value}" ${t.value===col.tier.value?'selected':''}>${t.label}</option>`).join('')}
+      </select>
+      <div class="compare-price">${col.premium != null ? fmt(col.premium)+' บาท/ปี' : 'ไม่มีอัตราเบี้ยสำหรับกลุ่มอาชีพนี้'}</div>
+      <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
+    </div>`).join('');
+  const headers = columns.map(c => c.product.title);
+  const rows = buildCompareBenefitRows(columns);
+  el.innerHTML = `
+    <div class="content-card compare-input-card">
+      <h2>เปรียบเทียบแผนประกัน</h2>
+      <p class="meta">ปรับข้อมูลผู้เอาประกันเพื่อดูเบี้ยประมาณการรายปี แล้วเลือกแผนย่อย/ทุนประกันของแต่ละแผนได้จากช่องด้านล่างแต่ละคอลัมน์</p>
+      <div class="compare-input-row">
+        <label><input type="radio" name="cmp_gender" value="m" ${inputs.gender==='m'?'checked':''} onchange="rerenderComparePage()"> ชาย</label>
+        <label><input type="radio" name="cmp_gender" value="f" ${inputs.gender==='f'?'checked':''} onchange="rerenderComparePage()"> หญิง</label>
+        <label>ปีเกิด (พ.ศ.) <input type="number" id="cmp_birthYear" value="${inputs.birthYear}" onchange="rerenderComparePage()" style="width:90px;"></label>
+        <label>กลุ่มอาชีพ
+          <select id="cmp_occClass" onchange="rerenderComparePage()">
+            <option value="1" ${inputs.occClass==='1'?'selected':''}>กลุ่มอาชีพ 1</option>
+            <option value="2" ${inputs.occClass==='2'?'selected':''}>กลุ่มอาชีพ 2</option>
+            <option value="3" ${inputs.occClass==='3'?'selected':''}>กลุ่มอาชีพ 3</option>
+            <option value="4" ${inputs.occClass==='4'?'selected':''}>กลุ่มอาชีพ 4</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="compare-columns-summary">${summaryHtml}</div>
+    ${renderBenefitTable(headers, rows, 'เบี้ยประมาณการเป็นรายปี คำนวณจากตารางเบี้ยที่เผยแพร่จริงของแต่ละแผน ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>เหมาจ่าย Extra และ Extra Care Plus รวมค่ายา/เวชภัณฑ์กลับบ้านไว้ในหมวด 2 (ไม่มีแถวแยกต่างหากแบบ D Health Lite/Elite)')}
+  `;
+}
+initComparePlanCards();
+initCompareToggle();
+
 routeFromLocation();
 </script>
 </body>
