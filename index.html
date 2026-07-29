@@ -912,6 +912,12 @@
   .compare-remove-btn{background:none;border:none;color:var(--muted);font-size:.76rem;cursor:pointer;text-decoration:underline;padding:0;}
   .compare-remove-btn:hover{color:var(--danger);}
   .compare-na{color:var(--muted);font-style:italic;}
+  .compare-col-summary.compare-col-add{
+    background:transparent;border:2px dashed #eab9cd;box-shadow:none;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .compare-col-summary.compare-col-add .compare-col-title{color:var(--muted);}
+  .compare-col-summary.compare-col-add .compare-tier-select{margin-bottom:0;}
 
   details.faq{
     border:1px solid var(--line);
@@ -5160,7 +5166,21 @@ const COMPARE_PRODUCTS = {
     tiers: DHL_COMPARE_TIERS,
     defaultValue: '5m_d0',
     getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'dhl'}, cfg), gender, age, occ, freq).premium; },
-    getRows(cfg){ return benefitRowsToMap(dhlBenefitRows(), cfg.sum === '1m' ? 0 : 1); },
+    getRows(cfg){
+      const rows = benefitRowsToMap(dhlBenefitRows(), cfg.sum === '1m' ? 0 : 1);
+      const sumBaht = cfg.sum === '1m' ? '1,000,000' : '5,000,000';
+      rows.sum_insured = `${sumBaht} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
+      if(cfg.mode === 'copay'){
+        rows.deductible = 'ไม่มี (เลือกแบบร่วมจ่าย % แทน)';
+        rows.copay_pct = cfg.copay === '9010' ? '10% ของค่ารักษาแต่ละครั้ง' : '20% ของค่ารักษาแต่ละครั้ง';
+      } else {
+        const amounts = {d0:0, d20k:20000, d50k:50000, d30k:30000, d100k:100000};
+        const amt = amounts[cfg.deduct] || 0;
+        rows.deductible = amt > 0 ? `${fmt(amt)} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง` : 'ไม่มี';
+        rows.copay_pct = 'ไม่มี';
+      }
+      return rows;
+    },
   },
   ehp: {
     title:'Elite Health Plus',
@@ -5172,7 +5192,14 @@ const COMPARE_PRODUCTS = {
     ],
     defaultValue:'20m',
     getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'ehp'}, cfg), gender, age, occ, freq).premium; },
-    getRows(cfg){ return benefitRowsToMap(eliteBenefitRows(), ['20m','40m','75m','100m'].indexOf(cfg.plan)); },
+    getRows(cfg){
+      const rows = benefitRowsToMap(eliteBenefitRows(), ['20m','40m','75m','100m'].indexOf(cfg.plan));
+      const sums = {'20m':20000000, '40m':40000000, '75m':75000000, '100m':100000000};
+      rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อปีกรมธรรม์`;
+      rows.deductible = 'ไม่มี';
+      rows.copay_pct = 'ไม่มี';
+      return rows;
+    },
   },
   maochai: {
     title:'เหมาจ่าย Extra',
@@ -5183,7 +5210,14 @@ const COMPARE_PRODUCTS = {
     ],
     defaultValue:'p2',
     getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'maochai'}, cfg), gender, age, occ, freq).premium; },
-    getRows(cfg){ return benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan)); },
+    getRows(cfg){
+      const rows = benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
+      const sums = {p1:200000, p2:200000, p3:500000};
+      rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
+      rows.deductible = 'ไม่มี';
+      rows.copay_pct = 'ไม่มี';
+      return rows;
+    },
   },
   ecp: {
     title:'Extra Care Plus',
@@ -5194,7 +5228,14 @@ const COMPARE_PRODUCTS = {
     ],
     defaultValue:'p2',
     getPremium(cfg, gender, age, occ, freq){ return healthRiderPremium(Object.assign({type:'ecp'}, cfg), gender, age, occ, freq).premium; },
-    getRows(cfg){ return benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan)); },
+    getRows(cfg){
+      const rows = benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
+      const sums = {p1:200000, p2:200000, p3:500000};
+      rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
+      rows.deductible = '20,000 บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง';
+      rows.copay_pct = 'ไม่มี';
+      return rows;
+    },
   },
   careplus: {
     title:'Care Plus',
@@ -5214,6 +5255,9 @@ const COMPARE_PRODUCTS = {
         n11: 'จ่ายตามจริง',
         advanced_imaging: 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการตรวจที่เกี่ยวข้องโดยตรงกับการรักษาตามแผนที่เลือก (มะเร็ง และ/หรือ ไตวายเรื้อรัง)</span>',
         psychiatric: '50,000 บาทต่อปี<span class="benefit-subnote">เฉพาะภายใน 5 ปีกรมธรรม์แรกนับจากปีที่เริ่มรักษา</span>',
+        sum_insured: '5,000,000 บาทต่อปีกรมธรรม์',
+        deductible: 'ไม่มี',
+        copay_pct: 'ไม่มี',
       };
       if(cfg.plan === 'cackd') rows.n9 = 'จ่ายตามจริง';
       return rows;
@@ -5230,17 +5274,25 @@ const COMPARE_PRODUCTS = {
     // Per the owner: the OPD product should populate exactly Elite's existing
     // "OPD ทั่วไป" row, not a separate row.
     getRows(cfg){
+      const amt = fmt(parseInt(cfg.plan,10));
       return {
         opd_general: cfg.kind === 'krang'
-          ? `${fmt(parseInt(cfg.plan,10))} บาทต่อครั้ง<span class="benefit-subnote">OPD รายครั้ง จำกัดสูงสุด 30 ครั้งต่อปีกรมธรรม์</span>`
-          : `${fmt(parseInt(cfg.plan,10))} บาทต่อปีกรมธรรม์<span class="benefit-subnote">OPD เหมาจ่ายรายปี ใช้ได้สูงสุด 2 ครั้งต่อวัน</span>`,
+          ? `${amt} บาทต่อครั้ง<span class="benefit-subnote">OPD รายครั้ง จำกัดสูงสุด 30 ครั้งต่อปีกรมธรรม์</span>`
+          : `${amt} บาทต่อปีกรมธรรม์<span class="benefit-subnote">OPD เหมาจ่ายรายปี ใช้ได้สูงสุด 2 ครั้งต่อวัน</span>`,
+        sum_insured: cfg.kind === 'krang' ? `${amt} บาทต่อครั้ง (สูงสุด 30 ครั้งต่อปีกรมธรรม์)` : `${amt} บาทต่อปีกรมธรรม์`,
+        deductible: 'ไม่มี',
+        copay_pct: 'ไม่มี',
       };
     },
   },
 };
 const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd'];
-const COMPARE_MAX = 3;
+const COMPARE_MAX = 4;
 const COMPARE_ROW_DEFS = [
+  {section:'วงเงินคุ้มครองและเงื่อนไขการจ่าย'},
+  {key:'sum_insured', label:'วงเงินคุ้มครอง (ต่อครั้ง/ต่อปี)'},
+  {key:'deductible', label:'ความรับผิดส่วนแรก (Deductible)'},
+  {key:'copay_pct', label:'ส่วนร่วมจ่าย (Copayment %)'},
   {section:'ผลประโยชน์หลัก (13 หมวดมาตรฐาน)'},
   {key:'n1', label:'ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)'},
   {key:'n2', label:'ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล'},
@@ -5409,7 +5461,14 @@ function rerenderComparePage(){ renderComparePage(); }
 function setCompareTier(id, value){ compareTierByProduct[id] = value; renderComparePage(); }
 function removeCompareColumn(id){
   compareSelected = compareSelected.filter(x => x !== id);
-  if(compareSelected.length === 0){ showPage('plans'); return; }
+  renderComparePage();
+}
+// Lets the owner add a plan back (or a different one) directly from the
+// compare page itself, without navigating back to /plans first.
+function addCompareColumn(id){
+  if(!id || compareSelected.includes(id) || compareSelected.length >= COMPARE_MAX) return;
+  compareSelected.push(id);
+  if(!compareTierByProduct[id]) compareTierByProduct[id] = COMPARE_PRODUCTS[id].defaultValue;
   renderComparePage();
 }
 function buildCompareBenefitRows(columns){
@@ -5423,11 +5482,29 @@ function buildCompareBenefitRows(columns){
     return [def.label, ...cells];
   });
 }
+function renderCompareAddSlot(){
+  const availableToAdd = COMPARE_SELECTABLE_IDS.filter(id => !compareSelected.includes(id));
+  if(compareSelected.length >= COMPARE_MAX || availableToAdd.length === 0) return '';
+  return `
+    <div class="compare-col-summary compare-col-add">
+      <div class="compare-col-title">+ เพิ่มแผนเปรียบเทียบ</div>
+      <select class="compare-tier-select" onchange="addCompareColumn(this.value); this.value='';">
+        <option value="">เลือกแผน...</option>
+        ${availableToAdd.map(id => `<option value="${id}">${COMPARE_PRODUCTS[id].title}</option>`).join('')}
+      </select>
+    </div>`;
+}
 function renderComparePage(){
   const el = document.getElementById('compareContent');
   if(!el) return;
   if(compareSelected.length === 0){
-    el.innerHTML = '<div class="content-card"><p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ กรุณากลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ที่หัวข้อสัญญาเพิ่มเติมสุขภาพ/ชดเชยรายได้</p></div>';
+    el.innerHTML = `
+      <div class="content-card">
+        <h2>เปรียบเทียบแผนประกัน</h2>
+        <p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ เลือกแผนแรกได้จากช่องด้านล่าง (หรือกลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ก็ได้)</p>
+      </div>
+      <div class="compare-columns-summary">${renderCompareAddSlot()}</div>
+    `;
     return;
   }
   const inputs = readCompareInputs();
@@ -5447,13 +5524,13 @@ function renderComparePage(){
       </select>
       <div class="compare-price">${col.premium != null ? fmt(col.premium)+' บาท/ปี' : 'ไม่มีอัตราเบี้ยสำหรับกลุ่มอาชีพนี้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
-    </div>`).join('');
+    </div>`).join('') + renderCompareAddSlot();
   const headers = columns.map(c => c.product.title);
   const rows = buildCompareBenefitRows(columns);
   el.innerHTML = `
     <div class="content-card compare-input-card">
       <h2>เปรียบเทียบแผนประกัน</h2>
-      <p class="meta">ปรับข้อมูลผู้เอาประกันเพื่อดูเบี้ยประมาณการรายปี แล้วเลือกแผนย่อย/ทุนประกันของแต่ละแผนได้จากช่องด้านล่างแต่ละคอลัมน์</p>
+      <p class="meta">ปรับข้อมูลผู้เอาประกันเพื่อดูเบี้ยประมาณการรายปี แล้วเลือกแผนย่อย/ทุนประกันของแต่ละแผนได้จากช่องด้านล่างแต่ละคอลัมน์ เพิ่ม/เอาแผนออกได้เลยจากหน้านี้ ไม่ต้องกลับไปหน้ารายการแผน</p>
       <div class="compare-input-row">
         <label><input type="radio" name="cmp_gender" value="m" ${inputs.gender==='m'?'checked':''} onchange="rerenderComparePage()"> ชาย</label>
         <label><input type="radio" name="cmp_gender" value="f" ${inputs.gender==='f'?'checked':''} onchange="rerenderComparePage()"> หญิง</label>
