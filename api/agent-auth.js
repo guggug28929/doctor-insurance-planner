@@ -1,13 +1,15 @@
 // Vercel Serverless Function: /api/agent-auth
 // Google Sign-In for the agent-only reply-template app (/agent.html)
 //   GET    -> public config + current session (if any) + saved settings
-//   POST   -> verify Google ID token, check allowlist, issue session cookie
+//   POST   -> verify Google ID token, register/refresh the user, issue session cookie
 //   DELETE -> sign out
-// Required env: GOOGLE_CLIENT_ID, AGENT_ALLOWED_EMAILS, AGENT_SESSION_SECRET
+// Access model: anyone with a Google account may sign in. The first sign-in is recorded
+// and (optionally) emailed to the admin, who can block the account afterwards.
+// Required env: GOOGLE_CLIENT_ID, AGENT_SESSION_SECRET
+// Optional env: AGENT_ADMIN_EMAILS (falls back to AGENT_ALLOWED_EMAILS), RESEND_API_KEY, RESEND_FROM
 
 import {
   SESSION_COOKIE,
-  PREFS_COOKIE,
   SESSION_MAX_AGE,
   emptySettings,
   signPayload,
@@ -15,10 +17,15 @@ import {
   appendCookie,
   readSession,
   readPrefsCookie,
-  allowlistConfigured,
-  isAllowedEmail,
+  adminConfigured,
+  isAdminEmail,
+  adminEmails,
   storageAvailable,
   loadSettings,
+  getUser,
+  touchUser,
+  notifyConfigured,
+  notifyNewUser,
 } from '../lib/agent-store.js';
 
 const TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
@@ -33,8 +40,9 @@ function configState() {
   return {
     clientId: !!process.env.GOOGLE_CLIENT_ID,
     sessionSecret: !!process.env.AGENT_SESSION_SECRET,
-    allowlist: allowlistConfigured(),
+    admin: adminConfigured(),
     serverStorage: storageAvailable(),
+    emailNotify: notifyConfigured(),
   };
 }
 
@@ -98,12 +106,24 @@ export default async function handler(req, res) {
         config,
       });
     }
+    // Blocking takes effect on the next page load, not only at sign-in.
+    const record = await getUser(session.email);
+    if (record && record.blocked) {
+      appendCookie(res, buildCookie(SESSION_COOKIE, '', 0));
+      return json(res, 200, {
+        signedIn: false,
+        clientId: process.env.GOOGLE_CLIENT_ID || '',
+        blocked: true,
+        config,
+      });
+    }
     const settings = await settingsFor(req, session.email);
     return json(res, 200, {
       signedIn: true,
       email: session.email,
       name: session.name || '',
       picture: session.picture || '',
+      isAdmin: isAdminEmail(session.email),
       settings,
       config,
     });
@@ -128,13 +148,6 @@ export default async function handler(req, res) {
       config,
     });
   }
-  if (!config.allowlist) {
-    return json(res, 500, {
-      error: 'ยังไม่ได้กำหนดรายชื่ออีเมลตัวแทน',
-      detail: 'ต้องตั้ง AGENT_ALLOWED_EMAILS ใน Vercel ก่อน',
-      config,
-    });
-  }
 
   const credential = req.body?.credential;
   if (typeof credential !== 'string' || credential.length < 20 || credential.length > 4000) {
@@ -146,12 +159,19 @@ export default async function handler(req, res) {
     return json(res, result.status, { error: result.message });
   }
 
-  if (!isAllowedEmail(result.email)) {
+  const { record, isNew } = await touchUser(result.email, result.name);
+
+  if (record.blocked) {
     return json(res, 403, {
-      error: 'บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน',
-      detail: `อีเมลที่ใช้เข้าสู่ระบบคือ ${result.email} — ให้ผู้ดูแลเพิ่มอีเมลนี้ใน AGENT_ALLOWED_EMAILS`,
-      email: result.email,
+      error: 'บัญชีนี้ถูกปิดสิทธิ์การใช้งาน',
+      detail: 'หากคิดว่าเป็นความผิดพลาด กรุณาติดต่อผู้ดูแล',
     });
+  }
+
+  if (isNew) {
+    // Fire-and-forget: a failed notification must not block the sign-in.
+    notifyNewUser({ email: result.email, name: result.name, firstSeen: record.firstSeen }, adminEmails())
+      .catch((error) => console.error('notifyNewUser rejected', error));
   }
 
   const session = {
@@ -169,6 +189,8 @@ export default async function handler(req, res) {
     email: result.email,
     name: result.name,
     picture: result.picture,
+    isAdmin: isAdminEmail(result.email),
+    isNew,
     settings,
     config,
   });
