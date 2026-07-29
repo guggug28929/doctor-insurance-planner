@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check api/line-webhook.js && node --check api/line-agent.js && node --check api/premium-quote.js && node --check api/insurance-chat.js && node --check api/insurance-plan.js",
+    "check": "node --check api/line-webhook.js && node --check api/line-agent.js && node --check api/premium-quote.js && node --check api/insurance-chat.js && node --check api/insurance-plan.js && node --check api/agent-auth.js && node --check api/agent-settings.js && node --check lib/agent-store.js",
     "test": "node --test"
   },
   "engines": {

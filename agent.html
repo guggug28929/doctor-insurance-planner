@@ -191,18 +191,12 @@ header.top{
 <div id="gate">
   <div class="gate-card">
     <h1>ชุดข้อความตัวแทน</h1>
-    <p class="sub">หน้านี้สำหรับตัวแทนเท่านั้น กรุณาใส่รหัสเข้าใช้งาน</p>
-    <div class="field">
-      <label>รหัสเข้าใช้งาน</label>
-      <input type="password" id="gateCode" autocomplete="off" inputmode="text" placeholder="รหัสจากผู้ดูแล">
+    <p class="sub">หน้านี้สำหรับตัวแทนเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชี Google ที่ได้รับสิทธิ์</p>
+    <div id="gsiBtn" style="display:flex;justify-content:center;min-height:44px;"></div>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="hint" id="gateHint" style="margin-top:14px;color:var(--muted);font-size:12px;line-height:1.55;">
+      เข้าสู่ระบบครั้งเดียว ระบบจะจำบัญชีไว้ 90 วัน และดึงค่าที่ตั้งไว้ (ชื่อ เบอร์ อีเมล) มาจากเซิร์ฟเวอร์ให้อัตโนมัติทุกเครื่อง
     </div>
-    <div class="gate-err" id="gateErr">รหัสไม่ถูกต้อง</div>
-    <div class="field">
-      <label>ชื่อที่ใช้แนะนำตัวกับลูกค้า</label>
-      <input type="text" id="gateName" placeholder="เช่น หมอกึ๊ก">
-      <div class="hint">ระบบจะแทนชื่อนี้ลงในข้อความให้อัตโนมัติ แก้ไขภายหลังได้ที่ปุ่มตั้งค่า</div>
-    </div>
-    <button class="btn" onclick="doUnlock()">เข้าใช้งาน</button>
   </div>
 </div>
 
@@ -238,7 +232,7 @@ header.top{
 <div id="settings" onclick="if(event.target===this)closeSettings()">
   <div class="sheet">
     <h2>ตั้งค่าตัวแทน</h2>
-    <p class="sub">ข้อมูลนี้เก็บไว้ในเครื่องของคุณเท่านั้น และจะถูกแทนลงในข้อความอัตโนมัติ</p>
+    <p class="sub" id="setSub">ข้อมูลนี้ผูกกับบัญชี Google ของคุณ บันทึกอัตโนมัติ และใช้ได้ทุกเครื่อง</p>
     <div class="field">
       <label>ชื่อที่ใช้แนะนำตัว</label>
       <input type="text" id="setName" placeholder="เช่น หมอกึ๊ก">
@@ -264,9 +258,10 @@ header.top{
       <input type="text" id="setSite" placeholder="www.doctor-insurance.com">
     </div>
     <div class="act-row">
-      <button class="btn ghost" onclick="lockOut()">ออกจากระบบ</button>
-      <button class="btn" onclick="saveSettings()">บันทึก</button>
+      <button class="btn ghost" onclick="signOut()">ออกจากบัญชี</button>
+      <button class="btn" onclick="saveSettings(true)">เสร็จสิ้น</button>
     </div>
+    <div class="hint" id="syncNote" style="margin-top:10px;text-align:center;">&nbsp;</div>
   </div>
 </div>
 
@@ -274,15 +269,19 @@ header.top{
 
 <script>
 /* =========================================================
-   1) ACCESS CODE — เปลี่ยนรหัสตรงนี้ได้เลย
-   หมายเหตุ: นี่เป็นการ "ปิดไม่ให้คนทั่วไปเจอ" ไม่ใช่ระบบความปลอดภัยระดับสูง
-   ใครที่เปิดซอร์สโค้ดหน้าเว็บดูจะเห็นรหัสได้ จึงไม่ควรใส่ข้อมูลลับลูกค้าในหน้านี้
+   เข้าสู่ระบบด้วย Google + เก็บค่าตั้งค่าไว้บนเซิร์ฟเวอร์
+   ฝั่งเซิร์ฟเวอร์: /api/agent-auth และ /api/agent-settings
+   ต้องตั้ง env ใน Vercel: GOOGLE_CLIENT_ID, AGENT_ALLOWED_EMAILS, AGENT_SESSION_SECRET
    ========================================================= */
-const ACCESS_CODE = 'mtl-agent';
+const AUTH_URL = '/api/agent-auth';
+const SETTINGS_URL = '/api/agent-settings';
 
 /* ================= state ================= */
-const LS = 'agentReplyKit.v1';
+const LS = 'agentReplyKit.v1';   // แคชในเครื่อง เพื่อให้เปิดมาเห็นค่าทันทีก่อนเซิร์ฟเวอร์ตอบ
+const SETTING_KEYS = ['name','line','fb','tel','mail','site'];
 let S = {name:'', line:'', fb:'', tel:'', mail:'', site:'www.doctor-insurance.com'};
+let ME = null;                   // {email, name, picture}
+let serverStorage = false;
 let activeCat = 'all';
 let optState = {};   // {templateId: {optKey: value}}
 
@@ -294,6 +293,46 @@ function loadState(){
 }
 function saveState(){
   try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){}
+}
+function applyServerSettings(settings){
+  if(!settings) return;
+  let any = false;
+  SETTING_KEYS.forEach(k => {
+    if(typeof settings[k] === 'string' && settings[k].trim()){ S[k] = settings[k]; any = true; }
+  });
+  if(!S.site) S.site = 'www.doctor-insurance.com';
+  if(any) saveState();
+}
+
+/* บันทึกขึ้นเซิร์ฟเวอร์แบบหน่วงเวลา ไม่ต้องกดปุ่มบันทึก */
+let syncTimer = null;
+function scheduleSync(){
+  clearTimeout(syncTimer);
+  setSyncNote('กำลังบันทึก…');
+  syncTimer = setTimeout(pushSettings, 700);
+}
+async function pushSettings(){
+  const payload = {};
+  SETTING_KEYS.forEach(k => { payload[k] = S[k] || ''; });
+  try{
+    const r = await fetch(SETTINGS_URL, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body: JSON.stringify({settings: payload})
+    });
+    if(r.status === 401){ setSyncNote('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'); return; }
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){ setSyncNote(data.error || 'บันทึกขึ้นเซิร์ฟเวอร์ไม่สำเร็จ'); return; }
+    serverStorage = !!data.serverStorage;
+    setSyncNote(serverStorage ? 'บันทึกแล้ว ใช้ได้ทุกเครื่อง' : 'บันทึกแล้ว (เก็บในคุกกี้ของเบราว์เซอร์นี้)');
+  }catch(e){
+    setSyncNote('ออฟไลน์อยู่ — บันทึกในเครื่องไว้ก่อน');
+  }
+}
+function setSyncNote(msg){
+  const el = document.getElementById('syncNote');
+  if(el) el.textContent = msg;
 }
 
 /* ================= helpers ================= */
@@ -962,50 +1001,125 @@ function setCat(k){
 }
 
 /* ================= settings ================= */
+const FIELD_MAP = {setName:'name', setLine:'line', setFb:'fb', setTel:'tel', setMail:'mail', setSite:'site'};
+
 function openSettings(){
-  document.getElementById('setName').value = S.name || '';
-  document.getElementById('setLine').value = S.line || '';
-  document.getElementById('setFb').value   = S.fb   || '';
-  document.getElementById('setTel').value  = S.tel  || '';
-  document.getElementById('setMail').value = S.mail || '';
-  document.getElementById('setSite').value = S.site || '';
+  Object.keys(FIELD_MAP).forEach(id => {
+    document.getElementById(id).value = S[FIELD_MAP[id]] || '';
+  });
+  setSyncNote(serverStorage ? 'บันทึกอัตโนมัติ ใช้ได้ทุกเครื่อง' : 'บันทึกอัตโนมัติ');
   document.getElementById('settings').classList.add('show');
 }
-function closeSettings(){ document.getElementById('settings').classList.remove('show'); }
-function saveSettings(){
-  S.name = document.getElementById('setName').value.trim();
-  S.line = document.getElementById('setLine').value.trim();
-  S.fb   = document.getElementById('setFb').value.trim();
-  S.tel  = document.getElementById('setTel').value.trim();
-  S.mail = document.getElementById('setMail').value.trim();
-  S.site = document.getElementById('setSite').value.trim() || 'www.doctor-insurance.com';
+function closeSettings(){
+  saveSettings(false);
+  document.getElementById('settings').classList.remove('show');
+}
+function collectSettings(){
+  Object.keys(FIELD_MAP).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) S[FIELD_MAP[id]] = el.value.trim();
+  });
+  if(!S.site) S.site = 'www.doctor-insurance.com';
   saveState();
   document.getElementById('whoami').textContent = S.name ? `ตัวแทน: ${S.name}` : 'ยังไม่ได้ตั้งชื่อตัวแทน';
-  closeSettings();
   render();
-  toast('บันทึกแล้ว');
 }
-function lockOut(){
-  try{ sessionStorage.removeItem(LS+'.ok'); }catch(e){}
+function saveSettings(close){
+  collectSettings();
+  clearTimeout(syncTimer);
+  pushSettings();
+  if(close){
+    document.getElementById('settings').classList.remove('show');
+    toast('บันทึกแล้ว');
+  }
+}
+async function signOut(){
+  try{ await fetch(AUTH_URL, {method:'DELETE', credentials:'same-origin'}); }catch(e){}
+  try{ localStorage.removeItem(LS); }catch(e){}
   location.reload();
 }
 
-/* ================= gate ================= */
-function doUnlock(){
-  const code = document.getElementById('gateCode').value.trim();
-  if(code !== ACCESS_CODE){
-    document.getElementById('gateErr').style.display = 'block';
-    return;
+/* ================= google sign-in ================= */
+function gateError(msg, detail){
+  const el = document.getElementById('gateErr');
+  el.innerHTML = detail ? `${esc(msg)}<br><span style="color:var(--muted);font-weight:400;">${esc(detail)}</span>` : esc(msg);
+  el.style.display = msg ? 'block' : 'none';
+}
+function gateHint(msg){
+  const el = document.getElementById('gateHint');
+  if(el) el.textContent = msg;
+}
+
+window.onGoogleCredential = async function(response){
+  gateError('');
+  gateHint('กำลังตรวจสอบสิทธิ์…');
+  try{
+    const r = await fetch(AUTH_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body: JSON.stringify({credential: response.credential})
+    });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok || !data.signedIn){
+      gateError(data.error || 'เข้าสู่ระบบไม่สำเร็จ', data.detail || '');
+      gateHint('');
+      return;
+    }
+    enterApp(data);
+  }catch(e){
+    gateError('ติดต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่');
+    gateHint('');
   }
-  const nm = document.getElementById('gateName').value.trim();
-  if(nm){ S.name = nm; saveState(); }
-  try{ sessionStorage.setItem(LS+'.ok','1'); }catch(e){}
+};
+
+function loadGoogleScript(clientId){
+  const start = () => {
+    if(!window.google || !google.accounts || !google.accounts.id){
+      gateError('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ');
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: window.onGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+    google.accounts.id.renderButton(document.getElementById('gsiBtn'), {
+      theme:'filled_blue', size:'large', shape:'pill', text:'signin_with', width:300, locale:'th'
+    });
+  };
+  if(window.google && window.google.accounts) return start();
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true; s.defer = true;
+  s.onload = start;
+  s.onerror = () => gateError('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต');
+  document.head.appendChild(s);
+}
+
+function showSetupNeeded(config){
+  const missing = [];
+  if(!config || !config.clientId) missing.push('GOOGLE_CLIENT_ID');
+  if(!config || !config.sessionSecret) missing.push('AGENT_SESSION_SECRET');
+  if(!config || !config.allowlist) missing.push('AGENT_ALLOWED_EMAILS');
+  gateError('ยังตั้งค่าเซิร์ฟเวอร์ไม่ครบ', 'ต้องเพิ่ม environment variable ใน Vercel: ' + missing.join(', ') + ' แล้ว Redeploy');
+  gateHint('');
+}
+
+function enterApp(data){
+  ME = {email:data.email, name:data.name, picture:data.picture};
+  serverStorage = !!(data.config && data.config.serverStorage);
+  applyServerSettings(data.settings);
   showApp();
 }
+
 function showApp(){
   document.getElementById('gate').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('whoami').textContent = S.name ? `ตัวแทน: ${S.name}` : 'ยังไม่ได้ตั้งชื่อตัวแทน';
+  document.getElementById('whoami').textContent = S.name
+    ? `ตัวแทน: ${S.name}`
+    : (ME && ME.email ? ME.email : 'ยังไม่ได้ตั้งชื่อตัวแทน');
   renderChips();
   render();
 }
@@ -1013,12 +1127,24 @@ function showApp(){
 /* ================= boot ================= */
 loadState();
 initOpts();
-document.getElementById('gateName').value = S.name || '';
-document.getElementById('gateCode').addEventListener('keydown', e => { if(e.key === 'Enter') doUnlock(); });
-document.getElementById('gateName').addEventListener('keydown', e => { if(e.key === 'Enter') doUnlock(); });
-try{
-  if(sessionStorage.getItem(LS+'.ok') === '1') showApp();
-}catch(e){}
+
+Object.keys(FIELD_MAP).forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', () => { collectSettings(); scheduleSync(); });
+});
+
+(async function boot(){
+  try{
+    const r = await fetch(AUTH_URL, {credentials:'same-origin'});
+    const data = await r.json().catch(()=>({}));
+    if(data.signedIn){ enterApp(data); return; }
+    if(!data.clientId){ showSetupNeeded(data.config); return; }
+    serverStorage = !!(data.config && data.config.serverStorage);
+    loadGoogleScript(data.clientId);
+  }catch(e){
+    gateError('ติดต่อเซิร์ฟเวอร์ไม่ได้', 'ถ้าเพิ่งอัปโหลดไฟล์ ให้รอ Vercel deploy เสร็จแล้วรีเฟรชอีกครั้ง');
+  }
+})();
 </script>
 </body>
 </html>
