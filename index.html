@@ -857,6 +857,46 @@
   .plan-card .meta{font-size:.76rem;color:var(--muted);margin-top:8px;}
 
   /* ---- Plan compare feature ---- */
+  .adv-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .adv-tab{flex:1;min-width:120px;padding:11px 14px;border-radius:11px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-weight:600;font-size:.88rem;cursor:pointer;transition:all .15s;}
+  .adv-tab:hover{border-color:#eab9cd;}
+  .adv-tab.active{background:#7d1f3d;color:#fff;border-color:#7d1f3d;}
+  .adv-summary{background:#fbf6f8;border:1px dashed #eab9cd;border-radius:11px;padding:12px 14px;font-size:.85rem;line-height:1.6;margin:14px 0;}
+  .adv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
+  .adv-card{border:1.5px solid var(--line);border-radius:13px;padding:14px;background:#fff;position:relative;}
+  .adv-card-top{border-color:#7d1f3d;box-shadow:0 3px 14px rgba(125,31,61,.10);}
+  .adv-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:999px;background:#7d1f3d;color:#fff;margin-bottom:8px;}
+  .adv-badge-2{background:#f0dae2;color:#7d1f3d;}
+  .adv-card h3{margin:0 0 3px;font-size:1rem;line-height:1.35;}
+  .adv-sub{margin:0 0 10px;font-size:.75rem;color:var(--muted);}
+  .adv-nums{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-bottom:10px;}
+  .adv-nums div{display:flex;justify-content:space-between;gap:6px;font-size:.78rem;border-bottom:1px dotted #f0dae2;padding-bottom:3px;}
+  .adv-nums span{color:var(--muted);}
+  .adv-nums b{color:#7d1f3d;white-space:nowrap;}
+  .adv-why{margin:0 0 12px;padding-left:18px;font-size:.76rem;line-height:1.6;color:var(--ink,#2b2028);}
+  .adv-why li{margin-bottom:3px;}
+  .adv-actions{display:flex;flex-direction:column;gap:7px;}
+  .adv-others{margin:0;padding-left:18px;font-size:.79rem;line-height:1.75;}
+  .pension-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px;}
+  .pf-row label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  .pf-row select,.pf-row input{width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;font-size:.85rem;}
+  .pension-warn{background:#fdeef1;border:1px solid #f0c2ce;color:#a3243f;padding:10px 12px;border-radius:9px;font-size:.82rem;margin:10px 0;}
+  .pension-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0;}
+  .pension-card{background:#fbf6f8;border:1px solid var(--line);border-radius:11px;padding:11px 12px;}
+  .pension-card .pc-label{font-size:.72rem;color:var(--muted);}
+  .pension-card .pc-value{font-size:1.02rem;font-weight:700;color:var(--brand,#7d1f3d);margin:2px 0;line-height:1.3;word-break:break-word;}
+  .pension-card .pc-note{font-size:.68rem;color:var(--muted);line-height:1.35;}
+  .pension-h4{margin:20px 0 8px;font-size:.95rem;}
+  .pension-hint{font-size:.75rem;color:var(--muted);line-height:1.6;margin:8px 0;}
+  .pension-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;}
+  .pension-table{border-collapse:collapse;width:100%;min-width:520px;font-size:.78rem;}
+  .pension-table th{position:sticky;top:0;background:#7d1f3d;color:#fff;padding:8px 10px;text-align:right;white-space:nowrap;font-weight:600;z-index:1;}
+  .pension-table th:first-child{text-align:center;}
+  .pension-table td{padding:6px 10px;text-align:right;border-bottom:1px solid #f2e6ea;white-space:nowrap;}
+  .pension-table td:first-child{text-align:center;font-weight:600;}
+  .pension-table tr.pension-row-get{background:#fdf7f9;}
+  .pension-table .pension-pos{color:#1c7a4f;font-weight:600;}
+  .pension-table .pension-neg{color:#b3243f;}
   .group-break.group-break-with-action{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
   .group-break-text{flex:1;min-width:220px;}
   .btn-compare-toggle{
@@ -1125,6 +1165,12 @@
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
+        <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
+      </div>
+      <div id="pensionMainWrap" class="hidden" style="margin-top:10px;">
+        <label class="first">เลือกแบบบำนาญ</label>
+        <select id="pensionMainSelect" onchange="onPensionMainChange()"></select>
+        <div class="hint" id="pensionMainHint"></div>
       </div>
       <label>ทุนประกัน (บาท)</label>
       <input type="number" id="mainCapital" value="200000" step="10000" min="50000">
@@ -1352,6 +1398,71 @@
 <!-- ============ PAGE: AI PLANNER ============ -->
 <div id="page-ai" class="page">
 <div class="wrap">
+  <div class="adv-tabs">
+    <button id="advTabBtn-health" class="adv-tab active" onclick="setAdvisorTab('health')">ประกันสุขภาพ</button>
+    <button id="advTabBtn-life" class="adv-tab" onclick="setAdvisorTab('life')">ประกันชีวิต</button>
+    <button id="advTabBtn-pension" class="adv-tab" onclick="setAdvisorTab('pension')">ประกันบำนาญ</button>
+  </div>
+
+  <div id="advTab-life" style="display:none;">
+    <div class="content-card">
+      <h2>ผู้ช่วยออกแบบประกันชีวิต</h2>
+      <p style="color:var(--muted);">ส่วนนี้กำลังพัฒนา จะเปิดใช้งานเร็วๆ นี้ ระหว่างนี้ดูแบบประกันชีวิตทั้งหมดได้ที่หน้ารายการแผน หรือใช้เครื่องคำนวณเบี้ยได้เลย</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button class="btn" style="width:auto;padding:9px 16px;font-size:.85rem;" onclick="showPage('plans')">ดูแบบประกันชีวิตทั้งหมด</button>
+        <button class="btn secondary" style="width:auto;padding:9px 16px;font-size:.85rem;" onclick="showPage('calc')">ไปหน้าคำนวณเบี้ย</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="advTab-pension" style="display:none;">
+    <div class="content-card">
+      <h2>ผู้ช่วยออกแบบประกันบำนาญ</h2>
+      <p style="color:var(--muted);">บอกอายุที่อยากเกษียณ กับเงินบำนาญที่อยากได้ต่อเดือน (หรือจะบอกงบต่อปีแทนก็ได้) ระบบจะคัด 3 แบบที่เหมาะที่สุดจากทั้ง 8 แบบ พร้อมบอกผลตอบแทน จุดคุ้มทุน และภาษีที่ประหยัดได้</p>
+      <div class="pension-form" style="margin-top:14px;">
+        <div class="pf-row"><label>เพศ</label>
+          <select onchange="setPensionAdvisorField('gender',this.value)">
+            <option value="male">ชาย</option><option value="female">หญิง</option>
+          </select></div>
+        <div class="pf-row"><label>ปี พ.ศ. เกิด</label>
+          <input type="number" id="pa_birthYear" onchange="setPensionAdvisorField('birthYear',this.value)"></div>
+        <div class="pf-row"><label>อยากเริ่มรับบำนาญตอนอายุ</label>
+          <select onchange="setPensionAdvisorField('startAge',this.value)">
+            <option value="55">55 ปี</option><option value="60" selected>60 ปี</option><option value="65">65 ปี</option>
+          </select></div>
+        <div class="pf-row"><label>รูปแบบการชำระเบี้ย</label>
+          <select onchange="setPensionAdvisorField('payStyle',this.value)">
+            <option value="any" selected>แบบไหนก็ได้</option>
+            <option value="single">จ่ายครั้งเดียวจบ</option>
+            <option value="short">จ่ายสั้น 5 ปี</option>
+            <option value="long">จ่ายยาวถึงก่อนเกษียณ</option>
+          </select></div>
+        <div class="pf-row"><label>ระบุจาก</label>
+          <select onchange="setPensionAdvisorField('mode',this.value)">
+            <option value="pension" selected>เงินบำนาญที่ต้องการ</option>
+            <option value="budget">งบประมาณต่อปี</option>
+          </select></div>
+        <div class="pf-row" id="pa_wantRow"><label>อยากได้บำนาญ</label>
+          <div style="display:flex;gap:6px;">
+            <input type="number" step="1000" value="20000" style="flex:1;" onchange="setPensionAdvisorField('wantPerMonth',this.value)">
+            <select style="width:auto;" onchange="setPensionAdvisorField('wantUnit',this.value)">
+              <option value="month">บาท/เดือน</option><option value="year">บาท/ปี</option>
+            </select>
+          </div></div>
+        <div class="pf-row" id="pa_budgetRow" style="display:none;"><label>งบต่อปี (บาท)</label>
+          <input type="number" step="1000" value="60000" onchange="setPensionAdvisorField('budget',this.value)"></div>
+        <div class="pf-row"><label>ต้องแนบสัญญาสุขภาพด้วยไหม</label>
+          <select onchange="setPensionAdvisorField('needRider',this.value)">
+            <option value="no" selected>ไม่จำเป็น</option><option value="yes">ต้องแนบได้</option>
+          </select></div>
+        <div class="pf-row"><label>ฐานภาษี</label>
+          <select id="pa_tax" onchange="setPensionAdvisorField('tax',this.value)"></select></div>
+      </div>
+      <div id="pensionAdvisorResult" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <div id="advTab-health">
   <div class="content-card">
     <h2>ผู้ช่วยออกแบบแผนประกันสุขภาพ</h2>
     <p style="color:var(--muted);">โหมดนี้ออกแบบให้เหมือนตัวแทน AI ที่ถามเฉพาะเรื่องจำเป็นสำหรับลูกค้าส่วนใหญ่: ต้องการวงเงิน IPD เท่าไหร่, ต้องการ OPD มากน้อยแค่ไหน, มีสวัสดิการเดิมหรือไม่, รับความเสี่ยง Deductible/Co-pay ได้ไหม และต้องการทุนโรคร้ายแรงประมาณเท่าไหร่ แล้วระบบจะเสนอ 3 ทางเลือกพร้อมเบี้ยปีแรกโดยประมาณ</p>
@@ -1447,6 +1558,7 @@
   </div>
 
   <div id="aiPlannerOutput"></div>
+</div>
 </div>
 </div>
 
@@ -1782,6 +1894,104 @@
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('pa')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div class="group-break group-break-with-action"><div class="group-break-text"><h2>ประกันชีวิตแบบบำนาญ</h2><p>เปลี่ยนเงินออมวันนี้ให้เป็นรายรับประจำหลังเกษียณ เลือกอายุเริ่มรับบำนาญและระยะจ่ายเบี้ยได้ ทุกแบบยกเว้นแฮปปี้ รีไทร์ 60 ใช้สิทธิลดหย่อนภาษีกลุ่มบำนาญได้สูงสุด 300,000 บาท — ทุกหน้ามีเครื่องคำนวณเบี้ย ตารางบำนาญรายปี ผลตอบแทน IRR และภาษีที่ประหยัดได้</p></div><button class="btn-compare-toggle" onclick="showPage('pension-compare')">เปรียบเทียบแบบบำนาญ</button></div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญขั้นบันได</div>
+      <h3>เฟล็กซี่ รีไทร์ 9055 / 9060 / 9065</h3>
+      <p class="meta">อายุรับ 20 – 60 ปี • เริ่มรับบำนาญ 55 / 60 / 65 ปี • ชำระเบี้ยถึงก่อนเกษียณ</p>
+      <ul>
+        <li>บำนาญเพิ่มขึ้นเป็นขั้นบันได 12% ไปถึง 24% ต่อปี รับยาวถึงอายุ 90 ปี</li>
+        <li>เลือกรับบำนาญรายปีหรือรายเดือน และผ่อนเบี้ยได้ถึงรายเดือน</li>
+        <li>แนบสัญญาเพิ่มเติมสุขภาพ/โรคร้ายแรงได้</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('flexi_retire_90xx')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญขั้นบันได • จ่ายครั้งเดียว</div>
+      <h3>เฟล็กซี่ รีไทร์ 90/1 ดี55 / ดี60 / ดี65</h3>
+      <p class="meta">อายุรับ 20 – 60 ปี • ชำระเบี้ยครั้งเดียวจบ</p>
+      <ul>
+        <li>บำนาญขั้นบันไดเหมือนตระกูลเดียวกัน แต่ปิดภาระตั้งแต่ปีแรก</li>
+        <li>เหมาะกับคนมีเงินก้อน โบนัส หรือเงินจากการขายทรัพย์สิน</li>
+        <li>ข้อจำกัด: แนบสัญญาเพิ่มเติมไม่ได้</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('flexi_retire_90_1')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญขั้นบันได • จ่ายสั้น 5 ปี</div>
+      <h3>เฟล็กซี่ รีไทร์ 90/5 ดี55 / ดี60 / ดี65</h3>
+      <p class="meta">อายุรับ 20 – 55 ปี • ชำระเบี้ย 5 ปี</p>
+      <ul>
+        <li>ทางสายกลางระหว่างจ่ายครั้งเดียวกับจ่ายยาว</li>
+        <li>บำนาญขั้นบันได 12% ถึง 24% ต่อปี ถึงอายุ 90 ปี</li>
+        <li>ปิดภาระเร็วโดยไม่ต้องเตรียมเงินก้อนใหญ่ทีเดียว</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('flexi_retire_90_5')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญ + ทุนชีวิตสูง</div>
+      <h3>เมืองไทย 8555 จี20 <span class="badge-best">บำนาญสูงสุดปีละ 24%</span></h3>
+      <p class="meta">อายุรับ 20 – 50 ปี • เริ่มรับบำนาญ 55 ปี ถึง 85 ปี</p>
+      <ul>
+        <li>บำนาญคงที่ปีละ 24% ของทุนประกัน สูงที่สุดในกลุ่ม</li>
+        <li>คุ้มครองชีวิตก่อนเกษียณสูงสุด 600% ของทุนประกัน</li>
+        <li>รับรองการจ่ายบำนาญ 20 ปีแรก เสียชีวิตก่อนครบได้เงินส่วนที่เหลือ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_8555_g20')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญ + ทุนชีวิตสูง</div>
+      <h3>เมืองไทย 8560 จี15</h3>
+      <p class="meta">อายุรับ 20 – 55 ปี • เริ่มรับบำนาญ 60 ปี ถึง 85 ปี</p>
+      <ul>
+        <li>บำนาญคงที่ปีละ 12% ของทุนประกัน</li>
+        <li>คุ้มครองชีวิตก่อนเกษียณเพิ่มขึ้นตามอายุ สูงสุด 250% ของทุนประกัน</li>
+        <li>รับรองการจ่ายบำนาญ 15 ปีแรก</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_8560_g15')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญ • จ่ายครั้งเดียว</div>
+      <h3>เมืองไทย 9901 ดี65</h3>
+      <p class="meta">อายุรับ 30 วัน – 60 ปี • เริ่มรับบำนาญ 65 ปี ถึง 99 ปี</p>
+      <ul>
+        <li>ชำระเบี้ยครั้งเดียว รับบำนาญปีละ 12% ยาวถึงอายุ 99 ปี</li>
+        <li>บำนาญรวมตลอดสัญญาสูงสุด 420% ของทุนประกัน</li>
+        <li>ทำให้ลูกหลานตั้งแต่แรกเกิดได้ เพราะรับตั้งแต่อายุ 30 วัน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_9901_d65')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">บำนาญสำหรับวัยเกษียณ</div>
+      <h3>เมืองไทย 8501</h3>
+      <p class="meta">อายุรับ 55 – 70 ปี • ชำระเบี้ยครั้งเดียว รับบำนาญถึงอายุ 85 ปี</p>
+      <ul>
+        <li>แบบเดียวในกลุ่มที่รับทำถึงอายุ 70 ปี</li>
+        <li>ทำปีนี้ เริ่มรับบำนาญปีละ 12% ได้เลย ไม่ต้องรอนาน</li>
+        <li>เหมาะกับการเปลี่ยนเงินก้อนหลังเกษียณเป็นรายรับประจำ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_8501')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สะสมทรัพย์ + บำนาญ</div>
+      <h3>เมืองไทย แฮปปี้ รีไทร์ 60</h3>
+      <p class="meta">อายุรับ 20 – 50 ปี • มีเงินคืนก่อนเกษียณ • ต้องแนบประกันอุบัติเหตุ</p>
+      <ul>
+        <li>ผลประโยชน์รวมตลอดสัญญาสูงสุด 1,237% ของทุนประกัน</li>
+        <li>รับเงินคืน 1% ทุก 3 ปีก่อนเกษียณ รับก้อน 40% ที่อายุ 60 และอีก 400% ที่อายุ 90</li>
+        <li>ข้อควรระวัง: ลดหย่อนภาษีได้เพียง 100,000 บาท เพราะเป็นประกันชีวิตทั่วไป</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_happy_retire_60')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
+    </div>
+
   </div>
 </div>
 </div>
@@ -1791,6 +2001,18 @@
 <div class="wrap">
   <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
   <div id="planDetailContent" style="margin-top:14px;"></div>
+</div>
+</div>
+
+<!-- ============ PAGE: PENSION COMPARE ============ -->
+<div id="page-pension-compare" class="page">
+<div class="wrap">
+  <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
+  <div class="content-card" style="margin-top:14px;">
+    <h2>เปรียบเทียบประกันชีวิตแบบบำนาญ</h2>
+    <p style="color:var(--muted);">เลือกได้สูงสุด 4 แบบ ระบบจะเทียบเงื่อนไข อัตราบำนาญ ความคุ้มครองชีวิต และคำนวณเบี้ยกับผลตอบแทนจากอายุและทุนประกันที่กรอกให้ทันที</p>
+    <div id="pensionCompareBox" style="margin-top:14px;"></div>
+  </div>
 </div>
 </div>
 
@@ -2186,14 +2408,58 @@ document.getElementById('use_hb').addEventListener('change', function(){
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
+
+/* ---------- สัญญาหลักแบบบำนาญ ---------- */
+let currentPensionMain = null;   // {pid, vk}
+function isPensionMainPlan(plan){ return plan === 'pension'; }
+function pensionMainOptions(){
+  const out = [];
+  for(const pid of PENSION_IDS){
+    const p = pensionPlan(pid); if(!p) continue;
+    for(const vk of pensionVariantKeys(pid)){
+      const v = p.variants[vk];
+      out.push({value: pid + '|' + vk, pid, vk,
+        label: `${v.label || p.shortName} — รับอายุ ${v.entryAgeMin}-${v.entryAgeMax} ปี, เริ่มรับบำนาญ ${v.pensionStartAge != null ? v.pensionStartAge + ' ปี' : 'ปีถัดไป'}`});
+    }
+  }
+  return out;
+}
+function initPensionMainSelect(){
+  const sel = document.getElementById('pensionMainSelect');
+  if(!sel) return;
+  const opts = pensionMainOptions();
+  sel.innerHTML = opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  if(opts.length && !currentPensionMain) currentPensionMain = {pid: opts[0].pid, vk: opts[0].vk};
+}
+function onPensionMainChange(){
+  const sel = document.getElementById('pensionMainSelect');
+  if(!sel || !sel.value) return;
+  const [pid, vk] = sel.value.split('|');
+  currentPensionMain = {pid, vk};
+  updateMainCapitalHint();
+  try{ if(typeof calculate === 'function') calculate(); }catch(e){}
+}
+/** แบบบำนาญนี้แนบสัญญาเพิ่มเติมได้ไหม (null = ยังไม่ยืนยัน ให้ถือว่าไม่ได้ไว้ก่อนเพื่อความปลอดภัย) */
+function pensionMainRidersAllowed(){
+  if(!currentPensionMain) return false;
+  const p = pensionPlan(currentPensionMain.pid);
+  return p && p.ridersAllowed === true;
+}
 function savingsMainData(plan){ return plan === '15_3' ? RATES.smart_link_15_3 : RATES.smart_link_15_6; }
 function mainPlanDisplayName(plan, capital){
+  if(plan === 'pension' && currentPensionMain){
+    const p = pensionPlan(currentPensionMain.pid);
+    const v = p.variants[currentPensionMain.vk];
+    return v.label || p.shortName;
+  }
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
   if(plan === '99_99') return capital === 50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99';
   return plan === '15_3' ? 'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)' : 'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)';
 }
 function applySavingsPlanLock(plan){
-  const locked = isSavingsMainPlan(plan);
+  const pensionWrap = document.getElementById('pensionMainWrap');
+  if(pensionWrap) pensionWrap.classList.toggle('hidden', plan !== 'pension');
+  const locked = isSavingsMainPlan(plan) || (isPensionMainPlan(plan) && !pensionMainRidersAllowed());
   const panel = document.getElementById('ridersPanel');
   const notice = document.getElementById('riderLockNotice');
   const frequency = document.getElementById('paymentFrequency');
@@ -2212,6 +2478,27 @@ function updateMainCapitalHint(){
   const plan = document.querySelector('input[name=mainPlan]:checked').value;
   const capitalInput = document.getElementById('mainCapital');
   applySavingsPlanLock(plan);
+  if(isPensionMainPlan(plan) && currentPensionMain){
+    const p = pensionPlan(currentPensionMain.pid);
+    const v = p.variants[currentPensionMain.vk];
+    capitalInput.min = p.sumAssuredMin || 100000;
+    const hintEl = document.getElementById('pensionMainHint');
+    if(hintEl){
+      const bits = [`รับประกันอายุ ${v.entryAgeMin}-${v.entryAgeMax} ปี`,
+                    `ทุนขั้นต่ำ ${fmt(p.sumAssuredMin)} บาท`,
+                    p.premiumTerm,
+                    p.ridersRequired ? 'บังคับแนบประกันอุบัติเหตุ'
+                      : (p.ridersAllowed === true ? 'แนบสัญญาเพิ่มเติมได้'
+                      : (p.ridersAllowed === false ? 'แนบสัญญาเพิ่มเติมไม่ได้' : 'เงื่อนไขแนบสัญญาเพิ่มเติมยังไม่ยืนยัน ระบบจึงปิดไว้ก่อน')),
+                    `ลดหย่อนภาษีสูงสุด ${fmt(p.taxDeductMax)} บาท`];
+      if(pensionSumRestricted(p === null ? '' : currentPensionMain.pid))
+        bits.push('แบบนี้เลือกทุนได้เฉพาะ ' + pensionFixedSums(currentPensionMain.pid, currentPensionMain.vk).map(fmt).join(' / ') + ' บาท');
+      hintEl.innerHTML = bits.join(' • ');
+    }
+    document.getElementById('mainCapitalHint').textContent =
+      `แบบบำนาญ: ทุนประกันขั้นต่ำ ${fmt(p.sumAssuredMin)} บาท (ทุนนี้ใช้คำนวณทั้งเบี้ยและเงินบำนาญที่จะได้รับ)`;
+    return;
+  }
   if(isSavingsMainPlan(plan)){
     const product = savingsMainData(plan);
     capitalInput.min = Math.min(...product.capitals);
@@ -2277,6 +2564,14 @@ function currentBEYear(){
 // ---- main premium (level for life, fixed at entry age; published age 0-70 for 99/20, 0-90 for 99/99) ----
 function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
   freq = freq || 'annual';
+  if(isPensionMainPlan(plan)){
+    if(!currentPensionMain) return null;
+    const g = gender === 'm' ? 'male' : (gender === 'f' ? 'female' : gender);
+    const avail = pensionFreqList(currentPensionMain.pid);
+    // แบบจ่ายครั้งเดียวไม่มีงวดอื่น / บางแบบมีเฉพาะรายปี -> ถอยไปงวดที่มีจริง ไม่คำนวณเอง
+    const useFreq = avail.includes(freq) ? freq : pensionDefaultFreq(currentPensionMain.pid);
+    return pensionPremium(currentPensionMain.pid, currentPensionMain.vk, g, entryAge, capital, useFreq);
+  }
   if(isSavingsMainPlan(plan)){
     const product = savingsMainData(plan);
     const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
@@ -4121,6 +4416,7 @@ const PAGE_ROUTES = {
   calc: '/calculator',
   plans: '/plans',
   compare: '/plans/compare',
+  'pension-compare': '/plans/compare-pension',
   knowledge: '/health-knowledge',
   contact: '/contact',
 };
@@ -4215,7 +4511,8 @@ function showPlanDetail(id, options = {}){
       <h2>ความคุ้มครองโดยละเอียด</h2>
       <ul>${p.coverage.map(c=>`<li>${c}</li>`).join('')}</ul>
     </div>
-    ${p.benefitTable ? `<div class="content-card"><h2>${p.benefitTitle || 'ตารางความคุ้มครอง 13 หมวด'}</h2>${p.benefitTable()}</div>` : ''}
+    ${p.benefitTable ? `<div class="content-card"><h2>${p.benefitTitle || (p.pension ? 'อัตราเงินบำนาญที่ได้รับ' : 'ตารางความคุ้มครอง 13 หมวด')}</h2>${p.benefitTable()}</div>` : ''}
+    ${p.pension ? `<div class="content-card"><h2>คำนวณเบี้ยและเงินบำนาญของคุณ</h2><p class="meta" style="margin-bottom:12px;">กรอกอายุและทุนประกัน หรือจะกรอกงบต่อปีแล้วให้ระบบหาทุนให้ก็ได้ พร้อมดูผลตอบแทน IRR จุดคุ้มทุน และภาษีที่ประหยัดได้</p><div id="pensionCalc-${id}"></div></div>` : ''}
     ${p.detailSections ? p.detailSections() : ''}
     <div class="content-card">
       <h2>เงื่อนไขและข้อควรทราบ</h2>
@@ -4236,6 +4533,7 @@ function showPlanDetail(id, options = {}){
     </div>` : ''}
   `;
   showPage('plan-detail', {updateUrl:false});
+  if(p.pension) renderPensionCalc(id);
   if(options.updateUrl !== false) replaceOrPushPath(PLAN_ROUTES[id] || '/plans');
 }
 
@@ -4921,6 +5219,8 @@ function showPage(name, options = {}){
   target.classList.add('active');
   document.querySelectorAll('#navbar button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
   if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
+  if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
+  if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   window.scrollTo({top:0, behavior:'auto'});
 }
 
@@ -5289,6 +5589,163 @@ const COMPARE_PRODUCTS = {
   },
 };
 const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd'];
+
+/* ---------- โหมดเปรียบเทียบประกันบำนาญ ----------
+   ใช้หัวข้อคนละชุดกับประกันสุขภาพ เพราะสิ่งที่ต้องดูต่างกันสิ้นเชิง
+   (อายุเริ่มรับ, % บำนาญ, ทุนชีวิตระหว่างทาง, IRR, จุดคุ้มทุน, ภาษี) */
+const PENSION_COMPARE_ROW_DEFS = [
+  {section:'เงื่อนไขพื้นฐาน'},
+  {key:'entry',      label:'อายุที่รับประกัน'},
+  {key:'payTerm',    label:'ระยะเวลาชำระเบี้ย'},
+  {key:'startAge',   label:'อายุที่เริ่มรับบำนาญ'},
+  {key:'endAge',     label:'รับบำนาญถึงอายุ'},
+  {key:'minSum',     label:'ทุนประกันขั้นต่ำ'},
+  {section:'เงินบำนาญ'},
+  {key:'pctFirst',   label:'% บำนาญปีแรก (ของทุนประกัน)'},
+  {key:'pctMax',     label:'% บำนาญสูงสุด'},
+  {key:'ladder',     label:'รูปแบบการเพิ่มของบำนาญ'},
+  {key:'guarantee',  label:'การรับรองการจ่ายบำนาญ'},
+  {section:'ความคุ้มครองชีวิต'},
+  {key:'deathPre',   label:'เสียชีวิตก่อนรับบำนาญ'},
+  {key:'deathPost',  label:'เสียชีวิตระหว่างรับบำนาญ'},
+  {key:'maturity',   label:'อยู่ครบกำหนดสัญญา'},
+  {section:'ตัวเลขจากกรณีที่กรอก'},
+  {key:'premium',    label:'เบี้ยที่ต้องจ่าย'},
+  {key:'totalPrem',  label:'เบี้ยรวมทั้งสัญญา'},
+  {key:'pensionY1',  label:'บำนาญปีแรก'},
+  {key:'pensionMo',  label:'เฉลี่ยต่อเดือน (ปีแรก)'},
+  {key:'totalGet',   label:'รับคืนรวมทั้งสัญญา'},
+  {key:'multiple',   label:'ได้คืนกี่เท่าของเบี้ย'},
+  {key:'irr',        label:'ผลตอบแทน IRR ต่อปี'},
+  {key:'breakeven',  label:'อายุที่คุ้มทุน'},
+  {section:'ภาษีและเงื่อนไขอื่น'},
+  {key:'tax',        label:'ลดหย่อนภาษีสูงสุด'},
+  {key:'riders',     label:'พ่วงสัญญาเพิ่มเติม'},
+  {key:'freqs',      label:'งวดชำระที่เลือกได้'},
+];
+
+let pensionCompareSelected = [];
+let pensionCompareVariant = {};
+const PENSION_COMPARE_MAX = 4;
+const pensionCompareInput = {gender:'male', age:35, sum:1000000, tax:0};
+
+function pensionCompareRows(pid){
+  const p = pensionPlan(pid);
+  const vk = pensionCompareVariant[pid] || pensionVariantKeys(pid)[0];
+  const v = p.variants[vk];
+  const st = pensionCompareInput;
+  let age = st.age;
+  const inRange = age >= v.entryAgeMin && age <= v.entryAgeMax;
+  let sum = st.sum;
+  if(pensionSumRestricted(pid)){
+    const f = pensionFixedSums(pid, vk);
+    sum = f.reduce((b,x)=>Math.abs(x-st.sum)<Math.abs(b-st.sum)?x:b, f[0]);
+  }
+  const freq = pensionDefaultFreq(pid);
+  const cf = inRange ? pensionCashflow(pid, vk, st.gender, age, sum, freq) : null;
+  const irr = cf ? pensionIRR(cf) : null;
+  const be = cf ? pensionBreakEvenAge(cf) : null;
+  const totalGet = cf ? cf.totalPension + (cf.maturity||0) : null;
+  const pctFirst = pensionPctAt(pid, vk, v.pensionStartAge != null ? v.pensionStartAge : age+1);
+  const pcts = (v.pensionLadder||[]).map(x=>x.pct);
+  const y1 = cf ? Math.round(sum * pctFirst / 100) : null;
+  const annual = cf ? (p.premiumTermType==='single' ? cf.perPay : cf.perPay * cf.perYear) : null;
+  const na = '<span class="compare-na">อายุนี้ทำแบบนี้ไม่ได้</span>';
+
+  return {
+    entry: `${v.entryAgeMin}–${v.entryAgeMax} ปี`,
+    payTerm: p.premiumTerm,
+    startAge: v.pensionStartAge != null ? `${v.pensionStartAge} ปี` : 'ปีถัดจากทำสัญญา',
+    endAge: `${v.pensionEndAge || 90} ปี`,
+    minSum: fmt(p.sumAssuredMin) + ' บาท',
+    pctFirst: pctFirst ? pctFirst + '% ต่อปี' : '—',
+    pctMax: pcts.length ? Math.max(...pcts) + '% ต่อปี' : '—',
+    ladder: pcts.length > 1 && Math.max(...pcts) !== Math.min(...pcts)
+      ? `ขั้นบันได ${Math.min(...pcts)}% → ${Math.max(...pcts)}%`
+      : 'คงที่ตลอด',
+    guarantee: p.guaranteedPeriodYears ? `รับรอง ${p.guaranteedPeriodYears} ปีแรก` : 'ไม่มีการรับรอง',
+    deathPre: p.deathBenefit.beforePension,
+    deathPost: p.deathBenefit.duringPension,
+    maturity: p.maturityBenefit || '—',
+    premium: cf ? `${fmt(annual)} บาท<span class="benefit-subnote">${p.premiumTermType==='single'?'ครั้งเดียว':'ต่อปี'} • ทุน ${fmt(sum)}</span>` : na,
+    totalPrem: cf ? fmt(cf.totalPremium) + ' บาท' : na,
+    pensionY1: cf ? fmt(y1) + ' บาท' : na,
+    pensionMo: cf ? fmt(y1/12) + ' บาท' : na,
+    totalGet: cf ? fmt(totalGet) + ' บาท' : na,
+    multiple: cf ? (totalGet/cf.totalPremium).toFixed(2) + ' เท่า' : na,
+    irr: irr != null ? (irr*100).toFixed(2) + '% ต่อปี' : na,
+    breakeven: be ? `${be} ปี` : (cf ? 'ไม่ถึงจุดคุ้มทุน' : na),
+    tax: fmt(p.taxDeductMax) + ' บาท' + (p.taxDeductMax < 300000 ? '<span class="benefit-subnote">ลดหย่อนกลุ่มประกันชีวิตทั่วไป ไม่ใช่กลุ่มบำนาญ</span>' : ''),
+    riders: p.ridersRequired ? 'บังคับต้องพ่วง' : (p.ridersAllowed === true ? 'พ่วงได้' : (p.ridersAllowed === false ? 'พ่วงไม่ได้' : 'ยังไม่ยืนยัน')),
+    freqs: pensionFreqList(pid).map(f=>PENSION_FREQ_LABEL[f]).join(' / '),
+  };
+}
+
+function togglePensionCompare(pid){
+  const i = pensionCompareSelected.indexOf(pid);
+  if(i >= 0) pensionCompareSelected.splice(i,1);
+  else if(pensionCompareSelected.length < PENSION_COMPARE_MAX) pensionCompareSelected.push(pid);
+  if(!pensionCompareVariant[pid]) pensionCompareVariant[pid] = pensionVariantKeys(pid).slice(-1)[0];
+  renderPensionCompare();
+}
+function setPensionCompareInput(k, v){
+  pensionCompareInput[k] = (k==='gender') ? v : (parseFloat(v)||0);
+  renderPensionCompare();
+}
+function setPensionCompareVariant(pid, vk){ pensionCompareVariant[pid] = vk; renderPensionCompare(); }
+function removePensionCompare(pid){ pensionCompareSelected = pensionCompareSelected.filter(x=>x!==pid); renderPensionCompare(); }
+
+function renderPensionCompare(){
+  const box = document.getElementById('pensionCompareBox');
+  if(!box) return;
+  const st = pensionCompareInput;
+  const sel = pensionCompareSelected;
+
+  const picker = PENSION_IDS.map(pid => {
+    const on = sel.includes(pid);
+    const full = !on && sel.length >= PENSION_COMPARE_MAX;
+    return `<span class="tog ${on?'on':''}" style="${full?'opacity:.45;cursor:not-allowed;':''}" onclick="${full?'':`togglePensionCompare('${pid}')`}"><span class="dot">${on?'✓':''}</span>${pensionPlan(pid).shortName}</span>`;
+  }).join('');
+
+  let table = '<p class="pension-hint">เลือกแบบประกันที่อยากเทียบ (สูงสุด 4 แบบ)</p>';
+  if(sel.length){
+    const cols = sel.map(pid => ({pid, rows: pensionCompareRows(pid)}));
+    const headers = ['หัวข้อเปรียบเทียบ', ...cols.map(c => pensionPlan(c.pid).shortName)];
+    const rows = PENSION_COMPARE_ROW_DEFS.map(def => {
+      if(def.section) return ['§' + def.section];
+      return [def.label, ...cols.map(c => c.rows[def.key] != null ? c.rows[def.key] : '<span class="compare-na">—</span>')];
+    });
+    const heads = cols.map(c => {
+      const vs = pensionVariantKeys(c.pid);
+      return `<div class="compare-col-summary">
+        <div class="compare-col-title">${pensionPlan(c.pid).shortName}</div>
+        ${vs.length>1 ? `<select class="compare-tier-select" onchange="setPensionCompareVariant('${c.pid}',this.value)">
+          ${vs.map(v=>`<option value="${v}"${(pensionCompareVariant[c.pid]===v)?' selected':''}>${pensionPlan(c.pid).variants[v].label||v}</option>`).join('')}
+        </select>` : ''}
+        <button class="compare-remove-btn" onclick="removePensionCompare('${c.pid}')">เอาแผนนี้ออก</button>
+      </div>`;
+    }).join('');
+    table = `<div class="compare-columns-summary">${heads}</div>
+      <div class="plan-compare-table">${renderBenefitTable(headers, rows)}</div>
+      <p class="pension-hint">ตัวเลขในกลุ่ม "ตัวเลขจากกรณีที่กรอก" คำนวณจากเพศ อายุ และทุนประกันที่ระบุด้านบน แบบที่เลือกทุนได้เฉพาะบางระดับจะใช้ทุนที่ใกล้เคียงที่สุด ผลประโยชน์จริงยึดตามกรมธรรม์</p>`;
+  }
+
+  box.innerHTML = `
+    <div class="pension-form">
+      <div class="pf-row"><label>เพศ</label>
+        <select onchange="setPensionCompareInput('gender',this.value)">
+          <option value="male"${st.gender==='male'?' selected':''}>ชาย</option>
+          <option value="female"${st.gender==='female'?' selected':''}>หญิง</option>
+        </select></div>
+      <div class="pf-row"><label>อายุ</label>
+        <input type="number" min="0" max="70" value="${st.age}" onchange="setPensionCompareInput('age',this.value)"></div>
+      <div class="pf-row"><label>ทุนประกัน (บาท)</label>
+        <input type="number" step="100000" value="${st.sum}" onchange="setPensionCompareInput('sum',this.value)"></div>
+    </div>
+    <div class="opt-grid" style="margin:12px 0;">${picker}</div>
+    ${table}`;
+}
+
 const COMPARE_MAX = 4;
 const COMPARE_ROW_DEFS = [
   {section:'วงเงินคุ้มครองและเงื่อนไขการจ่าย'},
@@ -5555,6 +6012,832 @@ function renderComparePage(){
 }
 initComparePlanCards();
 initCompareToggle();
+
+/* =========================================================
+   ประกันชีวิตแบบบำนาญ — ข้อมูล เครื่องคำนวณ และหน้ารายละเอียด
+   ข้อมูลทั้งหมดมาจาก data/pension-plans.json (SmartWeb + muangthai-agent)
+   ห้ามคำนวณ/ประมาณอัตราเบี้ยเอง ทุกค่าต้องมาจากตารางในไฟล์เท่านั้น
+   ========================================================= */
+var PENSION = (function(){
+  try{
+    const req = new XMLHttpRequest();
+    req.open('GET', '/data/pension-plans.json', false);
+    req.send(null);
+    if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+  }catch(e){}
+  try{
+    const req2 = new XMLHttpRequest();
+    req2.open('GET', './data/pension-plans.json', false);
+    req2.send(null);
+    if(req2.status >= 200 && req2.status < 300) return JSON.parse(req2.responseText);
+  }catch(e){}
+  console.error('โหลด data/pension-plans.json ไม่สำเร็จ');
+  return {plans:{}};
+})();
+
+const PENSION_IDS = ['flexi_retire_90xx','flexi_retire_90_1','flexi_retire_90_5','mt_8560_g15','mt_8555_g20','mt_9901_d65','mt_8501','mt_happy_retire_60'];
+
+const PENSION_ROUTE_SLUG = {
+  flexi_retire_90xx:  'flexi-retire-9055-9060-9065',
+  flexi_retire_90_1:  'flexi-retire-90-1',
+  flexi_retire_90_5:  'flexi-retire-90-5',
+  mt_8560_g15:        'muangthai-8560-g15',
+  mt_8555_g20:        'muangthai-8555-g20',
+  mt_9901_d65:        'muangthai-9901-d65',
+  mt_8501:            'muangthai-8501',
+  mt_happy_retire_60: 'muangthai-happy-retire-60',
+};
+
+const PENSION_FREQ_LABEL = {annual:'รายปี', semiannual:'ราย 6 เดือน', quarterly:'ราย 3 เดือน', monthly:'รายเดือน', single:'ชำระครั้งเดียว'};
+const PENSION_FREQ_PER_YEAR = {annual:1, semiannual:2, quarterly:4, monthly:12, single:1};
+
+/* ---------- อ่านอัตราเบี้ยต่อทุน 1,000 บาท ---------- */
+function pensionBandMatch(key, sum){
+  if(key === 'default' || key === 'base') return true;
+  let m = key.match(/^(\d+)-(\d+)$/);
+  if(m) return sum >= +m[1] && sum <= +m[2];
+  m = key.match(/^(\d+)\+$/);
+  if(m) return sum >= +m[1];
+  return false;
+}
+
+function pensionPlan(planId){ return PENSION.plans ? PENSION.plans[planId] : null; }
+
+function pensionVariantKeys(planId){
+  const p = pensionPlan(planId);
+  return p && p.variants ? Object.keys(p.variants) : [];
+}
+
+/** อัตราเบี้ยต่อทุน 1,000 บาท — คืน null ถ้าไม่มีข้อมูล (ห้ามเดา) */
+function pensionRatePer1000(planId, variant, gender, age, sum, freq){
+  const p = pensionPlan(planId);
+  if(!p || !p.ratePer1000) return null;
+  const rp = p.ratePer1000;
+  const f = rp[freq] ? freq : (rp.single ? 'single' : (rp.annual ? 'annual' : Object.keys(rp)[0]));
+  const byBand = rp[f];
+  if(!byBand) return null;
+  for(const bandKey of Object.keys(byBand)){
+    if(!pensionBandMatch(bandKey, sum)) continue;
+    const g = byBand[bandKey][gender];
+    if(!g) continue;
+    const series = g[variant] || g.base;
+    if(series && series[String(age)] != null) return series[String(age)];
+  }
+  // บางแบบเก็บ gender ไว้ชั้นบน (ไม่มี band)
+  const g2 = byBand[gender];
+  if(g2){
+    const series = g2[variant] || g2.base;
+    if(series && series[String(age)] != null) return series[String(age)];
+  }
+  return null;
+}
+
+/** ส่วนลดอัตราเบี้ยรายปีต่อทุน 1,000 บาท (เฉพาะแบบที่ใช้ระบบส่วนลด) */
+function pensionDiscountPer1000(planId, sum){
+  const p = pensionPlan(planId);
+  if(!p || !p.annualDiscountPer1000) return 0;
+  for(const b of p.annualDiscountPer1000){
+    if(sum >= b.min && (b.max == null || sum <= b.max)) return b.discount;
+  }
+  return 0;
+}
+
+/** ทุนประกันที่มีตารางเบี้ยตรงๆ (ใช้กับแบบที่จำกัดทุน เช่น 8501) */
+function pensionFixedSums(planId, variant){
+  const p = pensionPlan(planId);
+  if(!p || !p.rates) return [];
+  const g = p.rates.male || {};
+  const v = g[variant] || g.base || {};
+  return Object.keys(v).map(Number).sort((a,b)=>a-b);
+}
+
+function pensionSumRestricted(planId){ return !!(pensionPlan(planId) || {}).ratePer1000Warning; }
+
+/** เบี้ยต่องวด — คืน null ถ้าข้อมูลไม่พอ */
+function pensionPremium(planId, variant, gender, age, sum, freq){
+  const p = pensionPlan(planId);
+  if(!p) return null;
+  freq = freq || pensionDefaultFreq(planId);
+  if(pensionSumRestricted(planId)){
+    const exact = ((p.rates || {})[gender] || {});
+    const series = (exact[variant] || exact.base || {})[String(sum)];
+    if(series && series[String(age)] != null) return series[String(age)];
+    return null;
+  }
+  const rate = pensionRatePer1000(planId, variant, gender, age, sum, freq);
+  if(rate == null) return null;
+  const d = (freq === 'annual' || freq === 'single') ? pensionDiscountPer1000(planId, sum) : 0;
+  return Math.round((rate - d) * sum / 1000);
+}
+
+function pensionFreqList(planId){
+  const p = pensionPlan(planId);
+  if(!p || !p.ratePer1000) return ['annual'];
+  const ks = Object.keys(p.ratePer1000).filter(k => PENSION_FREQ_LABEL[k]);
+  return ks.length ? ks : ['annual'];
+}
+function pensionDefaultFreq(planId){
+  const l = pensionFreqList(planId);
+  return l.includes('annual') ? 'annual' : l[0];
+}
+
+/* ---------- ตารางกระแสเงินสดรายปี ---------- */
+function pensionPctAt(planId, variant, age){
+  const v = (pensionPlan(planId).variants || {})[variant];
+  if(!v || !v.pensionLadder) return 0;
+  for(const seg of v.pensionLadder){
+    const lo = seg.fromAge == null ? -Infinity : seg.fromAge;
+    const hi = seg.toAge == null ? Infinity : seg.toAge;
+    if(age >= lo && age <= hi) return seg.pct;
+  }
+  return 0;
+}
+
+/**
+ * ตารางรายปี: จ่ายเบี้ยปีไหน ได้บำนาญปีไหน สะสมเท่าไหร่
+ * คืน {rows, totalPremium, totalPension, payYears, startAge, endAge}
+ */
+function pensionCashflow(planId, variant, gender, entryAge, sum, freq){
+  const p = pensionPlan(planId);
+  const v = (p.variants || {})[variant];
+  if(!p || !v) return null;
+  freq = freq || pensionDefaultFreq(planId);
+  const perYear = PENSION_FREQ_PER_YEAR[freq] || 1;
+  const perPay = pensionPremium(planId, variant, gender, entryAge, sum, freq);
+  if(perPay == null) return null;
+  const annualOutlay = p.premiumTermType === 'single' ? 0 : perPay * perYear;
+  const singlePay = p.premiumTermType === 'single' ? perPay : 0;
+
+  const startAge = v.pensionStartAge;
+  const endAge = v.pensionEndAge != null ? v.pensionEndAge : (PENSION._meta ? PENSION._meta.pensionEndAge : 90);
+
+  // ปีที่ต้องชำระเบี้ย
+  let lastPayAge;
+  if(p.premiumTermType === 'single') lastPayAge = entryAge;
+  else if(p.premiumTermType === 'short') lastPayAge = entryAge + (p.premiumPayYears || 5) - 1;
+  else lastPayAge = (startAge != null ? startAge : entryAge + 1) - 1;
+
+  const pre = (v.preRetirementPayouts || null);
+  const rows = [];
+  let cumPrem = 0, cumPension = 0;
+  const finalAge = endAge != null ? endAge : 90;
+  for(let age = entryAge; age <= finalAge; age++){
+    let premium = 0;
+    if(p.premiumTermType === 'single'){ if(age === entryAge) premium = singlePay; }
+    else if(age <= lastPayAge) premium = annualOutlay;
+    cumPrem += premium;
+
+    let pension = 0;
+    if(pre && pre.ages && pre.ages.includes(age)) pension += Math.round(sum * pre.pct / 100);
+    if(startAge == null || age >= startAge){
+      const pct = pensionPctAt(planId, variant, age);
+      if(pct) pension += Math.round(sum * pct / 100);
+    }
+    cumPension += pension;
+    rows.push({age, premium, pension, cumPrem, cumPension, net: cumPension - cumPrem});
+  }
+  // ผลประโยชน์ครบสัญญา (เช่น Happy Retire 60 รับ 400% ที่อายุ 90)
+  let maturity = 0;
+  if(p.maturityBenefit){
+    const m = String(p.maturityBenefit).match(/(\d+)%/);
+    if(m) maturity = Math.round(sum * (+m[1]) / 100);
+  }
+  return {rows, totalPremium: cumPrem, totalPension: cumPension, maturity,
+          payYears: p.premiumTermType === 'single' ? 1 : (lastPayAge - entryAge + 1),
+          startAge, endAge: finalAge, freq, perPay, perYear};
+}
+
+/* ---------- IRR (bisection บนกระแสเงินสดรายปี) ---------- */
+function irrOf(flows){
+  const npv = r => flows.reduce((s,f,i)=> s + f/Math.pow(1+r, i), 0);
+  let lo = -0.9, hi = 1.0;
+  if(npv(lo) * npv(hi) > 0) return null;
+  for(let i=0;i<200;i++){
+    const mid = (lo+hi)/2;
+    if(npv(lo) * npv(mid) <= 0) hi = mid; else lo = mid;
+  }
+  return (lo+hi)/2;
+}
+
+/** IRR กรณีอยู่จนครบสัญญา */
+function pensionIRR(cf){
+  if(!cf) return null;
+  const flows = cf.rows.map(r => r.pension - r.premium);
+  if(cf.maturity) flows[flows.length-1] += cf.maturity;
+  return irrOf(flows);
+}
+
+/** IRR ณ อายุที่เสียชีวิต — คืน [{age, irr, payout, totalGet}] */
+function pensionIRRByDeathAge(planId, variant, cf, sum){
+  const p = pensionPlan(planId);
+  const out = [];
+  for(let i=0;i<cf.rows.length;i++){
+    const r = cf.rows[i];
+    const flows = cf.rows.slice(0, i+1).map(x => x.pension - x.premium);
+    const death = pensionDeathPayout(planId, variant, cf, i, sum);
+    flows[flows.length-1] += death;
+    const irr = irrOf(flows);
+    out.push({age:r.age, irr, death, cumPension:r.cumPension, cumPrem:r.cumPrem, totalGet: r.cumPension + death});
+  }
+  return out;
+}
+
+/** เงินที่ผู้รับประโยชน์ได้ ถ้าเสียชีวิตในปีนั้น (ตามเงื่อนไขแต่ละแบบ) */
+function pensionDeathPayout(planId, variant, cf, idx, sum){
+  const p = pensionPlan(planId);
+  const v = (p.variants || {})[variant];
+  const r = cf.rows[idx];
+  const beforePension = (v.pensionStartAge == null) ? false : (r.age < v.pensionStartAge);
+
+  if(planId === 'mt_8555_g20' || planId === 'mt_8560_g15'){
+    if(beforePension){
+      const a = r.age;
+      if(planId === 'mt_8560_g15') return Math.round(sum * Math.min(250, 100 + Math.max(0, a-45)*10) / 100);
+      if(a < 30) return sum;
+      return Math.round(sum * Math.min(600, 120 + (a-30)*20) / 100);
+    }
+    // ช่วงรับบำนาญ: รับรองการจ่าย N ปี -> จ่ายบำนาญที่เหลือจนครบ (ไม่คิดลดมูลค่าปัจจุบัน = ประมาณการอย่างระมัดระวัง)
+    const gp = p.guaranteedPeriodYears || 0;
+    const yearsGot = r.age - v.pensionStartAge + 1;
+    const left = Math.max(0, gp - yearsGot);
+    const pct = pensionPctAt(planId, variant, r.age);
+    return Math.round(sum * pct / 100) * left;
+  }
+  if(planId === 'mt_happy_retire_60'){
+    const a = r.age;
+    let pct = 100;
+    if(a >= 55) pct = 400; else if(a >= 50) pct = 300; else if(a >= 45) pct = 250;
+    else if(a >= 40) pct = 200; else if(a >= 35) pct = 150;
+    return Math.max(Math.round(sum * pct/100), Math.round(sum*1.01));
+  }
+  // ตระกูล Flexi Retire / 9901 / 8501
+  if(beforePension){
+    const pctPrem = (planId === 'mt_9901_d65') ? 1.10 : 1.05;
+    return Math.round(r.cumPrem * pctPrem);
+  }
+  return Math.max(0, r.cumPrem - r.cumPension);
+}
+
+/** อายุคุ้มทุน: ปีแรกที่บำนาญสะสม >= เบี้ยที่จ่ายทั้งหมด */
+function pensionBreakEvenAge(cf){
+  for(const r of cf.rows) if(r.cumPension >= cf.totalPremium) return r.age;
+  return null;
+}
+
+/* ---------- ภาษี ---------- */
+const TAX_BRACKETS = [
+  {rate:0.00, label:'ไม่ถึงเกณฑ์เสียภาษี (เงินได้สุทธิไม่เกิน 150,000)'},
+  {rate:0.05, label:'5% (เงินได้สุทธิ 150,001 - 300,000)'},
+  {rate:0.10, label:'10% (เงินได้สุทธิ 300,001 - 500,000)'},
+  {rate:0.15, label:'15% (เงินได้สุทธิ 500,001 - 750,000)'},
+  {rate:0.20, label:'20% (เงินได้สุทธิ 750,001 - 1,000,000)'},
+  {rate:0.25, label:'25% (เงินได้สุทธิ 1,000,001 - 2,000,000)'},
+  {rate:0.30, label:'30% (เงินได้สุทธิ 2,000,001 - 5,000,000)'},
+  {rate:0.35, label:'35% (เงินได้สุทธิ 5,000,001 ขึ้นไป)'},
+];
+
+/** ค่าลดหย่อนที่ใช้ได้จริงต่อปี (ประมาณการ) */
+function pensionDeductible(planId, annualPremium, annualIncome){
+  const p = pensionPlan(planId);
+  const cap = p && p.taxDeductMax ? p.taxDeductMax : 300000;
+  let d = Math.min(annualPremium, cap);
+  if(annualIncome && cap > 100000) d = Math.min(d, Math.round(annualIncome * 0.15));
+  return Math.max(0, d);
+}
+
+/* =========================================================
+   หน้ารายละเอียดแผนบำนาญ
+   ========================================================= */
+function pensionEntryAgeRange(planId){
+  const p = pensionPlan(planId);
+  let lo = 999, hi = -1;
+  for(const k of Object.keys(p.variants || {})){
+    const v = p.variants[k];
+    if(v.entryAgeMin != null) lo = Math.min(lo, v.entryAgeMin);
+    if(v.entryAgeMax != null) hi = Math.max(hi, v.entryAgeMax);
+  }
+  return [lo === 999 ? 0 : lo, hi < 0 ? 60 : hi];
+}
+
+function pensionLadderTable(planId, variant){
+  const v = (pensionPlan(planId).variants || {})[variant];
+  if(!v || !v.pensionLadder) return '';
+  const rows = v.pensionLadder.map(s => {
+    const from = s.fromAge == null ? '—' : s.fromAge;
+    const to = s.toAge == null ? '—' : s.toAge;
+    return [from === to ? `อายุ ${from} ปี` : `อายุ ${from} – ${to} ปี`, `${s.pct}%`];
+  });
+  const pre = v.preRetirementPayouts;
+  if(pre) rows.unshift([`อายุ ${pre.ages.join(', ')} ปี (ก่อนเกษียณ)`, `${pre.pct}%`]);
+  return renderBenefitTable(['ช่วงอายุ','% ของจำนวนเงินเอาประกันภัยต่อปี'], rows);
+}
+
+/* สถานะฟอร์มของแต่ละหน้า */
+const pensionCalcState = {};
+
+function pensionCalcDefaults(planId){
+  const [lo, hi] = pensionEntryAgeRange(planId);
+  const vars = pensionVariantKeys(planId);
+  const restricted = pensionSumRestricted(planId);
+  const sums = restricted ? pensionFixedSums(planId, vars[0]) : null;
+  return {
+    variant: vars[vars.length-1],
+    gender: 'male',
+    age: Math.max(lo, Math.min(35, hi)),
+    mode: 'sum',
+    sum: restricted && sums.length ? sums[0] : 1000000,
+    budget: 50000,
+    freq: pensionDefaultFreq(planId),
+    tax: 0,
+    income: 0,
+  };
+}
+
+function pensionState(planId){
+  if(!pensionCalcState[planId]) pensionCalcState[planId] = pensionCalcDefaults(planId);
+  return pensionCalcState[planId];
+}
+
+function setPensionField(planId, key, val){
+  const s = pensionState(planId);
+  if(['age','sum','budget','tax','income'].includes(key)) val = parseFloat(val) || 0;
+  s[key] = val;
+  renderPensionCalc(planId);
+}
+
+/** หาทุนที่ใกล้เคียงงบประมาณที่สุด (ปัดลงเป็นหลักหมื่น) */
+function pensionSumFromBudget(planId, variant, gender, age, budget, freq){
+  const perYear = PENSION_FREQ_PER_YEAR[freq] || 1;
+  const target = budget;
+  let lo = 100000, hi = 20000000, best = null;
+  const p = pensionPlan(planId);
+  if(p.sumAssuredMin) lo = p.sumAssuredMin;
+  for(let i=0;i<40;i++){
+    const mid = Math.round((lo+hi)/2/10000)*10000;
+    const prem = pensionPremium(planId, variant, gender, age, mid, freq);
+    if(prem == null) break;
+    const yearly = p.premiumTermType === 'single' ? prem : prem * perYear;
+    if(yearly <= target){ best = mid; lo = mid + 10000; } else hi = mid - 10000;
+    if(lo > hi) break;
+  }
+  return best;
+}
+
+/* ---------- เครื่องคำนวณในหน้าแผนบำนาญ ---------- */
+function renderPensionCalc(planId){
+  const box = document.getElementById('pensionCalc-' + planId);
+  if(!box) return;
+  const p = pensionPlan(planId);
+  const s = pensionState(planId);
+  const v = (p.variants || {})[s.variant] || {};
+  const [gLo, gHi] = pensionEntryAgeRange(planId);
+  const lo = v.entryAgeMin != null ? v.entryAgeMin : gLo;
+  const hi = v.entryAgeMax != null ? v.entryAgeMax : gHi;
+  const restricted = pensionSumRestricted(planId);
+  const freqs = pensionFreqList(planId);
+
+  let warn = '';
+  let age = s.age;
+  if(age < lo || age > hi){
+    warn = `<div class="pension-warn">แบบ ${v.label || s.variant} รับประกันอายุ ${lo}–${hi} ปี — อายุ ${age} ปีทำแบบนี้ไม่ได้</div>`;
+  }
+
+  // หาทุนจากงบ ถ้าเลือกโหมดงบ
+  let sum = s.sum;
+  if(s.mode === 'budget' && !warn){
+    const got = pensionSumFromBudget(planId, s.variant, s.gender, age, s.budget, s.freq);
+    if(got) sum = got; else warn = '<div class="pension-warn">งบประมาณต่ำกว่าเบี้ยขั้นต่ำของแบบนี้</div>';
+  }
+
+  const cf = warn ? null : pensionCashflow(planId, s.variant, s.gender, age, sum, s.freq);
+  let body = '';
+
+  if(cf){
+    const irr = pensionIRR(cf);
+    const be = pensionBreakEvenAge(cf);
+    const annualOutlay = p.premiumTermType === 'single' ? cf.perPay : cf.perPay * cf.perYear;
+    const deduct = pensionDeductible(planId, annualOutlay, s.income);
+    const taxSaved = Math.round(deduct * s.tax);
+    const totalGet = cf.totalPension + (cf.maturity || 0);
+
+    const cards = [
+      ['เบี้ยต่องวด', `${fmt(cf.perPay)} บาท`, PENSION_FREQ_LABEL[cf.freq]],
+      [p.premiumTermType === 'single' ? 'เบี้ยครั้งเดียว' : 'เบี้ยรวมต่อปี', `${fmt(annualOutlay)} บาท`, `ชำระ ${cf.payYears} ปี`],
+      ['เบี้ยที่จ่ายทั้งหมด', `${fmt(cf.totalPremium)} บาท`, ''],
+      ['บำนาญที่ได้รวม', `${fmt(totalGet)} บาท`, cf.maturity ? `รวมเงินครบสัญญา ${fmt(cf.maturity)}` : `ถึงอายุ ${cf.endAge} ปี`],
+      ['ได้คืนกี่เท่า', `${(totalGet / cf.totalPremium).toFixed(2)} เท่า`, ''],
+      ['ผลตอบแทน IRR', irr == null ? '—' : `${(irr*100).toFixed(2)}% ต่อปี`, 'กรณีอยู่ครบสัญญา'],
+      ['อายุคุ้มทุน', be == null ? 'ไม่ถึงจุดคุ้มทุน' : `${be} ปี`, be ? `หลังรับบำนาญ ${be - cf.startAge + 1} ปี` : ''],
+      ['ประหยัดภาษีต่อปี', s.tax ? `${fmt(taxSaved)} บาท` : '—', s.tax ? `ลดหย่อนได้ ${fmt(deduct)} บาท` : 'เลือกฐานภาษีก่อน'],
+    ];
+
+    const rowsHtml = cf.rows.map(r => `<tr${r.pension ? ' class="pension-row-get"' : ''}>
+      <td>${r.age}</td>
+      <td>${r.premium ? fmt(r.premium) : '—'}</td>
+      <td>${r.pension ? fmt(r.pension) : '—'}</td>
+      <td>${fmt(r.cumPrem)}</td>
+      <td>${fmt(r.cumPension)}</td>
+      <td class="${r.net >= 0 ? 'pension-pos' : 'pension-neg'}">${r.net >= 0 ? '+' : ''}${fmt(r.net)}</td>
+    </tr>`).join('');
+
+    // ตาย ณ อายุไหนได้เท่าไหร่
+    const deaths = pensionIRRByDeathAge(planId, s.variant, cf, sum);
+    const marks = deaths.filter(d => d.age % 5 === 0 || d.age === cf.startAge || d.age === cf.endAge);
+    const deathRows = marks.map(d => `<tr>
+      <td>${d.age}</td>
+      <td>${fmt(d.cumPrem)}</td>
+      <td>${fmt(d.cumPension)}</td>
+      <td>${fmt(d.death)}</td>
+      <td>${fmt(d.totalGet)}</td>
+      <td class="${d.totalGet >= d.cumPrem ? 'pension-pos' : 'pension-neg'}">${d.irr == null ? '—' : (d.irr*100).toFixed(2)+'%'}</td>
+    </tr>`).join('');
+
+    body = `
+      <div class="pension-cards">
+        ${cards.map(c => `<div class="pension-card"><div class="pc-label">${c[0]}</div><div class="pc-value">${c[1]}</div><div class="pc-note">${c[2] || '&nbsp;'}</div></div>`).join('')}
+      </div>
+      ${s.mode === 'budget' ? `<p class="pension-hint">งบ ${fmt(s.budget)} บาท/ปี ทำทุนประกันได้ประมาณ <b>${fmt(sum)} บาท</b></p>` : ''}
+      ${s.tax ? `<p class="pension-hint">ตัวเลขภาษีเป็นการประมาณการเบื้องต้น คำนวณจากค่าลดหย่อนที่ใช้ได้ × ฐานภาษีที่เลือก สิทธิจริงขึ้นกับเงินได้ ค่าลดหย่อนอื่นที่ใช้ไปแล้ว และหลักเกณฑ์กรมสรรพากรของปีภาษีนั้น ควรตรวจสอบกับผู้เชี่ยวชาญด้านภาษีก่อนตัดสินใจ</p>` : ''}
+
+      <h4 class="pension-h4">ตารางกระแสเงินสดรายปี</h4>
+      <div class="pension-table-wrap">
+        <table class="pension-table">
+          <thead><tr><th>อายุ</th><th>เบี้ยที่จ่าย</th><th>บำนาญที่ได้</th><th>เบี้ยสะสม</th><th>บำนาญสะสม</th><th>สุทธิ</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+
+      <h4 class="pension-h4">ถ้าเสียชีวิตที่อายุต่างๆ จะได้เท่าไหร่</h4>
+      <div class="pension-table-wrap">
+        <table class="pension-table">
+          <thead><tr><th>อายุที่เสียชีวิต</th><th>เบี้ยที่จ่ายไป</th><th>บำนาญที่รับแล้ว</th><th>เงินที่ผู้รับประโยชน์ได้</th><th>รวมที่ได้ทั้งหมด</th><th>IRR</th></tr></thead>
+          <tbody>${deathRows}</tbody>
+        </table>
+      </div>
+      <p class="pension-hint">ตัวเลขทั้งหมดเป็นการประมาณการจากตารางเบี้ยและอัตราบำนาญทางการ ไม่รวมเงินปันผล มูลค่าเวนคืน และค่าใช้จ่ายอื่น IRR คำนวณจากกระแสเงินสดรายปีแบบทบต้น ผลประโยชน์จริงยึดตามกรมธรรม์</p>
+    `;
+  }
+
+  const sums = restricted ? pensionFixedSums(planId, s.variant) : null;
+
+  box.innerHTML = `
+    <div class="pension-form">
+      ${pensionVariantKeys(planId).length > 1 ? `
+      <div class="pf-row"><label>แบบย่อย</label>
+        <select onchange="setPensionField('${planId}','variant',this.value)">
+          ${pensionVariantKeys(planId).map(k => `<option value="${k}"${k===s.variant?' selected':''}>${(p.variants[k].label||k)} — เริ่มรับบำนาญอายุ ${p.variants[k].pensionStartAge} ปี</option>`).join('')}
+        </select></div>` : ''}
+      <div class="pf-row"><label>เพศ</label>
+        <select onchange="setPensionField('${planId}','gender',this.value)">
+          <option value="male"${s.gender==='male'?' selected':''}>ชาย</option>
+          <option value="female"${s.gender==='female'?' selected':''}>หญิง</option>
+        </select></div>
+      <div class="pf-row"><label>อายุ</label>
+        <input type="number" min="${lo}" max="${hi}" value="${s.age}" onchange="setPensionField('${planId}','age',this.value)"></div>
+      ${freqs.length > 1 ? `
+      <div class="pf-row"><label>งวดชำระ</label>
+        <select onchange="setPensionField('${planId}','freq',this.value)">
+          ${freqs.map(f => `<option value="${f}"${f===s.freq?' selected':''}>${PENSION_FREQ_LABEL[f]}</option>`).join('')}
+        </select></div>` : ''}
+      <div class="pf-row"><label>กรอกจาก</label>
+        <select onchange="setPensionField('${planId}','mode',this.value)">
+          <option value="sum"${s.mode==='sum'?' selected':''}>ทุนประกันที่ต้องการ</option>
+          <option value="budget"${s.mode==='budget'?' selected':''}>งบประมาณต่อปี</option>
+        </select></div>
+      ${s.mode === 'sum' ? (restricted ? `
+      <div class="pf-row"><label>ทุนประกัน</label>
+        <select onchange="setPensionField('${planId}','sum',this.value)">
+          ${sums.map(x => `<option value="${x}"${x===s.sum?' selected':''}>${fmt(x)} บาท</option>`).join('')}
+        </select></div>` : `
+      <div class="pf-row"><label>ทุนประกัน (บาท)</label>
+        <input type="number" step="10000" min="${p.sumAssuredMin || 100000}" value="${s.sum}" onchange="setPensionField('${planId}','sum',this.value)"></div>`) : `
+      <div class="pf-row"><label>งบต่อปี (บาท)</label>
+        <input type="number" step="1000" value="${s.budget}" onchange="setPensionField('${planId}','budget',this.value)"></div>`}
+      <div class="pf-row"><label>ฐานภาษี</label>
+        <select onchange="setPensionField('${planId}','tax',this.value)">
+          ${TAX_BRACKETS.map(b => `<option value="${b.rate}"${b.rate===s.tax?' selected':''}>${b.label}</option>`).join('')}
+        </select></div>
+    </div>
+    ${warn}
+    ${body}`;
+}
+
+/* ---------- สร้างรายการ PLAN_DETAILS ของแผนบำนาญ ---------- */
+function buildPensionPlanDetails(){
+  PENSION_IDS.forEach(pid => {
+    const p = pensionPlan(pid);
+    if(!p) return;
+    const [lo, hi] = pensionEntryAgeRange(pid);
+    const vars = pensionVariantKeys(pid);
+    const firstV = p.variants[vars[0]];
+    const lastV = p.variants[vars[vars.length-1]];
+
+    const coverage = [];
+    vars.forEach(k => {
+      const v = p.variants[k];
+      const seg = (v.pensionLadder || []).map(s => `${s.fromAge == null ? '' : 'อายุ ' + s.fromAge + (s.toAge && s.toAge !== s.fromAge ? '–' + s.toAge : '') + ' ปี รับ '}${s.pct}%`).join(' / ');
+      coverage.push(`<b>${v.label || k}</b> — เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี ถึงอายุ ${v.pensionEndAge || 90} ปี : ${seg} ของจำนวนเงินเอาประกันภัยต่อปี`);
+    });
+    if(p.maturityBenefit) coverage.push('อยู่ครบกำหนดสัญญา: ' + p.maturityBenefit);
+    coverage.push('<b>กรณีเสียชีวิตก่อนเริ่มรับบำนาญ</b> — ' + p.deathBenefit.beforePension);
+    coverage.push('<b>กรณีเสียชีวิตระหว่างรับบำนาญ</b> — ' + p.deathBenefit.duringPension);
+    if(p.guaranteedPeriodYears) coverage.push(`มีการรับรองการจ่ายเงินบำนาญ ${p.guaranteedPeriodYears} ปีแรก`);
+
+    const conditions = [];
+    vars.forEach(k => {
+      const v = p.variants[k];
+      conditions.push(`${v.label || k}: รับประกันอายุ ${v.entryAgeMin}–${v.entryAgeMax} ปี${v.entryAgeNote ? ' (' + v.entryAgeNote + ')' : ''}`);
+    });
+    conditions.push(`ระยะเวลาชำระเบี้ย: ${p.premiumTerm}`);
+    conditions.push(`จำนวนเงินเอาประกันภัยขั้นต่ำ ${fmt(p.sumAssuredMin)} บาท` +
+      (p.sumAssuredMaxNoRider ? ` (สูงสุด ${fmt(p.sumAssuredMaxNoRider)} บาทเมื่อไม่ซื้อสัญญาเพิ่มเติม)` : ''));
+    if(p.ridersRequired) conditions.push('<b>บังคับ</b> ' + (p.ridersRequiredNote || 'ต้องแนบสัญญาเพิ่มเติมตามเงื่อนไขบริษัท'));
+    else if(p.ridersAllowed === true) conditions.push('ซื้อสัญญาเพิ่มเติมแนบท้ายได้ตามหลักเกณฑ์ของบริษัท');
+    else if(p.ridersAllowed === false) conditions.push('<b>ไม่สามารถ</b>ซื้อสัญญาเพิ่มเติมแนบท้ายได้');
+    else conditions.push('เงื่อนไขการซื้อสัญญาเพิ่มเติม — ยังไม่ได้ยืนยันจากเอกสารทางการ กรุณาสอบถามก่อนเสนอขาย');
+    conditions.push(`รับบำนาญได้แบบ ${(p.pensionFrequency || ['รายปี']).join(' / ')}`);
+    conditions.push(`ใช้สิทธิลดหย่อนภาษีได้สูงสุด ${fmt(p.taxDeductMax)} บาท` + (p.taxDeductNote ? ` — ${p.taxDeductNote}` : ''));
+    if(p.creditCardAllowed === false) conditions.push('ไม่รับชำระเบี้ยด้วยบัตรเครดิต');
+
+    PLAN_DETAILS[pid] = {
+      title: p.shortName,
+      category: 'ประกันชีวิตแบบบำนาญ',
+      overview: pensionOverview(pid),
+      coverage,
+      conditions,
+      freqSupported: false,
+      pension: true,
+      benefitTable: () => vars.map(k =>
+        `<h4 class="pension-h4">${p.variants[k].label || k}</h4>` + pensionLadderTable(pid, k)).join(''),
+    };
+    PLAN_ROUTES[pid] = '/plans/' + PENSION_ROUTE_SLUG[pid];
+  });
+}
+
+function pensionOverview(pid){
+  const p = pensionPlan(pid);
+  const map = {
+    flexi_retire_90xx: 'บำนาญขั้นบันได เลือกอายุเริ่มรับได้ 55 / 60 / 65 ปี รับเงินเพิ่มขึ้นตามอายุจาก 12% ไปถึง 24% ต่อปี ยาวถึงอายุ 90 ปี ชำระเบี้ยจนถึงปีก่อนเริ่มรับบำนาญ เหมาะกับคนที่อยากทยอยสะสมและกังวลเรื่องค่าครองชีพที่สูงขึ้นตอนแก่',
+    flexi_retire_90_1: 'บำนาญขั้นบันไดแบบเดียวกับ 9055/9060/9065 แต่<b>ชำระเบี้ยครั้งเดียวจบ</b> เหมาะกับคนมีเงินก้อนและไม่อยากมีภาระผูกพันระยะยาว ข้อจำกัดคือแนบสัญญาเพิ่มเติมไม่ได้',
+    flexi_retire_90_5: 'บำนาญขั้นบันไดเหมือนตระกูลเดียวกัน แต่ชำระเบี้ยสั้นเพียง 5 ปี เหมาะกับคนที่อยากปิดภาระเร็วโดยไม่ต้องจ่ายก้อนใหญ่ทีเดียว',
+    mt_8560_g15: 'บำนาญคงที่ปีละ 12% เริ่มรับอายุ 60 ถึง 85 ปี จุดต่างสำคัญคือ<b>คุ้มครองชีวิตก่อนเกษียณสูงถึง 250%</b> ของทุนประกัน และรับรองการจ่ายบำนาญ 15 ปีแรก เหมาะกับคนที่ยังมีภาระครอบครัวและอยากได้ทุนชีวิตระหว่างทางด้วย',
+    mt_8555_g20: 'บำนาญคงที่<b>ปีละ 24%</b> ซึ่งสูงที่สุดในกลุ่ม เริ่มรับอายุ 55 ถึง 85 ปี คุ้มครองชีวิตก่อนเกษียณสูงสุด 600% ของทุนประกัน และรับรองการจ่าย 20 ปีแรก เหมาะกับคนที่ต้องการทั้งบำนาญก้อนโตและทุนชีวิตสูง',
+    mt_9901_d65: 'ชำระเบี้ยครั้งเดียว รับบำนาญปีละ 12% ตั้งแต่อายุ 65 ถึง 99 ปี รวมสูงสุด 420% ของทุนประกัน รับทำตั้งแต่แรกเกิด จึงใช้วางแผนระยะยาวมากให้ลูกหลานได้',
+    mt_8501: 'ออกแบบมาสำหรับ<b>คนวัยเกษียณแล้ว</b> รับทำอายุ 55 ถึง 70 ปี ชำระเบี้ยครั้งเดียวแล้วเริ่มรับบำนาญปีละ 12% ได้เลยไม่ต้องรอนาน จนถึงอายุ 85 ปี เหมาะกับคนที่มีเงินก้อนจากการเกษียณและอยากเปลี่ยนเป็นรายรับประจำ',
+    mt_happy_retire_60: 'แบบผสมระหว่างสะสมทรัพย์กับบำนาญ มีเงินคืนปีละ 1% ตั้งแต่ก่อนเกษียณ รับก้อนใหญ่ 40% ที่อายุ 60 แล้วรับบำนาญเพิ่มขึ้นตามอายุจนถึง 89 ปี และรับอีก 400% เมื่ออยู่ครบสัญญาที่อายุ 90 ปี ผลประโยชน์รวมสูงสุด 1,237% <b>ข้อควรระวัง: ลดหย่อนภาษีได้เพียง 100,000 บาท</b> เพราะจัดเป็นประกันชีวิตทั่วไป ไม่ใช่แบบบำนาญตามนิยามสรรพากร',
+  };
+  return map[pid] || p.name;
+}
+
+/* =========================================================
+   ผู้ช่วยออกแบบแผนประกัน — แท็บย่อย สุขภาพ / ชีวิต / บำนาญ
+   ========================================================= */
+let advisorTab = 'health';
+
+function setAdvisorTab(tab){
+  advisorTab = tab;
+  ['health','life','pension'].forEach(t => {
+    const pane = document.getElementById('advTab-' + t);
+    if(pane) pane.style.display = (t === tab) ? '' : 'none';
+    const btn = document.getElementById('advTabBtn-' + t);
+    if(btn) btn.classList.toggle('active', t === tab);
+  });
+  if(tab === 'pension') renderPensionAdvisor();
+  try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){}
+}
+
+/* ---------- สถานะฟอร์มบำนาญ ---------- */
+const pensionAdvisorState = {
+  gender: 'male',
+  birthYear: currentBEYear() - 35,
+  startAge: 60,
+  payStyle: 'any',      // single | short | long | any
+  mode: 'pension',      // pension = ระบุเงินบำนาญที่ต้องการ | budget = ระบุงบต่อปี
+  wantPerMonth: 20000,
+  wantUnit: 'month',    // month | year
+  budget: 60000,
+  tax: 0,
+  needRider: 'no',      // ต้องแนบสัญญาเพิ่มเติมสุขภาพด้วยไหม
+};
+
+function setPensionAdvisorField(key, val){
+  if(['birthYear','startAge','wantPerMonth','budget','tax'].includes(key)) val = parseFloat(val) || 0;
+  pensionAdvisorState[key] = val;
+  renderPensionAdvisor();
+}
+
+function pensionAdvisorAge(){
+  const y = pensionAdvisorState.birthYear;
+  const a = currentBEYear() - y;
+  return (a >= 0 && a <= 100) ? a : 35;
+}
+
+/* ---------- ตรรกะคัดแผน ---------- */
+function pensionAdvisorCandidates(){
+  const st = pensionAdvisorState;
+  const age = pensionAdvisorAge();
+  const out = [];
+
+  for(const pid of PENSION_IDS){
+    const p = pensionPlan(pid);
+    if(!p) continue;
+
+    for(const vk of pensionVariantKeys(pid)){
+      const v = p.variants[vk];
+      const reasons = [];
+
+      // 1) อายุต้องรับได้
+      if(age < v.entryAgeMin || age > v.entryAgeMax) continue;
+
+      // 2) อายุเริ่มรับบำนาญ — ยอมคลาดเคลื่อนได้ ±5 ปี แต่หักคะแนน
+      const startDiff = v.pensionStartAge == null ? 0 : Math.abs(v.pensionStartAge - st.startAge);
+      if(v.pensionStartAge != null && startDiff > 6) continue;
+
+      // 3) รูปแบบการชำระเบี้ย
+      if(st.payStyle !== 'any' && p.premiumTermType !== st.payStyle) continue;
+
+      // 4) ต้องแนบสัญญาเพิ่มเติมได้ไหม
+      if(st.needRider === 'yes' && p.ridersAllowed === false) continue;
+
+      // ----- คำนวณจากโจทย์ -----
+      const freq = pensionDefaultFreq(pid);
+      const perYear = PENSION_FREQ_PER_YEAR[freq] || 1;
+      let sum = null;
+
+      if(st.mode === 'pension'){
+        // อยากได้บำนาญเท่านี้ -> ต้องทำทุนเท่าไหร่
+        const wantPerYear = st.wantUnit === 'month' ? st.wantPerMonth * 12 : st.wantPerMonth;
+        const firstPct = pensionPctAt(pid, vk, v.pensionStartAge != null ? v.pensionStartAge : age + 1);
+        if(!firstPct) continue;
+        sum = Math.round(wantPerYear / (firstPct/100) / 10000) * 10000;
+        if(p.sumAssuredMin && sum < p.sumAssuredMin) sum = p.sumAssuredMin;
+        if(pensionSumRestricted(pid)){
+          const fixed = pensionFixedSums(pid, vk);
+          sum = fixed.reduce((best,x) => Math.abs(x-sum) < Math.abs(best-sum) ? x : best, fixed[0]);
+        }
+      } else if(pensionSumRestricted(pid)){
+        // แบบที่เลือกทุนได้เฉพาะบางระดับ ให้หยิบทุนสูงสุดที่งบไหว
+        const fixed = pensionFixedSums(pid, vk);
+        for(const x of fixed){
+          const pr = pensionPremium(pid, vk, st.gender, age, x, freq);
+          if(pr == null) continue;
+          const yearly = p.premiumTermType === 'single' ? pr : pr * perYear;
+          if(yearly <= st.budget) sum = x;
+        }
+        if(!sum) continue;
+      } else {
+        sum = pensionSumFromBudget(pid, vk, st.gender, age, st.budget, freq);
+        if(!sum) continue;
+      }
+
+      const cf = pensionCashflow(pid, vk, st.gender, age, sum, freq);
+      if(!cf) continue;
+
+      const annualOutlay = p.premiumTermType === 'single' ? cf.perPay : cf.perPay * perYear;
+      const irr = pensionIRR(cf);
+      const be = pensionBreakEvenAge(cf);
+      const totalGet = cf.totalPension + (cf.maturity || 0);
+      const firstPensionYear = Math.round(sum * pensionPctAt(pid, vk, v.pensionStartAge != null ? v.pensionStartAge : age+1) / 100);
+      const deduct = pensionDeductible(pid, annualOutlay, 0);
+      const taxSaved = Math.round(deduct * st.tax);
+
+      // ----- ให้คะแนน -----
+      let score = 0;
+      if(irr != null) score += irr * 1000;                  // ผลตอบแทนคือหัวใจ
+      score += (totalGet / cf.totalPremium) * 8;            // ได้คืนกี่เท่า
+      score -= startDiff * 2.5;                             // ตรงอายุเกษียณที่อยากได้
+      if(st.tax > 0) score += (taxSaved / Math.max(annualOutlay,1)) * 25;  // ลดหย่อนภาษี
+      if(be != null) score -= Math.max(0, be - 75) * 0.8;   // คุ้มทุนช้าไปหักคะแนน
+      // ถ้าผู้ใช้ไม่ได้ระบุว่าอยากจ่ายครั้งเดียว อย่าดัน "จ่ายก้อนใหญ่" ขึ้นอันดับ 1
+      // เพราะคนส่วนใหญ่วางแผนเป็นรายปี เบี้ยก้อนหลายล้านมักไม่ใช่ทางเลือกจริง
+      if(st.payStyle === 'any' && p.premiumTermType === 'single') score -= 12;
+      // โหมดงบประมาณ: สิ่งที่ลูกค้าอยากรู้คือ "งบเท่านี้ได้บำนาญเท่าไหร่"
+      // ถ้าให้คะแนนด้วย IRR อย่างเดียว แบบจ่ายสั้นจะชนะทั้งที่ได้บำนาญน้อยกว่ามาก
+      if(st.mode === 'budget' && st.budget > 0) score += (firstPensionYear / st.budget) * 12;
+
+      if(st.mode === 'pension'){
+        reasons.push(`ทำทุน ${fmt(sum)} บาท จะได้บำนาญปีแรก ${fmt(firstPensionYear)} บาท (เดือนละ ${fmt(firstPensionYear/12)} บาท)`);
+      } else {
+        reasons.push(`งบ ${fmt(st.budget)} บาท/ปี ทำทุนได้ ${fmt(sum)} บาท ได้บำนาญปีแรก ${fmt(firstPensionYear)} บาท`);
+      }
+      if(startDiff === 0) reasons.push(`เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี ตรงกับที่ต้องการพอดี`);
+      else if(v.pensionStartAge != null) reasons.push(`เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี (ต่างจากที่ต้องการ ${startDiff} ปี)`);
+      if(irr != null) reasons.push(`ผลตอบแทนประมาณ ${(irr*100).toFixed(2)}% ต่อปี ถ้าอยู่ครบสัญญา`);
+      if(be) reasons.push(`คุ้มทุนที่อายุ ${be} ปี`);
+      if(p.guaranteedPeriodYears) reasons.push(`รับรองการจ่ายบำนาญ ${p.guaranteedPeriodYears} ปีแรก ถึงเสียชีวิตก่อนก็ไม่สูญ`);
+      if(p.premiumTermType === 'single' && annualOutlay >= 1000000) reasons.push(`ต้องเตรียมเงินก้อน ${fmt(annualOutlay)} บาทจ่ายครั้งเดียว`);
+      if(p.ridersRequired) reasons.push('บังคับแนบประกันอุบัติเหตุ ทำให้เบี้ยจริงสูงกว่าตัวเลขนี้');
+      if(p.ridersAllowed === false) reasons.push('แบบนี้แนบสัญญาเพิ่มเติมสุขภาพไม่ได้');
+      if(p.taxDeductMax < 300000) reasons.push(`ลดหย่อนภาษีได้เพียง ${fmt(p.taxDeductMax)} บาท ไม่ใช่ 300,000 แบบบำนาญตัวอื่น`);
+
+      out.push({pid, vk, v, p, sum, cf, irr, be, totalGet, annualOutlay, firstPensionYear, score, reasons, deduct, taxSaved, freq});
+    }
+  }
+  out.sort((a,b) => b.score - a.score);
+
+  // จัดให้ 3 อันดับแรกมาจากคนละแบบประกัน ไม่ใช่ตระกูลเดียวกันซ้ำ
+  // เพราะเสนอ Flexi Retire 3 ตัวติดกันไม่ได้ช่วยลูกค้าตัดสินใจ
+  const picked = [], seen = new Set();
+  for(const c of out){ if(!seen.has(c.pid)){ seen.add(c.pid); picked.push(c); } }
+  for(const c of out){ if(!picked.includes(c)) picked.push(c); }
+  return picked;
+}
+
+function renderPensionAdvisor(){
+  const box = document.getElementById('pensionAdvisorResult');
+  if(!box) return;
+  const st = pensionAdvisorState;
+  const age = pensionAdvisorAge();
+  const list = pensionAdvisorCandidates();
+
+  if(!list.length){
+    box.innerHTML = `<div class="pension-warn">ยังไม่พบแบบที่ตรงเงื่อนไข ลองขยายอายุเริ่มรับบำนาญ หรือเปลี่ยนรูปแบบการชำระเบี้ยเป็น "แบบไหนก็ได้" ครับ</div>`;
+    return;
+  }
+
+  const top = list.slice(0, 3);
+  const cards = top.map((c, i) => {
+    const badge = i === 0 ? '<span class="adv-badge">แนะนำที่สุด</span>' : (i === 1 ? '<span class="adv-badge adv-badge-2">ทางเลือกที่ 2</span>' : '<span class="adv-badge adv-badge-2">ทางเลือกที่ 3</span>');
+    return `
+    <div class="adv-card${i===0?' adv-card-top':''}">
+      ${badge}
+      <h3>${c.v.label || c.p.shortName}</h3>
+      <p class="adv-sub">${c.p.premiumTerm} • รับบำนาญถึงอายุ ${c.cf.endAge} ปี</p>
+      <div class="adv-nums">
+        <div><span>ทุนประกัน</span><b>${fmt(c.sum)}</b></div>
+        <div><span>${c.p.premiumTermType==='single'?'เบี้ยครั้งเดียว':'เบี้ยต่อปี'}</span><b>${fmt(c.annualOutlay)}</b></div>
+        <div><span>บำนาญปีแรก</span><b>${fmt(c.firstPensionYear)}</b></div>
+        <div><span>บำนาญ/เดือน</span><b>${fmt(c.firstPensionYear/12)}</b></div>
+        <div><span>เบี้ยรวม</span><b>${fmt(c.cf.totalPremium)}</b></div>
+        <div><span>ได้คืนรวม</span><b>${fmt(c.totalGet)}</b></div>
+        <div><span>ได้คืนกี่เท่า</span><b>${(c.totalGet/c.cf.totalPremium).toFixed(2)}x</b></div>
+        <div><span>IRR</span><b>${c.irr==null?'—':(c.irr*100).toFixed(2)+'%'}</b></div>
+        ${st.tax ? `<div><span>ประหยัดภาษี/ปี</span><b>${fmt(c.taxSaved)}</b></div>` : ''}
+      </div>
+      <ul class="adv-why">${c.reasons.map(r=>`<li>${r}</li>`).join('')}</ul>
+      <div class="adv-actions">
+        <button class="btn" style="padding:9px;font-size:.82rem;" onclick="pensionAdvisorGoDetail('${c.pid}','${c.vk}','${st.gender}',${age},${c.sum},'${c.freq}')">ดูรายละเอียด + ตารางบำนาญรายปี &rarr;</button>
+        <button class="btn secondary" style="padding:9px;font-size:.82rem;" onclick="pensionAdvisorGoCalc('${c.pid}','${c.vk}','${st.gender}',${age},${c.sum},'${c.freq}')">ไปหน้าคำนวณเบี้ย &rarr;</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const others = list.slice(3, 8).map(c =>
+    `<li><b>${c.v.label || c.p.shortName}</b> — ทุน ${fmt(c.sum)} เบี้ย ${fmt(c.annualOutlay)}/ปี บำนาญปีแรก ${fmt(c.firstPensionYear)} IRR ${c.irr==null?'—':(c.irr*100).toFixed(2)+'%'}</li>`
+  ).join('');
+
+  box.innerHTML = `
+    <div class="adv-summary">คุณอายุ ${age} ปี ${st.gender==='male'?'ชาย':'หญิง'} ต้องการเริ่มรับบำนาญที่อายุ ${st.startAge} ปี
+      ${st.mode==='pension' ? `และอยากได้บำนาญ ${fmt(st.wantPerMonth)} บาท/${st.wantUnit==='month'?'เดือน':'ปี'}` : `ด้วยงบ ${fmt(st.budget)} บาท/ปี`}
+      — พบ ${list.length} ทางเลือกที่ทำได้</div>
+    <div class="adv-cards">${cards}</div>
+    ${others ? `<div class="content-card" style="margin-top:14px;"><h3 style="font-size:.95rem;margin:0 0 8px;">ทางเลือกอื่นที่ทำได้</h3><ul class="adv-others">${others}</ul></div>` : ''}
+    <p class="pension-hint">การจัดอันดับพิจารณาจากผลตอบแทน IRR จำนวนเท่าที่ได้คืน ความตรงกับอายุเกษียณที่ต้องการ จุดคุ้มทุน และสิทธิลดหย่อนภาษี ตัวเลขทั้งหมดเป็นการประมาณการจากตารางเบี้ยและอัตราบำนาญทางการ ไม่รวมเงินปันผลและค่าใช้จ่ายอื่น ผลประโยชน์จริงยึดตามกรมธรรม์
+    ${st.tax ? ' ส่วนตัวเลขภาษีเป็นการประมาณการเบื้องต้นจากฐานภาษีที่เลือก สิทธิจริงขึ้นกับเงินได้และค่าลดหย่อนอื่นที่ใช้ไปแล้ว ควรตรวจสอบกับผู้เชี่ยวชาญด้านภาษี' : ''}</p>`;
+}
+
+function pensionAdvisorGoDetail(pid, vk, gender, age, sum, freq){
+  pensionCalcState[pid] = Object.assign(pensionCalcDefaults(pid), {
+    variant: vk, gender, age, sum, freq, mode: 'sum', tax: pensionAdvisorState.tax
+  });
+  showPlanDetail(pid);
+}
+
+function pensionAdvisorGoCalc(pid, vk, gender, age, sum, freq){
+  try{
+    const el = id => document.getElementById(id);
+    if(el('gender' + (gender==='male'?'M':'F'))) el('gender' + (gender==='male'?'M':'F')).checked = true;
+    const by = el('birthYear'); if(by) by.value = currentBEYear() - age;
+    const ms = el('mainSelect');
+    if(ms){
+      const opt = [...ms.options].find(o => o.value === 'pension:' + pid + ':' + vk);
+      if(opt){ ms.value = opt.value; }
+    }
+    const sa = el('mainSum'); if(sa) sa.value = sum;
+    const fq = el('paymentFrequency'); if(fq) fq.value = freq === 'single' ? 'annual' : freq;
+  }catch(e){}
+  showPage('calc');
+  try{ if(typeof calculate === 'function') calculate(); }catch(e){}
+}
+
+/* init ผู้ช่วยออกแบบบำนาญ */
+(function(){
+  const by = document.getElementById('pa_birthYear');
+  if(by) by.value = currentBEYear() - 35;
+  const tx = document.getElementById('pa_tax');
+  if(tx) tx.innerHTML = TAX_BRACKETS.map(b=>`<option value="${b.rate}">${b.label}</option>`).join('');
+  const modeSel = document.querySelector('#advTab-pension select[onchange*="\'mode\'"]');
+  if(modeSel) modeSel.addEventListener('change', function(){
+    const want = document.getElementById('pa_wantRow');
+    const bud = document.getElementById('pa_budgetRow');
+    if(want) want.style.display = this.value === 'pension' ? '' : 'none';
+    if(bud) bud.style.display = this.value === 'budget' ? '' : 'none';
+  });
+})();
+
+buildPensionPlanDetails();
+initPensionMainSelect();
+updateMainCapitalHint();
 
 routeFromLocation();
 </script>
