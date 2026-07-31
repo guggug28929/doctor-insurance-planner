@@ -1104,6 +1104,24 @@
     color:var(--ink);
   }
   .ai-budget-filter b{color:var(--pink-deep);}
+  .adv-badge-row{margin:0 0 6px;}
+  .adv-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.02em;}
+  .adv-badge-main{background:var(--pink);color:#fff;}
+  .adv-badge-alt{background:#eef1f6;color:#4a5568;}
+  .adv-badge-conflict{background:#fdecec;color:#b42318;border:1px solid #f3b4b4;}
+  .adv-warn{
+    margin-top:10px;padding:10px 12px;border-radius:12px;
+    border:1px solid #f3b4b4;background:#fff7f7;color:#8c2f2f;
+    font-size:.82rem;line-height:1.55;
+  }
+  .adv-gap-wrap{margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .adv-gap-title{font-weight:700;font-size:.82rem;color:var(--pink-deep);margin-bottom:6px;}
+  .adv-gap-table{width:100%;min-width:520px;border-collapse:collapse;font-size:.78rem;line-height:1.5;}
+  .adv-gap-table th,.adv-gap-table td{
+    border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;
+  }
+  .adv-gap-table th{background:#faf3f6;color:var(--pink-deep);font-weight:700;white-space:nowrap;}
+  .adv-gap-table td:first-child{min-width:170px;}
 </style>
 </head>
 <body>
@@ -4631,7 +4649,9 @@ function packageLabelItem(item){
   if(item.kind==='ecp') return `Extra Care Plus แผน ${item.plan.replace('p','')} (Deductible 20,000/ครั้ง)`;
   if(item.kind==='opd_mao') return `OPD เหมาจ่าย ${fmt(item.plan)} บาท/ปี`;
   if(item.kind==='opd_krang') return `OPD รายครั้ง ${fmt(item.plan)} บาท/ครั้ง`;
-  if(item.kind==='careplus') return `Care Plus มะเร็ง+ไตวายเรื้อรัง วงเงิน 5 ล้านบาท/ปี/โรค`;
+  if(item.kind==='careplus') return item.plan === 'ca'
+    ? `Care Plus มะเร็ง วงเงิน 5 ล้านบาท/ปี`
+    : `Care Plus มะเร็ง+ไตวายเรื้อรัง วงเงิน 5 ล้านบาท/ปี/โรค`;
   if(item.kind==='cipc') return `CI Perfect Care ทุน ${fmt(item.capital)} บาท`;
   if(item.kind==='dcare') return `D Care โรคยอดฮิต ทุน ${fmt(item.capital)} บาท`;
   if(item.kind==='pa') return `PA Easy Plan แผน ${item.plan}`;
@@ -4646,7 +4666,7 @@ function premiumOfItem(item, gender, age){
   if(item.kind==='ecp') return healthRiderPremium({type:'ecp', plan:item.plan}, gender, age).premium;
   if(item.kind==='opd_mao') return opdPremium({type:'mao', plan:String(item.plan)}, gender, age).premium;
   if(item.kind==='opd_krang') return opdPremium({type:'krang', plan:String(item.plan)}, gender, age).premium;
-  if(item.kind==='careplus') return careplusPremium('5m','cackd', gender, age);
+  if(item.kind==='careplus') return careplusPremium('5m', item.plan === 'ca' ? 'ca' : 'cackd', gender, age);
   if(item.kind==='cipc') return cipcPremium(item.capital, gender, age);
   if(item.kind==='dcare') return dcarePremium('popular', item.capital, gender, age);
   if(item.kind==='pa') return paPremium(item.plan, age);
@@ -4663,371 +4683,402 @@ function pricePackage(pkg, gender, age){
   pkg.missing = missing;
   return pkg;
 }
-function baseMainFor(input, ciTarget){
-  // v11 health-first rule: สัญญาหลัก/ทุนชีวิตเป็น “ตัวรองท้ายสุด”
-  // ถ้ามีงบเหลือพอใช้ 99/20 ทุน 200,000; ถ้างบตึงใช้ 99/99 ทุน 50,000–100,000
-  // ถ้าลูกค้าไม่เอาโรคร้ายแรง จึงค่อยโยกงบที่เหลือบางส่วนไปเพิ่มทุนชีวิตในเล่มนี้
-  const budget = input.budget || 0;
-  let mainPlan = '99_99';
-  let capital = 50000;
-  if(!budget || budget >= 55000){
-    mainPlan = '99_20';
-    capital = 200000;
-  }else if(budget >= 35000){
-    mainPlan = '99_99';
-    capital = 100000;
-  }
-  if(ciTarget>0){
-    // ไม่ไล่ทุนชีวิตสูงเพื่อรองรับ CI ในเล่มสุขภาพ; ถ้าจะเอาทุนชีวิตสูงให้แยกเล่ม
-    capital = Math.max(capital, mainPlan==='99_20'?200000:50000);
-  }
-  return {kind:'main', plan:mainPlan, capital};
-}
-function mainPremiumSafe(plan, capital, gender, age){
-  const p = mainPremiumAtEntry(plan, capital, gender, age);
-  return typeof p === 'number' ? p : Infinity;
-}
-function chooseMainAfterProtection(input, mode, protectionItems){
-  const gender = input.gender, age = input.age;
-  const protectionPremium = protectionItems.reduce((sum,it)=>{
-    const p = premiumOfItem(it, gender, age);
-    return sum + (typeof p === 'number' ? p : 0);
-  },0);
-  const budget = input.budget || 0;
-  const wantsNoCI = input.ciStyle === 'none' || input.ciCapital <= 0;
-  if(!budget){
-    return wantsNoCI ? {kind:'main', plan:'99_20', capital:300000} : {kind:'main', plan:'99_20', capital:200000};
-  }
-  const left = budget - protectionPremium;
-  const p99_20_200 = mainPremiumSafe('99_20',200000,gender,age);
-  const p99_99_100 = mainPremiumSafe('99_99',100000,gender,age);
-  const p99_99_50 = mainPremiumSafe('99_99',50000,gender,age);
+/* =========================================================================
+   Plan Advisor Engine v20 — "Anchor + Step-down Ladder"
 
-  // ไม่เอาโรคร้ายแรง: ค่อยเพิ่มทุนชีวิตจากงบที่เหลือ แต่ยัง cap ไว้ เพราะทุนสูงควรแยกเล่ม
-  if(wantsNoCI){
-    if(left >= p99_20_200){
-      let cap = 200000;
-      const capMax = 500000;
-      for(let c=250000; c<=capMax; c+=50000){
-        if(mainPremiumSafe('99_20', c, gender, age) <= left) cap = c;
-      }
-      return {kind:'main', plan:'99_20', capital:cap};
-    }
-    if(left >= p99_99_100) return {kind:'main', plan:'99_99', capital:100000};
-    return {kind:'main', plan:'99_99', capital:50000};
-  }
+   หลักคิดของตัวแทนมืออาชีพที่ยึดประโยชน์ลูกค้า:
+   ปิดความเสี่ยงที่ "เสียหายมาก แต่โอกาสเกิดน้อย" ก่อนเสมอ
+   แล้วค่อยดูความเสี่ยงที่ "เสียหายน้อย แต่เกิดบ่อย"
 
-  if(left >= p99_20_200) return {kind:'main', plan:'99_20', capital:200000};
-  if(left >= p99_99_100) return {kind:'main', plan:'99_99', capital:100000};
-  return {kind:'main', plan:'99_99', capital:50000};
-}
-function healthFor(input, mode){
-  const hasBuffer = input.hasGroup || input.groupCoverage >= 30000;
-  const risk = input.riskChoice==='auto' ? (hasBuffer ? 'deduct' : 'none') : input.riskChoice;
-  const ageOkElite = input.age>=11 && input.age<=90;
-  const need = input.ipdNeed;
-  const dhlSum = (need==='basic') ? '1m' : '5m';
+   ลำดับการทำงาน
+   1) เลือก Anchor ตามความต้องการจริงและงบ
+      สรณะพื้นฐาน = D Health Lite 5 ล้าน (ไม่มีส่วนแรก) + Care Plus มะเร็ง+ไตวาย 5 ล้าน
+      ถ้างบเหลือพอ ค่อยขยับขึ้น Elite 20M / 75M / 100M
+      ห้ามเสนอ Elite 40M ทุกกรณี (เหตุผลใน ADV_NO_40M_REASON)
+   2) ถ้าเบี้ยเกินงบ ให้ไล่ตัด "ส่วนที่ปิดความเสี่ยงเล็ก" ตามบันได
+      OPD → CI เงินก้อนส่วนเกิน → ทุนชีวิต → PA → ขอบเขต Care Plus
+   3) ห้ามลดคุณภาพสัญญาสุขภาพหลักเพื่อให้เข้างบ
+      ถ้าไล่ตัดจนสุดบันไดแล้วยังเกิน ให้เสนอไปตรง ๆ พร้อมบอกส่วนต่าง
+   4) แผนที่ต้องรับความเสี่ยงส่วนแรก (Deductible/Co-pay) เป็น "ทางเลือก" เท่านั้น
+      ถ้าลูกค้าบอกว่าไม่เอา จะถูกติดป้ายว่าขัดความต้องการ และห้ามเป็นอันดับ 1
+   5) ทางเลือกสำรองถูกไล่บันไดชุดเดียวกับข้อเสนอหลัก เพื่อให้เทียบเบี้ยกันได้จริง
+   ========================================================================= */
 
-  // v12: แยก Tier ให้ชัด
-  // - ประหยัด: คุมเบี้ยด้วย D Health Lite/เหมาจ่าย Extra
-  // - สมดุล: วงเงิน 1–5 ล้านตามโจทย์
-  // - แผนสูง: ถ้าโจทย์เลือกสมดุล 1–5 ล้าน หรือ 5 ล้าน ให้กระโดดไป Elite 20M ไม่วนอยู่ 5M
-  //   ยกเว้นกรณีเลือก Elite 75/100 โดยตรง หรือ OPD หนักมาก จึงค่อยไป 75/100M
-  if(mode==='budget'){
-    // v14: ถ้างบน้อยแต่เลือกความคุ้มครองสูง ห้ามรีบโยนไปแผนถูกวงเงินต่ำ
-    // ให้พยายามเสนอ D Health Lite 5 ล้านแบบ Deductible ก่อน; ถ้าเกินงบหนักจริง ๆ ค่อย step down เป็น ECP แผน 3
-    if(requestedHighProtection(input)){
-      if(dhlHighTooExpensiveForBudget(input)) return {kind:'ecp', plan:'p3'};
-      return {kind:'dhl', sum:'5m', mode:'deduct', deduct:dhlHighDeductFor(input)};
-    }
-    if(input.age>=11 && risk==='none') return {kind:'maochai', plan: need==='basic'?'p1':'p3'};
-    if(risk==='copay20') return {kind:'dhl', sum:dhlSum, mode:'copay', copay:'8020'};
-    if(risk==='copay10') return {kind:'dhl', sum:dhlSum, mode:'copay', copay:'9010'};
-    return {kind:'dhl', sum:dhlSum, mode:'deduct', deduct: need==='basic'?'d20k':'d50k'};
-  }
+const ADV_NO_40M_REASON = 'Elite 75 ล้าน แพงกว่า Elite 40 ล้านเพียงประมาณ 2–5% แต่ได้วงเงินเกือบสองเท่า ค่าห้องสูงกว่า วงเงิน OPD เป็นสองเท่า และปลดล็อกกายภาพบำบัด ฝังเข็ม และจิตเวชที่แผน 40 ล้านไม่คุ้มครองเลย แผน 40 ล้านจึงไม่มีข้อไหนชนะแผน 75 ล้าน ระบบจึงไม่เสนอ';
 
-  if(mode==='premium' && ageOkElite){
-    if(need==='elite75') return {kind:'ehp', plan:'75m'};
-    if(input.opdNeed==='heavy') return {kind:'ehp', plan:'75m'};
-    return {kind:'ehp', plan:'20m'};
-  }
+const ADV_MAIN_LEVELS = [
+  {plan:'99_20', capital:200000, label:'Smart Protection 99/20 ทุน 200,000 บาท'},
+  {plan:'99_99', capital:100000, label:'Whole Life 99/99 ทุน 100,000 บาท'},
+  {plan:'99_99', capital:50000,  label:'Whole Life 99/99 ทุน 50,000 บาท'},
+];
+const ADV_OPD_ORDER = ['heavy','moderate','light','none'];
+const ADV_OPD_LABEL = {heavy:'OPD เหมาจ่าย 100,000/ปี', moderate:'OPD เหมาจ่าย 30,000/ปี', light:'OPD รายครั้ง 1,000/ครั้ง', none:'ไม่มี OPD'};
+const ADV_TIER_RANK = {dhl5:1, elite20:2, elite75:3, elite100:4};
 
-  // balanced tier: ไม่ดัน Elite 40M; คุมให้อยู่ระดับ 1–5M เว้นแต่ผู้ใช้เลือก Elite ตรงๆ
-  if(need==='elite75' && ageOkElite) return {kind:'ehp', plan:'75m'};
-  if(need==='elite20' && ageOkElite) return {kind:'ehp', plan:'20m'};
-
-  if(risk==='none'){
-    if(need==='basic' && input.age>=11) return {kind:'maochai', plan:'p3'};
-    return {kind:'dhl', sum:dhlSum, mode:'deduct', deduct:'d0'};
-  }
-  if(risk==='copay20') return {kind:'dhl', sum:dhlSum, mode:'copay', copay:'8020'};
-  if(risk==='copay10') return {kind:'dhl', sum:dhlSum, mode:'copay', copay:'9010'};
-  return {kind:'dhl', sum:dhlSum, mode:'deduct', deduct: hasBuffer ? (input.groupCoverage>=50000?'d50k':'d30k') : 'd30k'};
+function advDeductText(d){
+  return {d0:'0', d20k:'20,000', d30k:'30,000', d50k:'50,000', d100k:'100,000'}[d] || '0';
 }
-function ciItemsFor(input, mode, mainCapital, health){
-  const items=[];
-  if(input.ciStyle==='none' || input.ciCapital<=0) return items;
-  let target = Math.max(100000, input.ciCapital);
-  const hasElite = health && health.kind === 'ehp';
-  if(hasElite){
-    // Elite มีวงเงินค่ารักษาก้อนใหญ่แล้ว จึงไม่ซ้อน Care Plus อัตโนมัติ; ใช้เงินก้อน CI ตามความต้องการแทน
-    if(mode==='budget' || input.ciStyle==='budget') items.push({kind:'dcare', capital: Math.min(1000000, Math.max(250000, target))});
-    else items.push({kind:'cipc', capital: Math.min(Math.max(500000,target), Math.max(1000000, mainCapital*10))});
-    return items;
-  }
-  // v11: health-first + โรคร้ายแรงก่อน OPD; แผนงบน้อยยังคง Care Plus ไว้ก่อน แล้วค่อยตัด OPD
-  if(input.ciStyle==='broad'){
-    items.push({kind:'cipc', capital: Math.min(target, Math.max(1000000, mainCapital*10))});
-  }else if(input.ciStyle==='budget'){
-    items.push({kind:'careplus'});
-  }else if(input.ciStyle==='cancerckd'){
-    items.push({kind:'careplus'});
-  }else{
-    items.push({kind:'careplus'});
-    // ถ้างบไม่ใช่โหมดประหยัด ค่อยเติม CI เงินก้อนเพิ่ม
-    if(mode!=='budget') items.push({kind:'cipc', capital: Math.min(Math.max(500000,target), Math.max(1000000, mainCapital*10))});
-  }
-  return items;
-}
-function opdItemsFor(input, mode, health){
-  if(input.opdNeed==='none') return [];
-  // v11: OPD เป็นลำดับหลัง IPD และโรคร้ายแรง; แผนประหยัดตัด OPD เพื่อกันงบให้ IPD + Care Plus ก่อน
-  if(mode==='budget') return [];
-  // ถ้าเป็น Elite แล้ว ไม่เสนอ OPD แยกอัตโนมัติ: แผน 40M ขึ้นไปมี OPD ในตัว ส่วนความต้องการ OPD หนักจะถูกดันไป Elite 75/100M ใน healthFor แล้ว
-  if(health.kind==='ehp') return [];
-  if(input.opdNeed==='heavy') return [{kind:'opd_mao', plan: mode==='premium'?100000:30000}];
-  if(input.opdNeed==='moderate') return [{kind:'opd_mao', plan: mode==='premium'?50000:30000}];
-  return [{kind:'opd_krang', plan: mode==='premium'?1500:1000}];
-}
-function paFor(input, mode){
-  if(input.age<16) return {kind:'pa', plan:'2'};
-  if(mode==='premium') return {kind:'pa', plan:'4'};
-  if(mode==='budget') return {kind:'pa', plan:'2'};
-  return {kind:'pa', plan:'3'};
-}
-function requestedHighProtection(input){
-  return ['high','elite20','elite75'].includes(input.ipdNeed) || input.opdNeed === 'heavy';
-}
-function dhlDeductFromGroup(input){
-  const cov = input.groupCoverage || 0;
-  if(input.ipdNeed === 'basic'){
-    if(cov >= 50000) return 'd50k';
-    return 'd20k';
-  }
-  if(cov >= 100000) return 'd100k';
-  if(cov >= 50000) return 'd50k';
-  if(cov >= 30000) return 'd30k';
-  return 'd30k';
-}
-function dhlHighDeductFor(input){
-  // v14: งบน้อยแต่ต้องการคุ้มครองสูง ให้พยายามคง D Health Lite 5M แบบ Deductible ก่อน
-  // ถ้ามีสวัสดิการเดิม ให้จับ Deductible ตามวงเงินเดิม; ถ้าไม่มี ให้ใช้ Deductible สูงขึ้นเพื่อกดเบี้ย
-  const cov = input.groupCoverage || 0;
-  if(input.hasGroup || cov > 0) return dhlDeductFromGroup({...input, ipdNeed:'high'});
-  if(input.budget && input.budget < 30000) return 'd100k';
-  if(input.budget && input.budget < 45000) return 'd50k';
-  return 'd30k';
-}
-function dhlHighMinimumPackagePremium(input){
-  // ประเมินว่า DHL 5M + Care Plus + main 99/99 50k + PA1 ยังพออยู่ในกรอบงบไหม
-  // ถ้าเกิน hard cap มากจริง ๆ จึงค่อย step down ไป Extra Care Plus แผน 3
-  const items = [{kind:'dhl', sum:'5m', mode:'deduct', deduct:dhlHighDeductFor(input)}];
-  if(input.ciStyle !== 'none' && input.ciCapital > 0) items.push({kind:'careplus'});
-  items.push({kind:'main', plan:'99_99', capital:50000});
-  items.push({kind:'pa', plan:'1'});
-  let total = 0;
-  for(const it of items){
-    const p = premiumOfItem(it, input.gender, input.age);
-    if(typeof p !== 'number') return Infinity;
-    total += p;
-  }
-  return total;
-}
-function dhlHighTooExpensiveForBudget(input){
-  if(!input.budget) return false;
-  return dhlHighMinimumPackagePremium(input) > input.budget * 1.50;
-}
-function ecpPlanForBudget(input){
-  // v14: ถ้ายังต้องการความคุ้มครองสูงแต่ DHL 5M ไม่ไหวจริง ๆ ให้ step down มาที่ Extra Care Plus แผน 3 ก่อน
-  if(requestedHighProtection(input)) return 'p3';
-  const b = input.budget || 0;
-  if(b && b < 22000) return 'p1';
-  if(b && b < 38000) return 'p2';
-  return 'p3';
-}
-function packageSignature(pkg){
-  return pkg.items.map(it => {
-    if(it.kind==='main') return `main:${it.plan}:${it.capital}`;
-    if(it.kind==='dhl') return `dhl:${it.sum}:${it.mode}:${it.deduct||it.copay||''}`;
-    if(it.kind==='ehp') return `ehp:${it.plan}`;
-    if(it.kind==='maochai') return `maochai:${it.plan}`;
-    if(it.kind==='ecp') return `ecp:${it.plan}`;
-    if(it.kind==='opd_mao' || it.kind==='opd_krang') return `${it.kind}:${it.plan}`;
-    if(it.kind==='careplus') return 'careplus';
-    if(it.kind==='cipc' || it.kind==='dcare') return `${it.kind}:${it.capital}`;
-    if(it.kind==='pa') return `pa:${it.plan}`;
-    return JSON.stringify(it);
-  }).join('|');
-}
-function uniquePackages(packages){
-  const seen = new Set();
-  const out = [];
-  packages.forEach(p=>{
-    const sig = packageSignature(p);
-    if(!seen.has(sig)){
-      seen.add(sig);
-      out.push(p);
-    }
+function advHasDeductibleOrCopay(items){
+  return (items || []).some(it => {
+    if(it.kind === 'dhl') return it.mode === 'copay' || (it.deduct && it.deduct !== 'd0');
+    if(it.kind === 'ecp') return true;
+    return false;
   });
+}
+function advCloneItem(it){ return JSON.parse(JSON.stringify(it)); }
+
+/* ---------- สัญญาสุขภาพหลักของแต่ละ Anchor ---------- */
+function advDhlAnchor(input){
+  const sum = input.ipdNeed === 'basic' ? '1m' : '5m';
+  if(input.riskChoice === 'copay10') return {kind:'dhl', sum, mode:'copay', copay:'9010'};
+  if(input.riskChoice === 'copay20') return {kind:'dhl', sum, mode:'copay', copay:'8020'};
+  const cov = input.groupCoverage || 0;
+  const byCov = cov >= 100000 ? 'd100k' : cov >= 50000 ? 'd50k' : 'd30k';
+  if(input.riskChoice === 'deduct') return {kind:'dhl', sum, mode:'deduct', deduct:byCov};
+  // auto: ใช้ Deductible ก็ต่อเมื่อมีสวัสดิการเดิมรับส่วนแรกให้จริง ไม่ใช่เพื่อกดเบี้ยลอย ๆ
+  if(input.riskChoice === 'auto' && cov >= 30000) return {kind:'dhl', sum, mode:'deduct', deduct:byCov};
+  return {kind:'dhl', sum, mode:'deduct', deduct:'d0'};
+}
+function advHealthForTier(input, tierId){
+  if(tierId === 'elite20') return [{kind:'ehp', plan:'20m'}];
+  if(tierId === 'elite75') return [{kind:'ehp', plan:'75m'}];
+  if(tierId === 'elite100') return [{kind:'ehp', plan:'100m'}];
+  return [advDhlAnchor(input)];
+}
+
+/* ---------- โรคร้ายแรง ---------- */
+function advCiItems(input, healthItems, opts){
+  opts = opts || {};
+  const hasElite = healthItems.some(h => h.kind === 'ehp');
+  if(input.ciStyle === 'none' || input.ciCapital <= 0){
+    // Care Plus ไม่ใช่ CI แต่เป็นตัวจ่ายค่ารักษาหมวด 9–11 ที่สัญญาสุขภาพไม่คุ้มครอง
+    // ทางเลือกที่บังคับพ่วง จะยังใส่ให้แม้ลูกค้าบอกว่ายังไม่เอาโรคร้ายแรง
+    return opts.forceCarePlus && !hasElite ? [{kind:'careplus', plan:'cackd'}] : [];
+  }
+  const target = Math.max(100000, input.ciCapital);
+  if(hasElite){
+    // Elite จ่ายค่าล้างไต รังสีรักษา และเคมีบำบัด (หมวด 9–11) ตามจริงอยู่แล้ว
+    // จึงไม่ซ้อน Care Plus ให้เปลืองเบี้ย แต่ใช้ CI เป็นเงินก้อนชดเชยรายได้แทน
+    if(input.ciStyle === 'budget') return [{kind:'dcare', capital: Math.min(1000000, Math.max(250000, target))}];
+    return [{kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)}];
+  }
+  const out = [{kind:'careplus', plan:'cackd'}];
+  if(input.ciStyle === 'broad' || input.ciStyle === 'balanced'){
+    out.push({kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)});
+  }
   return out;
 }
-function buildBudgetFitPackage(input, variant){
-  // v14: เมื่อลูกค้าเลือก “งบน้อย + คุ้มครองสูง”
-  // 1) พยายามคง D Health Lite 5M แบบ Deductible ก่อน
-  // 2) ถ้างบน้อยมากจริง ๆ จึง step down เป็น Extra Care Plus แผน 3
-  // 3) ยังไม่รีบตัด PA; ใส่ PA แผน 1 เพื่อคุมเบี้ยและไม่บังคับให้เล่มหลักแพงขึ้น
-  const hasUsefulGroup = input.hasGroup || input.groupCoverage >= 20000;
-  let health;
-  let name;
+
+/* ---------- OPD / PA ---------- */
+function advOpdItem(level, healthItems){
+  if(level === 'none') return null;
+  // Elite 75/100 ล้าน มีวงเงินผู้ป่วยนอกในตัวแล้ว ไม่ต้องซื้อซ้ำ
+  if(healthItems.some(h => h.kind === 'ehp' && h.plan !== '20m')) return null;
+  if(level === 'heavy') return {kind:'opd_mao', plan:100000};
+  if(level === 'moderate') return {kind:'opd_mao', plan:30000};
+  return {kind:'opd_krang', plan:1000};
+}
+function advInitialPa(input){
+  if(input.age > 85) return null;
+  if(input.age < 16) return '2';
+  return '1';
+}
+
+/* ---------- สร้างและตีราคาแพ็กเกจจาก state ---------- */
+function advInitState(input, healthItems, opts){
+  opts = opts || {};
+  return {
+    healthItems: healthItems.map(advCloneItem),
+    ci: advCiItems(input, healthItems, opts).map(advCloneItem),
+    opdLevel: input.opdNeed,
+    paPlan: advInitialPa(input),
+    mainLevel: 0,
+    lockCarePlus: !!opts.forceCarePlus,
+  };
+}
+function advIsElite(state){ return state.healthItems.some(h => h.kind === 'ehp'); }
+function advItemsOf(state){
+  const items = state.healthItems.map(advCloneItem);
+  state.ci.forEach(c => items.push(advCloneItem(c)));
+  const opd = advOpdItem(state.opdLevel, state.healthItems);
+  if(opd) items.push(opd);
+  const m = ADV_MAIN_LEVELS[state.mainLevel];
+  items.push({kind:'main', plan:m.plan, capital:m.capital});
+  if(state.paPlan) items.push({kind:'pa', plan:state.paPlan});
+  return items;
+}
+function advPricedItems(state, input){
+  const pkg = {items: advItemsOf(state)};
+  pricePackage(pkg, input.gender, input.age);
+  return pkg;
+}
+
+/* ---------- บันไดการตัด ---------- */
+function advNextConcession(state){
+  const oi = ADV_OPD_ORDER.indexOf(state.opdLevel);
+  if(oi >= 0 && oi < ADV_OPD_ORDER.length - 1){
+    state.opdLevel = ADV_OPD_ORDER[oi + 1];
+    return state.opdLevel === 'none'
+      ? 'ตัด OPD ออกเป็นลำดับแรก เพราะค่าหมอครั้งละไม่กี่ร้อยถึงพันบาทเป็นเงินที่จ่ายเองไหว แต่เบี้ย OPD กินงบมากที่สุดในแพ็กเกจ'
+      : `ลดระดับ OPD ลงเป็น ${ADV_OPD_LABEL[state.opdLevel]} ก่อน ยังไม่แตะความคุ้มครองก้อนใหญ่`;
+  }
+  const extraIdx = state.ci.findIndex(c => c.kind === 'cipc' || c.kind === 'dcare');
+  if(extraIdx >= 0){
+    const cut = state.ci.splice(extraIdx, 1)[0];
+    return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`;
+  }
+  // Elite: ห้ามลดทุนชีวิตลงมา เพราะจ่ายเบี้ยสุขภาพหลักแสนแต่คุ้มครองชีวิตห้าหมื่นไม่สมเหตุผล
+  if(!advIsElite(state) && state.mainLevel < ADV_MAIN_LEVELS.length - 1){
+    state.mainLevel += 1;
+    return `ลดสัญญาหลักเป็น ${ADV_MAIN_LEVELS[state.mainLevel].label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`;
+  }
+  if(state.paPlan){
+    state.paPlan = null;
+    return 'ตัด PA อุบัติเหตุ เป็นลำดับท้าย ๆ เพราะเบี้ยถูกและปิดความเสี่ยงจริง แต่ยังจำเป็นน้อยกว่าค่ารักษาพยาบาลก้อนใหญ่';
+  }
+  const cp = state.ci.find(c => c.kind === 'careplus' && c.plan === 'cackd');
+  if(cp){
+    cp.plan = 'ca';
+    return 'ลด Care Plus จาก มะเร็ง+ไตวายเรื้อรัง เหลือมะเร็งอย่างเดียว เป็นขั้นสุดท้ายก่อนยอมเสนอเกินงบ เพราะมะเร็งคือความเสี่ยงที่ค่ารักษาสูงที่สุด';
+  }
+  return null;
+}
+function advRunLadder(input, healthItems, opts){
+  const state = advInitState(input, healthItems, opts);
+  const trace = [];
+  let priced = advPricedItems(state, input);
+  let guard = 0;
+  while(input.budget && priced.premium > input.budget && guard++ < 12){
+    const note = advNextConcession(state);
+    if(!note) break;
+    trace.push(note);
+    priced = advPricedItems(state, input);
+  }
+  return {state, priced, trace};
+}
+
+/* ---------- เลือก Anchor ---------- */
+function advFloorTier(input){
+  if(input.ipdNeed === 'elite75') return 'elite75';
+  if(input.ipdNeed === 'elite20') return 'elite20';
+  return 'dhl5';
+}
+function advTierAllowed(input, tierId){
+  if(tierId === 'dhl5') return true;
+  if(!(input.age >= 11 && input.age <= 90)) return false;
+  if(ADV_TIER_RANK[tierId] <= ADV_TIER_RANK[advFloorTier(input)]) return true;
+  // จะขยับขึ้น Elite 75/100 เองได้ ก็ต่อเมื่อเหตุผลที่ขึ้นคือ OPD และผลประโยชน์ส่วนขยาย
+  if(tierId === 'elite100') return input.opdNeed === 'heavy';
+  if(tierId === 'elite75') return input.opdNeed !== 'none';
+  return true;
+}
+function advSelectTier(input){
+  const floor = advFloorTier(input);
+  if(!input.budget) return floor;
+  const candidates = ['elite100','elite75','elite20','dhl5']
+    .filter(t => ADV_TIER_RANK[t] >= ADV_TIER_RANK[floor])
+    .filter(t => advTierAllowed(input, t));
+  for(const t of candidates){
+    const state = advInitState(input, advHealthForTier(input, t));
+    const priced = advPricedItems(state, input);
+    if(!priced.missing.length && priced.premium <= input.budget) return t;
+  }
+  return floor;
+}
+
+/* ---------- ข้อเสนอหลัก ---------- */
+function advTierName(tierId, healthItems){
+  if(tierId === 'dhl5'){
+    return healthItems[0].sum === '1m'
+      ? 'ข้อเสนอหลัก — D Health Lite 1 ล้าน + Care Plus'
+      : 'ข้อเสนอหลัก — D Health Lite 5 ล้าน + Care Plus';
+  }
+  return `ข้อเสนอหลัก — Elite Health Plus ${tierId.replace('elite','')} ล้าน`;
+}
+function advBuildRecommended(input){
+  const tierId = advSelectTier(input);
+  const {state, priced, trace} = advRunLadder(input, advHealthForTier(input, tierId));
   const why = [];
-  const pa = {kind:'pa', plan:'1'};
+  const warnings = [];
+  const h0 = state.healthItems[0];
 
-  if(variant === 'dhl-high-deduct' || variant === 'group-deduct'){
-    const sum = requestedHighProtection(input) ? '5m' : (input.ipdNeed === 'basic' ? '1m' : '5m');
-    const deduct = requestedHighProtection(input) ? dhlHighDeductFor(input) : dhlDeductFromGroup(input);
-    health = {kind:'dhl', sum, mode:'deduct', deduct};
-    name = hasUsefulGroup ? 'แผนคุ้มครองสูงแบบใช้สวัสดิการเดิมช่วยรับส่วนแรก' : 'แผนคุ้มครองสูงคุมงบด้วย Deductible';
-    const deductText = {'d20k':'20,000','d30k':'30,000','d50k':'50,000','d100k':'100,000'}[deduct] || 'ตามสวัสดิการเดิม';
-    why.push(`ยังคง D Health Lite 5 ล้านไว้ก่อน เพราะลูกค้าเลือกความคุ้มครองสูง แต่งบจำกัด จึงใช้ Deductible ${deductText} บาทช่วยกดเบี้ย`);
-    if(hasUsefulGroup) why.push('มีสวัสดิการเดิม จึงให้สวัสดิการเดิมช่วยรับผิดชอบค่ารักษาส่วนแรกตามแนวคิด Deductible');
-    else why.push('แม้ไม่มีสวัสดิการเดิม ระบบยังพยายามคงวงเงิน IPD 5 ล้านก่อน โดยเลือก Deductible สูงขึ้น แทนการรีบลดไปแผนวงเงินต่ำ');
+  if(h0.kind === 'dhl' && h0.sum === '5m'){
+    why.push('ตั้งต้นจากแผนที่ยึดเป็นสรณะ คือ D Health Lite 5 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาทต่อปีต่อโรค เพราะเป็นชุดที่ปิดความเสี่ยงระดับที่ทำให้ครอบครัวล้มละลายได้จริง');
+  }else if(h0.kind === 'dhl'){
+    why.push('ลูกค้าเลือกวงเงินระดับเริ่มต้น ระบบจึงตั้งต้นที่ D Health Lite 1 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus');
   }else{
-    health = {kind:'ecp', plan:'p3'};
-    name = 'แผน Step-down เมื่องบต่ำมาก';
-    why.push('D Health Lite 5 ล้านแบบ Deductible ยังเกินกรอบงบมาก จึงค่อย step down ลงมาเป็น Extra Care Plus แผน 3 ก่อน ไม่ลดลงไปแผนต่ำกว่านี้ทันที');
-    why.push('ยังคงหลักกันความเสี่ยงก้อนใหญ่: IPD ก่อน แล้วจึง Care Plus/โรคร้ายแรงตามความจำเป็น');
+    why.push(`งบเพียงพอที่จะขึ้นไป Elite Health Plus ${h0.plan.replace('m','')} ล้านบาทต่อปีกรมธรรม์ ซึ่งจ่ายค่าล้างไต รังสีรักษา และเคมีบำบัดตามจริงอยู่ในตัวแล้ว`);
+    why.push(ADV_NO_40M_REASON);
   }
 
-  const ci = [];
-  if(input.ciStyle !== 'none' && input.ciCapital > 0){
-    ci.push({kind:'careplus'});
-    why.push('ยังใส่ Care Plus ไว้ก่อน เพราะคุมความเสี่ยงมะเร็ง/ไตวายที่ค่ารักษาสูง และเบี้ยคุ้มกว่า CI กว้างในแพ็กเกจงบตึง');
+  if(h0.kind === 'dhl'){
+    if(h0.mode === 'copay'){
+      why.push(`ลูกค้าแจ้งว่ารับส่วนร่วมจ่าย ${h0.copay === '9010' ? '10' : '20'}% ได้ ระบบจึงใช้ทางเลือกนี้กดเบี้ยตามที่ลูกค้าเลือกเอง`);
+    }else if(h0.deduct !== 'd0'){
+      const cov = input.groupCoverage || 0;
+      why.push(cov > 0
+        ? `จับ Deductible ${advDeductText(h0.deduct)} บาท ให้พอดีกับสวัสดิการเดิมประมาณ ${fmt(cov)} บาทที่รับส่วนแรกให้อยู่แล้ว ไม่ใช่การกดเบี้ยลอย ๆ`
+        : `ลูกค้าแจ้งว่ารับความรับผิดส่วนแรกได้ ระบบจึงใช้ Deductible ${advDeductText(h0.deduct)} บาทตามที่เลือก`);
+    }else{
+      why.push('ไม่ใส่ Deductible และไม่ใส่ Co-payment ตามที่ลูกค้าแจ้ง เจ็บป่วยเมื่อไหร่เบิกได้ตั้งแต่บาทแรกภายในวงเงิน');
+    }
+  }
+
+  const cpItem = state.ci.find(c => c.kind === 'careplus');
+  if(cpItem){
+    why.push(cpItem.plan === 'ca'
+      ? 'Care Plus เหลือความคุ้มครองมะเร็งอย่างเดียวเพราะงบไม่พอ แต่ยังต้องมี เพราะ D Health Lite ไม่คุ้มครองหมวด 9–11 คือค่าล้างไต รังสีรักษา และเคมีบำบัด'
+      : 'Care Plus เป็นตัวบังคับคู่กับ D Health Lite เพราะ D Health Lite ไม่คุ้มครองหมวด 9–11 คือค่าล้างไต รังสีรักษา และเคมีบำบัด ซึ่งเป็นค่าใช้จ่ายหลักแสนถึงหลักล้าน');
+  }else if(!advIsElite(state) && input.ciStyle === 'none'){
+    warnings.push('ลูกค้าเลือกยังไม่เอาโรคร้ายแรง แผนนี้จึงไม่มี Care Plus ต้องแจ้งลูกค้าให้ชัดว่า D Health Lite ไม่คุ้มครองค่าล้างไต รังสีรักษา และเคมีบำบัด ถ้าเป็นมะเร็งหรือไตวายจะต้องจ่ายเอง');
+  }
+
+  if(state.opdLevel === 'none' && input.opdNeed !== 'none'){
+    const grp = input.hasGroup || (input.groupCoverage || 0) > 0;
+    why.push(grp
+      ? 'ตัด OPD ออกได้สบายใจขึ้น เพราะลูกค้ามีสวัสดิการหรือประกันกลุ่มเดิมที่มักครอบคลุมค่าหมอผู้ป่วยนอกอยู่แล้ว'
+      : 'ตัด OPD ตามหลักปิดความเสี่ยงก้อนใหญ่ก่อน ค่าหมอผู้ป่วยนอกเป็นเงินที่จ่ายเองไหว แต่ค่าผ่าตัดหลักแสนถึงหลักล้านจ่ายเองไม่ไหว');
+  }
+  if(advIsElite(state) && h0.plan !== '20m' && input.opdNeed !== 'none'){
+    why.push('ไม่ซื้อสัญญา OPD เพิ่ม เพราะ Elite แผนนี้มีวงเงินผู้ป่วยนอกและกายภาพบำบัดอยู่ในตัวแล้ว');
+  }
+
+  const m = ADV_MAIN_LEVELS[state.mainLevel];
+  if(m.plan === '99_20'){
+    why.push('สัญญาหลักใช้ Smart Protection 99/20 ทุน 200,000 บาท เป็นค่าตั้งต้นปกติ ไม่กดลง 99/99 ทุน 50,000 ถ้าไม่จำเป็น เพราะทุนแบบนั้นควรใช้เฉพาะตอนต้องกดเบี้ยให้ต่ำที่สุดจริง ๆ');
   }else{
-    why.push('ลูกค้าเลือกไม่เอาโรคร้ายแรง จึงไม่ใส่ Care Plus/CI และคุมทุนชีวิตขั้นต่ำแทน');
+    why.push('ลดสัญญาหลักลงเพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง');
+  }
+  if(!state.paPlan && input.age <= 85) why.push('ตัด PA ออกเพราะงบตึงจริง ถ้าเพิ่มงบได้อีกประมาณปีละหนึ่งพันบาท ควรใส่กลับเป็นอย่างแรก');
+
+  trace.forEach(t => why.push(t));
+
+  if(input.budget && priced.premium < input.budget){
+    const left = input.budget - priced.premium;
+    if(left >= 15000){
+      const ideas = [];
+      if(state.opdLevel === 'none' || state.opdLevel === 'light') ideas.push('เพิ่มวงเงิน OPD');
+      if(!state.paPlan) ideas.push('ใส่ PA กลับเข้ามา');
+      if(!advIsElite(state)) ideas.push('พิจารณาขยับขึ้น Elite Health Plus');
+      ideas.push('เพิ่มทุนชีวิตในเล่มแยก');
+      ideas.push('เริ่มวางแผนบำนาญเพื่อใช้สิทธิลดหย่อนภาษีเพิ่มอีก 200,000 บาท');
+      why.push(`งบยังเหลืออีกประมาณ ${fmt(left)} บาทต่อปี ควรคุยกับลูกค้าต่อว่าจะใช้ทำอะไร เช่น ${ideas.slice(0,3).join(' หรือ ')}`);
+    }
   }
 
-  let main;
-  if(variant === 'ecp-careplus'){
-    main = {kind:'main', plan:'99_99', capital:50000};
-    why.push('งบต่ำมาก จึงล็อกสัญญาหลักเป็น 99/99 ทุน 50,000 บาท เพื่อไม่ให้เบี้ยชีวิตไปกินงบสุขภาพ');
-  }else{
-    // รวม PA1 เข้าไปก่อนคำนวณเงินเหลือ เพื่อไม่ให้ระบบรีบตัด PA แล้วเผลอเลือกเล่มหลักแพงเกินจำเป็น
-    main = chooseMainAfterProtection(input, 'budget', [health, ...ci, pa]);
+  return {
+    id: 'main-' + tierId,
+    kind: 'primary',
+    name: advTierName(tierId, state.healthItems),
+    items: priced.items,
+    premium: priced.premium,
+    missing: priced.missing,
+    why,
+    warnings,
+    conflictsStated: false,
+  };
+}
+
+/* ---------- ทางเลือกเมื่อข้อเสนอหลักเกินงบ ---------- */
+const ADV_ALT_C_GAPS = [
+  ['หมวด 7 อุบัติเหตุ ผู้ป่วยนอกภายใน 24 ชม.', 'ไม่มีทางถึง 100,000 บาท', 'ไม่มีใครจ่าย ลูกค้าออกเอง'],
+  ['หมวด 13 ผ่าตัดเล็ก', 'ไม่มีทางถึง 100,000 บาท', 'ไม่มีใครจ่าย ลูกค้าออกเอง'],
+  ['หมวด 6 และ 8 ตรวจก่อน-หลังนอน รพ. และเวชศาสตร์ฟื้นฟู', 'ผูกกับการแอดมิดครั้งนั้นอยู่แล้ว', 'ถ้าเคสนั้นทะลุ 100,000 D Health Lite จ่ายให้ทั้งชุด ถ้าเป็นเคสเล็กที่ไม่ทะลุ ต้องออกเอง'],
+  ['หมวด 9–11 ล้างไต รังสีรักษา เคมีบำบัด', 'ทั้งเหมาจ่าย Extra และ D Health Lite ไม่คุ้มครองหมวดนี้', 'ต้องพึ่ง Care Plus เท่านั้น ระบบจึงบังคับพ่วง Care Plus กับทางเลือกนี้เสมอ'],
+  ['ค่าห้อง', 'เหมาจ่าย Extra แผน 1 จ่ายวันละ 2,000 บาท', 'ส่วนที่เกินถูกนับรวมเข้าส่วนแรก 100,000 ของ D Health Lite และ D Health Lite 5 ล้านเองจำกัดค่าห้องวันละ 4,000 บาท'],
+  ['ผ่าตัดใหญ่หรือแอดมิดจริงที่ค่ารักษาทะลุ 100,000', 'ทะลุแน่นอน', 'เหมาจ่าย Extra แผน 1 ปิดแสนแรก แล้ว D Health Lite รับต่อจนถึง 5 ล้าน ทำงานตามที่ออกแบบ'],
+];
+const ADV_ALT_DEFS = [
+  {
+    id:'alt-maochai3',
+    name:'ทางเลือก A — เหมาจ่าย Extra แผน 3 + Care Plus',
+    health:[{kind:'maochai', plan:'p3'}],
+    needsQuestions:false,
+    why:[
+      'เหมาจ่าย Extra แผน 3 ให้วงเงิน 500,000 บาทต่อครั้งการรักษา ค่าห้องวันละ 4,000 บาท และไม่มีความรับผิดส่วนแรกเลย จึงยังตรงกับลูกค้าที่ไม่อยากรับความเสี่ยงส่วนแรก',
+      'ยังพ่วง Care Plus ไว้ เพราะเหมาจ่าย Extra ไม่คุ้มครองหมวด 9–11 คือค่าล้างไต รังสีรักษา และเคมีบำบัด',
+      'ข้อจำกัดที่ต้องบอกลูกค้า เหมาจ่าย Extra ไม่คุ้มครองหมวด 6 7 8 และ 13 ด้วย และวงเงินจำกัดที่ 500,000 บาทต่อครั้ง ถ้าเจอเคสหนักจริงจะไม่พอ',
+    ],
+  },
+  {
+    id:'alt-dhl-d30',
+    name:'ทางเลือก B — D Health Lite 5 ล้าน ส่วนแรก 30,000 + Care Plus',
+    health:[{kind:'dhl', sum:'5m', mode:'deduct', deduct:'d30k'}],
+    needsQuestions:true,
+    why:[
+      'คงวงเงิน 5 ล้านบาทต่อครั้งการรักษาไว้ครบ แล้วใช้ความรับผิดส่วนแรก 30,000 บาทต่อครั้งเป็นตัวกดเบี้ย ซึ่งรักษาความสามารถในการปิดความเสี่ยงก้อนใหญ่ไว้ได้ดีกว่าการลดวงเงินลง',
+      'ก่อนเสนอทางเลือกนี้ ต้องได้คำตอบจากลูกค้าสองข้อในกล่องคำถามด้านบนก่อน',
+    ],
+  },
+  {
+    id:'alt-extra1-dhl-d100',
+    name:'ทางเลือก C — เหมาจ่าย Extra แผน 1 ปิดแสนแรก + D Health Lite 5 ล้าน ส่วนแรก 100,000',
+    health:[{kind:'maochai', plan:'p1'}, {kind:'dhl', sum:'5m', mode:'deduct', deduct:'d100k'}],
+    needsQuestions:true,
+    forceCarePlus:true,
+    gapTable: ADV_ALT_C_GAPS,
+    why:[
+      'ให้เหมาจ่าย Extra แผน 1 ซึ่งเหมาจ่าย 200,000 บาทต่อครั้งการรักษา รับผิดชอบค่ารักษาแสนแรก แล้วส่วนที่เกิน 100,000 ให้ D Health Lite 5 ล้านรับต่อ วิธีนี้ได้วงเงินก้อนใหญ่ในเบี้ยที่ต่ำลงมาก',
+      'บังคับพ่วง Care Plus เสมอ เพราะทั้งสองสัญญาไม่คุ้มครองหมวด 9–11',
+      'ต้องอธิบายช่องโหว่ในตารางด้านล่างให้ลูกค้าเข้าใจก่อนปิดการขาย ห้ามขายโดยไม่บอก',
+    ],
+  },
+];
+function advBuildAlternatives(input){
+  const strictNoDeduct = input.riskChoice === 'none';
+  return ADV_ALT_DEFS.map(def => {
+    const {state, priced, trace} = advRunLadder(input, def.health, {forceCarePlus: def.forceCarePlus});
+    const conflictsStated = strictNoDeduct && advHasDeductibleOrCopay(priced.items);
+    const warnings = [];
+    if(conflictsStated) warnings.push('ลูกค้าแจ้งว่าไม่อยากมี Deductible หรือ Co-payment ทางเลือกนี้จึงขัดกับที่ลูกค้าบอก ห้ามยกเป็นข้อเสนอแรก ให้ใช้ต่อเมื่อคุยกับลูกค้าแล้วเท่านั้น');
+    return {
+      id: def.id,
+      kind: 'alt',
+      name: def.name,
+      items: priced.items,
+      premium: priced.premium,
+      missing: priced.missing,
+      why: def.why.concat(trace),
+      warnings,
+      conflictsStated,
+      needsQuestions: !!def.needsQuestions,
+      gapTable: def.gapTable,
+    };
+  }).filter(a => !a.missing.length);
+}
+
+/* ---------- ประกอบผลลัพธ์ ---------- */
+function advBuildResult(input){
+  const primary = advBuildRecommended(input);
+  const overBudget = !!(input.budget && primary.premium > input.budget);
+  const packages = [primary];
+  let followUps = null;
+
+  if(overBudget){
+    // เรียงทางเลือกที่ไม่ขัดกับสิ่งที่ลูกค้าแจ้งไว้ขึ้นก่อนเสมอ แล้วจึงเรียงตามเบี้ย
+    const alts = advBuildAlternatives(input)
+      .sort((a,b) => (a.conflictsStated - b.conflictsStated) || (a.premium - b.premium));
+    alts.forEach(a => packages.push(a));
+    if(alts.some(a => a.needsQuestions)){
+      followUps = [
+        'ตอนนี้มีสวัสดิการที่ทำงานหรือประกันกลุ่มอยู่บ้างไหม วงเงินประมาณเท่าไหร่',
+        'ถ้าต้องออกค่ารักษาเองส่วนแรก 30,000 บาท ในวันที่ต้องนอนโรงพยาบาล พอจ่ายไหวไหม',
+      ];
+    }
   }
 
-  const items = [health, ...ci, main, pa];
-  why.push('ยังไม่ตัด PA ทิ้งทันที โดยใส่ PA แผน 1 เป็นฐานคุมเบี้ย หากต้องการลดจริงค่อยให้ตัวแทนปรับมือภายหลัง');
-  if(main.plan==='99_20' && main.capital===200000) why.push('งบยังพอเหลือหลังจัดสุขภาพ จึงใส่ทุนชีวิต 200,000 บาท แบบ 99/20');
-  if(main.plan==='99_99') why.push(`งบจำกัด จึงใช้ทุนชีวิต ${fmt(main.capital)} บาท แบบ 99/99 เพื่อไม่ให้เบี้ยรวมสูงเกินจำเป็น`);
-  return {mode:variant, name, items, why, downgraded:true};
-}
-function buildBudgetAdaptivePackages(input){
-  if(!input.budget) return [];
-  const packages = [];
-  const high = requestedHighProtection(input);
-  const shouldAddFit = high || input.budget < 45000;
-  if(!shouldAddFit) return [];
-  const hasUsefulGroup = input.hasGroup || input.groupCoverage >= 20000;
+  packages.forEach(p => { p.recommended = false; });
+  primary.recommended = true;
 
-  if(high){
-    // พยายามคง D Health Lite 5M Deductible ก่อนเสมอ แม้งบต่ำหรือไม่มีสวัสดิการเดิม
-    packages.push(buildBudgetFitPackage(input, 'dhl-high-deduct'));
-    // ถ้า DHL 5M ยังเกิน hard cap หรือเป็นงบตึง ให้มี ECP3 เป็น step-down สำรอง
-    if(dhlHighTooExpensiveForBudget(input) || input.budget < 45000) packages.push(buildBudgetFitPackage(input, 'ecp-careplus'));
-    return packages;
-  }
+  return {
+    packages,
+    primary,
+    overBudget,
+    overBudgetDiff: overBudget ? primary.premium - input.budget : 0,
+    followUps,
+  };
+}
 
-  if(hasUsefulGroup) packages.push(buildBudgetFitPackage(input, 'group-deduct'));
-  if(input.budget < 45000 || !hasUsefulGroup) packages.push(buildBudgetFitPackage(input, 'ecp-careplus'));
-  return packages;
-}
-function buildPackage(input, mode){
-  // v13: จัดแบบ health-first และให้แพ็กเกจหลักเป็น “ความต้องการเดิม” ก่อน
-  // ถ้าเบี้ยหลุดงบ จะมี buildBudgetAdaptivePackages() สร้างตัวเลือกปรับลงตามงบเพิ่มใน runAiPlanner
-  const ciTarget = input.ciStyle==='none'?0:input.ciCapital;
-  const health = healthFor(input, mode);
-  const tentativeMain = baseMainFor(input, ciTarget);
-  const ciItems = ciItemsFor(input, mode, tentativeMain.capital, health);
-  const opdItems = opdItemsFor(input, mode, health);
-  const pa = paFor(input, mode);
-  const protectionItems=[health, ...ciItems, ...opdItems, pa];
-  const main = chooseMainAfterProtection(input, mode, protectionItems);
-
-  // ถ้า CI Perfect Care ถูกจำกัดด้วยทุนหลัก ให้ recheck หลังเลือก main แล้ว
-  const finalCiItems = ciItemsFor(input, mode, main.capital, health);
-  const finalOpdItems = opdItemsFor(input, mode, health);
-  const items=[health, ...finalCiItems, ...finalOpdItems, main, pa];
-
-  const names = {budget:'แผนประหยัดคุมงบ', balanced:'แผนสมดุลแนะนำ', premium:'แผนพรีเมียม/คุ้มครองสูง'};
-  const why = [];
-  why.push('จัดลำดับแบบ Health-first: เลือก IPD/สุขภาพหลักก่อน แล้วจึงดูโรคร้ายแรง ต่อด้วย OPD และทุนชีวิตเป็นลำดับท้ายสุด');
-  if(health.kind==='ehp') why.push(health.plan==='20m' ? 'แผนสูงของโจทย์ 1–5 ล้าน จะขยับขึ้นเป็น Elite Health Plus 20 ล้าน ไม่วนอยู่ที่ 5 ล้านซ้ำกับแผนสมดุล' : 'เลือก Elite Health Plus เพราะต้องการวงเงินสูง/OPD ดี หรือใช้โรงพยาบาลระดับพรีเมียม และไม่เพิ่ม Care Plus ซ้ำโดยอัตโนมัติเพื่อลดความซ้ำซ้อนของวงเงินค่ารักษา');
-  if(health.kind==='dhl') why.push('เลือก D Health Lite เพราะได้วงเงิน IPD สูงและปรับเบี้ยด้วย Deductible/Co-pay ได้');
-  if(health.kind==='maochai') why.push('เลือกเหมาจ่าย Extra เพราะไม่มี Deductible เหมาะกับคนไม่มีสวัสดิการเดิม');
-  if(mode==='budget') why.push('แผนประหยัดตัด OPD ออกก่อน เพื่อเหลืองบไว้ที่ IPD และ Care Plus/โรคร้ายแรงตามหลักคุมความเสี่ยงก้อนใหญ่');
-  if(input.hasGroup || input.groupCoverage>0) why.push(`มีสวัสดิการเดิมประมาณ ${fmt(input.groupCoverage)} บาท จึงพิจารณาให้รับส่วนแรกเองได้บางส่วน`);
-  if(input.opdNeed==='heavy') why.push('OPD ใช้เยอะมาก ระบบจึงดันไปทาง Elite 75/100 ล้านเป็นหลัก แทนการซ้อน OPD แยกโดยไม่จำเป็น');
-  if(input.ciStyle==='none') why.push('ลูกค้าเลือกยังไม่เอาโรคร้ายแรง ระบบจึงนำงบที่เหลือบางส่วนไปเพิ่มทุนชีวิตแทน แต่ยังจำกัดไม่ให้ทุนสูงเกินไปในเล่มสุขภาพ');
-  if(main.plan==='99_20' && main.capital===200000) why.push('งบยังเหลือพอ จึงใส่ทุนชีวิตขั้นต่ำ 200,000 บาท แบบ 99/20');
-  if(main.plan==='99_99') why.push(`งบค่อนข้างจำกัด จึงใช้ทุนชีวิต ${fmt(main.capital)} บาท แบบ 99/99 เพื่อกันงบไว้ให้สุขภาพก่อน`);
-  return {mode, name:names[mode], items, why};
-}
-function budgetWindow(input){
-  if(!input.budget) return {soft:Infinity, hard:Infinity};
-  return {soft:input.budget*1.30, hard:input.budget*1.50};
-}
-function budgetStatus(pkg, input){
-  if(!input.budget) return {ok:true, level:'no-budget', diff:null};
-  const diff = pkg.premium - input.budget;
-  const ratio = pkg.premium / input.budget;
-  if(ratio <= 1.30) return {ok:true, level:'good', diff};
-  if(ratio <= 1.50) return {ok:true, level:'stretch', diff};
-  return {ok:false, level:'too-high', diff};
-}
-function filterPackagesByBudget(packages, input){
-  if(!input.budget){
-    return {shown:packages, suppressed:[]};
-  }
-  const shown=[];
-  const suppressed=[];
-  packages.forEach(p=>{
-    const s=budgetStatus(p,input);
-    p.budgetStatus=s;
-    if(s.ok && !p.missing.length) shown.push(p);
-    else suppressed.push(p);
-  });
-  // ถ้าทุกแพ็กเกจเกินงบ 50% ให้แสดงตัวถูกสุดเพียงใบเดียวพร้อมเตือน ไม่ใช่เสนอหลายแพ็กเกจที่หลุดโลก
-  if(!shown.length && packages.length){
-    const cheapest=[...packages].sort((a,b)=>a.premium-b.premium)[0];
-    cheapest.budgetStatus = budgetStatus(cheapest,input);
-    cheapest.forceShownOverBudget = true;
-    return {shown:[cheapest], suppressed:packages.filter(p=>p!==cheapest)};
-  }
-  return {shown, suppressed};
-}
-function rankPackages(packages, input){
-  if(!input.budget) return packages.map((p,i)=>({...p, recommended:i===1}));
-  const underBudget = packages.filter(p => p.premium <= input.budget && !p.missing.length);
-  let chosen;
-  if(underBudget.length){
-    chosen = underBudget[underBudget.length-1];
-  }else{
-    // ไม่มีแผนที่ต่ำกว่างบ ให้เลือกแผนที่เกินน้อยที่สุดแต่ยังไม่เกิน hard cap ถ้ามี
-    const acceptable = packages.filter(p => budgetStatus(p,input).ok && !p.missing.length);
-    chosen = acceptable.length ? acceptable.sort((a,b)=>a.premium-b.premium)[0] : packages.reduce((a,b)=> a.premium<b.premium?a:b);
-  }
-  return packages.map(p => ({...p, recommended:p.mode===chosen.mode}));
-}
 function plannerEscapeHtml(s){
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -5036,10 +5087,11 @@ function plannerPackageForAi(pkg, idx){
     index: idx,
     name: pkg.name,
     premium: pkg.premium,
-    overBudget: !!(pkg.budgetStatus && pkg.budgetStatus.level && pkg.budgetStatus.level !== 'good' && pkg.budgetStatus.level !== 'no-budget'),
-    forceShownOverBudget: !!pkg.forceShownOverBudget,
-    budgetStatus: pkg.budgetStatus ? pkg.budgetStatus.level : '',
+    role: pkg.kind === 'primary' ? 'ข้อเสนอหลักที่ระบบจัดตามลำดับความเสี่ยง' : 'ทางเลือกสำรอง',
+    conflictsStatedPreference: !!pkg.conflictsStated,
+    lockedFromBeingTop: !!pkg.conflictsStated,
     recommendedBeforeAI: !!pkg.recommended,
+    warnings: pkg.warnings || [],
     missing: pkg.missing || [],
     items: (pkg.items || []).map(it => ({
       kind: it.kind,
@@ -5092,8 +5144,48 @@ function renderAiBackendAdvice(aiAdvice, isLoading=false, errorText=''){
     ${qs?`<b>ควรถามเพิ่ม</b><ul>${qs}</ul>`:''}
   </div>`;
 }
-function renderAiPlannerOutput(input, packages, filtered, adaptivePackages, aiAdvice=null, loading=false, errorText=''){
-  AI_PACKAGES = packages;
+function advGapTableHtml(rows){
+  if(!rows || !rows.length) return '';
+  return `<div class="adv-gap-wrap">
+    <div class="adv-gap-title">ช่องโหว่ที่ต้องบอกลูกค้าก่อนปิดการขาย</div>
+    <table class="adv-gap-table">
+      <thead><tr><th>รายการ</th><th>ทะลุส่วนแรก 100,000 ไหม</th><th>ใครจ่าย</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr><td>${plannerEscapeHtml(r[0])}</td><td>${plannerEscapeHtml(r[1])}</td><td>${plannerEscapeHtml(r[2])}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+function renderAiPackageCard(pkg, idx, input){
+  const budgetVal = input.budget || 0;
+  const diff = budgetVal ? (pkg.premium - budgetVal) : null;
+  let budgetLine = '';
+  if(diff !== null){
+    budgetLine = diff <= 0
+      ? `<p class="meta" style="color:var(--ok);">อยู่ในงบ ต่ำกว่างบ ${fmt(Math.abs(diff))} บาท</p>`
+      : `<p class="meta" style="color:var(--danger);"><b>เกินงบ ${fmt(diff)} บาท</b></p>`;
+  }
+  let badge = '';
+  if(pkg.recommended) badge = '<span class="adv-badge adv-badge-main">ข้อเสนอหลัก</span>';
+  else if(pkg.conflictsStated) badge = '<span class="adv-badge adv-badge-conflict">ขัดกับที่ลูกค้าแจ้ง</span>';
+  else badge = '<span class="adv-badge adv-badge-alt">ทางเลือกสำรอง</span>';
+
+  const warnHtml = (pkg.warnings || []).length
+    ? `<div class="adv-warn">${pkg.warnings.map(w=>`<div>• ${plannerEscapeHtml(w)}</div>`).join('')}</div>` : '';
+
+  return `<div class="ai-plan-card ${pkg.recommended?'recommended':''} ${pkg.conflictsStated?'over-budget':''}">
+    <div class="adv-badge-row">${badge}</div>
+    <h3>${plannerEscapeHtml(pkg.name)}</h3>
+    <div class="premium">${fmt(pkg.premium)} บาท/ปีแรก</div>
+    ${budgetLine}
+    <ul>${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
+    ${warnHtml}
+    ${(pkg.why||[]).length?`<div class="ai-note">${pkg.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>`:''}
+    ${advGapTableHtml(pkg.gapTable)}
+    ${(pkg.missing||[]).length?`<p class="warn-inline">ตารางเบี้ยบางรายการไม่ครบช่วงอายุ: ${pkg.missing.join(', ')}</p>`:''}
+    <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyAiPackage(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
+  </div>`;
+}
+function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, errorText=''){
+  AI_PACKAGES = result.packages;
   const genderText = input.gender==='m'?'ชาย':'หญิง';
   const explain = [
     `${genderText} อายุ ${input.age} ปี`,
@@ -5101,55 +5193,61 @@ function renderAiPlannerOutput(input, packages, filtered, adaptivePackages, aiAd
     input.hasGroup?`มีสวัสดิการเดิมประมาณ ${fmt(input.groupCoverage)} บาท`:'ไม่มีสวัสดิการเดิม',
     `IPD: ${document.getElementById('ai_ipdNeed').selectedOptions[0].textContent}`,
     `OPD: ${document.getElementById('ai_opdNeed').selectedOptions[0].textContent}`,
+    `ส่วนแรก: ${document.getElementById('ai_riskChoice').selectedOptions[0].textContent}`,
   ];
-  const adaptiveNote = adaptivePackages.length ? `
-    <div class="ai-budget-filter">
-      <b>ระบบปรับแผนลงตามงบให้แล้ว</b><br>
-      ถ้าเลือกความคุ้มครองสูงแต่งบยังไม่ถึง ระบบจะพยายามคง D Health Lite 5 ล้านแบบ Deductible ก่อน โดยอิงสวัสดิการเดิม/เลือกระดับ Deductible เพื่อกดเบี้ย และจะ step down เป็น Extra Care Plus แผน 3 + Care Plus เฉพาะเมื่องบต่ำมากจริง ๆ
+
+  const overNote = result.overBudget ? `
+    <div class="ai-budget-filter" style="border-color:#f0b8b8;background:#fff6f6;">
+      <b>ข้อเสนอหลักเกินงบ ${fmt(result.overBudgetDiff)} บาทต่อปี</b><br>
+      ระบบไล่ตัดส่วนที่ปิดความเสี่ยงเล็กออกจนสุดแล้ว แต่ยังเกินงบ จึงเสนอไปตรง ๆ แทนการลดคุณภาพสัญญาสุขภาพหลัก
+      เพราะแผนที่ถูกลงแต่ปิดความเสี่ยงก้อนใหญ่ไม่ได้ ไม่ได้ช่วยลูกค้าจริง
+      ด้านล่างมีทางเลือกที่เบี้ยต่ำกว่าให้คุยกับลูกค้าประกอบ
     </div>` : '';
-  const suppressedNote = input.budget && filtered.suppressed.length ? `
-    <div class="ai-budget-filter">
-      <b>ตัดแพ็กเกจที่เบี้ยเกินงบมากเกินไปออกแล้ว</b><br>
-      ไม่แสดง: ${filtered.suppressed.map(p=>`${p.name} ${fmt(p.premium)} บาท/ปี`).join(' • ')}<br>
-      หลักการ: ถ้าเบี้ยเกินงบเกินประมาณ 50% จะไม่เสนอเป็นตัวเลือกหลัก เพื่อไม่ให้แพ็กเกจหลุดงบแบบใช้งานจริงไม่ได้
+
+  const followNote = result.followUps ? `
+    <div class="ai-budget-filter" style="border-color:#cbb6e8;background:#faf7ff;">
+      <b>ต้องถามลูกค้าสองข้อนี้ก่อน จึงจะเสนอแผนที่มีความรับผิดส่วนแรกได้</b>
+      <ol style="margin:8px 0 0 18px;padding:0;">${result.followUps.map(q=>`<li>${plannerEscapeHtml(q)}</li>`).join('')}</ol>
+      <div style="margin-top:8px;">ถ้าลูกค้าตอบว่าจ่ายส่วนแรกไม่ไหว ให้ตัดทางเลือก B และ C ออก แล้วกลับไปคุยเรื่องเหมาจ่าย Extra หรือขยับงบแทน</div>
     </div>` : '';
-  const forceNote = packages.some(p=>p.forceShownOverBudget) ? `
-    <div class="ai-budget-filter">
-      <b>งบนี้ต่ำกว่าเบี้ยขั้นต่ำของแพ็กเกจที่ระบบจัดได้</b><br>
-      จึงแสดงเฉพาะตัวเลือกที่ถูกที่สุดให้ดูเป็นฐานตั้งต้น ควรเพิ่มงบ ลดความคุ้มครองบางส่วน หรือให้ตัวแทนออกแบบมืออีกครั้ง
-    </div>` : '';
+
+  const noteNo40 = result.packages.some(p=>p.items.some(it=>it.kind==='ehp')) ? `
+    <div class="ai-budget-filter"><b>ทำไมไม่มี Elite 40 ล้านในตัวเลือก</b><br>${ADV_NO_40M_REASON}</div>` : '';
+
   const out = document.getElementById('aiPlannerOutput');
   out.innerHTML = `
     <div class="content-card">
       <h2>ผลวิเคราะห์และแพ็กเกจที่แนะนำ</h2>
-      <p class="meta">ระบบเสนอแพ็กเกจจากเบี้ยจริงในไฟล์นี้ก่อน แล้วให้ AI ช่วยวิเคราะห์ซ้ำอีกชั้น โดยไม่ให้ AI แต่งเบี้ยหรือชื่อแผนเอง</p>
+      <p class="meta">ระบบยึดหลักปิดความเสี่ยงที่เสียหายมากแต่โอกาสเกิดน้อยก่อน เบี้ยทุกตัวมาจากตารางจริงในไฟล์นี้ AI ไม่ได้แต่งตัวเลขเอง</p>
       <div class="ai-chip-row">${explain.map(x=>`<span class="ai-chip">${x}</span>`).join('')}</div>
-      ${adaptiveNote}
-      ${suppressedNote}
-      ${forceNote}
+      ${overNote}
+      ${followNote}
+      ${noteNo40}
       ${renderAiBackendAdvice(aiAdvice, loading, errorText)}
       <div class="ai-result-grid">
-        ${packages.map((p,idx)=>renderAiPackageCard(p, idx)).join('')}
+        ${result.packages.map((p,idx)=>renderAiPackageCard(p, idx, input)).join('')}
       </div>
-      <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณตามตารางในไฟล์นี้ ไม่รวมผลตรวจสุขภาพ/เพิ่มเบี้ย/ข้อยกเว้นเฉพาะบุคคล และควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
+      <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณตามตารางในไฟล์นี้ ไม่รวมผลตรวจสุขภาพ การเพิ่มเบี้ย หรือข้อยกเว้นเฉพาะบุคคล ควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
     </div>`;
 }
-async function askAiPlannerBackend(input, packages, filtered, adaptivePackages){
+async function askAiPlannerBackend(input, result){
   const response = await fetch(INSURANCE_PLAN_AI_ENDPOINT, {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
       profile: plannerProfileForAi(input),
-      packages: packages.map(plannerPackageForAi),
+      packages: result.packages.map(plannerPackageForAi),
       allowWebSearch: false
     })
   });
   const data = await response.json().catch(()=>({}));
   if(!response.ok) throw new Error(data.error || `AI backend error ${response.status}`);
-  if(Number.isInteger(data.recommendationIndex) && packages[data.recommendationIndex]){
-    packages.forEach((p,idx)=>p.recommended = idx === data.recommendationIndex);
+  // AI ปรับอันดับได้เฉพาะแผนที่ไม่ขัดกับสิ่งที่ลูกค้าแจ้งไว้เท่านั้น
+  const target = result.packages[data.recommendationIndex];
+  if(Number.isInteger(data.recommendationIndex) && target && !target.conflictsStated){
+    result.packages.forEach((p,idx)=>p.recommended = idx === data.recommendationIndex);
   }
-  renderAiPlannerOutput(input, packages, filtered, adaptivePackages, data, false, '');
+  renderAiPlannerOutput(input, result, data, false, '');
 }
 function runAiPlanner(){
   const input = aiReadInputs();
@@ -5162,52 +5260,14 @@ function runAiPlanner(){
     out.innerHTML = `<div class="content-card"><div class="validation-box bad">อายุ ${input.age} ปี เกินช่วงรับทำใหม่ของสัญญาหลักสุขภาพส่วนใหญ่ในตารางนี้ ควรให้ตัวแทนเช็กใบเสนอจริงก่อน</div></div>`;
     return;
   }
-  const desiredPackages = ['budget','balanced','premium'].map(m => pricePackage(buildPackage(input,m), input.gender, input.age));
-  const adaptivePackages = buildBudgetAdaptivePackages(input).map(p => pricePackage(p, input.gender, input.age));
-  let allPackages = uniquePackages([...adaptivePackages, ...desiredPackages]);
-  allPackages.sort((a,b)=>a.premium-b.premium);
-  allPackages = rankPackages(allPackages,input);
-  const filtered = filterPackagesByBudget(allPackages,input);
-  const packages = filtered.shown;
-  // ถ้าโจทย์คือ งบน้อยแต่ต้องการคุ้มครองสูง ให้แนะนำ DHL 5M Deductible ก่อนถ้ายังอยู่ในกรอบ hard cap
-  if(packages.length && requestedHighProtection(input)){
-    const preferredHigh = packages.find(p => p.mode==='dhl-high-deduct' && !p.forceShownOverBudget && budgetStatus(p,input).ok && !p.missing.length);
-    const fallbackEcp = packages.find(p => p.mode==='ecp-careplus' && !p.forceShownOverBudget && !p.missing.length);
-    const preferred = preferredHigh || fallbackEcp;
-    if(preferred) packages.forEach(p=>p.recommended = (p === preferred));
-  }
-  // หลังตัดแพ็กเกจที่เกินงบมากออก ต้องเลือก recommended ใหม่จากรายการที่ยังแสดงอยู่
-  if(packages.length && !packages.some(p=>p.recommended)){
-    const underBudget = input.budget ? packages.filter(p=>p.premium<=input.budget) : [];
-    const chosen = underBudget.length ? underBudget[underBudget.length-1] : [...packages].sort((a,b)=>a.premium-b.premium)[0];
-    packages.forEach(p=>p.recommended = (p.mode === chosen.mode));
-  }
-  renderAiPlannerOutput(input, packages, filtered, adaptivePackages, null, true, '');
+  const result = advBuildResult(input);
+  renderAiPlannerOutput(input, result, null, true, '');
   out.scrollIntoView({behavior:'smooth', block:'start'});
-  askAiPlannerBackend(input, packages, filtered, adaptivePackages).catch(err=>{
-    renderAiPlannerOutput(input, packages, filtered, adaptivePackages, null, false, err.message || 'ไม่ทราบสาเหตุ');
+  askAiPlannerBackend(input, result).catch(err=>{
+    renderAiPlannerOutput(input, result, null, false, err.message || 'ไม่ทราบสาเหตุ');
   });
 }
-function renderAiPackageCard(pkg, idx){
-  const budgetVal = parseFloat(document.getElementById('ai_budget').value)||0;
-  const diff = (budgetVal && pkg.premium) ? (pkg.premium - budgetVal) : null;
-  let budgetLine = '';
-  if(diff!==null){
-    if(diff<=0) budgetLine = `<p class="meta" style="color:var(--ok);">ต่ำกว่างบประมาณ ${fmt(Math.abs(diff))} บาท</p>`;
-    else if(pkg.forceShownOverBudget) budgetLine = `<p class="meta" style="color:var(--danger);">เกินงบประมาณ ${fmt(diff)} บาท — แสดงเพราะเป็นตัวถูกสุดที่ยังจัดได้</p>`;
-    else if(pkg.budgetStatus && pkg.budgetStatus.level==='stretch') budgetLine = `<p class="meta" style="color:#a05a00;">เกินงบประมาณ ${fmt(diff)} บาท — อยู่ในกรอบยืดได้ไม่เกิน 50%</p>`;
-    else budgetLine = `<p class="meta" style="color:var(--danger);">เกินงบประมาณ ${fmt(diff)} บาท</p>`;
-  }
-  return `<div class="ai-plan-card ${pkg.recommended?'recommended':''} ${pkg.forceShownOverBudget?'over-budget':''}">
-    <h3>${pkg.name}</h3>
-    <div class="premium">${fmt(pkg.premium)} บาท/ปีแรก</div>
-    ${budgetLine}
-    <ul>${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
-    ${pkg.why.length?`<div class="ai-note">${pkg.why.map(w=>`• ${w}`).join('<br>')}</div>`:''}
-    ${pkg.missing.length?`<p class="warn-inline">ตารางเบี้ยบางรายการไม่ครบช่วงอายุ: ${pkg.missing.join(', ')}</p>`:''}
-    <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyAiPackage(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
-  </div>`;
-}
+
 function setChecked(id, checked){
   const el = document.getElementById(id); if(!el) return;
   el.checked = checked;
@@ -5243,7 +5303,7 @@ function applyAiPackage(idx){
     if(it.kind==='ecp'){ setChecked('use_ecp', true); setValue('ecp_plan', it.plan); }
     if(it.kind==='opd_mao'){ setChecked('use_opd_mao', true); setValue('opd_mao_plan', it.plan); }
     if(it.kind==='opd_krang'){ setChecked('use_opd_krang', true); setValue('opd_krang_plan', it.plan); }
-    if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan','cackd'); }
+    if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', it.plan === 'ca' ? 'ca' : 'cackd'); }
     if(it.kind==='cipc'){ setChecked('use_cipc', true); setValue('cipc_capital', it.capital); }
     if(it.kind==='dcare'){ setChecked('dcare_popular', true); setValue('dcare_popular_cap', it.capital); }
     if(it.kind==='pa'){ setValue('pa_plan', it.plan); }
