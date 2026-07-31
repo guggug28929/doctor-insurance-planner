@@ -2442,7 +2442,7 @@ function pensionMainOptions(){
     for(const vk of pensionVariantKeys(pid)){
       const v = p.variants[vk];
       out.push({value: pid + '|' + vk, pid, vk,
-        label: `${v.label || p.shortName} — รับอายุ ${v.entryAgeMin}-${v.entryAgeMax} ปี, เริ่มรับบำนาญ ${v.pensionStartAge != null ? v.pensionStartAge + ' ปี' : 'ปีถัดไป'}`});
+        label: `${v.label || p.shortName} — รับอายุ ${v.entryAgeMin}-${v.entryAgeMax} ปี, เริ่มรับบำนาญ ${v.pensionStartAge != null ? v.pensionStartAge + ' ปี' : (v.pensionStartOffsetYears != null ? 'สิ้นปีกรมธรรม์ที่ ' + v.pensionStartOffsetYears : 'ตามเงื่อนไขกรมธรรม์')}`});
     }
   }
   return out;
@@ -5129,9 +5129,12 @@ function renderAiBackendAdvice(aiAdvice, isLoading=false, errorText=''){
     </div>`;
   }
   if(errorText){
+    // ยังไม่ได้ตั้งค่า AI บนเซิร์ฟเวอร์ = เรื่องภายใน ไม่ใช่ความผิดพลาดที่ลูกค้าต้องเห็น
+    // ผลลัพธ์ที่แสดงอยู่มาจาก engine กฎซึ่งทำงานครบอยู่แล้ว จึงเงียบไปเลย
+    if(/ANTHROPIC_API_KEY|not configured/i.test(errorText)) return '';
     return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#f3b4b4;background:#fff7f7;">
-      <b>AI วิเคราะห์แผนไม่สำเร็จ</b><br>${plannerEscapeHtml(errorText)}<br>
-      ระบบยังแสดงผลจากเครื่องคำนวณเดิมให้ใช้งานต่อได้ ไม่ทำให้หน้าเว็บค้าง
+      <b>ชั้นวิเคราะห์เสริมด้วย AI ยังไม่พร้อมใช้งานตอนนี้</b><br>${plannerEscapeHtml(errorText)}<br>
+      ผลที่แสดงด้านล่างมาจากเครื่องคำนวณและกฎการจัดแผนของระบบ ซึ่งใช้งานได้ตามปกติ
     </div>`;
   }
   if(!aiAdvice) return '';
@@ -5751,7 +5754,7 @@ function pensionCompareRows(pid){
   const irr = cf ? pensionIRR(cf) : null;
   const be = cf ? pensionBreakEvenAge(cf) : null;
   const totalGet = cf ? cf.totalPension + (cf.maturity||0) : null;
-  const pctFirst = pensionPctAt(pid, vk, v.pensionStartAge != null ? v.pensionStartAge : age+1);
+  const pctFirst = pensionPctAt(pid, vk, pensionEffectiveStartAge(pid, vk, age) != null ? pensionEffectiveStartAge(pid, vk, age) : age+1);
   const pcts = (v.pensionLadder||[]).map(x=>x.pct);
   const y1 = cf ? Math.round(sum * pctFirst / 100) : null;
   const annual = cf ? (p.premiumTermType==='single' ? cf.perPay : cf.perPay * cf.perYear) : null;
@@ -5760,7 +5763,7 @@ function pensionCompareRows(pid){
   return {
     entry: `${v.entryAgeMin}–${v.entryAgeMax} ปี`,
     payTerm: p.premiumTerm,
-    startAge: v.pensionStartAge != null ? `${v.pensionStartAge} ปี` : 'ปีถัดจากทำสัญญา',
+    startAge: pensionStartLabel(pid, vk, age),
     endAge: `${v.pensionEndAge || 90} ปี`,
     minSum: fmt(p.sumAssuredMin) + ' บาท',
     pctFirst: pctFirst ? pctFirst + '% ต่อปี' : '—',
@@ -6210,7 +6213,10 @@ function pensionDiscountPer1000(planId, sum){
 /** ทุนประกันที่มีตารางเบี้ยตรงๆ (ใช้กับแบบที่จำกัดทุน เช่น 8501) */
 function pensionFixedSums(planId, variant){
   const p = pensionPlan(planId);
-  if(!p || !p.rates) return [];
+  if(!p) return [];
+  // sumOptions = ทุนทุกระดับที่มีตัวเลขทางการรองรับ (ทั้งตารางเบี้ยจริงและช่วงอัตราต่อ 1,000 บาท)
+  if(Array.isArray(p.sumOptions) && p.sumOptions.length) return p.sumOptions.slice().sort((a,b)=>a-b);
+  if(!p.rates) return [];
   const g = p.rates.male || {};
   const v = g[variant] || g.base || {};
   return Object.keys(v).map(Number).sort((a,b)=>a-b);
@@ -6224,9 +6230,14 @@ function pensionPremium(planId, variant, gender, age, sum, freq){
   if(!p) return null;
   freq = freq || pensionDefaultFreq(planId);
   if(pensionSumRestricted(planId)){
+    // 1) ทุนที่มีตารางเบี้ยเป็นจำนวนเงินจริง ให้ใช้ตัวเลขในตารางตรง ๆ
     const exact = ((p.rates || {})[gender] || {});
     const series = (exact[variant] || exact.base || {})[String(sum)];
     if(series && series[String(age)] != null) return series[String(age)];
+    // 2) ทุนที่อยู่ในช่วงซึ่งมีตารางอัตราต่อ 1,000 บาทประกาศไว้ ให้ใช้อัตรานั้นตรง ๆ ไม่มีส่วนลด
+    //    pensionBandMatch จะคืน false ถ้าทุนหลุดช่วง ทำให้ระบบตอบ null แทนการเดา
+    const rate = pensionRatePer1000(planId, variant, gender, age, sum, freq);
+    if(rate != null) return Math.round(rate * sum / 1000);
     return null;
   }
   const rate = pensionRatePer1000(planId, variant, gender, age, sum, freq);
@@ -6259,6 +6270,30 @@ function pensionPctAt(planId, variant, age){
 }
 
 /**
+ * อายุที่เริ่มรับบำนาญจริง
+ * บางแบบกำหนดเป็นอายุคงที่ (เช่น เริ่มรับตอนอายุ 60 ปี)
+ * บางแบบกำหนดเป็น "สิ้นปีกรมธรรม์ที่ N" ซึ่งขึ้นกับอายุที่ทำสัญญา
+ * ระวังคำ: "สิ้นปีกรมธรรม์ที่ 1" = ครบ 1 ปีหลังทำสัญญา = ต้นปีกรมธรรม์ที่ 2 (คนละความหมายกับ "ต้นปีกรมธรรม์ที่ 1")
+ */
+function pensionEffectiveStartAge(planId, variant, entryAge){
+  const v = ((pensionPlan(planId) || {}).variants || {})[variant];
+  if(!v) return null;
+  if(v.pensionStartAge != null) return v.pensionStartAge;
+  if(v.pensionStartOffsetYears != null && entryAge != null) return entryAge + v.pensionStartOffsetYears;
+  return null;
+}
+function pensionStartLabel(planId, variant, entryAge){
+  const v = ((pensionPlan(planId) || {}).variants || {})[variant];
+  if(!v) return '—';
+  if(v.pensionStartAge != null) return `อายุ ${v.pensionStartAge} ปี`;
+  if(v.pensionStartOffsetYears != null){
+    const at = entryAge != null ? ` (ถ้าทำตอนอายุ ${entryAge} ปี คือได้รับตอนอายุ ${entryAge + v.pensionStartOffsetYears} ปี)` : '';
+    return `สิ้นปีกรมธรรม์ที่ ${v.pensionStartOffsetYears}${at}`;
+  }
+  return 'ตามเงื่อนไขกรมธรรม์';
+}
+
+/**
  * ตารางรายปี: จ่ายเบี้ยปีไหน ได้บำนาญปีไหน สะสมเท่าไหร่
  * คืน {rows, totalPremium, totalPension, payYears, startAge, endAge}
  */
@@ -6273,7 +6308,11 @@ function pensionCashflow(planId, variant, gender, entryAge, sum, freq){
   const annualOutlay = p.premiumTermType === 'single' ? 0 : perPay * perYear;
   const singlePay = p.premiumTermType === 'single' ? perPay : 0;
 
-  const startAge = v.pensionStartAge;
+  // เงินบำนาญงวดแรกอาจนับจาก "อายุคงที่" (เช่น เริ่มรับตอนอายุ 60)
+  // หรือนับจาก "สิ้นปีกรมธรรม์ที่ N" ซึ่งขึ้นกับอายุที่ทำสัญญา (เช่น 8501 = สิ้นปีกรมธรรม์ที่ 1)
+  // สิ้นปีกรมธรรม์ที่ 1 = ครบ 1 ปีหลังทำสัญญา = ต้นปีกรมธรรม์ที่ 2 ดังนั้น offset 1 ปีจากอายุแรกเข้า
+  let startAge = v.pensionStartAge;
+  if(startAge == null && v.pensionStartOffsetYears != null) startAge = entryAge + v.pensionStartOffsetYears;
   const endAge = v.pensionEndAge != null ? v.pensionEndAge : (PENSION._meta ? PENSION._meta.pensionEndAge : 90);
 
   // ปีที่ต้องชำระเบี้ย
@@ -6352,7 +6391,8 @@ function pensionDeathPayout(planId, variant, cf, idx, sum){
   const p = pensionPlan(planId);
   const v = (p.variants || {})[variant];
   const r = cf.rows[idx];
-  const beforePension = (v.pensionStartAge == null) ? false : (r.age < v.pensionStartAge);
+  const effStart = pensionEffectiveStartAge(planId, variant, cf && cf.rows && cf.rows.length ? cf.rows[0].age : null);
+  const beforePension = (effStart == null) ? false : (r.age < effStart);
 
   if(planId === 'mt_8555_g20' || planId === 'mt_8560_g15'){
     if(beforePension){
@@ -6363,7 +6403,7 @@ function pensionDeathPayout(planId, variant, cf, idx, sum){
     }
     // ช่วงรับบำนาญ: รับรองการจ่าย N ปี -> จ่ายบำนาญที่เหลือจนครบ (ไม่คิดลดมูลค่าปัจจุบัน = ประมาณการอย่างระมัดระวัง)
     const gp = p.guaranteedPeriodYears || 0;
-    const yearsGot = r.age - v.pensionStartAge + 1;
+    const yearsGot = r.age - (effStart != null ? effStart : r.age) + 1;
     const left = Math.max(0, gp - yearsGot);
     const pct = pensionPctAt(planId, variant, r.age);
     return Math.round(sum * pct / 100) * left;
@@ -6590,7 +6630,7 @@ function renderPensionCalc(planId){
       ${pensionVariantKeys(planId).length > 1 ? `
       <div class="pf-row"><label>แบบย่อย</label>
         <select onchange="setPensionField('${planId}','variant',this.value)">
-          ${pensionVariantKeys(planId).map(k => `<option value="${k}"${k===s.variant?' selected':''}>${(p.variants[k].label||k)} — เริ่มรับบำนาญอายุ ${p.variants[k].pensionStartAge} ปี</option>`).join('')}
+          ${pensionVariantKeys(planId).map(k => `<option value="${k}"${k===s.variant?' selected':''}>${(p.variants[k].label||k)} — เริ่มรับบำนาญ ${pensionStartLabel(planId, k, null)}</option>`).join('')}
         </select></div>` : ''}
       <div class="pf-row"><label>เพศ</label>
         <select onchange="setPensionField('${planId}','gender',this.value)">
@@ -6641,7 +6681,7 @@ function buildPensionPlanDetails(){
     vars.forEach(k => {
       const v = p.variants[k];
       const seg = (v.pensionLadder || []).map(s => `${s.fromAge == null ? '' : 'อายุ ' + s.fromAge + (s.toAge && s.toAge !== s.fromAge ? '–' + s.toAge : '') + ' ปี รับ '}${s.pct}%`).join(' / ');
-      coverage.push(`<b>${v.label || k}</b> — เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี ถึงอายุ ${v.pensionEndAge || 90} ปี : ${seg} ของจำนวนเงินเอาประกันภัยต่อปี`);
+      coverage.push(`<b>${v.label || k}</b> — เริ่มรับบำนาญ ${pensionStartLabel(pid, k, null)} ถึงอายุ ${v.pensionEndAge || 90} ปี : ${seg} ของจำนวนเงินเอาประกันภัยต่อปี`);
     });
     if(p.maturityBenefit) coverage.push('อยู่ครบกำหนดสัญญา: ' + p.maturityBenefit);
     coverage.push('<b>กรณีเสียชีวิตก่อนเริ่มรับบำนาญ</b> — ' + p.deathBenefit.beforePension);
@@ -6825,7 +6865,8 @@ function pensionAdvisorCandidates(){
       } else {
         reasons.push(`งบ ${fmt(st.budget)} บาท/ปี ทำทุนได้ ${fmt(sum)} บาท ได้บำนาญปีแรก ${fmt(firstPensionYear)} บาท`);
       }
-      if(startDiff === 0) reasons.push(`เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี ตรงกับที่ต้องการพอดี`);
+      if(v.pensionStartAge == null) reasons.push(`เริ่มรับบำนาญ ${pensionStartLabel(pid, vk, age)}`);
+      else if(startDiff === 0) reasons.push(`เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี ตรงกับที่ต้องการพอดี`);
       else if(v.pensionStartAge != null) reasons.push(`เริ่มรับบำนาญอายุ ${v.pensionStartAge} ปี (ต่างจากที่ต้องการ ${startDiff} ปี)`);
       if(irr != null) reasons.push(`ผลตอบแทนประมาณ ${(irr*100).toFixed(2)}% ต่อปี ถ้าอยู่ครบสัญญา`);
       if(be) reasons.push(`คุ้มทุนที่อายุ ${be} ปี`);
