@@ -3222,17 +3222,61 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   });
 
   // health riders
-  const healthDesc = {
-    dhl: 'เหมาจ่าย IPD ตามวงเงินต่อครั้ง ไม่มีความรับผิดส่วนแรก ค่าห้อง/ค่าแพทย์/ผ่าตัด/ICU/ค่ายาจ่ายตามจริงในวงเงิน มีสิทธิ์เข้า MTL Smile Hospital Network — เพิ่มผลประโยชน์สูงสุด 1.2 เท่า และขยายวันค่าห้อง/ค่าหมอเป็น 365 วัน/ครั้ง',
-    ehp: 'ค่ารักษาผู้ป่วยใน วงเงินต่อปีกรมธรรม์ ครอบคลุมห้องเดี่ยวมาตรฐาน/พิเศษ',
-    maochai: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา ตามวงเงินแผนที่เลือก',
-    ecp: 'ค่ารักษาเหมาจ่ายต่อครั้งการรักษา มีส่วนร่วมจ่าย Deductible 20,000/ครั้ง',
+  /* คำอธิบายสัญญาสุขภาพ ต้องสะท้อน "แผนที่ลูกค้าเลือกจริง" ไม่ใช่ข้อความตายตัว
+     ทุกบรรทัดต้องมี วงเงินค่ารักษา + ค่าห้อง + เงื่อนไขส่วนร่วมจ่าย */
+  const DHL_ROOM = {'1m':'2,000', '5m':'4,000'};
+  const DHL_SUM_TXT = {'1m':'1,000,000 บาท/ครั้งการรักษา', '5m':'5,000,000 บาท/ครั้งการรักษา'};
+  const DHL_DEDUCT_TXT = {d0:null, d20k:'20,000', d30k:'30,000', d50k:'50,000', d100k:'100,000'};
+  const EHP_SUM = {'20m':'20,000,000', '40m':'40,000,000', '75m':'75,000,000', '100m':'100,000,000'};
+  // ค่าห้องอ้างอิงตรงจาก eliteBenefitRows() หมวด 1 ห้ามใส่ตัวเลขเอง
+  const EHP_ROOM = {'20m':'10,000', '40m':'12,000', '75m':'15,000', '100m':'25,000'};
+  const EXTRA_PLAN = {
+    p1:{sum:'200,000 บาท/ครั้งการรักษา', room:'2,000'},
+    p2:{sum:'200,000 บาท/ครั้งการรักษา', room:'4,000'},
+    p3:{sum:'500,000 บาท/ครั้งการรักษา', room:'4,000'},
   };
+  const EXTRA_LABEL = {p1:'Plan 1', p2:'Plan 2', p3:'Plan 3'};
+  function healthCoverageText(cfg){
+    if(cfg.type === 'dhl'){
+      const bits = [`วงเงินค่ารักษา ${DHL_SUM_TXT[cfg.sum]}`, `ค่าห้องสูงสุด ${DHL_ROOM[cfg.sum]} บาท/วัน`];
+      if(cfg.mode === 'copay'){
+        bits.push(`มีส่วนร่วมจ่าย Copayment ${cfg.copay === '9010' ? '10' : '20'}% ของค่ารักษาแต่ละครั้ง`);
+      } else {
+        const d = DHL_DEDUCT_TXT[cfg.deduct];
+        bits.push(d ? `มีความรับผิดส่วนแรก (Deductible) ${d} บาท/ครั้ง` : 'ไม่มีความรับผิดส่วนแรกและไม่มีส่วนร่วมจ่าย');
+      }
+      bits.push('ค่าแพทย์ ค่าผ่าตัด ค่า ICU และค่ายาจ่ายตามจริงภายในวงเงิน');
+      bits.push('มีสิทธิ์เข้า MTL Smile Hospital Network เพิ่มผลประโยชน์สูงสุด 1.2 เท่า และขยายวันค่าห้อง/ค่าหมอเป็น 365 วัน/ครั้ง');
+      return bits.join(' • ');
+    }
+    if(cfg.type === 'ehp'){
+      const label = {'20m':'20 ล้านบาท','40m':'40 ล้านบาท','75m':'75 ล้านบาท','100m':'100 ล้านบาท'}[cfg.plan];
+      return [`แผน ${label}`,
+              `วงเงินค่ารักษา ${EHP_SUM[cfg.plan]} บาท/ปีกรมธรรม์`,
+              `ค่าห้อง ${EHP_ROOM[cfg.plan]} บาท/วัน หรือห้องเดี่ยวมาตรฐาน`,
+              'ไม่มีความรับผิดส่วนแรกและไม่มีส่วนร่วมจ่าย'].join(' • ');
+    }
+    if(cfg.type === 'maochai'){
+      const p = EXTRA_PLAN[cfg.plan];
+      return [`แผน ${EXTRA_LABEL[cfg.plan]}`,
+              `วงเงินค่ารักษา ${p.sum}`,
+              `ค่าห้อง ${p.room} บาท/วัน`,
+              'ไม่มีความรับผิดส่วนแรก'].join(' • ');
+    }
+    if(cfg.type === 'ecp'){
+      const p = EXTRA_PLAN[cfg.plan];
+      return [`แผน ${EXTRA_LABEL[cfg.plan]}`,
+              `วงเงินค่ารักษา ${p.sum}`,
+              `ค่าห้อง ${p.room} บาท/วัน`,
+              'มีความรับผิดส่วนแรก (Deductible) 20,000 บาท/ครั้งการรักษา'].join(' • ');
+    }
+    return '';
+  }
   const healthName = {dhl:'D Health Lite', ehp:'Elite Health Plus', maochai:'เหมาจ่าย Extra', ecp:'Extra Care Plus'};
   inp.healthList.forEach((cfg, i) => {
     const key = 'health_'+i;
     if(y1[key] !== undefined){
-      items.push({name: healthName[cfg.type], premium: y1[key], coverage: healthDesc[cfg.type]});
+      items.push({name: healthName[cfg.type], premium: y1[key], coverage: healthCoverageText(cfg)});
     }
   });
 
@@ -3303,11 +3347,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     : 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก คุ้มครองถึงอายุ 99 ปี';
   mainItem.coverage = `${mainItem.coverage} (${mainTerm})`;
   items.forEach(it => {
-    if(it.name === 'D Health Lite'){
-      const dhl = inp.healthList.find(cfg => cfg.type === 'dhl');
-      const limit = dhl?.sum === '1m' ? '1,000,000' : '5,000,000';
-      it.coverage = `เหมาจ่าย IPD ${limit} บาท/ครั้ง ${it.coverage}`;
-    } else if(it.name.startsWith('Care Plus')){
+    if(it.name.startsWith('Care Plus')){
       it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD)`;
     } else if(it.name.startsWith('D Care')){
       const d = inp.dcareSelections.find(cfg => it.name === 'D Care - '+cfg.label.split(' (')[0]);
@@ -3316,7 +3356,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       }
     }
   });
-  const compactCoverage = coverage => String(coverage || '').replace(/\s*มีสิทธิ์เข้า MTL Smile Hospital Network.*$/, '');
+  const compactCoverage = coverage => String(coverage || '');
   const summaryLines = [
     `👤 เพศ${gender==='m'?'ชาย':'หญิง'} | อายุ ${entryAge} ปี | ชำระเบี้ย${paymentInfo.label}`,
     '',
