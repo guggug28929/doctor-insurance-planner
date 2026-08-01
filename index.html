@@ -3210,11 +3210,11 @@ function cashback9901Table(){
   const rows = cashback9901Rows();
   if(!rows) return '';
   const body = rows.map(r => `<tr><td>${r.age === 0 ? '30 วัน' : r.age}</td><td>${r.n}</td>` +
-    `<td>${r.backPct.toFixed(2)}%</td><td><b>${r.totalPct.toFixed(2)}%</b></td>` +
+    `<td><b>${r.totalPct.toFixed(2)}%</b></td>` +
     `<td>${fmt(Math.round(r.totalPct * 10000))}</td></tr>`).join('');
-  return `<div class="table-wrap"><table><thead><tr><th>อายุแรกเข้า</th><th>จำนวนงวดเงินคืน</th>` +
-    `<th>เงินคืนสะสม</th><th>รวมทั้งหมด</th><th>ที่ทุน 1 ล้าน (บาท)</th></tr></thead><tbody>${body}</tbody></table></div>` +
-    `<p class="meta" style="margin-top:10px;"><b>อ่านตารางนี้อย่างไร</b> เบี้ยที่จ่ายคือ 100% ของทุนเสมอ ตัวเลขคอลัมน์ &ldquo;รวมทั้งหมด&rdquo; จึงเทียบกับ 100% ได้ตรง ๆ ` +
+  return `<div class="table-wrap"><table><thead><tr><th>อายุ<br>แรกเข้า</th><th>งวด<br>เงินคืน</th>` +
+    `<th>รวม<br>ทั้งหมด</th><th>ที่ทุน 1 ล้าน<br>(บาท)</th></tr></thead><tbody>${body}</tbody></table></div>` +
+    `<p class="meta" style="margin-top:10px;"><b>อ่านตารางนี้อย่างไร</b> คอลัมน์ &ldquo;รวมทั้งหมด&rdquo; คือเงินคืนสะสมปีละ 1.75% บวกก้อนครบสัญญา 101.75% · เบี้ยที่จ่ายคือ 100% ของทุนเสมอ ตัวเลขคอลัมน์ &ldquo;รวมทั้งหมด&rdquo; จึงเทียบกับ 100% ได้ตรง ๆ ` +
     `เช่นเริ่มที่อายุ 40 ปี ได้คืนรวม 203.25% ของทุน คือได้เกินเบี้ยที่จ่ายมา 103.25% ตลอด 59 ปี · ` +
     `<b>ตัวเลขนี้เป็นผลรวมแบบไม่คิดมูลค่าเวลาของเงิน ไม่ใช่ผลตอบแทนต่อปี และยังไม่รวมภาษีหรือเงินค่าเวนคืน</b> ` +
     `จึงใช้เปรียบเทียบกับการออมแบบอื่นตรง ๆ ไม่ได้ ให้ใช้ดูว่าอายุแรกเข้าต่างกันแล้วจำนวนงวดต่างกันแค่ไหนเป็นหลัก · ` +
