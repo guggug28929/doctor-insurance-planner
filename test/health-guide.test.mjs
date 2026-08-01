@@ -26,7 +26,7 @@ test("ชื่อหัวข้อต้องไม่ยัดชื่อ�
 });
 
 test("ต้องมีเรื่องเบี้ยคงที่แบบควบการลงทุน ซึ่งเป็นกับดักที่คนเข้าใจผิดบ่อย", () => {
-  assert.match(html, /title:'แปดเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ'/);
+  assert.match(html, /title:'เก้าเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ'/);
   assert.match(html, /คำว่าเบี้ยคงที่ ในแบบควบการลงทุน ไม่ได้แปลว่าจ่ายเท่านี้แล้วจบ/);
   assert.match(html, /ค่าการประกันภัยที่ยังขึ้นตามอายุเหมือนเดิม/);
   assert.match(html, /ให้ดูช่องที่จำลองผลตอบแทนต่ำด้วยเสมอ/);
@@ -103,4 +103,21 @@ test("ห้ามนิยาม group-break-with-action ซ้ำจนกฎ�
   const aligns = base.filter((b) => /align-items/.test(b));
   // อนุญาตให้ override ได้เฉพาะใน media query เท่านั้น จึงต้องไม่เกินสองที่
   assert.ok(aligns.length <= 2, `นิยาม align-items ซ้ำ ${aligns.length} ที่`);
+});
+
+test("เรื่อง OPD ต้องอธิบายทั้งสองด้าน และย้ำว่าของเราแยกสัญญา", () => {
+  assert.match(html, /OPD เป็นส่วนที่แพงที่สุดเมื่อเทียบกับโอกาสได้ใช้/);
+  // จุดขายจริงของเรา: OPD แยกสัญญา ถูกไม่ต่ออายุแล้วไม่ลามทั้งฉบับ
+  assert.match(html, /OPD เป็นสัญญาแยกต่างหาก/);
+  // ต้องไม่ด้านเดียว ต้องบอกว่าเมื่อไหร่ OPD สมเหตุสมผล
+  assert.match(html, /OPD ไม่ใช่ของไม่ดี/);
+});
+
+test("ตารางจุดคุ้มทุน OPD ต้องคำนวณสดจากตารางเบี้ย ห้ามฝังตัวเลข", () => {
+  assert.match(html, /function opdBreakEven\(sex, perVisit, entryAge\)/);
+  assert.match(html, /RATES\['opd_ครั้ง'\]/);
+  // renderer ต้องเรียก extraHtml จริง ไม่งั้นตารางไม่ขึ้น
+  assert.match(html, /typeof sec\.extraHtml === 'function' \? sec\.extraHtml\(\)/);
+  // ต้องติดป้ายข้อจำกัดว่าเป็นเงินสดล้วน ไม่ใช่ ROI
+  assert.match(html, /ยังไม่คิดมูลค่าเงินตามเวลาและเงินเฟ้อค่ารักษา/);
 });
