@@ -1144,13 +1144,15 @@
 
   /* ปุ่มเมนู HNW ให้เด่นด้วยทองแม้อยู่ในธีมปกติ */
   .navbar button.nav-hnw{
-    border-color:#e0c691 !important;
-    background:linear-gradient(100deg,rgba(184,134,59,.13),rgba(224,81,140,.10)) !important;
-    color:#8a6a33 !important;font-weight:700;
+    border-color:rgba(240,220,176,.85) !important;
+    background:linear-gradient(100deg,rgba(240,220,176,.20),rgba(255,255,255,.10)) !important;
+    color:#fdf0d2 !important;font-weight:700;
   }
+  body:not(.hnw) .navbar button.nav-hnw::before{background:#f0dcb0 !important;}
   .navbar button.nav-hnw.active{
     background:linear-gradient(100deg,#3a2b1c,#241722) !important;border-color:#d4af6a !important;color:#f0dcb0 !important;
   }
+  body:not(.hnw) .navbar button.nav-hnw.active::before{background:#f0dcb0 !important;}
 
   /* หัวเรื่องและบล็อกเฉพาะของหน้า HNW */
   .hnw-head{margin:6px 0 20px;}
@@ -1303,12 +1305,27 @@
     --a4:#1f5fa8;  /* น้ำเงิน */
     --a5:#c2543a;  /* ส้มอิฐ */
   }
-  body:not(.hnw) .navbar button:nth-child(1):not(.active){border-color:#bfe0df;color:var(--a1);}
-  body:not(.hnw) .navbar button:nth-child(2):not(.active){border-color:#d9cbee;color:var(--a2);}
-  body:not(.hnw) .navbar button:nth-child(3):not(.active){border-color:#ecd9b6;color:var(--a3);}
-  body:not(.hnw) .navbar button:nth-child(4):not(.active){border-color:#c6d9ee;color:var(--a4);}
-  body:not(.hnw) .navbar button:nth-child(5):not(.active){border-color:#f0cfc6;color:var(--a5);}
-  body:not(.hnw) .navbar button:nth-child(6):not(.active){border-color:#f0c9d8;color:var(--pink);}
+  /* เมนูอยู่บนพื้นชมพูเข้ม ตัวอักษรจึงต้องสว่างเสมอเพื่อให้อ่านออก
+     ความหลากสีใส่ไว้ที่จุดนำหน้าและเส้นขอบแทน ไม่ใส่ที่สีตัวอักษร */
+  body:not(.hnw) .navbar button{position:relative;padding-left:28px;}
+  body:not(.hnw) .navbar button::before{
+    content:"";position:absolute;left:13px;top:50%;transform:translateY(-50%);
+    width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9;
+  }
+  body:not(.hnw) .navbar button:nth-child(1)::before{background:#7fe3d8;}
+  body:not(.hnw) .navbar button:nth-child(2)::before{background:#c9b0f5;}
+  body:not(.hnw) .navbar button:nth-child(3)::before{background:#f5d38a;}
+  body:not(.hnw) .navbar button:nth-child(4)::before{background:#9ec6f2;}
+  body:not(.hnw) .navbar button:nth-child(5)::before{background:#f0d9a8;}
+  body:not(.hnw) .navbar button:nth-child(6)::before{background:#f6b6a4;}
+  body:not(.hnw) .navbar button:nth-child(7)::before{background:#ffc2da;}
+  body:not(.hnw) .navbar button:nth-child(1){border-color:rgba(127,227,216,.65);}
+  body:not(.hnw) .navbar button:nth-child(2){border-color:rgba(201,176,245,.65);}
+  body:not(.hnw) .navbar button:nth-child(3){border-color:rgba(245,211,138,.65);}
+  body:not(.hnw) .navbar button:nth-child(4){border-color:rgba(158,198,242,.65);}
+  body:not(.hnw) .navbar button:nth-child(6){border-color:rgba(246,182,164,.65);}
+  body:not(.hnw) .navbar button:nth-child(7){border-color:rgba(255,194,218,.7);}
+  body:not(.hnw) .navbar button.active::before{background:var(--pink) !important;}
   body:not(.hnw) .plan-card:nth-of-type(5n+1) .cat{color:var(--a1);}
   body:not(.hnw) .plan-card:nth-of-type(5n+2) .cat{color:var(--a2);}
   body:not(.hnw) .plan-card:nth-of-type(5n+3) .cat{color:var(--a3);}
