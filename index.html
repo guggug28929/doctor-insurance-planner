@@ -1222,6 +1222,17 @@
   .hg-td-head{font-weight:700;color:var(--pink-deep);white-space:nowrap;}
 
   .hg-traps{display:grid;gap:12px;margin-top:18px;}
+  .hg-be{margin-top:20px;border:1px solid #eab9cd;border-radius:14px;padding:16px 18px;background:#fffafc;}
+  .hg-be-h{font-weight:800;color:var(--pink-deep);margin-bottom:6px;}
+  .hg-be-lead{margin:0 0 12px;font-size:.9rem;}
+  .hg-be-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .hg-be-table{border-collapse:collapse;width:100%;min-width:520px;font-size:.85rem;}
+  .hg-be-table th,.hg-be-table td{padding:8px 10px;border-bottom:1px solid #f2e6ea;text-align:right;white-space:nowrap;}
+  .hg-be-table th:first-child,.hg-be-table td:first-child,
+  .hg-be-table th:nth-child(2),.hg-be-table td:nth-child(2){text-align:left;}
+  .hg-be-table thead th{background:#fdeef4;color:var(--pink-deep);font-weight:800;}
+  .hg-be-table .hg-be-hit{font-weight:800;color:var(--pink-deep);}
+  .hg-be-note{margin:12px 0 0;font-size:.8rem;color:#6b5560;line-height:1.7;}
   .hg-trap{display:flex;gap:14px;padding:14px 16px;border-radius:14px;background:#fbfbfd;border:1px solid var(--line);}
   .hg-trap-n{
     width:28px;height:28px;flex:none;border-radius:50%;background:var(--pink-soft);
@@ -9005,7 +9016,7 @@ const HEALTH_GUIDE_SECTIONS = [
     ],
   },
   {
-    id:'g-trap', num:'4', title:'แปดเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ',
+    id:'g-trap', num:'4', title:'เก้าเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ',
     lead:'เรื่องพวกนี้ไม่มีในโบรชัวร์ แต่เป็นตัวตัดสินว่าตอนเคลมจริงจะราบรื่นหรือมีปัญหา',
     traps:[
       {t:'ประกันสุขภาพซื้อเดี่ยวไม่ได้ ต้องมีสัญญาหลักเสมอ',
@@ -9024,7 +9035,10 @@ const HEALTH_GUIDE_SECTIONS = [
        d:'เบี้ยสุขภาพขึ้นตามอายุ และช่วงที่เราใช้ประกันมากที่สุดคือหลังเกษียณ ซึ่งเป็นช่วงที่รายได้หายพอดี การเตรียมแหล่งเงินไว้จ่ายเบี้ยช่วงนั้น เช่นผ่านแบบบำนาญหรือการลงทุนระยะยาว จึงเป็นส่วนหนึ่งของการวางแผนสุขภาพ ไม่ใช่เรื่องแยกกัน'},
       {t:'คำว่าเบี้ยคงที่ ในแบบควบการลงทุน ไม่ได้แปลว่าจ่ายเท่านี้แล้วจบ',
        d:'แบบสุขภาพที่แนบกับประกันควบการลงทุนจะเสนอเป็นเบี้ยเป้าหมายที่เท่ากันทุกปี ซึ่งฟังดูแก้ปัญหาเบี้ยขึ้นตามอายุได้พอดี แต่ไส้ในของมันคือค่าการประกันภัยที่ยังขึ้นตามอายุเหมือนเดิม แล้วเอาผลตอบแทนจากกองทุนในกรมธรรม์มาโปะส่วนต่าง ตัวเลขที่เห็นในใบเสนอจึงตั้งอยู่บนสมมติฐานว่ากองทุนจะได้ผลตอบแทนตามที่จำลองไว้ทุกปี · ถ้าปีไหนตลาดติดลบ โดยเฉพาะช่วงต้นของการหยุดจ่ายเบี้ย มูลค่ากรมธรรม์อาจไม่พอหักค่าการประกันภัย และความคุ้มครองจบก่อนกำหนดได้ ทั้งที่จ่ายเบี้ยครบทุกปี · เวลาดูใบเสนอให้ดูช่องที่จำลองผลตอบแทนต่ำด้วยเสมอ ไม่ใช่ดูเฉพาะช่องที่สวยที่สุด และถามให้ชัดว่าถ้าผลตอบแทนไม่ถึงเป้า ความคุ้มครองจะอยู่ถึงอายุเท่าไร'},
+      {t:'OPD เป็นส่วนที่แพงที่สุดเมื่อเทียบกับโอกาสได้ใช้',
+       d:'ค่ารักษาผู้ป่วยนอกครั้งละหลักพัน เป็นค่าใช้จ่ายที่เกิดบ่อยแต่ไม่ทำให้ใครล้มละลาย ซึ่งตรงข้ามกับเหตุผลที่ประกันมีอยู่ · เบี้ย OPD จึงถูกคิดเผื่อกรณีที่คนเคลมเต็มที่ไว้แล้ว ทำให้คนที่ใช้ตามจริงมักจ่ายมากกว่าที่ได้ใช้ ดูตัวเลขจุดคุ้มทุนจากตารางเบี้ยจริงด้านล่างได้เลย · ข้อที่อันตรายกว่าเรื่องเงินคือ ถ้า OPD ถูกรวมอยู่ในสัญญาสุขภาพฉบับเดียวกัน การเคลมถี่เกินความจำเป็นทางการแพทย์อาจทำให้ถูกไม่ต่ออายุทั้งฉบับ คือเสียความคุ้มครองค่าผ่าตัดหลักล้านไปด้วย แบบที่เรามีให้เลือกนั้น OPD เป็นสัญญาแยกต่างหาก ถ้าถูกไม่ต่ออายุจึงกระทบเฉพาะส่วน OPD สัญญาสุขภาพหลักยังอยู่ · OPD ไม่ใช่ของไม่ดี ถ้ามองว่าเป็นการบังคับตัวเองให้ออมค่ารักษาส่วนนี้ก็มีเหตุผล แต่ไม่ควรใช้ OPD เป็นเกณฑ์หลักในการเลือกว่าจะเอาแผนสุขภาพตัวไหน'},
     ],
+    extraHtml: () => opdBreakEvenHtml(),
   },
   {
     id:'g-pick', num:'5', title:'สรุปเป็นขั้นตอนที่เอาไปใช้ได้จริง',
@@ -9063,6 +9077,53 @@ function healthGuideTypeTableHtml(){
     <th>โครงสร้างแผน</th><th>ทำงานยังไง</th><th>ข้อดี</th><th>ข้อควรระวัง</th><th>แบบที่เรามีให้เลือก</th>
   </tr></thead><tbody>${rows.map(r => `<tr>${r.map((c,i) => `<td${i===0?' class="hg-td-head"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
+// จุดคุ้มทุน OPD คำนวณสดจาก data/premium-rates.json ทุกครั้ง
+// ห้ามฝังตัวเลขเบี้ยไว้ในโค้ด ตัวเลขต้องมาจากตารางจริงเท่านั้น
+const OPD_BE_ROWS = [
+  {sex:'m', label:'ชาย'},
+  {sex:'f', label:'หญิง'},
+];
+const OPD_BE_ENTRY_AGES = [30, 40, 50];
+function opdBreakEven(sex, perVisit, entryAge){
+  const g = RATES['opd_ครั้ง'];
+  if(!g) return null;
+  const arr = g[`${sex}_${perVisit}`];
+  const start = g.age_start;
+  if(!Array.isArray(arr) || typeof start !== 'number') return null;
+  let total = 0, years = 0, lastAge = null;
+  for(let i = 0; i < arr.length; i++){
+    const age = start + i;
+    if(age < entryAge) continue;
+    const v = arr[i];
+    if(v == null) continue;
+    total += v; years++; lastAge = age;
+  }
+  if(!years) return null;
+  const perYear = total / years;
+  return {total, years, lastAge, perYear, visits: perYear / perVisit};
+}
+function opdBreakEvenHtml(){
+  const perVisit = 2000;
+  const rows = [];
+  for(const r of OPD_BE_ROWS){
+    for(const a of OPD_BE_ENTRY_AGES){
+      const be = opdBreakEven(r.sex, perVisit, a);
+      if(!be) continue;
+      rows.push(`<tr><td>${r.label}</td><td>${a} ปี</td><td>${fmt(Math.round(be.total))}</td><td>${fmt(Math.round(be.perYear))}</td><td class="hg-be-hit">${be.visits.toFixed(1)} ครั้ง/ปี</td></tr>`);
+    }
+  }
+  if(!rows.length) return '';
+  const any = opdBreakEven('m', perVisit, OPD_BE_ENTRY_AGES[0]);
+  return `<div class="hg-be">
+    <div class="hg-be-h">ต้องเข้าโรงพยาบาลกี่ครั้งต่อปี OPD ถึงจะคุ้มเบี้ย</div>
+    <p class="hg-be-lead">ใช้ OPD รายครั้ง วงเงิน ${fmt(perVisit)} บาทต่อครั้ง คิดเบี้ยรวมตั้งแต่อายุที่เริ่มทำจนถึงอายุ ${any ? any.lastAge : 98} ปี แล้วหารด้วยจำนวนปี เพื่อดูว่าต้องเคลมเฉลี่ยปีละกี่ครั้งถึงจะได้คืนเท่าเบี้ยที่จ่ายไป</p>
+    <div class="hg-be-scroll"><table class="hg-be-table">
+      <thead><tr><th>เพศ</th><th>เริ่มทำตอน</th><th>เบี้ยรวมทั้งช่วง</th><th>เฉลี่ยต่อปี</th><th>ต้องเคลม</th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table></div>
+    <p class="hg-be-note">ตัวเลขคำนวณสดจากตารางเบี้ยจริงของบริษัท เป็นการเทียบเงินสดล้วน ยังไม่คิดมูลค่าเงินตามเวลาและเงินเฟ้อค่ารักษา · คนทั่วไปเข้าโรงพยาบาลแบบผู้ป่วยนอกราวปีละ 3 ถึง 5 ครั้ง ซึ่งต่ำกว่าจุดคุ้มทุนนี้อยู่มาก · ถ้ารู้ตัวว่าเข้าบ่อยกว่านั้นจริง หรืออยากได้ผลบังคับให้ตัวเองกันเงินส่วนนี้ไว้ OPD ก็ยังเป็นทางเลือกที่มีเหตุผล</p>
+  </div>`;
+}
 function healthGuideMapHtml(){
   const rows = [
     ['งบจำกัด อยากได้แกนหลักก่อน','เหมาจ่าย Extra หรือ Extra Care Plus คู่กับ Care Plus','ได้วงเงินก้อนใหญ่ในเบี้ยที่เริ่มต้นได้ และ Care Plus อุดช่องมะเร็งกับไตวายที่แผนหลักไม่ครอบคลุม'],
@@ -9096,6 +9157,7 @@ function renderHealthGuide(){
       ${(sec.steps||[]).length ? `<div class="hg-steps">${sec.steps.map(st=>`
         <div class="hg-step"><div class="hg-step-n">${st.n}</div><div class="hg-step-t">${st.t}</div><p>${st.d}</p></div>`).join('')}</div>` : ''}
       ${sec.mapTable ? healthGuideMapHtml() : ''}
+      ${typeof sec.extraHtml === 'function' ? sec.extraHtml() : ''}
     </div>`).join('');
 
   box.innerHTML = `
