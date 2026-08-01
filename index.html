@@ -1140,6 +1140,98 @@
   }
   .plan-group-label:first-child{margin-top:0;padding-top:0;border-top:0;}
   .plan-count{font-size:.72rem;font-weight:600;color:var(--muted);}
+  /* ---------- แท็บหน้าความรู้ ---------- */
+  .know-tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:1080px;margin:0 auto 18px;}
+  .know-tab{
+    text-align:left;padding:14px 18px;border-radius:14px;cursor:pointer;
+    background:#fff;border:1.5px solid var(--line);font-family:"Kanit",sans-serif;
+    transition:border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+  }
+  .know-tab:hover{border-color:var(--pink);transform:translateY(-1px);}
+  .know-tab.active{background:linear-gradient(135deg,var(--pink),var(--pink-deep));border-color:transparent;box-shadow:0 8px 22px rgba(143,13,64,.2);}
+  .know-tab-t{display:block;font-weight:700;font-size:.98rem;color:var(--pink-deep);}
+  .know-tab-s{display:block;font-size:.76rem;color:var(--muted);margin-top:2px;}
+  .know-tab.active .know-tab-t,.know-tab.active .know-tab-s{color:#fff;}
+  @media (max-width:600px){ .know-tabs{grid-template-columns:1fr;} }
+
+  /* ---------- คู่มือวิธีเลือกประกันสุขภาพ ---------- */
+  .hg-hero h2{font-size:1.35rem;line-height:1.45;}
+  .hg-lead{color:var(--muted);font-size:.9rem;line-height:1.8;margin:6px 0 0;}
+  .hg-toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .hg-toc a{
+    display:flex;align-items:center;gap:8px;text-decoration:none;
+    padding:8px 14px;border-radius:999px;background:var(--pink-soft);
+    color:var(--pink-deep);font-size:.82rem;font-weight:600;
+    border:1px solid transparent;transition:border-color .2s ease;
+  }
+  .hg-toc a:hover{border-color:var(--pink);}
+  .hg-toc a span{
+    width:20px;height:20px;border-radius:50%;background:var(--pink);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex:none;
+  }
+  .hg-sec{position:relative;}
+  .hg-sec-num{
+    position:absolute;top:-14px;left:24px;
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,var(--pink),var(--pink-deep));color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;
+    box-shadow:0 6px 16px rgba(143,13,64,.24);
+  }
+  .hg-sec h2{margin-top:14px;}
+  .hg-block{margin-top:20px;}
+  .hg-block h3{font-size:.95rem;color:var(--ink);margin:0 0 8px;}
+  .hg-block p{font-size:.86rem;line-height:1.85;margin:0 0 10px;color:#4a5568;}
+
+  .hg-buckets{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+  .hg-bucket{border-radius:16px;padding:16px 16px 14px;border:1.5px solid;}
+  .hg-bucket-head{margin-bottom:10px;}
+  .hg-bucket-title{font-family:"Kanit",sans-serif;font-weight:700;font-size:1rem;}
+  .hg-bucket-sub{font-size:.75rem;margin-top:2px;opacity:.85;}
+  .hg-bucket ul{margin:0;padding-left:18px;font-size:.82rem;line-height:1.75;}
+  .hg-bucket li{margin-bottom:3px;}
+  .hg-bucket-why{font-size:.76rem;line-height:1.7;margin:10px 0 0;padding-top:10px;border-top:1px dashed rgba(0,0,0,.12);opacity:.9;}
+  .hg-go{background:#e9f6ee;border-color:#a9dcbd;color:#125f38;}
+  .hg-mid{background:#fff8e8;border-color:#f0d59a;color:#8a5a12;}
+  .hg-stop{background:#fdeef0;border-color:#f2bcc4;color:#96263a;}
+  @media (max-width:820px){ .hg-buckets{grid-template-columns:1fr;} }
+
+  .hg-table{font-size:.82rem;}
+  .hg-table th{background:var(--pink-soft);color:var(--pink-deep);font-size:.78rem;}
+  .hg-table td{vertical-align:top;line-height:1.7;}
+  .hg-td-head{font-weight:700;color:var(--pink-deep);white-space:nowrap;}
+
+  .hg-traps{display:grid;gap:12px;margin-top:18px;}
+  .hg-trap{display:flex;gap:14px;padding:14px 16px;border-radius:14px;background:#fbfbfd;border:1px solid var(--line);}
+  .hg-trap-n{
+    width:28px;height:28px;flex:none;border-radius:50%;background:var(--pink-soft);
+    color:var(--pink-deep);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;
+  }
+  .hg-trap-t{font-weight:700;font-size:.9rem;color:var(--ink);margin-bottom:5px;}
+  .hg-trap p{margin:0;font-size:.82rem;line-height:1.8;color:#4a5568;}
+
+  .hg-steps{display:grid;gap:10px;margin-top:18px;}
+  .hg-step{padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--pink);}
+  .hg-step-n{font-size:.72rem;font-weight:700;color:var(--pink);letter-spacing:.03em;}
+  .hg-step-t{font-weight:700;font-size:.92rem;margin:2px 0 5px;}
+  .hg-step p{margin:0;font-size:.82rem;line-height:1.8;color:#4a5568;}
+
+  .hg-cta{text-align:center;}
+  .hg-cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+  .hg-cta-row .btn{width:auto;padding:11px 22px;}
+
+  .btn-guide-link{margin-left:auto;}
+  .group-break-with-action{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+  .adv-run-card{text-align:center;}
+  .adv-run-card h2{margin-bottom:6px;}
+  .adv-run-card .btn{width:auto;padding:13px 34px;font-size:1rem;}
+  .adv-info{margin-top:16px;padding:16px 18px 14px;border-radius:16px;background:#fdfbfc;border:1px solid var(--line);}
+  .adv-info-head{font-family:"Kanit",sans-serif;font-weight:700;font-size:.92rem;color:var(--pink-deep);margin-bottom:12px;}
+  .adv-info-foot{font-size:.8rem;color:var(--muted);margin:14px 0 0;line-height:1.8;}
+  .adv-info-link{
+    background:none;border:0;padding:0;margin-left:4px;cursor:pointer;
+    color:var(--pink);font-family:"Kanit",sans-serif;font-weight:700;font-size:.8rem;text-decoration:underline;
+  }
+  .adv-info-link:hover{color:var(--pink-deep);}
   .license-line{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6;}
   .foot-note{
     max-width:1440px;
@@ -1894,22 +1986,14 @@
   <div id="advTab-health">
   <div class="content-card">
     <h2>ผู้ช่วยออกแบบแผนประกันสุขภาพ</h2>
-    <p style="color:var(--muted);">โหมดนี้คิดแบบตัวแทนมืออาชีพที่ยึดประโยชน์ลูกค้า คือปิดความเสี่ยงที่ <b>เสียหายมากแต่โอกาสเกิดน้อย</b> ก่อนความเสี่ยงที่ <b>เสียหายน้อยแต่เกิดบ่อย</b> ระบบจะถามเฉพาะเรื่องที่เปลี่ยนคำตอบจริง แล้วเสนอข้อเสนอหลักหนึ่งชุด พร้อมทางเลือกสำรองเมื่อเบี้ยเกินงบ</p>
-    <div class="ai-note">
-      <b>สรณะของระบบ:</b> D Health Lite 5 ล้าน (ไม่มีส่วนแรก) + Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้าน ถ้างบเหลือพอจึงขยับขึ้น Elite Health Plus 20 / 75 / 100 ล้าน<br>
-      <b>ถ้างบไม่พอ</b> ระบบจะไล่ตัดของที่ปิดความเสี่ยงเล็กก่อน ไม่ลดคุณภาพสัญญาสุขภาพหลัก และถ้าตัดจนสุดแล้วยังเกินงบ จะเสนอไปตรง ๆ พร้อมบอกส่วนต่าง แทนการยัดแผนที่ถูกลงแต่ปิดความเสี่ยงไม่ได้<br>
-      <b>ถ้าลูกค้าบอกว่าไม่เอา Deductible/Co-pay</b> ระบบจะไม่ยกแผนที่มีส่วนแรกขึ้นเป็นข้อเสนอแรกเด็ดขาด แต่จะแสดงเป็นทางเลือกพร้อมป้ายเตือน
-    </div>
-    <div class="ai-priority-box">
-      <b>ลำดับการตัดเมื่อเบี้ยเกินงบ</b>
-      <div class="ai-step-line">
-        <span>1) ลด/ตัด OPD</span>
-        <span>2) ตัด CI เงินก้อนส่วนเกิน</span>
-        <span>3) ลดทุนชีวิตสัญญาหลัก</span>
-        <span>4) ตัด PA</span>
-        <span>5) ลด Care Plus เหลือมะเร็ง</span>
-      </div>
-      <div style="margin-top:8px;">สัญญาหลักตั้งต้นที่ <b>99/20 ทุน 200,000 บาท</b> จะลดลงเป็น <b>99/99 ทุน 100,000 หรือ 50,000 บาท</b> เฉพาะตอนต้องกดเบี้ยจริง ๆ และจะไม่จับคู่ทุน 50,000 กับ Elite เด็ดขาด · <b>ระบบไม่เสนอ Elite 40 ล้านทุกกรณี</b> เพราะ Elite 75 ล้านแพงกว่าเพียง 2–5% แต่ได้มากกว่าทุกข้อ</div>
+    <p style="color:var(--muted);">ระบบเรียงลำดับให้ตามหลักเดียวกับที่ตัวแทนมืออาชีพใช้ คือ<b>ปิดความเสี่ยงที่ทำให้ครอบครัวล้มละลายก่อน</b> แล้วค่อยเติมของที่จ่ายเองไหว เบี้ยทุกตัวมาจากตารางจริงของบริษัท ไม่มีการประมาณค่า</p>
+
+    <div class="adv-info">
+      <div class="adv-info-head">หลักที่ระบบใช้ตัดสินใจ · เงินก้อนไหนควรโอนให้ประกัน ก้อนไหนควรถือไว้เอง</div>
+      <div id="advBucketBox"></div>
+      <p class="adv-info-foot">อยากเข้าใจที่มาของหลักนี้แบบเต็ม ๆ รวมถึงกับดักที่เจอบ่อยตอนเลือกแผน
+        <button type="button" class="adv-info-link" onclick="showPage('knowledge'); setKnowTab('guide');">อ่านวิธีเลือกประกันสุขภาพ &rarr;</button>
+      </p>
     </div>
   </div>
 
@@ -1988,7 +2072,7 @@
         </select>
       </div>
     </div>
-    <button class="btn" onclick="runAiPlanner()">ให้ AI ช่วยจัดแผน</button>
+    <button class="btn" onclick="runAiPlanner()">จัดแผนให้เลย</button>
   </div>
 
   <div id="aiPlannerOutput"></div>
@@ -2862,6 +2946,21 @@
 <!-- ============ PAGE: KNOWLEDGE / FAQ ============ -->
 <div id="page-knowledge" class="page">
 <div class="wrap">
+
+  <div class="know-tabs" role="tablist">
+    <button type="button" id="knowTabBtn-guide" class="know-tab" role="tab" onclick="setKnowTab('guide')">
+      <span class="know-tab-t">วิธีเลือกประกันสุขภาพ</span>
+      <span class="know-tab-s">อ่านก่อนตัดสินใจ ประมาณ 10 นาที</span>
+    </button>
+    <button type="button" id="knowTabBtn-faq" class="know-tab" role="tab" onclick="setKnowTab('faq')">
+      <span class="know-tab-t">คำถามที่พบบ่อย และถาม AI</span>
+      <span class="know-tab-s">ค้นเฉพาะเรื่องที่สงสัย</span>
+    </button>
+  </div>
+
+  <div id="knowTab-guide"><div id="guideBody"></div></div>
+
+  <div id="knowTab-faq" style="display:none;">
   <div class="content-card">
     <h2>ความรู้ด้านประกันสุขภาพ / FAQ ฉบับละเอียด</h2>
     <div class="faq-note"><b>วิธีอ่าน:</b> หัวข้อถูกพับไว้เป็นค่าเริ่มต้นเพื่อไม่ให้หน้ายาวเกินไป ลูกค้าสามารถกดหัวข้อเพื่ออ่านรายละเอียดเต็มได้ ข้อความสำคัญทำตัวหนาและไฮไลท์ไว้เพื่อให้อ่านง่ายขึ้น โดยไม่ได้ตัดทอนเนื้อหา</div>
@@ -3121,6 +3220,7 @@
       </details>
 
     </div>
+  </div>
   </div>
 </div>
 </div>
@@ -7249,10 +7349,29 @@ function lifeTwoBucket(st){
 
 /** เลือกแบบที่ดีที่สุดของก้อนหนึ่ง ตามทุนที่ต้องการและงบที่ให้มา
  *  คืน null ถ้าไม่มีแบบไหนรับอายุนี้ · ไม่ตัดทุนลงเองถ้าไม่ได้ส่งงบมา */
+/* จำนวนปีที่แบบนี้คุ้มครองให้จริง นับจากอายุปัจจุบัน */
+function lifeCoverYears(p, age){
+  if(p.coverYears) return p.coverYears;
+  if(p.coverToAge) return Math.max(0, p.coverToAge - age);
+  return 0;
+}
 function lifeBucketPick(bucket, need, st, budgetForBucket){
   const age = st.age, gender = st.gender, freq = st.freq || 'annual';
-  const cands = LIFE_PRODUCTS.filter(p =>
+  // ก้อนชั่วคราวมีไว้ปิดภาระที่มีวันจบ เช่น ส่งลูกเรียนหรือผ่อนบ้าน
+  // แบบที่คุ้มครองสั้นกว่าภาระนั้นมาก ต่อให้เบี้ยถูกที่สุดก็ไม่ตอบโจทย์
+  // เช่นเสนอแบบ 1 ปีให้คนที่ต้องดูแลครอบครัวอีก 20 ปี ซึ่งไม่มีเหตุผลทางการขายเลย
+  const needYears = bucket === 'temporary' ? Math.max(1, st.dependencyYears || lifeDefaultDependencyYears(age)) : 0;
+  let cands = LIFE_PRODUCTS.filter(p =>
     lifeBucket(p) === bucket && age >= p.entryAgeMin && age <= p.entryAgeMax);
+  if(bucket === 'temporary'){
+    const enough = cands.filter(p => lifeCoverYears(p, age) >= needYears);
+    // ถ้าไม่มีแบบไหนยาวพอเลย ให้ใช้แบบที่ยาวที่สุดที่มี ดีกว่าเสนอแบบที่สั้นสุด
+    if(enough.length) cands = enough;
+    else {
+      const longest = Math.max(...cands.map(p => lifeCoverYears(p, age)), 0);
+      cands = cands.filter(p => lifeCoverYears(p, age) === longest);
+    }
+  }
   const rows = [];
   for(const p of cands){
     const wantCap = lifeRoundCapital(p, Math.max(need, p.capitalMin || 0), age);
@@ -7273,7 +7392,8 @@ function lifeBucketPick(bucket, need, st, budgetForBucket){
       strength: p.strength, tradeoff: p.tradeoff,
     });
   }
-  // เรียงตามเบี้ยต่อทุนหนึ่งล้าน ถูกที่สุดก่อน เพราะเป็นเกณฑ์ที่เทียบกันได้จริง
+  // เรียงตามเบี้ยต่อทุนหนึ่งล้าน ถูกที่สุดก่อน แต่คิดบนฐานที่คุ้มครองยาวพอแล้วเท่านั้น
+  // ไม่งั้นแบบที่คุ้มครองสั้นที่สุดจะชนะเสมอ ทั้งที่ใช้แก้ปัญหาลูกค้าไม่ได้
   rows.sort((x,y) => {
     const cx = x.fullPremium && x.fullCapital ? x.fullPremium / (x.fullCapital/1000000) : Infinity;
     const cy = y.fullPremium && y.fullCapital ? y.fullPremium / (y.fullCapital/1000000) : Infinity;
@@ -7281,6 +7401,7 @@ function lifeBucketPick(bucket, need, st, budgetForBucket){
   });
   return rows;
 }
+function lifeDefaultDependencyYears(age){ return Math.max(5, LIFE_RETIRE_AGE - age); }
 function lifeAdvisorAge(){
   const y = parseInt(lifeAdvisorState.birthYear,10) || 0;
   if(!y) return 0;
@@ -7474,8 +7595,23 @@ function lifeMethodTable(a){
   return renderBenefitTable(['จำนวนเงิน','ที่มา'], rows);
 }
 
+let lifeShowResult = false;
+function runLifeAdvisor(){
+  lifeShowResult = true;
+  renderLifeAdvisorResultOnly();
+  const out = document.getElementById('lifeAdvResult');
+  if(out) out.scrollIntoView({behavior:'smooth', block:'start'});
+}
 function renderLifeAdvisorResult(){
   const st = lifeReadState();
+  // ยังไม่กดปุ่ม ให้แสดงปุ่มเรียกอย่างเดียว ไม่ยัดตารางยาวมาตั้งแต่เปิดหน้า
+  if(!lifeShowResult){
+    return `<div class="content-card adv-run-card">
+      <h2>กรอกข้อมูลด้านบนให้ครบ แล้วกดปุ่มนี้</h2>
+      <p class="meta">ระบบจะคำนวณทุนชีวิตที่ควรมีด้วยสามวิธีมาตรฐาน เลือกค่ากลาง แล้วแมปเข้ากับแบบประกันที่มีอยู่จริง พร้อมแยกให้เห็นว่าก้อนไหนควรเป็นทุนถาวร ก้อนไหนควรเป็นทุนชั่วคราว</p>
+      <button class="btn" style="margin-top:14px;" onclick="runLifeAdvisor()">คำนวณทุนชีวิตที่ควรมี</button>
+    </div>`;
+  }
   if(!st.age || st.age < 0 || st.age > 90){
     return `<div class="content-card"><div class="validation-box bad">ตรวจสอบปีเกิดอีกครั้ง อายุที่คำนวณได้อยู่นอกช่วงที่แบบประกันในระบบรับทำ</div></div>`;
   }
@@ -8636,7 +8772,7 @@ function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, erro
   out.innerHTML = `
     <div class="content-card">
       <h2>ผลวิเคราะห์และแพ็กเกจที่แนะนำ</h2>
-      <p class="meta">ระบบยึดหลักปิดความเสี่ยงที่เสียหายมากแต่โอกาสเกิดน้อยก่อน เบี้ยทุกตัวมาจากตารางจริงในไฟล์นี้ AI ไม่ได้แต่งตัวเลขเอง</p>
+      <p class="meta">แผนและเบี้ยทั้งหมด<b>คำนวณจากตารางอัตราเบี้ยจริงของบริษัทด้วยกฎที่เขียนไว้ตายตัว</b> ไม่ได้ให้ AI เป็นคนเลือกหรือคิดตัวเลข · ส่วนที่ AI ช่วยคือ<b>เขียนคำอธิบายประกอบให้ตัวแทนเอาไปคุยกับลูกค้า</b> ซึ่งจะขึ้นเป็นกล่องแยกด้านล่างถ้าเชื่อมต่อ backend ไว้</p>
       <div class="ai-chip-row">${explain.map(x=>`<span class="ai-chip">${x}</span>`).join('')}</div>
       <div class="ai-budget-filter" style="border-color:#d9d2ea;background:#faf9fd;">
         <b>ระบบเสนอให้สามระดับ เพื่อให้ลูกค้าเลือกเองว่าจะแลกอะไรกับอะไร</b><br>
@@ -8761,6 +8897,214 @@ function dgApplyReveal(root){
     dgRevealObserver.observe(el);
   });
 }
+
+/* =========================================================================
+   คู่มือวิธีเลือกประกันสุขภาพ — เนื้อหาต้นฉบับของเราเอง
+   เขียนจากหลักการรับความเสี่ยงที่เป็นความรู้ทั่วไปของอุตสาหกรรมประกัน
+   บวกมุมมองเวชปฏิบัติ แล้วแมปเข้ากับแบบประกันของเมืองไทยที่มีอยู่จริงในระบบนี้
+   ตัวเลขความคุ้มครองทุกตัวอ้างจาก data/premium-rates.json และหน้าแผนของเราเอง
+   ========================================================================= */
+
+const HEALTH_GUIDE_BUCKETS = [
+  {
+    key:'transfer', tone:'go',
+    title:'ควรโอนให้ประกัน',
+    sub:'เสียหายหนัก แต่โอกาสเกิดน้อย',
+    why:'กลุ่มนี้คือเหตุผลทั้งหมดที่ประกันสุขภาพมีอยู่ ค่ารักษาระดับที่ขายบ้านก็ยังไม่พอ และไม่มีใครกะเวลาเกิดได้ เบี้ยที่จ่ายจึงถูกกว่าความเสียหายมาก',
+    items:['มะเร็ง ทั้งผ่าตัด เคมีบำบัด รังสีรักษา และยามุ่งเป้า','ไตวายเรื้อรังที่ต้องฟอกไตต่อเนื่อง','นอน ICU ยาว ใส่เครื่องช่วยหายใจ','ผ่าตัดใหญ่ ผ่าตัดหัวใจ ผ่าตัดสมอง','ปลูกถ่ายอวัยวะ','อุบัติเหตุรุนแรงที่ต้องผ่าตัดหลายครั้ง'],
+  },
+  {
+    key:'depend', tone:'mid',
+    title:'แล้วแต่งบและไลฟ์สไตล์',
+    sub:'จ่ายเองไหวแต่เจ็บตัว',
+    why:'กลุ่มนี้ไม่ทำให้ล้มละลาย แต่ก็ไม่ใช่เงินเล็ก ถ้างบเหลือค่อยเติม ถ้างบตึงตัดได้โดยไม่กระทบแกนหลัก',
+    items:['ค่าห้องเดี่ยวระดับสูงในโรงพยาบาลพรีเมียม','เงินก้อนโรคร้ายแรง ไว้ชดเชยรายได้ที่หายไป','อุบัติเหตุ ทั้งค่ารักษาและทุนกรณีสูญเสียอวัยวะ','OPD เฉพาะทางที่ค่าใช้จ่ายสูง เช่น ตรวจ MRI CT ก่อนแอดมิด','ค่าคลอดบุตรและภาวะแทรกซ้อน สำหรับคนที่วางแผนมีลูก'],
+  },
+  {
+    key:'keep', tone:'stop',
+    title:'จ่ายเองคุ้มกว่า',
+    sub:'เกิดบ่อย แต่ครั้งละไม่มาก',
+    why:'กลุ่มนี้คาดเดาได้ ทุกคนใช้ใกล้เคียงกัน บริษัทจึงคิดเบี้ยเกือบเท่าค่ารักษาที่คาดว่าจะจ่ายให้ พูดง่าย ๆ คือเอาเงินตัวเองไปฝากไว้ แล้วเสียค่าดำเนินการ',
+    items:['OPD ทั่วไป เป็นหวัด ปวดท้อง ปวดหลัง','ค่าชดเชยรายวันตอนนอนโรงพยาบาล','ค่าทำฟัน','ค่าวัคซีนและตรวจสุขภาพประจำปี','ค่าตัดแว่นสายตา','ค่ายาสามัญประจำบ้าน'],
+  },
+];
+
+const HEALTH_GUIDE_SECTIONS = [
+  {
+    id:'g-why', num:'1', title:'ประกันสุขภาพมีไว้ทำอะไรกันแน่',
+    lead:'ก่อนเทียบว่าแผนไหนคุ้มครองอะไรบ้าง ต้องตอบก่อนว่าเราซื้อมันไปทำไม เพราะคำตอบข้อนี้จะตัดสินทุกอย่างที่เหลือ',
+    blocks:[
+      {h:'ประกันคือการหารความเสี่ยงกับคนหมู่มาก ไม่ใช่บัตรส่วนลดค่ารักษา',
+       p:['คนหลายแสนคนจ่ายเงินก้อนเล็กเข้ากองกลาง เพื่อให้คนไม่กี่คนที่โชคร้ายจริง ๆ ได้เงินก้อนใหญ่ออกไป กลไกนี้ทำงานได้ดีมากกับเหตุที่<b>เกิดยากแต่เสียหายหนัก</b> เพราะคนส่วนใหญ่จะไม่ได้ใช้ เงินจึงพอจ่ายให้คนที่ใช้',
+          'ในทางกลับกัน ถ้าเอาเรื่องที่<b>ทุกคนใช้เกือบเท่ากันทุกปี</b>ไปใส่ในกองกลาง กองกลางก็ต้องเก็บเงินเท่ากับที่จะจ่ายออกอยู่ดี บวกค่าดำเนินการอีก สุดท้ายคือเราจ่ายค่ารักษาตัวเองผ่านคนกลางที่คิดค่าบริการ',
+          'นี่คือเหตุผลว่าทำไมแผนที่ครอบคลุมทุกอย่างจึงแพงกว่าที่ควรจะเป็นมาก ไม่ใช่เพราะบริษัทโลภ แต่เพราะโครงสร้างมันเป็นแบบนั้น'],
+      },
+      {h:'ในห้องฉุกเฉิน เคสที่ทำให้ครอบครัวพังไม่ใช่เคสที่มาบ่อย',
+       p:['ผมเจอคนไข้ที่มาด้วยไข้หวัด ท้องเสีย ปวดหลัง แทบทุกเวร ค่ารักษาหลักพัน คนไข้จ่ายเองได้ กลับบ้านได้',
+          'เคสที่ผมเห็นครอบครัวต้องขายที่ ขายรถ กู้หนี้ คือเคสที่นอน ICU สองสัปดาห์ เคสมะเร็งที่ต้องให้ยาต่อเนื่องหลายปี เคสไตวายที่ต้องฟอกสัปดาห์ละสามครั้งไปตลอดชีวิต',
+          '<b>งบประกันที่จำกัดควรถูกใช้กับกลุ่มหลังก่อนเสมอ</b> ถ้าเอางบไปหมดกับกลุ่มแรก พอเจอกลุ่มหลังจริง ๆ วงเงินจะไม่พอ ซึ่งเป็นสถานการณ์ที่แย่ที่สุด คือจ่ายเบี้ยมาตลอดแต่ตอนที่ต้องใช้จริงกลับไม่พอ'],
+      },
+    ],
+  },
+  {
+    id:'g-bucket', num:'2', title:'เงินก้อนไหนควรโอน ก้อนไหนควรถือไว้เอง',
+    lead:'นี่คือหัวใจของทั้งหน้านี้ ถ้าจำได้ข้อเดียว ให้จำข้อนี้ แล้วเอาไปจับกับทุกแผนที่มีคนเสนอมา',
+    infographic:true,
+    blocks:[
+      {h:'ทำไม OPD ถึงเป็นตัวกินงบอันดับหนึ่ง',
+       p:['คนทั่วไปหาหมอแบบผู้ป่วยนอกปีละไม่กี่ครั้ง ค่าใช้จ่ายรวมต่อปีอยู่ในหลักหมื่นต้น ๆ ตัวเลขนี้บริษัทรู้ดีกว่าเราเสียอีก เพราะมีสถิติของคนเป็นล้าน',
+          'เบี้ย OPD จึงถูกตั้งให้ใกล้เคียงกับค่าใช้จ่ายที่คาดว่าจะเกิด บวกค่าดำเนินการและกำไร แปลว่า<b>โดยเฉลี่ยแล้วเราจ่ายแพงกว่าที่จะได้คืน</b> คนที่ได้กำไรจาก OPD คือคนที่ป่วยบ่อยผิดปกติ ซึ่งเป็นกลุ่มที่บริษัทจับตาเป็นพิเศษอยู่แล้ว',
+          'ในเว็บนี้ ถ้าคุณเลือก OPD ไว้แล้วงบไม่พอ <b>ระบบจะตัด OPD ออกเป็นอันดับแรกเสมอ</b> ไม่ใช่เพราะ OPD ไม่ดี แต่เพราะเป็นรายการที่ตัดแล้วประหยัดมากที่สุดโดยกระทบการปิดความเสี่ยงก้อนใหญ่น้อยที่สุด'],
+      },
+      {h:'ค่าชดเชยรายวัน กับดักที่ฟังดูดี',
+       p:['หลายคนซื้อค่าชดเชยรายวันเพื่อเอาไปโปะส่วนต่างค่าห้อง แต่ต้องเข้าใจว่ามันจ่ายหลังออกจากโรงพยาบาลและต้องยื่นเอกสารเอง ไม่ได้หักหน้าบิลให้',
+          'ถ้าเป้าหมายคือ<b>ไม่อยากจ่ายส่วนต่างค่าห้อง</b> วิธีที่ตรงกว่าคือเลือกแผนที่ค่าห้องพอกับโรงพยาบาลที่เราจะไปจริง ๆ ตั้งแต่แรก',
+          'ถ้าเป้าหมายคือ<b>ชดเชยรายได้ที่หายไป</b> อันนี้มีเหตุผล แต่ต้องถามตัวเองก่อนว่ามีวันลาป่วยที่ยังได้เงินเดือนอยู่กี่วัน ถ้าเป็นพนักงานประจำที่มีวันลา ความจำเป็นจะน้อยลงมาก แต่ถ้าเป็นฟรีแลนซ์หรือเจ้าของกิจการที่หยุดแล้วรายได้หยุดตาม อันนี้ควรมี'],
+      },
+      {h:'ของแถมที่ฟังดูคุ้ม แต่ดันเบี้ยขึ้นทั้งชีวิต',
+       p:['ค่าทำฟัน ค่าวัคซีน ค่าตรวจสุขภาพ ค่าตัดแว่น เป็นรายการที่<b>เราเลือกเวลาใช้เองได้</b> ซึ่งในทางประกันแปลว่าเฉลี่ยความเสี่ยงกับคนอื่นได้ยาก เบี้ยจึงแพงเมื่อเทียบกับเงินที่จะได้คืน',
+          'ที่สำคัญกว่านั้น รายการพวกนี้ทำให้เบี้ยฐานสูงขึ้น และเบี้ยประกันสุขภาพจะปรับขึ้นตามอายุทุกปี ฐานที่สูงขึ้นวันนี้จึงกลายเป็นตัวเลขที่สูงขึ้นมากในอีกยี่สิบปี ตอนที่เราเกษียณและรายได้ลดลงพอดี'],
+      },
+    ],
+  },
+  {
+    id:'g-type', num:'3', title:'แผนสุขภาพมีกี่แบบ แล้วของเมืองไทยอยู่ตรงไหน',
+    lead:'ชื่อการตลาดเปลี่ยนไปเรื่อย แต่โครงสร้างจริงมีอยู่ไม่กี่แบบ รู้โครงสร้างแล้วจะอ่านโบรชัวร์ของทุกบริษัทออก',
+    typeTable:true,
+    blocks:[
+      {h:'จุดที่คนพลาดบ่อยที่สุด คือความต่างระหว่างต่อครั้งกับต่อปี',
+       p:['<b>วงเงินต่อครั้งการรักษา</b> หมายถึงป่วยกี่ครั้งก็ได้วงเงินใหม่ทุกครั้ง ฟังดูดีมาก แต่มีกติกาว่าถ้าเป็นโรคเดิมและห่างกันไม่เกินช่วงเวลาที่กำหนด จะนับเป็นการรักษาครั้งเดียวกัน ใช้วงเงินก้อนเดิม',
+          'กติกานี้ไม่มีปัญหากับไส้ติ่งอักเสบหรือกระดูกหัก เพราะรักษาจบแล้วจบเลย แต่มีปัญหามากกับ<b>โรคที่ต้องรักษาต่อเนื่อง</b> อย่างมะเร็งที่ต้องให้ยาเป็นรอบ ๆ ทุกสามสัปดาห์ ติดกันเป็นปี',
+          '<b>วงเงินต่อปี</b> แก้ปัญหานี้ตรงจุด เพราะไม่สนว่าโรคเดิมหรือโรคใหม่ ห่างกันกี่วัน ใช้จากก้อนเดียวกันทั้งปี จึงเหมาะกับโรคเรื้อรังและโรคร้ายแรงมากกว่าชัดเจน แลกมาด้วยเบี้ยที่สูงกว่า'],
+      },
+    ],
+  },
+  {
+    id:'g-trap', num:'4', title:'เจ็ดเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ',
+    lead:'เรื่องพวกนี้ไม่มีในโบรชัวร์ แต่เป็นตัวตัดสินว่าตอนเคลมจริงจะราบรื่นหรือมีปัญหา',
+    traps:[
+      {t:'ประกันสุขภาพซื้อเดี่ยวไม่ได้ ต้องมีสัญญาหลักเสมอ',
+       d:'สัญญาสุขภาพเป็นสัญญาเพิ่มเติมที่ต้องแนบกับประกันชีวิต และจะอยู่ได้ไม่เกินอายุสัญญาหลัก ถ้าเอาไปแนบกับแบบออมทรัพย์ที่จบใน 15 ปี พออายุสัญญาหลักหมด สุขภาพก็จบตามทันที ตอนอายุ 50 กว่าที่กำลังจะได้ใช้พอดี จึงควรแนบกับแบบที่คุ้มครองถึงอายุ 99 ปี'},
+      {t:'แถลงสุขภาพให้ครบ สำคัญกว่าที่คิดมาก',
+       d:'บริษัทมีสิทธิขอประวัติการรักษาย้อนหลังตอนเคลมครั้งแรก โดยเฉพาะถ้าเคลมภายในสองสามปีแรก สิ่งที่หมอบันทึกว่าไม่ต้องรักษา อาจถูกฝ่ายพิจารณามองว่าเป็นความเสี่ยงได้ การไม่แถลงจึงอันตรายกว่าการแถลงแล้วโดนยกเว้นบางโรค เพราะการปกปิดกระทบทั้งฉบับ ไม่ใช่แค่โรคนั้น'},
+      {t:'ระยะเวลารอคอย ไม่ใช่แค่ 30 วัน',
+       d:'โรคทั่วไปมักรอ 30 วัน แต่กลุ่มโรคที่ระบุไว้เฉพาะจะรอนานกว่านั้น และถ้าปล่อยให้กรมธรรม์ขาดผลบังคับแล้วต่อใหม่ ระยะรอคอยจะเริ่มนับใหม่ ส่วนอุบัติเหตุคุ้มครองทันทีไม่มีระยะรอคอย'},
+      {t:'Copayment ในปีต่ออายุ เป็นกติกาใหม่ที่ทุกคนโดนเท่ากัน',
+       d:'ตั้งแต่ปี 2568 ทุกบริษัทใช้เกณฑ์เดียวกัน ถ้าเคลมผู้ป่วยในบ่อยและยอดสูงเกินสัดส่วนที่กำหนดเทียบกับเบี้ย ปีถัดไปจะต้องร่วมจ่าย 30% หรือ 50% กติกานี้ทำให้ความคิดที่ว่ามีวงเงินแล้วต้องใช้ให้คุ้ม กลายเป็นความคิดที่แพงมาก'},
+      {t:'ความรับผิดส่วนแรก ไม่ใช่ของแย่เสมอไป',
+       d:'ถ้ามีประกันกลุ่มของที่ทำงานหรือสิทธิอื่นที่รับส่วนแรกให้อยู่แล้ว การเลือกแผนที่มีส่วนแรกให้พอดีกับสิทธิเดิม จะกดเบี้ยลงได้มากโดยที่เราไม่ได้ควักเพิ่มจริง แต่ถ้าไม่มีสิทธิอะไรรองรับเลย ต้องมั่นใจว่ามีเงินก้อนนั้นพร้อมจ่ายในวันที่ต้องนอนโรงพยาบาล'},
+      {t:'ทุนชีวิตของสัญญาหลัก มีไว้ให้แนบได้ ไม่ใช่ไว้ขาย',
+       d:'ถ้าเป้าหมายคือค่ารักษา ทุนชีวิตควรตั้งเท่าที่จำเป็นให้แนบสัญญาเพิ่มเติมได้ แล้วเอางบที่เหลือไปเพิ่มวงเงินค่ารักษาแทน ถ้าต้องการทุนชีวิตจริงจังเพื่อดูแลครอบครัว ควรแยกทำเป็นอีกฉบับ จะได้แบบที่เหมาะกว่าและคุ้มกว่า'},
+      {t:'เบี้ยตอนเกษียณ คือปัญหาที่ต้องวางแผนตั้งแต่วันนี้',
+       d:'เบี้ยสุขภาพขึ้นตามอายุ และช่วงที่เราใช้ประกันมากที่สุดคือหลังเกษียณ ซึ่งเป็นช่วงที่รายได้หายพอดี การเตรียมแหล่งเงินไว้จ่ายเบี้ยช่วงนั้น เช่นผ่านแบบบำนาญหรือการลงทุนระยะยาว จึงเป็นส่วนหนึ่งของการวางแผนสุขภาพ ไม่ใช่เรื่องแยกกัน'},
+    ],
+  },
+  {
+    id:'g-pick', num:'5', title:'สรุปเป็นขั้นตอน แล้วจับกับแบบของเมืองไทย',
+    lead:'เอาทุกอย่างข้างบนมาเรียงเป็นลำดับที่ใช้ตัดสินใจได้จริง',
+    steps:[
+      {n:'ขั้นที่ 1', t:'ปิดค่ารักษาก้อนใหญ่ก่อน', d:'เลือกสัญญาสุขภาพหลักที่วงเงินพอกับโรคที่แพงที่สุด ให้ความสำคัญกับวงเงินต่อปีมากกว่าของแถม'},
+      {n:'ขั้นที่ 2', t:'อุดช่องที่สัญญาหลักไม่คุ้มครอง', d:'ถ้าเลือกแบบที่ไม่คุ้มครองค่าล้างไต รังสีรักษา และเคมีบำบัด ต้องพ่วงตัวที่คุ้มครองส่วนนั้นเสมอ ห้ามข้าม'},
+      {n:'ขั้นที่ 3', t:'ดูว่ามีสิทธิอะไรอยู่แล้วบ้าง', d:'ประกันกลุ่มที่ทำงาน สิทธิประกันสังคม หรือสวัสดิการอื่น เอามาหักออกก่อน จะได้ไม่ซื้อซ้ำซ้อน และใช้เป็นตัวกำหนดว่าจะรับส่วนแรกได้เท่าไร'},
+      {n:'ขั้นที่ 4', t:'เติมเงินก้อนถ้ายังมีงบ', d:'เงินก้อนโรคร้ายแรงไม่ใช่ค่ารักษา แต่เป็นเงินชดเชยรายได้ที่หายไประหว่างพักรักษาตัว ซึ่งประกันสุขภาพไม่จ่ายให้'},
+      {n:'ขั้นที่ 5', t:'ของที่จ่ายเองไหว ค่อยเติมท้ายสุด', d:'OPD ชดเชยรายวัน อุบัติเหตุ ใส่เมื่อทุกอย่างข้างบนครบแล้วและยังมีงบเหลือ'},
+    ],
+    mapTable:true,
+  },
+];
+
+function healthGuideBucketsHtml(){
+  return `<div class="hg-buckets">${HEALTH_GUIDE_BUCKETS.map(b => `
+    <div class="hg-bucket hg-${b.tone}">
+      <div class="hg-bucket-head">
+        <div class="hg-bucket-title">${b.title}</div>
+        <div class="hg-bucket-sub">${b.sub}</div>
+      </div>
+      <ul>${b.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      <p class="hg-bucket-why">${b.why}</p>
+    </div>`).join('')}</div>`;
+}
+function healthGuideTypeTableHtml(){
+  const rows = [
+    ['แยกวงเงินตามหมวด','กำหนดเพดานแยกทีละรายการ เช่น ค่าห้องเท่านี้ ค่าผ่าตัดเท่านี้','เบี้ยถูกที่สุด เข้าใจง่ายว่าจ่ายอะไรบ้าง','เพดานแต่ละช่องมักไม่พอกับค่ารักษาจริงในปัจจุบัน','ไม่ใช่แนวที่เว็บนี้แนะนำเป็นตัวหลัก'],
+    ['เหมาจ่ายต่อครั้งการรักษา','รวมทุกหมวดเป็นก้อนเดียวต่อการรักษาหนึ่งครั้ง','เบี้ยไม่สูงมาก ได้วงเงินก้อนใหญ่ขึ้นชัดเจน','โรคเดิมที่กลับมาในช่วงเวลาที่กำหนด นับเป็นครั้งเดียวกัน','<b>เหมาจ่าย Extra</b> และ <b>Extra Care Plus</b>'],
+    ['เหมาจ่ายต่อปีกรมธรรม์','รวมทุกหมวด ใช้จากก้อนเดียวทั้งปี ไม่นับว่าโรคเดิมหรือใหม่','เหมาะกับโรคเรื้อรังและโรคร้ายแรงที่สุด','เบี้ยสูงที่สุด และขึ้นเร็วหลังเกษียณ','<b>Elite Health Plus</b> 20 / 40 / 75 / 100 ล้านบาทต่อปี'],
+    ['เหมาจ่ายต่อครั้ง วงเงินสูง','วงเงินต่อครั้งสูงมากจนครอบคลุมเคสหนักส่วนใหญ่','ได้วงเงินระดับหลายล้านในเบี้ยที่จับต้องได้','ไม่คุ้มครองค่าล้างไต รังสีรักษา และเคมีบำบัด จึงต้องพ่วงตัวเสริม','<b>D Health Lite</b> 1 หรือ 5 ล้านบาทต่อครั้ง'],
+    ['เจาะจงกลุ่มโรค','คุ้มครองเฉพาะโรคที่ระบุ ด้วยวงเงินต่อปีต่อโรค','เบี้ยถูกกว่ามากเพราะขอบเขตแคบ','ต้องเป็นโรคที่ระบุไว้เท่านั้นจึงเคลมได้','<b>Care Plus</b> มะเร็งและไตวายเรื้อรัง 5 ล้านบาทต่อปีต่อโรค'],
+  ];
+  return `<div class="table-wrap"><table class="hg-table"><thead><tr>
+    <th>โครงสร้างแผน</th><th>ทำงานยังไง</th><th>ข้อดี</th><th>ข้อควรระวัง</th><th>ของเมืองไทยตัวไหน</th>
+  </tr></thead><tbody>${rows.map(r => `<tr>${r.map((c,i) => `<td${i===0?' class="hg-td-head"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function healthGuideMapHtml(){
+  const rows = [
+    ['งบจำกัด อยากได้แกนหลักก่อน','เหมาจ่าย Extra หรือ Extra Care Plus คู่กับ Care Plus','ได้วงเงินก้อนใหญ่ในเบี้ยที่เริ่มต้นได้ และ Care Plus อุดช่องมะเร็งกับไตวายที่แผนหลักไม่ครอบคลุม'],
+    ['งบกลาง ต้องการวงเงินสูง','<b>D Health Lite 5 ล้าน คู่กับ Care Plus 5 ล้าน</b>','ชุดที่เว็บนี้ตั้งเป็นค่าเริ่มต้น เพราะปิดเคสที่ทำให้ล้มละลายได้จริงในเบี้ยที่คนทำงานส่วนใหญ่จ่ายไหว'],
+    ['มีสวัสดิการเดิมอยู่แล้ว','D Health Lite แบบมีความรับผิดส่วนแรก','จับส่วนแรกให้พอดีกับวงเงินสวัสดิการเดิม เบี้ยลดลงมากโดยที่ไม่ได้ควักเพิ่มจริง'],
+    ['อยากเลือกโรงพยาบาลได้อิสระ','Elite Health Plus 20 ล้านขึ้นไป','วงเงินต่อปี และจ่ายค่าล้างไต รังสีรักษา เคมีบำบัดตามจริงอยู่ในตัว ไม่ต้องพ่วง Care Plus'],
+    ['อยากได้เงินก้อนตอนตรวจเจอ','CI Perfect Care หรือ D Care','เป็นเงินชดเชยรายได้ ไม่ใช่ค่ารักษา ใช้ตอนต้องหยุดงานยาว ซึ่งประกันสุขภาพไม่จ่ายให้'],
+    ['อายุเกิน 50 และกังวลเรื่องสุขภาพ','วัยเก๋า 90/90 หรือ 99/10','ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ แต่เป็นทุนชีวิต ไม่ใช่ค่ารักษา ต้องเข้าใจให้ตรงกันก่อนเสนอ'],
+  ];
+  return `<div class="table-wrap"><table class="hg-table"><thead><tr>
+    <th>ถ้าลูกค้าเป็นแบบนี้</th><th>ชุดที่ควรเริ่ม</th><th>เพราะอะไร</th>
+  </tr></thead><tbody>${rows.map(r => `<tr>${r.map((c,i) => `<td${i===0?' class="hg-td-head"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderHealthGuide(){
+  const box = document.getElementById('guideBody');
+  if(!box || box.dataset.done === '1') return;
+  const toc = HEALTH_GUIDE_SECTIONS.map(s =>
+    `<a href="#${s.id}" onclick="event.preventDefault();document.getElementById('${s.id}').scrollIntoView({behavior:'smooth',block:'start'});"><span>${s.num}</span>${s.title}</a>`).join('');
+
+  const body = HEALTH_GUIDE_SECTIONS.map(sec => `
+    <div class="content-card hg-sec" id="${sec.id}">
+      <div class="hg-sec-num">${sec.num}</div>
+      <h2>${sec.title}</h2>
+      <p class="hg-lead">${sec.lead}</p>
+      ${sec.infographic ? healthGuideBucketsHtml() : ''}
+      ${sec.typeTable ? healthGuideTypeTableHtml() : ''}
+      ${(sec.blocks||[]).map(b => `<div class="hg-block"><h3>${b.h}</h3>${b.p.map(x=>`<p>${x}</p>`).join('')}</div>`).join('')}
+      ${(sec.traps||[]).length ? `<div class="hg-traps">${sec.traps.map((t,i)=>`
+        <div class="hg-trap"><div class="hg-trap-n">${i+1}</div><div><div class="hg-trap-t">${t.t}</div><p>${t.d}</p></div></div>`).join('')}</div>` : ''}
+      ${(sec.steps||[]).length ? `<div class="hg-steps">${sec.steps.map(st=>`
+        <div class="hg-step"><div class="hg-step-n">${st.n}</div><div class="hg-step-t">${st.t}</div><p>${st.d}</p></div>`).join('')}</div>` : ''}
+      ${sec.mapTable ? healthGuideMapHtml() : ''}
+    </div>`).join('');
+
+  box.innerHTML = `
+    <div class="content-card hg-hero">
+      <h2>วิธีเลือกประกันสุขภาพ ให้จ่ายเบี้ยตรงกับความเสี่ยงจริง</h2>
+      <p class="hg-lead">คนส่วนใหญ่เลือกประกันสุขภาพจากรายการที่ได้ ยิ่งได้เยอะยิ่งรู้สึกคุ้ม แต่ในความเป็นจริงบางรายการยิ่งใส่ยิ่งเสียเปรียบ หน้านี้เรียบเรียงจากหลักการรับความเสี่ยงของธุรกิจประกัน บวกกับสิ่งที่ผมเห็นในห้องฉุกเฉิน แล้วจับเข้ากับแบบประกันของเมืองไทยที่มีอยู่จริง</p>
+      <div class="hg-toc">${toc}</div>
+      <p class="meta" style="margin-top:14px;">เนื้อหาในหน้านี้เป็นแนวทางประกอบการตัดสินใจ ไม่ใช่เอกสารเสนอขาย เงื่อนไขและความคุ้มครองที่แท้จริงเป็นไปตามกรมธรรม์และเกณฑ์พิจารณารับประกันของบริษัท</p>
+    </div>
+    ${body}
+    <div class="content-card hg-cta">
+      <h2>อ่านจบแล้ว ลองจัดแผนจริงเลย</h2>
+      <p>ระบบจะเรียงลำดับให้ตามหลักในหน้านี้ คือปิดความเสี่ยงก้อนใหญ่ก่อน แล้วค่อยเติมของที่จ่ายเองไหว พร้อมเสนอทางเลือกที่ดีกว่าและประหยัดกว่าให้เทียบทุกครั้ง</p>
+      <div class="hg-cta-row">
+        <button class="btn" onclick="showPage('ai')">ไปที่ผู้ช่วยออกแบบแผน</button>
+        <button class="btn btn-ghost" onclick="showPage('plans')">ดูแผนประกันทั้งหมด</button>
+        <button class="btn btn-ghost" onclick="setKnowTab('faq')">ไปที่คำถามที่พบบ่อย</button>
+      </div>
+    </div>`;
+  box.dataset.done = '1';
+  if(typeof dgApplyReveal === 'function') dgApplyReveal(box);
+}
+
+let knowTab = 'guide';
+function setKnowTab(tab){
+  knowTab = tab;
+  ['guide','faq'].forEach(t => {
+    const pane = document.getElementById('knowTab-' + t);
+    const btn = document.getElementById('knowTabBtn-' + t);
+    if(pane) pane.style.display = (t === tab) ? '' : 'none';
+    if(btn) btn.classList.toggle('active', t === tab);
+  });
+  if(tab === 'guide') renderHealthGuide();
+  window.scrollTo({top:0, behavior:'auto'});
+}
+
 function showPage(name, options = {}){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-'+name);
@@ -8772,6 +9116,11 @@ function showPage(name, options = {}){
   if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
   if(name === 'ci-compare' && typeof renderCiComparePage === 'function') renderCiComparePage();
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
+  if(name === 'knowledge' && typeof setKnowTab === 'function') setKnowTab(knowTab);
+  if(name === 'ai'){
+    const bb = document.getElementById('advBucketBox');
+    if(bb && !bb.dataset.done){ bb.innerHTML = healthGuideBucketsHtml(); bb.dataset.done = '1'; }
+  }
   window.scrollTo({top:0, behavior:'auto'});
   dgApplyReveal(target);
 }
@@ -9590,6 +9939,17 @@ function initCompareToggle(){
       wrap.className = 'group-break-text';
       while(gb.firstChild) wrap.appendChild(gb.firstChild);
       gb.appendChild(wrap);
+    }
+    // ปุ่มพาไปคู่มือวิธีเลือก วางไว้เฉพาะกลุ่มสุขภาพ เพราะเนื้อหาเป็นเรื่องสุขภาพล้วน
+    if(t.id === 'compareModeToggle' && !document.getElementById('guideLinkBtn')){
+      const g = document.createElement('button');
+      g.id = 'guideLinkBtn';
+      g.className = 'btn-outline btn-guide-link';
+      g.type = 'button';
+      g.textContent = 'วิธีเลือกประกันสุขภาพ →';
+      g.title = 'อ่านหลักการเลือกแผน ก่อนเทียบตัวเลข';
+      g.onclick = () => { showPage('knowledge'); setKnowTab('guide'); };
+      gb.appendChild(g);
     }
     const btn = document.createElement('button');
     btn.id = t.id;
