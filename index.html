@@ -1182,6 +1182,7 @@
         <label><input type="radio" name="mainPlan" value="99_20" checked> 99/20 (จ่าย 20 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากพ้นภาระเบี้ยเร็ว จ่ายหนักกว่าต่อปีแต่จ่ายแค่ 20 ปีจบ เหมาะกับคนมีกำลังจ่ายช่วงทำงาน แล้วอยากปลอดหนี้เบี้ยตอนใกล้เกษียณ</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_7"> 99/7 (จ่าย 7 ปี)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นเพียง 7 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว ทุนขั้นต่ำ 150,000 บาท และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ</span></span></label>
+        <label><input type="radio" name="mainPlan" value="80_10"> 80/10 (จ่าย 10 ปี คุ้มครองถึง 80)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี ตั้งแต่ปีกรมธรรม์ที่ 6 ทุนคุ้มครองเพิ่มเป็น 150% และอยู่ครบสัญญาที่อายุ 80 ปี รับเงินก้อน 150% ของทุนประกัน อายุ 20–59 ปี รวมสิทธิยกเว้นเบี้ยกรณีทุพพลภาพสิ้นเชิงถาวรมาให้แล้ว</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
@@ -2480,6 +2481,7 @@ function mainPlanDisplayName(plan, capital){
     const v = p.variants[currentPensionMain.vk];
     return v.label || p.shortName;
   }
+  if(plan === '80_10') return 'สมาร์ท โพรเทคชั่น 80/10';
   if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
   if(plan === '99_99'){
@@ -2537,6 +2539,11 @@ function updateMainCapitalHint(){
     capitalInput.step = 1000;
     if(!product.capitals.includes(Number(capitalInput.value))) capitalInput.value = product.capitals[0];
     document.getElementById('mainCapitalHint').textContent = `${mainPlanDisplayName(plan)}: ชำระรายปีเท่านั้น • เลือกทุนได้ ${product.capitals.map(fmt).join(' / ')} บาท • ไม่สามารถแนบสัญญาเพิ่มเติมได้`;
+  } else if(plan === '80_10'){
+    capitalInput.min = 100000;
+    capitalInput.step = 10000;
+    document.getElementById('mainCapitalHint').textContent =
+      'ทุนประกันขั้นต่ำแผน 80/10 คือ 100,000 บาท • คุ้มครองถึงอายุ 80 ปี ไม่ใช่ตลอดชีพ • ต้องแนบสัญญาอุบัติเหตุ';
   } else if(plan === '99_7'){
     capitalInput.min = 150000;
     capitalInput.step = 10000;
@@ -2617,6 +2624,14 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
     const idx = product.capitals.indexOf(capital);
     return band && idx >= 0 ? band[idx+2] : null;
+  }
+  if(plan === '80_10'){
+    // อัตราต่อทุน 1,000 บาท ครบ 4 งวดชำระ และ PDF ระบุว่าไม่มีส่วนลดตามจำนวนเงินเอาประกันภัย
+    const g = RATES.main_80_10;
+    if(!g || !g.rates || !g.rates[freq]) return null;
+    const base = rateAtStart(g.rates[freq][gender], entryAge, g.age_start ?? 0);
+    if(base === null || base === undefined) return null;
+    return base * capital / 1000;
   }
   if(plan === '99_7'){
     // ตารางที่ประกาศมีเฉพาะเบี้ยรายปี และเป็นอัตราแบ่งตามระดับทุน 150k / 500k / 1M
@@ -4045,6 +4060,35 @@ const PLAN_DETAILS = {
     rateNote: 'เบี้ยคงที่ตามอายุ ณ วันทำสัญญา (level premium) ไม่เปลี่ยนแปลงตลอด 20 ปีที่ชำระเบี้ย ทุนประกันอื่นคำนวณแบบเป็นสัดส่วนจากตารางนี้ ตารางงวดชำระอื่นแสดงถึงอายุ 70 ปีเท่านั้น (อายุรับประกันใหม่สูงสุดของแผนนี้)',
   },
 
+  main8010: {
+    title: 'สมาร์ท โพรเทคชั่น 80/10', category: 'สัญญาหลัก (ประกันชีวิต คุ้มครองถึงอายุ 80 ปี)',
+    overview: 'ชำระเบี้ยสั้น <b>10 ปี</b> คุ้มครองถึงอายุ 80 ปี จุดต่างจากแบบตลอดชีพคือ<b>ทุนคุ้มครองเพิ่มเป็น 150% ตั้งแต่ปีกรมธรรม์ที่ 6</b> และถ้าอยู่ครบสัญญาได้เงินก้อน 150% ของทุนประกันคืน เหมาะกับคนที่อยากได้ทั้งความคุ้มครองและเงินก้อนตอนอายุ 80 ปี แต่ต้องเข้าใจว่าคุ้มครองไม่ถึงตลอดชีพ',
+    images: [],
+    coverage: [
+      'เสียชีวิตปีกรมธรรม์ที่ 1–5 รับ <b>100% ของจำนวนเงินเอาประกันภัย</b>',
+      'เสียชีวิตตั้งแต่ปีกรมธรรม์ที่ 6 ถึงก่อนครบอายุ 80 ปี รับ <b>150%</b> หรือมูลค่าเวนคืน แล้วแต่จำนวนใดมากกว่า',
+      'อยู่ครบสัญญาที่อายุ 80 ปี รับ <b>150% ของจำนวนเงินเอาประกันภัย</b> ณ วันเริ่มสัญญา',
+      '<b>ทุพพลภาพสิ้นเชิงถาวร ยกเว้นการชำระเบี้ย</b> โดยความคุ้มครองยังเดินต่อ — อายุ 20–59 ปี อัตราเบี้ยรวมสิทธินี้ไว้แล้ว บริษัทไม่คิดเบี้ยเพิ่ม',
+    ],
+    conditions: [
+      'อายุรับประกัน 1 เดือน – 65 ปี',
+      'ทุนประกันขั้นต่ำ 100,000 บาท',
+      'ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี อัตราเบี้ยคงที่ตลอดสัญญา',
+      'เลือกงวดชำระได้ทั้ง รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน และชำระผ่านบัตรเครดิตได้',
+      'ซื้อสัญญาเพิ่มเติมแนบท้ายได้ตามตารางแนบท้าย A ของบริษัท',
+      '<b>ไม่มีส่วนลดตามจำนวนเงินเอาประกันภัย</b> ทุนเท่าไหร่ก็ใช้อัตราเดียวกัน',
+      'อัตราเบี้ยชนเพดานที่ 146.80 บาทต่อทุน 1,000 บาท ตั้งแต่อายุ 61 ปี และเท่ากันทั้งชายหญิงตั้งแต่อายุ 60 ปี',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 65, [
+      {label:'ชาย 100,000บ.', arr: ageSeriesFromFn(0,65, age=>mainPremiumAtEntry('80_10',100000,'m',age,freq))},
+      {label:'หญิง 100,000บ.', arr: ageSeriesFromFn(0,65, age=>mainPremiumAtEntry('80_10',100000,'f',age,freq))},
+      {label:'ชาย 1,000,000บ.', arr: ageSeriesFromFn(0,65, age=>mainPremiumAtEntry('80_10',1000000,'m',age,freq))},
+      {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,65, age=>mainPremiumAtEntry('80_10',1000000,'f',age,freq))},
+    ]),
+    rateNote: 'คัดลอกตรงจากเอกสารอัตราเบี้ยของบริษัท (ต่อทุน 1,000 บาท ฉบับ 01-10-62) ไม่ได้คำนวณเอง เบี้ยคงที่ตามอายุ ณ วันทำสัญญาตลอด 10 ปีที่ชำระ',
+  },
+
   main997: {
     title: 'สมาร์ท โพรเทคชั่น 99/7', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
     overview: 'ประกันชีวิตตลอดชีพที่<b>ชำระเบี้ยสั้นเพียง 7 ปี</b> แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายในช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว หรือใช้วางแผนมรดกด้วยเงินก้อนที่ทยอยจ่ายได้ รับทำตั้งแต่แรกเกิดถึงอายุ 85 ปี ซึ่งกว้างกว่าแบบ 99/20 มาก',
@@ -4570,6 +4614,7 @@ const PAGE_ROUTES = {
 const PLAN_ROUTES = {
   main9920: '/plans/smart-protection-99-20',
   main997: '/plans/smart-protection-99-7',
+  main8010: '/plans/smart-protection-80-10',
   main9999: '/plans/lifetime-protection-99-99',
   flexi9920: '/plans/flexi-protection-99-20',
   smartlink153: '/plans/smart-linked-15-3',
@@ -4806,6 +4851,16 @@ const LIFE_PRODUCTS = [
     tradeoff:'เบี้ยต่อปีสูงกว่าแบบ 99/99 ที่ทุนเท่ากัน เพราะอัดค่าเบี้ยทั้งหมดไว้ใน 20 ปี',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_20',cap,g,age,freq),
     calcPlanValue:'99_20',
+  },
+  {
+    id:'80_10', name:'เมืองไทย สมาร์ท โพรเทคชั่น 80/10', short:'80/10',
+    purposes:['family','saving','tax'],
+    payYears:10, coverToAge:80, entryAgeMin:0, entryAgeMax:65,
+    capitalMin:100000, capitalMax:null, capitalStep:50000,
+    strength:'ชำระเบี้ย 10 ปี แล้วทุนคุ้มครองเพิ่มเป็น 150% ตั้งแต่ปีที่ 6 และถ้าอยู่ครบสัญญาที่อายุ 80 ปี ได้เงินก้อน 150% ของทุนคืน จึงเป็นแบบเดียวในกลุ่มที่ให้ทั้งความคุ้มครองและเงินก้อนปลายทาง',
+    tradeoff:'คุ้มครองถึงอายุ 80 ปีเท่านั้น ไม่ใช่ตลอดชีพ ถ้าลูกค้าอายุยืนเกิน 80 ปีจะไม่มีความคุ้มครองชีวิตเหลือ ต้องบอกให้ชัดก่อนปิดการขาย',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('80_10',cap,g,age,freq),
+    calcPlanValue:'80_10',
   },
   {
     id:'99_7', name:'เมืองไทย สมาร์ท โพรเทคชั่น 99/7', short:'99/7',
