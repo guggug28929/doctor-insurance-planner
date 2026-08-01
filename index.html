@@ -1084,6 +1084,37 @@
     color:#fff;font-family:"Kanit",sans-serif;font-size:2rem;font-weight:700;
     flex:none;
   }
+  /* มาสคอตหมอกึ๊ก */
+  .doc-avatar{
+    width:112px;height:112px;flex:none;border-radius:50%;overflow:hidden;
+    box-shadow:0 10px 24px rgba(143,13,64,.22);
+    animation:dgFloat 5s ease-in-out infinite;
+  }
+  .doc-avatar svg{display:block;width:100%;height:100%;}
+  @keyframes dgFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .dg-chest{transform-box:fill-box;transform-origin:center;animation:dgPulse 2.2s ease-in-out infinite;}
+  @keyframes dgPulse{0%,100%{transform:scale(1);}18%{transform:scale(1.22);}36%{transform:scale(1);}}
+  .dg-ecg{stroke-dasharray:60;stroke-dashoffset:60;animation:dgTrace 3s linear infinite;}
+  @keyframes dgTrace{0%{stroke-dashoffset:60;}60%{stroke-dashoffset:0;}100%{stroke-dashoffset:-60;}}
+  .dg-eyes{transform-box:fill-box;transform-origin:center;animation:dgBlink 6s ease-in-out infinite;}
+  @keyframes dgBlink{0%,92%,100%{transform:scaleY(1);}95%{transform:scaleY(.12);}}
+
+  /* เอฟเฟกต์ตอนเลื่อนอ่าน ค่อย ๆ ลอยขึ้นทีละการ์ด */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.3,1);}
+  .reveal.is-in{opacity:1;transform:none;}
+  .content-card{transition:box-shadow .25s ease, transform .25s ease;}
+  .content-card:hover{box-shadow:0 10px 30px rgba(143,13,64,.09);}
+  .btn{transition:transform .15s ease, box-shadow .2s ease, filter .2s ease;}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(200,30,92,.22);}
+  .btn:active{transform:translateY(0);}
+  .ai-plan-card{transition:transform .25s ease, box-shadow .25s ease;}
+  .ai-plan-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(143,13,64,.12);}
+  /* เคารพผู้ใช้ที่ตั้งค่าลดการเคลื่อนไหว เช่นคนที่เวียนหัวง่าย */
+  @media (prefers-reduced-motion: reduce){
+    .doc-avatar,.dg-chest,.dg-ecg,.dg-eyes{animation:none !important;}
+    .reveal{opacity:1;transform:none;transition:none;}
+    .content-card,.btn,.ai-plan-card{transition:none;}
+  }
   .license-line{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6;}
   .foot-note{
     max-width:1440px;
@@ -1187,6 +1218,11 @@
   .adv-badge-eco{background:#e6f4ec;color:#1d6b42;border:1px solid #bfe3ce;}
   .adv-diff-row{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px;}
   .adv-diff{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.68rem;font-weight:600;background:#f4f5f8;color:#4a5568;border:1px solid #e2e5ea;}
+  .adv-why-higher{margin-top:12px;padding:12px 14px;border-radius:12px;background:#fffaf4;border:1px solid #f0c9a8;}
+  .adv-why-title{font-weight:800;font-size:.84rem;color:#8a4b12;margin-bottom:8px;}
+  .adv-why-higher p{font-size:.78rem;line-height:1.65;margin:0 0 8px;color:#4a5568;}
+  .adv-why-higher p:last-child{margin-bottom:0;}
+  .adv-why-note{font-size:.72rem !important;color:#8a6a4b !important;border-top:1px dashed #e8cdb4;padding-top:8px;}
   .adv-warn{
     margin-top:10px;padding:10px 12px;border-radius:12px;
     border:1px solid #f3b4b4;background:#fff7f7;color:#8c2f2f;
@@ -1908,7 +1944,57 @@
 
   <div class="content-card">
     <div class="home-hero">
-      <div class="avatar">กึ๊ก</div>
+      <div class="doc-avatar" aria-label="ภาพการ์ตูนหมอกึ๊ก" role="img">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <defs>
+            <linearGradient id="dgBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#e0316f"/><stop offset="100%" stop-color="#8f0d40"/>
+            </linearGradient>
+            <linearGradient id="dgCoat" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef1f6"/>
+            </linearGradient>
+            <clipPath id="dgClip"><circle cx="100" cy="100" r="96"/></clipPath>
+          </defs>
+          <circle cx="100" cy="100" r="96" fill="url(#dgBg)"/>
+          <g clip-path="url(#dgClip)">
+            <circle cx="100" cy="86" r="70" fill="#ffffff" opacity=".08"/>
+            <!-- ตัวและเสื้อกาวน์ -->
+            <path d="M40 205c0-36 27-58 60-58s60 22 60 58z" fill="url(#dgCoat)"/>
+            <path d="M100 147l-16 10 16 48 16-48z" fill="#f4f6fa"/>
+            <path d="M84 157l16-10 16 10-16 14z" fill="#c81e5c" opacity=".9"/>
+            <!-- คอเสื้อ -->
+            <path d="M84 157l-9 6 12 16z" fill="#dfe4ec"/>
+            <path d="M116 157l9 6-12 16z" fill="#dfe4ec"/>
+            <!-- หูฟัง -->
+            <path d="M82 150c0 26 12 40 30 40s28-16 28-34" fill="none" stroke="#2b3a4a" stroke-width="6" stroke-linecap="round"/>
+            <path d="M82 150c0-6-1-9-1-13" fill="none" stroke="#2b3a4a" stroke-width="6" stroke-linecap="round"/>
+            <circle class="dg-chest" cx="140" cy="158" r="9" fill="#2b3a4a"/>
+            <circle cx="140" cy="158" r="4" fill="#5b6b7d"/>
+            <!-- คอ -->
+            <path d="M88 118h24v26a12 12 0 0 1-24 0z" fill="#f0c39c"/>
+            <!-- หน้า -->
+            <ellipse cx="100" cy="92" rx="36" ry="39" fill="#fbd3ae"/>
+            <!-- ผม -->
+            <path d="M64 88c-2-28 16-46 36-46s38 18 36 46c-4-16-10-22-18-24-10 8-34 10-44-2-6 4-8 12-10 26z" fill="#2b2b33"/>
+            <!-- ตา -->
+            <g class="dg-eyes">
+              <ellipse cx="86" cy="92" rx="4.2" ry="5" fill="#2b2b33"/>
+              <ellipse cx="114" cy="92" rx="4.2" ry="5" fill="#2b2b33"/>
+            </g>
+            <!-- คิ้ว -->
+            <path d="M79 81c4-3 9-3 13-1" stroke="#2b2b33" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M108 80c4-2 9-2 13 1" stroke="#2b2b33" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- ยิ้ม -->
+            <path d="M89 108c6 6 16 6 22 0" stroke="#a9563c" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <!-- แก้ม -->
+            <circle cx="78" cy="103" r="5" fill="#f2a58f" opacity=".55"/>
+            <circle cx="122" cy="103" r="5" fill="#f2a58f" opacity=".55"/>
+            <!-- กราฟหัวใจบนกระเป๋าเสื้อ -->
+            <path class="dg-ecg" d="M126 186h10l4-9 6 18 5-9h10" fill="none" stroke="#c81e5c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <circle cx="100" cy="100" r="94" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="3"/>
+        </svg>
+      </div>
       <div>
         <h2 style="margin-bottom:2px;">หมอกึ๊ก DoctorGugInsurance</h2>
         <div style="color:var(--muted);font-size:.9rem;">นพ.หนึ่งบุรุษ เทียมถนอม แพทย์เวชศาสตร์ฉุกเฉิน และตัวแทนฝ่ายขาย บริษัท เมืองไทยประกันชีวิต จำกัด (มหาชน)</div>
@@ -7892,6 +7978,30 @@ function medCoverageErosion(coverToday){
     years: ADV_MED_INFLATION_YEARS.map(y => ({y, real: Math.round(coverToday / Math.pow(1 + rate, y))})),
   }));
 }
+/* บทความสั้นสำหรับต่อท้ายการ์ดที่เสนอวงเงินสูงขึ้น
+   เขียนให้ตัวแทนอ่านแล้วเอาไปพูดกับลูกค้าได้เลย ไม่ใช่ศัพท์เทคนิค */
+function whyHigherSumHtml(entryAge){
+  const y20 = Math.round(1000000 * Math.pow(1.08, 20));
+  const real20 = Math.round(1000000 / Math.pow(1.08, 20));
+  return `<div class="adv-why-higher">
+    <div class="adv-why-title">ทำไมควรเลือกวงเงินเหมาจ่ายสูงกว่าที่ลูกค้าคิดไว้</div>
+    <p><b>1. วงเงินไม่ได้ใช้วันนี้ แต่ใช้ในอีก 20 ถึง 40 ปี</b> ลูกค้าเทียบวงเงินกับค่าผ่าตัดที่เห็นวันนี้
+    แต่ช่วงที่ใช้ประกันสุขภาพหนักที่สุดคือหลังอายุ 60 ปี ซึ่งเป็นคนละราคากันคนละยุค
+    ถ้าค่ารักษาเพิ่มปีละ 8% การรักษาที่วันนี้จ่าย 1 ล้าน อีก 20 ปีจะเป็นราว ${fmt(y20)} บาท
+    พูดกลับด้านคือวงเงิน 1 ล้านที่ซื้อวันนี้ อีก 20 ปีจะเหลือกำลังซื้อเท่ากับ ${fmt(real20)} บาทในวันนี้</p>
+    <p><b>2. เพิ่มวงเงินทีหลังไม่ได้ง่ายเหมือนตอนสมัครครั้งแรก</b> การขอเพิ่มวงเงินภายหลังต้องแถลงสุขภาพและพิจารณารับประกันใหม่
+    ถ้าระหว่างนั้นตรวจเจอความดัน เบาหวาน ไขมัน หรือก้อนอะไรสักอย่าง โรคนั้นอาจถูกยกเว้นหรือเพิ่มเบี้ย
+    วันที่สุขภาพยังดีคือวันที่ซื้อวงเงินได้ถูกและง่ายที่สุด และวันนั้นคือวันนี้</p>
+    <p><b>3. ส่วนต่างเบี้ยมักน้อยกว่าที่ลูกค้าคิด</b> เบี้ยประกันสุขภาพไม่ได้เพิ่มเป็นสัดส่วนตรงกับวงเงิน
+    วงเงินที่สูงขึ้นหลายเท่ามักจ่ายเพิ่มไม่กี่พันบาทต่อปี ลองให้ลูกค้าดูส่วนต่างเป็นรายเดือนแล้วเทียบกับค่ากาแฟหรือค่าเน็ต
+    จะเห็นภาพชัดกว่าเทียบเป็นรายปี</p>
+    <p><b>4. โรคที่ทำให้ล้มละลายคือโรคที่วงเงินน้อยเอาไม่อยู่</b> เคสที่จบด้วยเงินหลักหมื่นหลักแสน ลูกค้าจ่ายเองไหวอยู่แล้ว
+    เคสที่ต้องพึ่งประกันจริง ๆ คือ ICU ยาว ผ่าตัดใหญ่ซ้ำหลายครั้ง หรือมะเร็งที่ต้องให้ยาต่อเนื่องหลายปี
+    ซึ่งเป็นกลุ่มที่ทะลุวงเงินต่ำได้ไม่ยาก การประหยัดเบี้ยด้วยการลดวงเงิน จึงเป็นการประหยัดในจุดที่ประกันมีประโยชน์ที่สุดพอดี</p>
+    <p class="adv-why-note">ตัวเลข 8% เป็นอัตราที่ยกมาเป็นตัวอย่างเพื่อให้เห็นภาพ ไม่ใช่อัตราที่บริษัทหรือหน่วยงานใดประกาศ
+    เวลาคุยกับลูกค้าควรบอกตรง ๆ ว่าเป็นการจำลอง และถ้ามีตัวเลขที่อ้างอิงได้จริงให้ใช้ตัวนั้นแทน</p>
+  </div>`;
+}
 function medInflationCardHtml(sumToday, entryAge){
   const proj = medCostProjection(sumToday);
   const ero = medCoverageErosion(sumToday);
@@ -7912,14 +8022,32 @@ function medInflationCardHtml(sumToday, entryAge){
   </div>`;
 }
 
-function advBuildUpgrade(input, primary){
-  if(!input.budget) return null;
+/* ---------- ทางเลือกที่ดีกว่า สร้างได้หลายทาง ----------
+   ลูกค้าแต่ละคนอยากเติมคนละอย่าง บางคนอยากได้วงเงินสูงขึ้น บางคนอยากได้ OPD กับ PA
+   บางคนไม่อยากได้อะไรเพิ่มเลยแต่ให้งบมาเยอะ ซึ่งควรเอาไปทำทุนชีวิตแทน
+   ระบบจึงสร้างทางเลือกดีกว่าได้หลายใบ แล้วให้ตัวแทนหยิบใบที่ตรงกับลูกค้าคนนั้น       */
+const ADV_MAIN_UPGRADE_CAPITALS = [500000, 1000000, 2000000];
+
+function advUpgradeMeta(input, primary, priced, state, trace, opts){
   const cap = Math.round(input.budget * ADV_UPGRADE_TOLERANCE);
-  const curRank = ADV_TIER_RANK[advTierOfItems(primary.items)] || 1;
-  // การ์ดนี้คือการ "เสนอให้ดู" จึงข้ามเงื่อนไขที่ห้ามระบบไต่ขึ้นเองได้
-  // แต่ยังต้องเคารพช่วงอายุที่บริษัทรับ และยังห้าม Elite 40 ล้านเหมือนเดิม
+  const over = priced.premium - input.budget;
+  const why = opts.why.slice();
+  if(over > 0) why.push(`เกินงบที่ลูกค้าให้ไว้ ${fmt(over)} บาทต่อปี หรือราวเดือนละ ${fmt(Math.round(over/12))} บาท ใช้เป็นตัวเทียบให้ลูกค้าตัดสินใจเองว่าคุ้มกับส่วนต่างไหม`);
+  else why.push(`ยังอยู่ในงบ ต่ำกว่างบที่ให้ไว้ ${fmt(-over)} บาทต่อปี`);
+  (trace || []).forEach(x => why.push(x));
+  return {
+    id: opts.id, kind:'alt', tier:'upgrade', name: opts.name, raisedSum: !!opts.raisedSum,
+    diffTags: advDiffTags(primary.items, priced.items),
+    items: priced.items, premium: priced.premium, missing: priced.missing,
+    why, warnings: opts.warnings || [], conflictsStated: false,
+  };
+}
+
+/* ทาง A ขยับวงเงินสัญญาสุขภาพหลักขึ้น */
+function advUpgradeBySum(input, primary, cap){
+  const curTier = advTierOfItems(primary.items);
+  const curRank = ADV_TIER_RANK[curTier] || 1;
   const eliteOk = input.age >= 11 && input.age <= 90;
-  // ขยายงบตามเพดาน และถ้าส่วนแรกเป็นสิ่งที่ระบบใส่เอง ไม่ใช่ลูกค้าเลือก ให้ถอดออกเป็นการอัปเกรด
   const upInput = Object.assign({}, input, {budget: cap});
   if(input.riskChoice === 'auto') upInput.riskChoice = 'none';
   const tiers = (eliteOk ? ['elite100','elite75','elite20','dhl5'] : ['dhl5'])
@@ -7927,33 +8055,89 @@ function advBuildUpgrade(input, primary){
     .filter(t => advTierPriceable(input, t));
   for(const t of tiers){
     const {state, priced, trace} = advRunLadder(upInput, advHealthForTier(upInput, t));
-    if(priced.missing.length) continue;
-    if(priced.premium > cap) continue;
-    if(priced.premium <= primary.premium) continue;
-    if(advSameItems(priced.items, primary.items)) continue;
+    if(priced.missing.length || priced.premium > cap) continue;
+    if(priced.premium <= primary.premium || advSameItems(priced.items, primary.items)) continue;
     const why = [];
-    const overBudget = priced.premium - (input.budget || 0);
-    if(t !== advTierOfItems(primary.items)){
+    if(t !== curTier){
       why.push(t === 'dhl5'
         ? 'ยังเป็นชุด D Health Lite คู่ Care Plus เหมือนข้อเสนอหลัก แต่คืนของที่ถูกตัดออกไปเพราะงบกลับเข้ามา'
-        : `ขยับวงเงินขึ้นเป็น Elite Health Plus ${t.replace('elite','')} ล้านบาทต่อปีกรมธรรม์ ซึ่งจ่ายค่าล้างไต รังสีรักษา และเคมีบำบัดตามจริงอยู่ในตัว`);
+        : `ขยับวงเงินขึ้นเป็น Elite Health Plus ${t.replace('elite','')} ล้านบาทต่อปีกรมธรรม์ ซึ่งเป็นวงเงินต่อปี ไม่ใช่ต่อครั้ง และจ่ายค่าล้างไต รังสีรักษา เคมีบำบัดตามจริงอยู่ในตัว ไม่ต้องพึ่ง Care Plus`);
     }else{
       why.push('วงเงินสัญญาสุขภาพหลักเท่าเดิม แต่คืนส่วนที่ข้อเสนอหลักต้องตัดออกเพราะงบ');
     }
-    if(input.riskChoice === 'auto' && advHasDeductibleOrCopay(primary.items) && !advHasDeductibleOrCopay(priced.items)){
+    if(input.riskChoice === 'auto' && advHasDeductibleOrCopay(primary.items) && !advHasDeductibleOrCopay(priced.items))
       why.push('ถอดความรับผิดส่วนแรกออก เบิกได้ตั้งแต่บาทแรกภายในวงเงิน ไม่ต้องควักเองก่อน');
-    }
-    if(overBudget > 0) why.push(`แผนนี้เกินงบที่ลูกค้าให้ไว้ ${fmt(overBudget)} บาทต่อปี หรือประมาณเดือนละ ${fmt(Math.round(overBudget/12))} บาท ใช้เป็นตัวเทียบให้ลูกค้าตัดสินใจเองว่าคุ้มกับส่วนต่างไหม`);
-    trace.forEach(x => why.push(x));
-    return {
-      id: 'up-' + t, kind: 'alt', tier: 'upgrade',
-      name: 'ทางเลือกดีกว่า — ' + advTierName(t, state.healthItems).replace('ข้อเสนอหลัก — ',''),
-      diffTags: advDiffTags(primary.items, priced.items),
-      items: priced.items, premium: priced.premium, missing: priced.missing,
-      why, warnings: [], conflictsStated: false,
-    };
+    const raised = t !== curTier;
+    return advUpgradeMeta(input, primary, priced, state, trace, {
+      id:'up-sum-'+t,
+      name: (raised ? 'ทางเลือกดีกว่า · เพิ่มวงเงินค่ารักษา — ' : 'ทางเลือกดีกว่า · คืนของที่ถูกตัดออก — ')
+        + advTierName(t, state.healthItems).replace('ข้อเสนอหลัก — ',''),
+      raisedSum: raised, why});
   }
   return null;
+}
+
+/* ทาง B เติมของที่ข้อเสนอหลักตัดออกไปเพราะงบ เช่น OPD และ PA */
+function advUpgradeByAddons(input, primary, cap){
+  const state = advInitState(input, advHealthForTier(input, advTierOfItems(primary.items) === 'dhl5' ? 'dhl5' : advTierOfItems(primary.items)));
+  // เริ่มจากชุดเต็มตามที่ลูกค้าอยากได้ ไม่ตัดอะไรออกเลย
+  const priced = advPricedItems(state, input);
+  if(priced.missing.length || priced.premium > cap) return null;
+  if(priced.premium <= primary.premium || advSameItems(priced.items, primary.items)) return null;
+  const added = [];
+  const has = (list, kinds) => (list||[]).some(i => kinds.includes(i.kind));
+  if(!has(primary.items, ['opd_mao','opd_krang']) && has(priced.items, ['opd_mao','opd_krang'])) added.push('OPD');
+  if(!has(primary.items, ['pa']) && has(priced.items, ['pa'])) added.push('PA อุบัติเหตุ');
+  if(!has(primary.items, ['cipc','dcare']) && has(priced.items, ['cipc','dcare'])) added.push('เงินก้อนโรคร้ายแรง');
+  const why = [added.length
+    ? `วงเงินค่ารักษาเท่าข้อเสนอหลัก แต่ใส่${added.join(' และ ')}กลับเข้ามาครบตามที่ลูกค้าเลือกไว้ตอนแรก เหมาะกับลูกค้าที่อยากได้ครบก่อน แล้วค่อยไปขยับวงเงินทีหลัง`
+    : 'คืนทุกอย่างที่ลูกค้าเลือกไว้ตอนแรกให้ครบ โดยไม่ตัดอะไรออกเพราะงบ'];
+  return advUpgradeMeta(input, primary, priced, state, [], {id:'up-addons', name:'ทางเลือกดีกว่า · เติมของที่ตัดออกไป', why});
+}
+
+/* ทาง C ลูกค้าไม่อยากได้อะไรเพิ่ม แต่ให้งบมาเยอะ ให้เอาส่วนต่างไปทำทุนชีวิตแทน */
+function advUpgradeByLifeCapital(input, primary, cap){
+  const mainItem = (primary.items || []).find(i => i.kind === 'main');
+  if(!mainItem) return null;
+  const room = cap - primary.premium;
+  if(room < 3000) return null;
+  let best = null;
+  for(const capital of ADV_MAIN_UPGRADE_CAPITALS){
+    if(capital <= mainItem.capital) continue;
+    const cand = {kind:'main', plan: mainItem.plan, capital};
+    const v = premiumOfItem(cand, input.gender, input.age);
+    if(typeof v !== 'number') continue;
+    const total = primary.premium - (mainItem.premium || 0) + v;
+    if(total > cap) continue;
+    best = {cand, v, total};
+  }
+  if(!best) return null;
+  const items = primary.items.map(advCloneItem).map(i => i.kind === 'main'
+    ? Object.assign(advCloneItem(best.cand), {premium: best.v}) : i);
+  const priced = {items, premium: best.total, missing: []};
+  const why = [
+    `ลูกค้าไม่ได้อยากได้ความคุ้มครองสุขภาพเพิ่ม แต่ให้งบมามากกว่าที่แผนนี้ใช้ ส่วนต่างจึงเอาไปเพิ่มทุนชีวิตจาก ${fmt(mainItem.capital)} เป็น ${fmt(best.cand.capital)} บาทได้`,
+    'ทุนชีวิตก้อนนี้ไม่ใช่ค่ารักษา แต่เป็นเงินที่ครอบครัวได้ทันทีถ้าเกิดเรื่อง และยังใช้สิทธิลดหย่อนภาษีได้ในหมวดประกันชีวิตทั่วไป',
+    'ถ้าลูกค้าสนใจทุนชีวิตจริงจัง ควรแยกทำเป็นอีกเล่มโดยเทียบแบบเฉพาะทางในหน้าผู้ช่วยออกแบบทุนชีวิต จะได้แบบที่เหมาะกว่าการเพิ่มทุนในเล่มสุขภาพ',
+  ];
+  return advUpgradeMeta(input, primary, priced, null, [], {id:'up-life', name:'ทางเลือกดีกว่า · เพิ่มทุนประกันชีวิต', why});
+}
+
+function advBuildUpgrades(input, primary){
+  if(!input.budget) return [];
+  const cap = Math.round(input.budget * ADV_UPGRADE_TOLERANCE);
+  const out = [];
+  const seen = new Set();
+  const push = pkg => {
+    if(!pkg) return;
+    const key = (pkg.items||[]).map(i=>JSON.stringify(i)).sort().join('|');
+    if(seen.has(key)) return;
+    seen.add(key); out.push(pkg);
+  };
+  push(advUpgradeBySum(input, primary, cap));
+  push(advUpgradeByAddons(input, primary, cap));
+  push(advUpgradeByLifeCapital(input, primary, cap));
+  return out.sort((a,b) => a.premium - b.premium);
 }
 
 function advBuildEconomy(input, primary){
@@ -8080,8 +8264,7 @@ function advBuildResult(input){
   let followUps = null;
 
   // เสนอทางเลือกดีกว่าและประหยัดเสมอ เพื่อให้ลูกค้าเห็นสามระดับแล้วเลือกเอง
-  const upgrade = advBuildUpgrade(effInput, primary);
-  if(upgrade) packages.push(upgrade);
+  advBuildUpgrades(effInput, primary).forEach(u => packages.push(u));
   const economy = advBuildEconomy(effInput, primary);
   if(economy) packages.push(economy);
 
@@ -8233,6 +8416,7 @@ function renderAiPackageCard(pkg, idx, input){
     <ul>${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
     ${warnHtml}
     ${(pkg.why||[]).length?`<div class="ai-note">${pkg.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>`:''}
+    ${pkg.raisedSum ? whyHigherSumHtml(input.age) : ''}
     ${advGapTableHtml(pkg.gapTable)}
     ${(pkg.missing||[]).length?`<p class="warn-inline">ตารางเบี้ยบางรายการไม่ครบช่วงอายุ: ${pkg.missing.join(', ')}</p>`:''}
     <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyAiPackage(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
@@ -8294,6 +8478,7 @@ function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, erro
       </div>
       <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณตามตารางในไฟล์นี้ ไม่รวมผลตรวจสุขภาพ การเพิ่มเบี้ย หรือข้อยกเว้นเฉพาะบุคคล ควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
     </div>`;
+  dgApplyReveal(out);
 }
 async function askAiPlannerBackend(input, result){
   const response = await fetch(INSURANCE_PLAN_AI_ENDPOINT, {
@@ -8377,6 +8562,26 @@ function applyAiPackage(idx){
   renderAll();
 }
 
+/* ค่อย ๆ ให้การ์ดลอยขึ้นตอนเลื่อนถึง ทำครั้งเดียวต่อการ์ด ไม่รบกวนการอ่าน
+   ถ้าเบราว์เซอร์ไม่มี IntersectionObserver ก็ข้ามไปเลย เนื้อหายังอ่านได้ปกติ */
+let dgRevealObserver = null;
+function dgApplyReveal(root){
+  if(typeof IntersectionObserver === 'undefined') return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(!dgRevealObserver){
+    dgRevealObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('is-in'); dgRevealObserver.unobserve(e.target); } });
+    }, {rootMargin:'0px 0px -8% 0px', threshold:0.04});
+  }
+  const scope = root || document;
+  scope.querySelectorAll('.content-card:not(.reveal)').forEach((el, i) => {
+    if(i > 24) return;                       // การ์ดที่อยู่ลึกมากไม่ต้องใส่ ประหยัดงาน
+    el.classList.add('reveal');
+    const r = el.getBoundingClientRect();
+    if(r.top < window.innerHeight * 0.95){ el.classList.add('is-in'); return; }
+    dgRevealObserver.observe(el);
+  });
+}
 function showPage(name, options = {}){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-'+name);
@@ -8389,6 +8594,7 @@ function showPage(name, options = {}){
   if(name === 'ci-compare' && typeof renderCiComparePage === 'function') renderCiComparePage();
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   window.scrollTo({top:0, behavior:'auto'});
+  dgApplyReveal(target);
 }
 
 document.getElementById('navbar').addEventListener('click', (e) => {
