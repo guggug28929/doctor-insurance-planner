@@ -7662,7 +7662,7 @@ function advBuildRecommended(rawInput){
 
   if(h0.kind === 'dhl' && h0.sum === '5m'){
     why.push(resolved.sumUpgraded
-      ? 'ลูกค้าเลือกวงเงินระดับเริ่มต้น 1 ล้านบาท แต่งบที่ให้มาพอสำหรับ D Health Lite 5 ล้านบาทต่อครั้งการรักษาแบบเต็มรูปแบบ ระบบจึงขยับวงเงินให้ เป็นแบบเดียวกัน ไม่ได้เปลี่ยนโครงสร้างแผน แค่วงเงินต่อครั้งสูงขึ้นห้าเท่า ซึ่งคุ้มกว่าเก็บเงินส่วนต่างไว้เฉย ๆ'
+      ? `ลูกค้าเลือกวงเงินระดับเริ่มต้น 1 ล้านบาท แต่งบที่ให้มาพอสำหรับ D Health Lite 5 ล้านบาทต่อครั้งการรักษาแบบเต็มรูปแบบ ระบบจึงขยับวงเงินให้ เป็นแบบเดียวกัน ไม่ได้เปลี่ยนโครงสร้างแผน แค่วงเงินต่อครั้งสูงขึ้นห้าเท่า · เหตุผลที่ควรขยับไม่ใช่แค่ว่างบถึง แต่เพราะสัญญานี้ใช้ไปอีกหลายสิบปี ค่ารักษาที่วันนี้จ่าย 1 ล้าน อีก 20 ปีถ้าเพิ่มปีละ 8% จะกลายเป็นราว ${fmt(Math.round(1000000*Math.pow(1.08,20)))} บาท วงเงินที่พอวันนี้จึงไม่ได้แปลว่าพอตอนอายุ ${input.age + 20} ปี ซึ่งเป็นช่วงที่ใช้จริงมากที่สุด`
       : 'ตั้งต้นจากแผนที่ยึดเป็นสรณะ คือ D Health Lite 5 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาทต่อปีต่อโรค เพราะเป็นชุดที่ปิดความเสี่ยงระดับที่ทำให้ครอบครัวล้มละลายได้จริง');
   }else if(h0.kind === 'dhl'){
     why.push('ลูกค้าเลือกวงเงินระดับเริ่มต้น ระบบจึงตั้งต้นที่ D Health Lite 1 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus');
@@ -7871,6 +7871,45 @@ function advEconomyConcession(state, input){
     return 'ลด Care Plus จาก มะเร็ง+ไตวายเรื้อรัง เหลือมะเร็งอย่างเดียว เป็นขั้นสุดท้าย เพราะมะเร็งคือความเสี่ยงที่ค่ารักษาสูงที่สุด';
   }
   return null;
+}
+
+/* ---------- ทำไมวงเงินวันนี้อาจไม่พอในอีก 20-30 ปี ----------
+   ลูกค้าส่วนใหญ่ตัดสินวงเงินจากค่ารักษาที่เห็นวันนี้ ไม่ได้คิดว่ากรมธรรม์สุขภาพ
+   เป็นสัญญาที่ใช้ไปอีกหลายสิบปี หน้าที่ตัวแทนคือทำให้เห็นภาพนั้นก่อนตัดสินใจ
+   ตารางนี้เป็นการคิดดอกเบี้ยทบต้นล้วน ๆ จากอัตราที่ "สมมติ" ไว้
+   ไม่ใช่อัตราที่บริษัทหรือหน่วยงานใดประกาศ จึงต้องติดป้ายให้ชัดทุกครั้ง        */
+const ADV_MED_INFLATION_SCENARIOS = [0.05, 0.08, 0.10];
+const ADV_MED_INFLATION_YEARS = [10, 20, 30];
+function medCostProjection(todayCost){
+  return ADV_MED_INFLATION_SCENARIOS.map(rate => ({
+    rate,
+    years: ADV_MED_INFLATION_YEARS.map(y => ({y, cost: Math.round(todayCost * Math.pow(1 + rate, y))})),
+  }));
+}
+function medCoverageErosion(coverToday){
+  return ADV_MED_INFLATION_SCENARIOS.map(rate => ({
+    rate,
+    years: ADV_MED_INFLATION_YEARS.map(y => ({y, real: Math.round(coverToday / Math.pow(1 + rate, y))})),
+  }));
+}
+function medInflationCardHtml(sumToday, entryAge){
+  const proj = medCostProjection(sumToday);
+  const ero = medCoverageErosion(sumToday);
+  const head = `<tr><th>ถ้าค่ารักษาเพิ่มปีละ</th>${ADV_MED_INFLATION_YEARS.map(y=>`<th>อีก ${y} ปี<br>(อายุ ${entryAge + y})</th>`).join('')}</tr>`;
+  const rowsA = proj.map(r => `<tr><td>${Math.round(r.rate*100)}%</td>${r.years.map(x=>`<td>${fmt(x.cost)}</td>`).join('')}</tr>`).join('');
+  const rowsB = ero.map(r => `<tr><td>${Math.round(r.rate*100)}%</td>${r.years.map(x=>`<td>${fmt(x.real)}</td>`).join('')}</tr>`).join('');
+  return `<div class="ai-budget-filter" style="border-color:#f0c9a8;background:#fffaf4;">
+    <b>ก่อนตกลงวงเงิน ${fmt(sumToday)} บาท ให้ลูกค้าเห็นภาพนี้ก่อน</b>
+    <p class="meta" style="margin:6px 0 10px;">ประกันสุขภาพเป็นสัญญาที่ใช้ไปอีกหลายสิบปี แต่ลูกค้ามักตัดสินวงเงินจากค่ารักษาที่เห็นวันนี้
+    การรักษาที่วันนี้จ่าย ${fmt(sumToday)} บาท ในอนาคตจะไม่ใช่ราคาเดิม</p>
+    <div class="table-wrap"><table><thead>${head}</thead><tbody>${rowsA}</tbody></table></div>
+    <p class="meta" style="margin:10px 0 6px;">มองกลับด้าน วงเงิน ${fmt(sumToday)} บาทที่ซื้อวันนี้ จะเหลือกำลังซื้อเท่ากับเงินวันนี้เท่าไหร่</p>
+    <div class="table-wrap"><table><thead>${head}</thead><tbody>${rowsB}</tbody></table></div>
+    <p class="meta" style="margin-top:10px;"><b>ข้อควรระวังในการใช้ตารางนี้</b> ตัวเลขทั้งหมดเป็นการคิดทบต้นจากอัตราที่<b>สมมติขึ้น 3 ระดับ</b>
+    เพื่อให้เห็นช่วงความเป็นไปได้ <b>ไม่ใช่อัตราที่บริษัทหรือหน่วยงานใดประกาศ</b> และค่ารักษาจริงไม่ได้ขึ้นเป็นเส้นตรงทุกปี
+    ถ้าจะใช้กับลูกค้า ควรอ้างอิงตัวเลขที่ตรวจสอบได้จริงประกอบ และบอกลูกค้าตรง ๆ ว่านี่คือการจำลอง ไม่ใช่การรับประกันตัวเลข ·
+    อีกทางที่ช่วยได้จริงคือดูว่าแบบที่เลือกมีเงื่อนไข<b>ปรับเพิ่มวงเงินภายหลัง</b>ได้หรือไม่ ซึ่งต้องเช็กกับ SmartWeb เป็นราย ๆ</p>
+  </div>`;
 }
 
 function advBuildUpgrade(input, primary){
@@ -8243,6 +8282,10 @@ function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, erro
         <b>ทางเลือกประหยัด</b> คือถ้าอยากได้เบี้ยต่ำลง จะต้องผ่อนเกณฑ์ตัวไหนบ้าง โดยตัดของที่ปิดความเสี่ยงเล็กก่อนเสมอ แล้วค่อยแตะวงเงินก้อนใหญ่เป็นลำดับท้ายสุด
       </div>
       ${overNote}
+      ${(() => {
+        const lowSum = result.packages.some(p => (p.items||[]).some(i => i.kind === 'dhl' && i.sum === '1m'));
+        return lowSum ? medInflationCardHtml(1000000, input.age) : '';
+      })()}
       ${followNote}
       ${noteNo40}
       ${renderAiBackendAdvice(aiAdvice, loading, errorText)}
