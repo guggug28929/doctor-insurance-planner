@@ -5065,6 +5065,8 @@ const PLAN_COVER_IMAGES = {
   main997: {src:'/public/plan-covers/smart-protection-99-7.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ สมาร์ท โพรเทคชั่น 99/7 เมืองไทยประกันชีวิต'},
   main9999: {src:'/public/plan-covers/lifetime-protection-9999.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   premierlegacy: {src:'/public/plan-covers/premierlegacy.png', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทย พรีเมียร์ เลกาซี่ เมืองไทยประกันชีวิต'},
+  // ตรวจภาพแล้วเป็นปกโบรชัวร์การตลาด ไม่มีเลขที่กรมธรรม์หรือข้อมูลผู้เอาประกันภัย
+  lifetimeprotection: {src:'/public/plan-covers/lifetime-protection-9920.jpg', format:'portrait', caption:'ปกโบรชัวร์ โครงการเมืองไทย ยิ้มสู้โรคร้าย ซึ่งเป็นชื่อทางการตลาดของแบบประกันภัย เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น'},
   flexi9920: {src:'/public/plan-covers/flexi-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   smartlink153: {src:'/public/plan-covers/smart-linked-15-3.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   smartlink156: {src:'/public/plan-covers/smart-linked-15-6.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
@@ -5343,7 +5345,7 @@ const PLAN_DETAILS = {
             'ไม่ใช่ผลประโยชน์ที่ทุกเคสจะได้ · และเมื่อเคลมตาราง (ก) แล้ว <b>สัญญาสิ้นสุดทันที</b>',
     },
     overview: 'ประกันชีวิตตลอดชีพที่<b>รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในสัญญาหลัก</b> ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี จุดต่างจากการซื้อสัญญาหลักแล้วแนบสัญญาเพิ่มเติมโรคร้ายแรงคือ<b>เบี้ยคงที่ตลอดสัญญา</b> ไม่ต้องต่ออายุรายปีและไม่ถูกปรับเบี้ยขึ้นตามอายุ แต่แลกมาด้วยเบี้ยที่สูงกว่าแบบตลอดชีพธรรมดามาก และ<b>เคลมโรคขั้นรุนแรงได้ครั้งเดียวแล้วสัญญาจบ</b>',
-    images: [],
+    images: [PLAN_COVER_IMAGES.lifetimeprotection],
     coverage: [
       '<b>ตรวจพบโรคร้ายแรงในตาราง (ก) 13 โรค</b> รับเงินก้อนตามร้อยละของทุนประกัน หรือมูลค่าเวนคืนในขณะนั้น แล้วแต่จำนวนใดมากกว่า — <b>จ่ายเพียงรายการเดียวเท่านั้น แล้วสัญญาสิ้นสุด</b>',
       'กลุ่ม <b>150%</b> — มะเร็งขั้นรุนแรง · กล้ามเนื้อหัวใจตายเฉียบพลันขั้นรุนแรง · หลอดเลือดสมองแตกหรืออุดตันขั้นรุนแรง · การเจ็บป่วยระยะสุดท้าย',
@@ -8037,7 +8039,123 @@ const COMPARE_PRODUCTS = {
     },
   },
 };
-const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd'];
+const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd',
+  'main9920','main9999','main997','flexi995','lifetimeprotection',
+  'waigao9090','waigao9910','easyprotection'];
+
+/* ---------- จัดกลุ่มการเปรียบเทียบตามวัตถุประสงค์ ----------
+   สัญญาเพิ่มเติมสุขภาพกับสัญญาหลักประกันชีวิตดูคนละเรื่องกันสิ้นเชิง
+   หัวข้อที่ต้องเทียบจึงเป็นคนละชุด เอามาวางคอลัมน์เดียวกันจะได้ตารางที่ว่างเกือบหมด
+   ระบบจึงแยกเป็นกลุ่ม และห้ามเลือกข้ามกลุ่ม พร้อมบอกเหตุผลให้ผู้ใช้เข้าใจ */
+const COMPARE_GROUPS = {
+  health: {label:'สัญญาเพิ่มเติมสุขภาพและค่ารักษา', ids:['dhl','ehp','maochai','ecp','careplus','opd']},
+  life:   {label:'สัญญาหลักประกันชีวิต', ids:['main9920','main9999','main997','flexi995',
+             'lifetimeprotection','waigao9090','waigao9910','easyprotection']},
+};
+function compareGroupOf(id){
+  for(const k of Object.keys(COMPARE_GROUPS)) if(COMPARE_GROUPS[k].ids.includes(id)) return k;
+  return null;
+}
+function compareActiveGroup(){
+  return compareSelected.length ? compareGroupOf(compareSelected[0]) : null;
+}
+
+/* ทะเบียนสัญญาหลักสำหรับหน้าเปรียบเทียบ
+   ทุกช่องอ้างอิงข้อมูลที่ตรวจแล้วในระบบ ถ้าแหล่งไม่ได้ระบุจะเขียนว่ายังไม่พบข้อมูล */
+const LIFE_COMPARE_PRODUCTS = {
+  main9920: {title:'สมาร์ท โพรเทคชั่น 99/20', plan:'99_20',
+    tiers:[{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'},{value:'2000000',label:'ทุน 2,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'คุ้มครองชีวิตและใช้เป็นฐานแนบสัญญาเพิ่มเติม', entry:'0 – 70 ปี', pay:'20 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'ไม่มีในตัว ต้องแนบสัญญาเพิ่มเติม', riders:'แนบได้ทุกตัว', minSum:'200,000 บาท', maxSum:'ไม่มีเพดานระบุไว้',
+      health:'ต้องแถลงและอาจต้องตรวจสุขภาพ', maturity:'ครบอายุ 99 ปี รับ 100% ของทุน',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามหลักเกณฑ์กรมสรรพากร', wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
+  main9999: {title:'คุ้มครองตลอดชีพ 99/99', plan:'99_99',
+    tiers:[{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'},{value:'2000000',label:'ทุน 2,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'ได้ทุนสูงสุดต่อเบี้ย เหมาะเป็นฐานแนบสุขภาพด้วยงบน้อย', entry:'0 – 90 ปี', pay:'จนถึงอายุ 99 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'ไม่มีในตัว ต้องแนบสัญญาเพิ่มเติม', riders:'แนบได้ทุกตัว', minSum:'50,000 บาท', maxSum:'ไม่มีเพดานระบุไว้',
+      health:'ต้องแถลงและอาจต้องตรวจสุขภาพ', maturity:'ครบอายุ 99 ปี รับ 100% ของทุน',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามหลักเกณฑ์กรมสรรพากร', wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
+  main997: {title:'สมาร์ท โพรเทคชั่น 99/7', plan:'99_7',
+    tiers:[{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'},{value:'2000000',label:'ทุน 2,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'ปิดภาระเบี้ยเร็วที่สุดในกลุ่มตลอดชีพ', entry:'0 – 85 ปี', pay:'7 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'ไม่มีในตัว ต้องแนบสัญญาเพิ่มเติม', riders:'บังคับแนบสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ',
+      minSum:'150,000 บาท', maxSum:'ไม่มีเพดานระบุไว้', health:'ต้องแถลงและอาจต้องตรวจสุขภาพ',
+      maturity:'ครบอายุ 99 ปี รับ 100% ของทุน', cash:'มีมูลค่าเวนคืน',
+      tax:'ลดหย่อนได้ตามหลักเกณฑ์กรมสรรพากร', wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
+  flexi995: {title:'เฟล็กซี่ โพรเทคชั่น 99/5', plan:'flexi_99_5',
+    tiers:[{value:'1000000',label:'ทุน 1,000,000'},{value:'2000000',label:'ทุน 2,000,000'},{value:'5000000',label:'ทุน 5,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'วางแผนมรดกด้วยเงินก้อน ชำระสั้นที่สุด', entry:'0 – 55 ปี', pay:'5 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'ไม่มีในตัว ต้องแนบสัญญาเพิ่มเติม', riders:'แนบได้ทุกตัว', minSum:'500,000 บาท', maxSum:'ไม่มีเพดานระบุไว้',
+      health:'ต้องแถลงและอาจต้องตรวจสุขภาพ', maturity:'ครบอายุ 99 ปี รับ 100% ของทุน',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามหลักเกณฑ์กรมสรรพากร',
+      wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
+  lifetimeprotection: {title:'ไลฟ์ไทม์ โพรเทคชั่น 99/20', plan:'lifetime_protection',
+    tiers:[{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'},{value:'3000000',label:'ทุน 3,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'คุ้มครองชีวิตพร้อมโรคร้ายแรงในสัญญาเดียว เบี้ยคงที่', entry:'1 – 65 ปี', pay:'20 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'<b>มีในตัว 15 โรค</b> ขั้นรุนแรงรับ 150% ของทุน เคลมแล้วสัญญาสิ้นสุด',
+      riders:'แนบได้ตามเงื่อนไขของสัญญาเพิ่มเติมนั้น', minSum:'150,000 บาท',
+      maxSum:'3,000,000 บาท (อายุ 1-15) · 5,000,000 บาท (อายุ 16-65) รวมทุกกรมธรรม์',
+      health:'ต้องแถลงและอาจต้องตรวจสุขภาพ', maturity:'ครบอายุ 99 ปี รับ 100% ของทุน',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามประกาศอธิบดีกรมสรรพากร ฉบับที่ 172 และ 315',
+      wait:'<b>โรคร้ายแรง 90 วัน</b> (ยืนยันจากเล่มกรมธรรม์)'}},
+  waigao9090: {title:'วัยเก๋า คุ้มสุขใจ 90/90', plan:'sabaijai_90_90',
+    tiers:[{value:'100000',label:'ทุน 100,000'},{value:'300000',label:'ทุน 300,000'},{value:'500000',label:'ทุน 500,000'}],
+    defaultValue:'500000',
+    rows:{purpose:'ผู้สูงอายุที่ทำแบบทั่วไปไม่ผ่าน', entry:'50 – 75 ปี', pay:'จนถึงอายุ 90 ปี', cover:'ถึงอายุ 90 ปี',
+      ci:'ไม่มี', riders:'<b>แนบได้เฉพาะ</b> อุบัติเหตุ สบายใจ และ สุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ)',
+      minSum:'100,000 บาท', maxSum:'600,000 บาท รวมทุกช่องทาง',
+      health:'<b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b>',
+      maturity:'ครบอายุ 90 ปี รับ 100% ของทุน', cash:'มีมูลค่าเวนคืน',
+      tax:'แหล่งที่ตรวจไม่ได้ระบุสิทธิลดหย่อนไว้',
+      wait:'<b>ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน</b>'}},
+  waigao9910: {title:'วัยเก๋า คุ้มได้ใจ 99/10', plan:'sabaijai_99_10',
+    tiers:[{value:'100000',label:'ทุน 100,000'},{value:'300000',label:'ทุน 300,000'},{value:'500000',label:'ทุน 500,000'}],
+    defaultValue:'500000',
+    rows:{purpose:'ผู้สูงอายุถึง 80 ปี ปิดภาระเบี้ยใน 10 ปี', entry:'50 – 80 ปี', pay:'10 ปี', cover:'ถึงอายุ 99 ปี',
+      ci:'ไม่มี', riders:'<b>แนบได้เฉพาะ</b> อุบัติเหตุ สบายใจ และ สุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ) และรับถึงอายุ 75 ปีเท่านั้น',
+      minSum:'100,000 บาท', maxSum:'600,000 บาท รวมทุกช่องทาง',
+      health:'<b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b>',
+      maturity:'ครบอายุ 99 ปี รับ 150% ของทุน หรือ 101% ของเบี้ย แล้วแต่จำนวนใดมากกว่า',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้เฉพาะเบี้ยส่วนความคุ้มครองชีวิต ราว 98.8-99.5% ของเบี้ยรวม',
+      wait:'<b>ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน</b>'}},
+  easyprotection: {title:'อีซี่ โพรเทคชั่น 15/15', plan:'easy_protection_15_15',
+    tiers:[{value:'1000000',label:'ทุน 1,000,000'},{value:'3000000',label:'ทุน 3,000,000'},{value:'5000000',label:'ทุน 5,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'ปิดภาระที่มีวันหมด เช่น หนี้บ้าน ด้วยทุนสูงเบี้ยต่ำ', entry:'0 – 75 ปี', pay:'15 ปี', cover:'15 ปี',
+      ci:'ไม่มี', riders:'แนบได้ แต่สัญญาเพิ่มเติมจะสิ้นสุดพร้อมสัญญาหลักเมื่อครบ 15 ปี',
+      minSum:'50,000 บาท', maxSum:'ไม่มีเพดานระบุไว้', health:'ต้องแถลงและอาจต้องตรวจสุขภาพ',
+      maturity:'<b>ครบสัญญาไม่มีเงินคืน</b>', cash:'ไม่มีมูลค่าเวนคืนที่เป็นสาระสำคัญ',
+      tax:'ลดหย่อนได้ เพราะระยะเวลาเอาประกันภัยตั้งแต่ 10 ปีขึ้นไป',
+      wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
+};
+const LIFE_COMPARE_ROW_DEFS = [
+  {section:'ใช้ทำอะไร'},
+  {key:'purpose', label:'จุดประสงค์หลัก'},
+  {key:'ci',      label:'คุ้มครองโรคร้ายแรงในตัว'},
+  {section:'เงื่อนไขการรับประกัน'},
+  {key:'entry',   label:'อายุที่รับทำ'},
+  {key:'health',  label:'การแถลงและตรวจสุขภาพ'},
+  {key:'minSum',  label:'ทุนขั้นต่ำ'},
+  {key:'maxSum',  label:'เพดานทุน'},
+  {key:'riders',  label:'การแนบสัญญาเพิ่มเติม'},
+  {section:'ระยะเวลา'},
+  {key:'pay',     label:'ระยะเวลาชำระเบี้ย'},
+  {key:'cover',   label:'ระยะเวลาคุ้มครอง'},
+  {key:'wait',    label:'ระยะเวลาที่ไม่คุ้มครอง'},
+  {section:'ผลประโยชน์'},
+  {key:'maturity',label:'อยู่ครบสัญญา'},
+  {key:'cash',    label:'มูลค่าเวนคืน'},
+  {key:'tax',     label:'ลดหย่อนภาษี'},
+  {section:'ตัวเลขจากกรณีที่กรอก'},
+  {key:'_premium',   label:'เบี้ยรายปีปีแรก'},
+  {key:'_perMillion',label:'เบี้ยต่อทุน 1 ล้านบาท'},
+  {key:'_totalPaid', label:'เบี้ยรวมตลอดระยะชำระ'},
+];
 
 /* ---------- โหมดเปรียบเทียบประกันบำนาญ ----------
    ใช้หัวข้อคนละชุดกับประกันสุขภาพ เพราะสิ่งที่ต้องดูต่างกันสิ้นเชิง
@@ -8258,25 +8376,32 @@ function initComparePlanCards(){
   });
 }
 function initCompareToggle(){
-  const groupBreaks = document.querySelectorAll('#page-plans .group-break');
-  let target = null;
-  groupBreaks.forEach(gb => {
+  // วางปุ่มไว้ทั้งหัวข้อประกันชีวิตและหัวข้อสัญญาเพิ่มเติมสุขภาพ เพราะสองกลุ่มนี้
+  // เทียบกันคนละชุดหัวข้อ ผู้ใช้ควรเจอปุ่มตรงกลุ่มที่กำลังดูอยู่ ไม่ต้องเลื่อนหา
+  const targets = [
+    {heading:'ประกันชีวิต / สัญญาหลัก', id:'compareModeToggleLife'},
+    {heading:'สัญญาเพิ่มเติมสุขภาพ / ชดเชยรายได้', id:'compareModeToggle'},
+  ];
+  document.querySelectorAll('#page-plans .group-break').forEach(gb => {
     const h2 = gb.querySelector('h2');
-    if(h2 && h2.textContent.trim() === 'สัญญาเพิ่มเติมสุขภาพ / ชดเชยรายได้') target = gb;
+    if(!h2) return;
+    const t = targets.find(x => x.heading === h2.textContent.trim());
+    if(!t || document.getElementById(t.id)) return;
+    gb.classList.add('group-break-with-action');
+    if(!gb.querySelector('.group-break-text')){
+      const wrap = document.createElement('div');
+      wrap.className = 'group-break-text';
+      while(gb.firstChild) wrap.appendChild(gb.firstChild);
+      gb.appendChild(wrap);
+    }
+    const btn = document.createElement('button');
+    btn.id = t.id;
+    btn.className = 'btn-compare-toggle';
+    btn.type = 'button';
+    btn.textContent = 'เลือกแผนที่ต้องการเปรียบเทียบ';
+    btn.addEventListener('click', toggleCompareMode);
+    gb.appendChild(btn);
   });
-  if(!target || document.getElementById('compareModeToggle')) return;
-  target.classList.add('group-break-with-action');
-  const wrap = document.createElement('div');
-  wrap.className = 'group-break-text';
-  while(target.firstChild) wrap.appendChild(target.firstChild);
-  target.appendChild(wrap);
-  const btn = document.createElement('button');
-  btn.id = 'compareModeToggle';
-  btn.className = 'btn-compare-toggle';
-  btn.type = 'button';
-  btn.textContent = 'เลือกแผนที่ต้องการเปรียบเทียบ';
-  btn.addEventListener('click', toggleCompareMode);
-  target.appendChild(btn);
 }
 function toggleCompareMode(){
   compareMode = !compareMode;
@@ -8293,16 +8418,62 @@ function toggleCompareSelect(id){
   if(idx >= 0) compareSelected.splice(idx,1);
   else {
     if(compareSelected.length >= COMPARE_MAX) return;
+    // ห้ามเลือกข้ามกลุ่ม เพราะหัวข้อที่เทียบเป็นคนละชุด ถ้าปนกันตารางจะว่างเกือบหมด
+    const cur = compareActiveGroup();
+    if(cur && compareGroupOf(id) !== cur){
+      const other = COMPARE_GROUPS[compareGroupOf(id)];
+      alert('เลือกข้ามกลุ่มไม่ได้ครับ\n\nตอนนี้กำลังเทียบ "' + COMPARE_GROUPS[cur].label + '" อยู่ '
+        + 'ส่วน "' + (other ? other.label : '') + '" ใช้หัวข้อเปรียบเทียบคนละชุดกันสิ้นเชิง '
+        + 'ถ้าเอามาวางคอลัมน์เดียวกันตารางจะว่างเกือบหมดจนอ่านไม่ได้ความ\n\n'
+        + 'ถ้าอยากเทียบกลุ่มนี้ ให้เอาแผนที่เลือกไว้ออกก่อน');
+      return;
+    }
     compareSelected.push(id);
+    if(compareGroupOf(id) === 'life' && !compareTierByProduct[id])
+      compareTierByProduct[id] = LIFE_COMPARE_PRODUCTS[id].defaultValue;
   }
   renderCompareModeUI();
 }
+
+/* ---------- คอลัมน์และแถวของกลุ่มสัญญาหลักประกันชีวิต ---------- */
+function buildLifeCompareColumns(inputs){
+  return compareSelected.map(id => {
+    const p = LIFE_COMPARE_PRODUCTS[id];
+    const capital = Number(compareTierByProduct[id] || p.defaultValue);
+    const premium = mainPremiumAtEntry(p.plan, capital, inputs.gender, inputs.age, 'annual');
+    return {id, product:p, capital, premium};
+  });
+}
+function buildLifeCompareRows(columns){
+  const payYears = {'99_20':20, '99_99':null, '99_7':7, 'flexi_99_5':5,
+    'lifetime_protection':20, 'sabaijai_90_90':null, 'sabaijai_99_10':10, 'easy_protection_15_15':15};
+  return LIFE_COMPARE_ROW_DEFS.map(def => {
+    if(def.section) return ['§'+def.section];
+    const cells = columns.map(col => {
+      if(def.key === '_premium')
+        return col.premium == null ? '<span class="compare-na">อายุนี้ทำไม่ได้</span>' : fmt(Math.round(col.premium)) + ' บาท';
+      if(def.key === '_perMillion')
+        return col.premium == null ? '<span class="compare-na">-</span>'
+          : fmt(Math.round(col.premium / (col.capital/1000000))) + ' บาท';
+      if(def.key === '_totalPaid'){
+        if(col.premium == null) return '<span class="compare-na">-</span>';
+        const y = payYears[col.product.plan];
+        return y ? fmt(Math.round(col.premium * y)) + ' บาท (' + y + ' ปี)'
+                 : '<span class="compare-na">ชำระจนครบสัญญา จึงขึ้นกับอายุที่เสียชีวิต</span>';
+      }
+      const v = col.product.rows[def.key];
+      return v === undefined ? '<span class="compare-na">ไม่มีในแผนนี้</span>' : v;
+    });
+    return [def.label, ...cells];
+  });
+}
 function renderCompareModeUI(){
-  const toggleBtn = document.getElementById('compareModeToggle');
-  if(toggleBtn){
-    toggleBtn.textContent = compareMode ? 'ปิดโหมดเปรียบเทียบ' : 'เลือกแผนที่ต้องการเปรียบเทียบ';
-    toggleBtn.classList.toggle('active', compareMode);
-  }
+  ['compareModeToggle','compareModeToggleLife'].forEach(id => {
+    const b = document.getElementById(id);
+    if(!b) return;
+    b.textContent = compareMode ? 'ปิดโหมดเปรียบเทียบ' : 'เลือกแผนที่ต้องการเปรียบเทียบ';
+    b.classList.toggle('active', compareMode);
+  });
   document.querySelectorAll('#page-plans .plan-card').forEach(card => {
     const id = card.dataset.planId;
     let box = card.querySelector('.compare-checkbox-wrap');
@@ -8387,8 +8558,13 @@ function removeCompareColumn(id){
 // compare page itself, without navigating back to /plans first.
 function addCompareColumn(id){
   if(!id || compareSelected.includes(id) || compareSelected.length >= COMPARE_MAX) return;
+  const cur = compareActiveGroup();
+  if(cur && compareGroupOf(id) !== cur) return;   // กันเลือกข้ามกลุ่มจากช่องเพิ่มแผนด้วย
   compareSelected.push(id);
-  if(!compareTierByProduct[id]) compareTierByProduct[id] = COMPARE_PRODUCTS[id].defaultValue;
+  if(!compareTierByProduct[id]){
+    compareTierByProduct[id] = compareGroupOf(id) === 'life'
+      ? LIFE_COMPARE_PRODUCTS[id].defaultValue : COMPARE_PRODUCTS[id].defaultValue;
+  }
   renderComparePage();
 }
 function buildCompareBenefitRows(columns){
@@ -8402,15 +8578,120 @@ function buildCompareBenefitRows(columns){
     return [def.label, ...cells];
   });
 }
+/* ---------- สัญญาเพิ่มเติมที่ผูกกับสัญญาหลักบางแบบโดยเฉพาะ ----------
+   ตัวเหล่านี้ "ไม่ใช่สัญญาหลัก" ซื้อเดี่ยวไม่ได้ จึงแสดงเป็นบรรทัดเบี้ยแยก
+   ต่อท้ายคอลัมน์ของสัญญาหลักที่แนบได้เท่านั้น และแสดงเงื่อนไขอายุที่รับ */
+const LIFE_ADDONS = [
+  {
+    id:'wp', label:'ยกเว้นเบี้ยกรณีทุพพลภาพ (WP)',
+    onlyFor:['lifetime_protection'],
+    note:'อัตราเบี้ยของสัญญาหลักด้านบนยังไม่รวมตัวนี้ ถ้าลูกค้าซื้อต้องบวกเพิ่ม',
+    eligible(age){ const w = RATES.lifetime_protection && RATES.lifetime_protection.wp_rider;
+      return !!w && age >= w.age_start && age <= w.age_end; },
+    limitText(){ const w = RATES.lifetime_protection.wp_rider;
+      return `รับอายุ ${w.entry_age_range[0]} – ${w.entry_age_range[1]} ปี`; },
+    premium(capital, gender, age){ return lifetimeWpRiderPremium(capital, gender, age, 'annual'); },
+  },
+  {
+    id:'pa_senior', label:'อุบัติเหตุส่วนบุคคล สบายใจ (แผน 3 ทุน 300,000)',
+    onlyFor:['sabaijai_90_90','sabaijai_99_10'],
+    note:'เป็นสัญญาเพิ่มเติมเฉพาะโครงการวัยเก๋า ซื้อเดี่ยวไม่ได้',
+    eligible(age){ const g = RATES.pa_sabaijai_senior;
+      return !!g && age >= g.entry_age_range[0] && age <= g.entry_age_range[1]; },
+    limitText(){ const g = RATES.pa_sabaijai_senior;
+      return `รับอายุ ${g.entry_age_range[0]} – ${g.entry_age_range[1]} ปี · ต่ออายุถึง ${g.renewable_to} ปี`; },
+    premium(capital, gender, age){
+      const g = RATES.pa_sabaijai_senior; if(!g) return null;
+      const band = g.age_bands.find(b => {
+        const [lo,hi] = b.split('-').map(Number); return age >= lo && age <= hi; });
+      if(!band) return null;
+      const idx = g.plans.indexOf(300000);
+      return idx < 0 ? null : g.annual[band][idx];
+    },
+  },
+  {
+    id:'hb_senior', label:'สุขภาพวงเงินแน่นอน (ชดเชยวันละ 1,000 บาท)',
+    onlyFor:['sabaijai_90_90','sabaijai_99_10'],
+    note:'2 ปีแรกคุ้มครองเฉพาะกรณีอุบัติเหตุ · ซื้อได้ไม่เกิน 1 สัญญาต่อคน และต้องแนบกรมธรรม์ใหม่',
+    eligible(age){ const g = RATES.hb_sabaijai_senior;
+      return !!g && age >= g.entry_age_range[0] && age <= g.entry_age_range[1]; },
+    limitText(){ const g = RATES.hb_sabaijai_senior;
+      return `รับอายุ ${g.entry_age_range[0]} – ${g.entry_age_range[1]} ปี · ต่ออายุถึง ${g.renewable_to} ปี`; },
+    premium(capital, gender, age){
+      const g = RATES.hb_sabaijai_senior; if(!g) return null;
+      const band = Object.keys(g.annual_rate_per_100).find(b => {
+        const [lo,hi] = b.split('-').map(Number); return age >= lo && age <= hi; });
+      if(!band) return null;
+      const rate = g.annual_rate_per_100[band][gender];
+      return rate == null ? null : Math.round(rate * 1000 / 100);
+    },
+  },
+];
+function buildLifeAddonRows(columns, inputs){
+  const rows = [];
+  const used = LIFE_ADDONS.filter(a => columns.some(c => a.onlyFor.includes(c.product.plan)));
+  if(!used.length) return rows;
+  rows.push(['§สัญญาเพิ่มเติมที่แนบได้ — เบี้ยแยกต่างหาก ไม่รวมในตัวเลขด้านบน']);
+  for(const a of used){
+    const cells = columns.map(col => {
+      if(!a.onlyFor.includes(col.product.plan))
+        return '<span class="compare-na">แนบกับแบบนี้ไม่ได้</span>';
+      if(!a.eligible(inputs.age))
+        return '<span class="compare-na">อายุนี้แนบไม่ได้ (' + a.limitText() + ')</span>';
+      const v = a.premium(col.capital, inputs.gender, inputs.age);
+      return v == null ? '<span class="compare-na">ไม่มีอัตราสำหรับกรณีนี้</span>'
+        : fmt(Math.round(v)) + ' บาท/ปี';
+    });
+    rows.push([a.label, ...cells]);
+  }
+  rows.push(['หมายเหตุของสัญญาเพิ่มเติม',
+    ...columns.map(col => {
+      const notes = used.filter(a => a.onlyFor.includes(col.product.plan)).map(a => a.note);
+      return notes.length ? notes.join('<br>') : '<span class="compare-na">-</span>';
+    })]);
+  return rows;
+}
+function renderLifeComparePage(el, inputs){
+  const columns = buildLifeCompareColumns(inputs);
+  const summaryHtml = columns.map(col => `
+    <div class="compare-col-summary">
+      <div class="compare-col-title">${col.product.title}</div>
+      <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
+        ${col.product.tiers.map(t => `<option value="${t.value}" ${Number(t.value)===col.capital?'selected':''}>${t.label}</option>`).join('')}
+      </select>
+      <div class="compare-price">${col.premium != null ? fmt(Math.round(col.premium))+' บาท/ปี' : 'อายุนี้ทำแบบนี้ไม่ได้'}</div>
+      <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
+    </div>`).join('') + renderCompareAddSlot();
+  const headers = columns.map(c => c.product.title);
+  const rows = buildLifeCompareRows(columns).concat(buildLifeAddonRows(columns, inputs));
+  el.innerHTML = `
+    <div class="content-card compare-input-card">
+      <h2>เปรียบเทียบสัญญาหลักประกันชีวิต</h2>
+      <p class="meta">เลือกเพศ ปีเกิด และทุนของแต่ละแบบ ระบบจะดึงเบี้ยจริงจากตารางอัตราของแต่ละแบบมาเทียบให้ · กลุ่มนี้ใช้หัวข้อเปรียบเทียบคนละชุดกับสัญญาเพิ่มเติมสุขภาพ จึงเลือกข้ามกลุ่มไม่ได้</p>
+      <div class="compare-input-row">
+        <label><input type="radio" name="cmp_gender" value="m" ${inputs.gender==='m'?'checked':''} onchange="rerenderComparePage()"> ชาย</label>
+        <label><input type="radio" name="cmp_gender" value="f" ${inputs.gender==='f'?'checked':''} onchange="rerenderComparePage()"> หญิง</label>
+        <label>ปีเกิด (พ.ศ.) <input type="number" id="cmp_birthYear" value="${inputs.birthYear}" onchange="rerenderComparePage()" style="width:90px;"></label>
+        <span class="meta" style="align-self:center;">อายุที่คำนวณได้ ${inputs.age} ปี</span>
+      </div>
+    </div>
+    <div class="compare-columns-summary">${summaryHtml}</div>
+    <div class="plan-compare-table">
+      ${renderBenefitTable(headers, rows, 'เบี้ยเป็นรายปีปีแรก คำนวณจากตารางอัตราเบี้ยที่เผยแพร่จริงของแต่ละแบบ ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>สัญญาเพิ่มเติมในตารางท้ายเป็นเบี้ยแยกต่างหาก ยังไม่ได้บวกรวมกับเบี้ยสัญญาหลักด้านบน')}
+    </div>`;
+}
 function renderCompareAddSlot(){
-  const availableToAdd = COMPARE_SELECTABLE_IDS.filter(id => !compareSelected.includes(id));
+  const group = compareActiveGroup();
+  const pool = group ? COMPARE_GROUPS[group].ids : COMPARE_SELECTABLE_IDS;
+  const titleOf = id => (compareGroupOf(id) === 'life' ? LIFE_COMPARE_PRODUCTS[id].title : COMPARE_PRODUCTS[id].title);
+  const availableToAdd = pool.filter(id => !compareSelected.includes(id));
   if(compareSelected.length >= COMPARE_MAX || availableToAdd.length === 0) return '';
   return `
     <div class="compare-col-summary compare-col-add">
       <div class="compare-col-title">+ เพิ่มแผนเปรียบเทียบ</div>
       <select class="compare-tier-select" onchange="addCompareColumn(this.value); this.value='';">
         <option value="">เลือกแผน...</option>
-        ${availableToAdd.map(id => `<option value="${id}">${COMPARE_PRODUCTS[id].title}</option>`).join('')}
+        ${availableToAdd.map(id => `<option value="${id}">${titleOf(id)}</option>`).join('')}
       </select>
     </div>`;
 }
@@ -8428,6 +8709,7 @@ function renderComparePage(){
     return;
   }
   const inputs = readCompareInputs();
+  if(compareActiveGroup() === 'life'){ renderLifeComparePage(el, inputs); return; }
   const columns = compareSelected.map(id => {
     const product = COMPARE_PRODUCTS[id];
     const tierVal = compareTierByProduct[id] || product.defaultValue;
