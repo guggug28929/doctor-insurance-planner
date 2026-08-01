@@ -1181,6 +1181,7 @@
       <div class="radio-group">
         <label><input type="radio" name="mainPlan" value="99_20" checked> 99/20 (จ่าย 20 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากพ้นภาระเบี้ยเร็ว จ่ายหนักกว่าต่อปีแต่จ่ายแค่ 20 ปีจบ เหมาะกับคนมีกำลังจ่ายช่วงทำงาน แล้วอยากปลอดหนี้เบี้ยตอนใกล้เกษียณ</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
+        <label><input type="radio" name="mainPlan" value="99_7"> 99/7 (จ่าย 7 ปี)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นเพียง 7 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว ทุนขั้นต่ำ 150,000 บาท และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
@@ -1700,6 +1701,19 @@
         <li>บริษัทกำหนดให้ต้องแนบประกันอุบัติเหตุหรือโรคร้ายแรงอย่างน้อย 1 อย่าง</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('main9920')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาหลัก</div>
+      <h3>สมาร์ท โพรเทคชั่น 99/7</h3>
+      <p class="meta">อายุรับ 30 วัน – 85 ปี • ทุนเริ่มต้น 150,000 บาท • ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li>ชำระเบี้ยสั้นที่สุดในกลุ่มตลอดชีพ เพียง 7 ปี แล้วปิดภาระเบี้ยได้เลย</li>
+        <li>เสียชีวิต รับ 100% ของทุนประกัน หรือ 101% ของเบี้ยที่ชำระมาแล้ว แล้วแต่จำนวนใดสูงกว่า</li>
+        <li>รับทำถึงอายุ 85 ปี กว้างกว่าแบบ 99/20 เหมาะกับการวางแผนมรดก</li>
+        <li>ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และสัญญาอุบัติเหตุ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('main997')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
     <div class="plan-card">
@@ -2466,6 +2480,7 @@ function mainPlanDisplayName(plan, capital){
     const v = p.variants[currentPensionMain.vk];
     return v.label || p.shortName;
   }
+  if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
   if(plan === '99_99') return capital === 50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99';
   return plan === '15_3' ? 'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)' : 'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)';
@@ -2519,6 +2534,11 @@ function updateMainCapitalHint(){
     capitalInput.step = 1000;
     if(!product.capitals.includes(Number(capitalInput.value))) capitalInput.value = product.capitals[0];
     document.getElementById('mainCapitalHint').textContent = `${mainPlanDisplayName(plan)}: ชำระรายปีเท่านั้น • เลือกทุนได้ ${product.capitals.map(fmt).join(' / ')} บาท • ไม่สามารถแนบสัญญาเพิ่มเติมได้`;
+  } else if(plan === '99_7'){
+    capitalInput.min = 150000;
+    capitalInput.step = 10000;
+    document.getElementById('mainCapitalHint').textContent =
+      'ทุนประกันขั้นต่ำแผน 99/7 คือ 150,000 บาท • ชำระรายปีเท่านั้น (ยังไม่มีตารางเบี้ยงวดอื่นที่ประกาศไว้) • ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ';
   } else if(plan === '99_20'){
     capitalInput.min = 200000;
     capitalInput.step = 10000;
@@ -2591,6 +2611,20 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
     const idx = product.capitals.indexOf(capital);
     return band && idx >= 0 ? band[idx+2] : null;
+  }
+  if(plan === '99_7'){
+    // ตารางที่ประกาศมีเฉพาะเบี้ยรายปี และเป็นอัตราแบ่งตามระดับทุน 150k / 500k / 1M
+    // งวดอื่นยังไม่มีตารางทางการ จึงคืน null แทนการประมาณค่าเอง
+    if(freq !== 'annual') return null;
+    const g = RATES.main_99_7;
+    if(!g) return null;
+    let arr, denom;
+    if(capital < 500000){ arr = g[gender+'_150k']; denom = 150000; }
+    else if(capital < 1000000){ arr = g[gender+'_500k']; denom = 500000; }
+    else { arr = g[gender+'_1m']; denom = 1000000; }
+    const base = rateAtStart(arr, entryAge, g.age_start ?? 0);
+    if(base === null) return null;
+    return base * capital / denom;
   }
   if(plan === '99_20'){
     const g = RATES.main_99_20;
@@ -3852,6 +3886,7 @@ function ecpBenefitTable(){
 
 const PLAN_COVER_IMAGES = {
   main9920: {src:'/public/plan-covers/smart-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  main997: {src:'/public/plan-covers/smart-protection-99-7.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ สมาร์ท โพรเทคชั่น 99/7 เมืองไทยประกันชีวิต'},
   main9999: {src:'/public/plan-covers/lifetime-protection-9999.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   flexi9920: {src:'/public/plan-covers/flexi-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   smartlink153: {src:'/public/plan-covers/smart-linked-15-3.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
@@ -3992,6 +4027,34 @@ const PLAN_DETAILS = {
       {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('99_20',1000000,'f',age,freq))},
     ]),
     rateNote: 'เบี้ยคงที่ตามอายุ ณ วันทำสัญญา (level premium) ไม่เปลี่ยนแปลงตลอด 20 ปีที่ชำระเบี้ย ทุนประกันอื่นคำนวณแบบเป็นสัดส่วนจากตารางนี้ ตารางงวดชำระอื่นแสดงถึงอายุ 70 ปีเท่านั้น (อายุรับประกันใหม่สูงสุดของแผนนี้)',
+  },
+
+  main997: {
+    title: 'สมาร์ท โพรเทคชั่น 99/7', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
+    overview: 'ประกันชีวิตตลอดชีพที่<b>ชำระเบี้ยสั้นเพียง 7 ปี</b> แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายในช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว หรือใช้วางแผนมรดกด้วยเงินก้อนที่ทยอยจ่ายได้ รับทำตั้งแต่แรกเกิดถึงอายุ 85 ปี ซึ่งกว้างกว่าแบบ 99/20 มาก',
+    images: [PLAN_COVER_IMAGES.main997],
+    coverage: [
+      'เสียชีวิต รับ <b>100% ของทุนประกัน</b> หรือมูลค่าเวนคืนกรมธรรม์ หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดสูงกว่า',
+      'อยู่ครบสัญญาที่อายุ 99 ปี รับ <b>100% ของทุนประกัน</b>',
+      'มีมูลค่าเวนคืนกรมธรรม์ กู้ยืมหรือเวนคืนได้ตามเงื่อนไข',
+    ],
+    conditions: [
+      'อายุรับประกัน 30 วัน – 85 ปี (ยืนยันกับ SmartWeb แล้ว หน้าเว็บตัวแทนเขียนเงื่อนไขขัดกันเองว่า 30 วัน – 70 ปี)',
+      'ทุนประกันขั้นต่ำ 150,000 บาท',
+      'ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ตามอายุ ณ วันทำสัญญา',
+      'บริษัทกำหนดให้ต้องแนบ<b>สัญญาสุขภาพหรือโรคร้ายแรง</b> และ<b>สัญญาอุบัติเหตุ</b> ควบคู่กับสัญญาหลักนี้',
+      'ตารางเบี้ยที่ประกาศมีเฉพาะแบบชำระรายปี ยังไม่พบตารางงวด 6 เดือน / 3 เดือน / รายเดือน ระบบจึงไม่คำนวณงวดอื่นให้',
+    ],
+    freqSupported: false,
+    rateTable: () => renderAgeTable(0, 85, [
+      {label:'ชาย 150,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',150000,'m',age,'annual'))},
+      {label:'หญิง 150,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',150000,'f',age,'annual'))},
+      {label:'ชาย 500,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',500000,'m',age,'annual'))},
+      {label:'หญิง 500,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',500000,'f',age,'annual'))},
+      {label:'ชาย 1,000,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',1000000,'m',age,'annual'))},
+      {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,85, age=>mainPremiumAtEntry('99_7',1000000,'f',age,'annual'))},
+    ]),
+    rateNote: 'เบี้ยรายปี คงที่ตามอายุ ณ วันทำสัญญา ตลอด 7 ปีที่ชำระ อัตราต่อทุน 1,000 บาทจะถูกลงเมื่อทุนสูงขึ้น จึงแยกตารางเป็น 3 ระดับทุน คัดลอกตรงจากตารางทางการ ไม่ได้คำนวณเอง',
   },
 
   main9999: {
@@ -4490,6 +4553,7 @@ const PAGE_ROUTES = {
 
 const PLAN_ROUTES = {
   main9920: '/plans/smart-protection-99-20',
+  main997: '/plans/smart-protection-99-7',
   main9999: '/plans/lifetime-protection-99-99',
   flexi9920: '/plans/flexi-protection-99-20',
   smartlink153: '/plans/smart-linked-15-3',
@@ -4726,6 +4790,16 @@ const LIFE_PRODUCTS = [
     tradeoff:'เบี้ยต่อปีสูงกว่าแบบ 99/99 ที่ทุนเท่ากัน เพราะอัดค่าเบี้ยทั้งหมดไว้ใน 20 ปี',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_20',cap,g,age,freq),
     calcPlanValue:'99_20',
+  },
+  {
+    id:'99_7', name:'เมืองไทย สมาร์ท โพรเทคชั่น 99/7', short:'99/7',
+    purposes:['family','legacy','tax'],
+    payYears:7, coverToAge:99, entryAgeMin:0, entryAgeMax:85,
+    capitalMin:150000, capitalMax:null, capitalStep:50000,
+    strength:'ชำระเบี้ยสั้นที่สุดในกลุ่มตลอดชีพ เพียง 7 ปี แล้วปิดภาระเบี้ยได้เลย และรับทำถึงอายุ 85 ปี กว้างกว่าแบบอื่น เหมาะกับคนที่มีกำลังจ่ายช่วงนี้หรือวางแผนมรดก',
+    tradeoff:'เบี้ยต่อปีสูงที่สุดในกลุ่ม เพราะอัดค่าเบี้ยทั้งชีวิตไว้ใน 7 ปี และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง กับสัญญาอุบัติเหตุด้วย ทำให้เบี้ยจริงสูงกว่าตัวเลขสัญญาหลักอย่างเดียว',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_7',cap,g,age,freq),
+    calcPlanValue:'99_7',
   },
   {
     id:'99_99', name:'เมืองไทย คุ้มครองตลอดชีพ 99/99', short:'99/99',
