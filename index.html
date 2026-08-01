@@ -3410,6 +3410,8 @@ function ageIndex(age){ return age - 11; }
 function rateAtStart(arr, age, start){
   // generic lookup for a table whose array index 0 corresponds to age `start`.
   // Returns null outside the table's published range instead of guessing.
+  // ถ้าไม่มีตารางนั้นอยู่จริง ให้คืน null แทนการโยน error จนทั้งหน้าพัง
+  if(!Array.isArray(arr)) return null;
   const i = age - start;
   if(i<0 || i>=arr.length) return null;
   const v = arr[i];
@@ -7428,17 +7430,45 @@ function advHasDeductibleOrCopay(items){
 }
 function advCloneItem(it){ return JSON.parse(JSON.stringify(it)); }
 
+/* ตรวจว่ารายการนี้มีอัตราเบี้ยจริงสำหรับเพศและอายุนี้ไหม
+   ใช้กันไม่ให้ระบบใส่สัญญาที่บริษัทไม่รับอายุนี้ลงในแพ็กเกจ
+   แล้วโชว์ยอดรวมที่ขาดตัวนั้นไปเงียบ ๆ ซึ่งเป็นตัวเลขที่เอาไปเสนอลูกค้าไม่ได้ */
+function advCanPrice(item, input){
+  try{ return typeof premiumOfItem(item, input.gender, input.age) === 'number'; }
+  catch(e){ return false; }
+}
+/* ตัวเลือกความรับผิดส่วนแรกที่มีจริงของแต่ละวงเงิน เรียงจากรับความเสี่ยงน้อยไปมาก */
+const ADV_DEDUCT_BY_SUM = {
+  '1m': ['d0','d20k','d50k'],
+  '5m': ['d0','d30k','d50k','d100k'],
+};
+/* เลือกความรับผิดส่วนแรกที่ใกล้เคียงที่ต้องการที่สุด และมีตารางเบี้ยจริงสำหรับอายุนี้ */
+function advPickDeduct(input, sum, wanted){
+  const list = ADV_DEDUCT_BY_SUM[sum] || ADV_DEDUCT_BY_SUM['5m'];
+  const order = [wanted].concat(list.filter(d => d !== wanted));
+  for(const d of order){
+    if(!list.includes(d)) continue;
+    if(advCanPrice({kind:'dhl', sum, mode:'deduct', deduct:d}, input)) return d;
+  }
+  return null;
+}
+
 /* ---------- สัญญาสุขภาพหลักของแต่ละ Anchor ---------- */
 function advDhlAnchor(input){
   const sum = input.ipdNeed === 'basic' ? '1m' : '5m';
-  if(input.riskChoice === 'copay10') return {kind:'dhl', sum, mode:'copay', copay:'9010'};
-  if(input.riskChoice === 'copay20') return {kind:'dhl', sum, mode:'copay', copay:'8020'};
+  if(input.riskChoice === 'copay10' || input.riskChoice === 'copay20'){
+    const copay = input.riskChoice === 'copay10' ? '9010' : '8020';
+    const it = {kind:'dhl', sum, mode:'copay', copay};
+    if(advCanPrice(it, input)) return it;
+    // อายุนี้ไม่มีตาราง Co-payment ให้ถอยไปใช้ส่วนแรกที่มีจริงแทน ห้ามคืนรายการที่ตีราคาไม่ได้
+  }
   const cov = input.groupCoverage || 0;
-  const byCov = cov >= 100000 ? 'd100k' : cov >= 50000 ? 'd50k' : 'd30k';
-  if(input.riskChoice === 'deduct') return {kind:'dhl', sum, mode:'deduct', deduct:byCov};
-  // auto: ใช้ Deductible ก็ต่อเมื่อมีสวัสดิการเดิมรับส่วนแรกให้จริง ไม่ใช่เพื่อกดเบี้ยลอย ๆ
-  if(input.riskChoice === 'auto' && cov >= 30000) return {kind:'dhl', sum, mode:'deduct', deduct:byCov};
-  return {kind:'dhl', sum, mode:'deduct', deduct:'d0'};
+  const wanted = cov >= 100000 ? 'd100k' : cov >= 50000 ? 'd50k' : 'd30k';
+  const useDeduct = input.riskChoice === 'deduct' || (input.riskChoice === 'auto' && cov >= 30000);
+  // 1m ไม่มีตาราง 30,000 และ 100,000 · เด็กอายุต่ำกว่า 11 ปีไม่มีตารางแบบไม่มีส่วนแรก
+  // จึงต้องเลือกจากที่มีจริงเสมอ ไม่ใช่ยัดค่าที่อยากได้แล้วปล่อยให้เบี้ยเป็นค่าว่าง
+  const pick = advPickDeduct(input, sum, useDeduct ? wanted : 'd0');
+  return {kind:'dhl', sum, mode:'deduct', deduct: pick || 'd0'};
 }
 function advHealthForTier(input, tierId){
   if(tierId === 'elite20') return [{kind:'ehp', plan:'20m'}];
@@ -7471,18 +7501,28 @@ function advCiItems(input, healthItems, opts){
 }
 
 /* ---------- OPD / PA ---------- */
-function advOpdItem(level, healthItems){
+function advOpdItem(level, healthItems, input){
   if(level === 'none') return null;
   // Elite 75/100 ล้าน มีวงเงินผู้ป่วยนอกในตัวแล้ว ไม่ต้องซื้อซ้ำ
   if(healthItems.some(h => h.kind === 'ehp' && h.plan !== '20m')) return null;
-  if(level === 'heavy') return {kind:'opd_mao', plan:100000};
-  if(level === 'moderate') return {kind:'opd_mao', plan:30000};
-  return {kind:'opd_krang', plan:1000};
+  const it = level === 'heavy' ? {kind:'opd_mao', plan:100000}
+    : level === 'moderate' ? {kind:'opd_mao', plan:30000}
+    : {kind:'opd_krang', plan:1000};
+  // ตาราง OPD เริ่มที่อายุ 6 ปี เด็กเล็กกว่านั้นซื้อไม่ได้
+  return (input && !advCanPrice(it, input)) ? null : it;
 }
 function advInitialPa(input){
   if(input.age > 85) return null;
-  if(input.age < 16) return '2';
-  return '1';
+  const plan = input.age < 16 ? '2' : '1';
+  return advCanPrice({kind:'pa', plan}, input) ? plan : null;
+}
+/* สัญญาหลักตัวแรกที่บริษัทรับอายุนี้จริง เช่น 99/20 รับถึงอายุ 70 อายุ 71 ขึ้นไปต้องใช้ 99/99 */
+function advFirstMainLevel(input){
+  for(let i = 0; i < ADV_MAIN_LEVELS.length; i++){
+    const m = ADV_MAIN_LEVELS[i];
+    if(advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, input)) return i;
+  }
+  return -1;   // ไม่มีสัญญาหลักที่รับอายุนี้เลย
 }
 
 /* ---------- สร้างและตีราคาแพ็กเกจจาก state ---------- */
@@ -7493,18 +7533,19 @@ function advInitState(input, healthItems, opts){
     ci: advCiItems(input, healthItems, opts).map(advCloneItem),
     opdLevel: input.opdNeed,
     paPlan: advInitialPa(input),
-    mainLevel: 0,
+    mainLevel: advFirstMainLevel(input),
     lockCarePlus: !!opts.forceCarePlus,
+    input,
   };
 }
 function advIsElite(state){ return state.healthItems.some(h => h.kind === 'ehp'); }
 function advItemsOf(state){
   const items = state.healthItems.map(advCloneItem);
   state.ci.forEach(c => items.push(advCloneItem(c)));
-  const opd = advOpdItem(state.opdLevel, state.healthItems);
+  const opd = advOpdItem(state.opdLevel, state.healthItems, state.input);
   if(opd) items.push(opd);
   const m = ADV_MAIN_LEVELS[state.mainLevel];
-  items.push({kind:'main', plan:m.plan, capital:m.capital});
+  if(m) items.push({kind:'main', plan:m.plan, capital:m.capital});
   if(state.paPlan) items.push({kind:'pa', plan:state.paPlan});
   return items;
 }
@@ -7529,9 +7570,14 @@ function advNextConcession(state){
     return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`;
   }
   // Elite: ห้ามลดทุนชีวิตลงมา เพราะจ่ายเบี้ยสุขภาพหลักแสนแต่คุ้มครองชีวิตห้าหมื่นไม่สมเหตุผล
-  if(!advIsElite(state) && state.mainLevel < ADV_MAIN_LEVELS.length - 1){
-    state.mainLevel += 1;
-    return `ลดสัญญาหลักเป็น ${ADV_MAIN_LEVELS[state.mainLevel].label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`;
+  if(!advIsElite(state) && state.mainLevel >= 0){
+    for(let i = state.mainLevel + 1; i < ADV_MAIN_LEVELS.length; i++){
+      const m = ADV_MAIN_LEVELS[i];
+      if(!state.input || advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) {
+        state.mainLevel = i;
+        return `ลดสัญญาหลักเป็น ${m.label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`;
+      }
+    }
   }
   if(state.paPlan){
     state.paPlan = null;
@@ -7560,11 +7606,16 @@ function advRunLadder(input, healthItems, opts){
 
 /* ---------- เลือก Anchor ---------- */
 function advFloorTier(input){
-  if(input.ipdNeed === 'elite75') return 'elite75';
-  if(input.ipdNeed === 'elite20') return 'elite20';
+  // ถ้าอายุนี้บริษัทไม่รับ Elite ให้ถอยลงมาที่ D Health Lite แทนการยืนยันเสนอแบบที่ตีราคาไม่ได้
+  if(input.ipdNeed === 'elite75' && advTierPriceable(input, 'elite75')) return 'elite75';
+  if(input.ipdNeed === 'elite20' && advTierPriceable(input, 'elite20')) return 'elite20';
   return 'dhl5';
 }
+function advTierPriceable(input, tierId){
+  return advHealthForTier(input, tierId).every(h => advCanPrice(h, input));
+}
 function advTierAllowed(input, tierId){
+  if(!advTierPriceable(input, tierId)) return false;   // ไม่มีตารางเบี้ยสำหรับอายุนี้ ห้ามเสนอ
   if(tierId === 'dhl5') return true;
   if(!(input.age >= 11 && input.age <= 90)) return false;
   if(ADV_TIER_RANK[tierId] <= ADV_TIER_RANK[advFloorTier(input)]) return true;
@@ -7644,9 +7695,36 @@ function advBuildRecommended(input){
     why.push('ไม่ซื้อสัญญา OPD เพิ่ม เพราะ Elite แผนนี้มีวงเงินผู้ป่วยนอกและกายภาพบำบัดอยู่ในตัวแล้ว');
   }
 
+  // แจ้งเมื่อระบบต้องเปลี่ยนของให้เพราะบริษัทไม่รับอายุนี้ ไม่ใช่เปลี่ยนเงียบ ๆ
+  if(h0.kind === 'dhl'){
+    const wantSum = input.ipdNeed === 'basic' ? '1m' : '5m';
+    if(input.ipdNeed === 'elite20' || input.ipdNeed === 'elite75'){
+      warnings.push(`ลูกค้าเลือกวงเงินระดับ Elite Health Plus แต่บริษัทไม่รับอายุ ${input.age} ปีสำหรับแบบนั้น ระบบจึงเสนอ D Health Lite แทน`);
+    }
+    if(input.riskChoice === 'none' && h0.deduct !== 'd0'){
+      warnings.push(`ลูกค้าแจ้งว่าไม่อยากมีความรับผิดส่วนแรก แต่ D Health Lite แบบไม่มีส่วนแรกเริ่มรับที่อายุ 11 ปี อายุ ${input.age} ปีจึงต้องมีส่วนแรก ${advDeductText(h0.deduct)} บาท ต้องแจ้งลูกค้าก่อนเสนอ`);
+    }else if(input.riskChoice === 'auto' && h0.deduct !== 'd0' && (input.groupCoverage || 0) < 30000){
+      why.push(`อายุ ${input.age} ปียังไม่มีตาราง D Health Lite แบบไม่มีความรับผิดส่วนแรก ระบบจึงใช้ส่วนแรก ${advDeductText(h0.deduct)} บาทซึ่งเป็นตัวเลือกต่ำสุดที่บริษัทรับ`);
+    }
+    if(wantSum === '1m' && (h0.deduct === 'd20k' || h0.deduct === 'd50k') && (input.groupCoverage || 0) >= 30000){
+      why.push(`วงเงิน 1 ล้านไม่มีตัวเลือกส่วนแรก 30,000 หรือ 100,000 บาท ระบบจึงจับที่ ${advDeductText(h0.deduct)} บาทซึ่งใกล้เคียงที่สุดที่มีจริง`);
+    }
+  }
+  if(state.opdLevel !== 'none' && input.opdNeed !== 'none' && !advOpdItem(state.opdLevel, state.healthItems, input)
+     && !advIsElite(state)){
+    warnings.push(`สัญญา OPD เริ่มรับที่อายุ 6 ปี อายุ ${input.age} ปีจึงยังซื้อไม่ได้ ระบบจึงไม่ใส่ให้`);
+  }
+  if(state.mainLevel < 0){
+    warnings.push(`ไม่มีสัญญาหลักในระบบที่รับอายุ ${input.age} ปี จึงยังแนบสัญญาเพิ่มเติมไม่ได้ ต้องตรวจกับ SmartWeb ก่อนเสนอ`);
+  }
+
   const m = ADV_MAIN_LEVELS[state.mainLevel];
-  if(m.plan === '99_20'){
+  if(!m){
+    // ไม่มีสัญญาหลักที่รับอายุนี้ ข้ามการอธิบายสัญญาหลักไป
+  }else if(m.plan === '99_20'){
     why.push('สัญญาหลักใช้ Smart Protection 99/20 ทุน 200,000 บาท เป็นค่าตั้งต้นปกติ ไม่กดลง 99/99 ทุน 50,000 ถ้าไม่จำเป็น เพราะทุนแบบนั้นควรใช้เฉพาะตอนต้องกดเบี้ยให้ต่ำที่สุดจริง ๆ');
+  }else if(advFirstMainLevel(input) === state.mainLevel && state.mainLevel > 0){
+    why.push(`สัญญาหลักใช้ ${m.label} เพราะ Smart Protection 99/20 รับสมัครถึงอายุ 70 ปี อายุ ${input.age} ปีจึงต้องใช้แบบ 99/99 แทน`);
   }else{
     why.push('ลดสัญญาหลักลงเพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง');
   }
@@ -7752,9 +7830,14 @@ function advEconomyConcession(state, input){
     state.paPlan = null;
     return 'ตัด PA อุบัติเหตุออก เบี้ยถูกก็จริง แต่ยังจำเป็นน้อยกว่าค่ารักษาก้อนใหญ่';
   }
-  if(!advIsElite(state) && state.mainLevel < ADV_MAIN_LEVELS.length - 1){
-    state.mainLevel += 1;
-    return `ลดสัญญาหลักเป็น ${ADV_MAIN_LEVELS[state.mainLevel].label} ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง`;
+  if(!advIsElite(state) && state.mainLevel >= 0){
+    for(let i = state.mainLevel + 1; i < ADV_MAIN_LEVELS.length; i++){
+      const m = ADV_MAIN_LEVELS[i];
+      if(!state.input || advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) {
+        state.mainLevel = i;
+        return `ลดสัญญาหลักเป็น ${m.label} ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง`;
+      }
+    }
   }
   const extraIdx = state.ci.findIndex(c => c.kind === 'cipc' || c.kind === 'dcare');
   if(extraIdx >= 0){
@@ -8085,9 +8168,12 @@ function renderAiPackageCard(pkg, idx, input){
     <div class="adv-badge-row">${badge}</div>
     <h3>${plannerEscapeHtml(pkg.name)}</h3>
     ${tagHtml}
-    <div class="premium">${fmt(pkg.premium)} บาท/ปีแรก</div>
+    ${(pkg.missing||[]).length
+      ? `<div class="premium" style="color:var(--danger);font-size:1.05rem;line-height:1.4;">ยังเสนอราคาชุดนี้ไม่ได้</div>
+         <p class="warn-inline">มีรายการที่ไม่มีตารางเบี้ยสำหรับอายุนี้ ${plannerEscapeHtml(pkg.missing.join(' , '))} · ยอดรวมจะขาดรายการเหล่านี้ไป จึงไม่แสดงตัวเลขเพื่อกันการนำไปเสนอลูกค้าผิด</p>`
+      : `<div class="premium">${fmt(pkg.premium)} บาท/ปีแรก</div>
     ${budgetLine}
-    ${vsMain}
+    ${vsMain}`}
     <ul>${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
     ${warnHtml}
     ${(pkg.why||[]).length?`<div class="ai-note">${pkg.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>`:''}
