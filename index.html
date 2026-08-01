@@ -1119,6 +1119,27 @@
     .reveal{opacity:1;transform:none;transition:none;}
     .content-card,.btn,.ai-plan-card{transition:none;}
   }
+  .plan-scroll{
+    max-height:300px; overflow-y:auto; overscroll-behavior:contain;
+    border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+    background:linear-gradient(#fff 30%, rgba(255,255,255,0)),
+               linear-gradient(rgba(255,255,255,0), #fff 70%) 0 100%,
+               radial-gradient(farthest-side at 50% 0, rgba(143,13,64,.10), transparent),
+               radial-gradient(farthest-side at 50% 100%, rgba(143,13,64,.10), transparent) 0 100%;
+    background-repeat:no-repeat; background-size:100% 26px,100% 26px,100% 10px,100% 10px;
+    background-attachment:local,local,scroll,scroll;
+  }
+  .plan-scroll::-webkit-scrollbar{width:8px;}
+  .plan-scroll::-webkit-scrollbar-thumb{background:#e8cfda;border-radius:8px;}
+  .plan-scroll::-webkit-scrollbar-thumb:hover{background:#d9b2c3;}
+  .plan-scroll .radio-group{margin:0;}
+  .plan-group-label{
+    width:100%; font-size:.7rem; font-weight:700; letter-spacing:.03em;
+    color:var(--muted); text-transform:none; margin:10px 0 2px; padding-top:8px;
+    border-top:1px dashed var(--line);
+  }
+  .plan-group-label:first-child{margin-top:0;padding-top:0;border-top:0;}
+  .plan-count{font-size:.72rem;font-weight:600;color:var(--muted);}
   .license-line{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6;}
   .foot-note{
     max-width:1440px;
@@ -1227,6 +1248,46 @@
   .adv-why-higher p{font-size:.78rem;line-height:1.65;margin:0 0 8px;color:#4a5568;}
   .adv-why-higher p:last-child{margin-bottom:0;}
   .adv-why-note{font-size:.72rem !important;color:#8a6a4b !important;border-top:1px dashed #e8cdb4;padding-top:8px;}
+  .ai-note-more{margin-top:8px;font-size:.74rem;font-weight:600;color:var(--pink);}
+  .btn-ghost{background:#fff !important;color:var(--pink) !important;border:1.5px solid var(--line) !important;}
+  .btn-ghost:hover{border-color:var(--pink) !important;background:var(--pink-soft) !important;}
+  body.pkg-modal-open{overflow:hidden;}
+  .pkg-modal{position:fixed;inset:0;z-index:120;display:none;}
+  .pkg-modal.is-open{display:block;}
+  .pkg-modal-backdrop{
+    position:absolute;inset:0;background:rgba(43,20,32,.55);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    animation:pkgFade .18s ease;
+  }
+  @keyframes pkgFade{from{opacity:0;}to{opacity:1;}}
+  .pkg-modal-box{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(760px,94vw);height:min(88vh,900px);
+    background:var(--panel);border-radius:20px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(43,20,32,.32);
+    animation:pkgRise .22s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes pkgRise{from{opacity:0;transform:translate(-50%,-46%) scale(.97);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+  .pkg-modal-close{
+    position:absolute;top:12px;right:14px;z-index:2;
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+    background:#fff;color:var(--ink);font-size:1.3rem;line-height:1;cursor:pointer;
+  }
+  .pkg-modal-close:hover{background:var(--pink-soft);border-color:var(--pink);}
+  .pkg-modal-body{height:100%;overflow-y:auto;padding:26px 26px 30px;}
+  .pkg-modal-title{margin:2px 44px 8px 0;font-size:1.18rem;line-height:1.4;color:var(--pink-deep);}
+  .pkg-modal-h{margin:20px 0 8px;font-size:.9rem;color:var(--ink);}
+  .pkg-modal-items{margin:0;padding-left:20px;font-size:.85rem;line-height:1.9;}
+  .pkg-modal-why{margin:0;padding-left:20px;font-size:.82rem;line-height:1.8;color:#4a5568;}
+  .pkg-modal-why li{margin-bottom:7px;}
+  @media (max-width:600px){
+    .pkg-modal-box{width:96vw;height:92vh;border-radius:16px;}
+    .pkg-modal-body{padding:22px 16px 26px;}
+    .pkg-modal-title{font-size:1.05rem;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .pkg-modal-backdrop,.pkg-modal-box{animation:none;}
+  }
   .adv-warn{
     margin-top:10px;padding:10px 12px;border-radius:12px;
     border:1px solid #f3b4b4;background:#fff7f7;color:#8c2f2f;
@@ -1510,16 +1571,20 @@
 
     <div class="card">
       <h2>สัญญาหลัก (ตลอดชีพ)</h2>
-      <label class="first">แผน</label>
+      <label class="first">แผน <span class="plan-count" id="mainPlanCount"></span></label>
+      <div class="plan-scroll">
       <div class="radio-group">
+        <div class="plan-group-label">ใช้บ่อยที่สุด</div>
         <label><input type="radio" name="mainPlan" value="99_20" checked> 99/20 (จ่าย 20 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากพ้นภาระเบี้ยเร็ว จ่ายหนักกว่าต่อปีแต่จ่ายแค่ 20 ปีจบ เหมาะกับคนมีกำลังจ่ายช่วงทำงาน แล้วอยากปลอดหนี้เบี้ยตอนใกล้เกษียณ</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_7"> 99/7 (จ่าย 7 ปี)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นเพียง 7 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว ทุนขั้นต่ำ 150,000 บาท และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ</span></span></label>
+        <div class="plan-group-label">แบบตลอดชีพและชั่วระยะเวลาอื่น</div>
         <label><input type="radio" name="mainPlan" value="80_10"> 80/10 (จ่าย 10 ปี คุ้มครองถึง 80)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี ตั้งแต่ปีกรมธรรม์ที่ 6 ทุนคุ้มครองเพิ่มเป็น 150% และอยู่ครบสัญญาที่อายุ 80 ปี รับเงินก้อน 150% ของทุนประกัน อายุ 20–59 ปี รวมสิทธิยกเว้นเบี้ยกรณีทุพพลภาพสิ้นเชิงถาวรมาให้แล้ว</span></span></label>
         <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="lifetime_protection"> เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">สัญญาหลักที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัว ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ตลอดสัญญา อายุรับ 1-65 ปี ทุนขั้นต่ำ 150,000 บาท ระยะเวลาที่ไม่คุ้มครองโรคร้ายแรง 90 วัน</span></span></label>
+        <div class="plan-group-label">เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ</div>
         <label><input type="radio" name="mainPlan" value="sabaijai_90_90"> วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)<span class="info-icon">i<span class="tooltip">ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 50-75 ปี ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท ชำระและคุ้มครองถึงอายุ 90 ปี ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% แนบได้เฉพาะอุบัติเหตุและชดเชยรายวันสำหรับผู้สูงอายุ</span></span></label>
         <label><input type="radio" name="mainPlan" value="sabaijai_99_10"> วัยเก๋า คุ้มได้ใจ 99/10 (เพื่อผู้สูงอายุ)<span class="info-icon">i<span class="tooltip">ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 50-80 ปี ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี ทุนคุ้มครองเพิ่มขึ้นตามปีกรมธรรม์จนถึง 150% ลดหย่อนภาษีได้เฉพาะส่วนความคุ้มครองชีวิต</span></span></label>
         <label><input type="radio" name="mainPlan" value="happy_return_99_7"> เมืองไทย แฮปปี้ รีเทิร์น 99/7<span class="info-icon">i<span class="tooltip">การันตีเงินคืนปีละ 1% ของทุน ตั้งแต่สิ้นปีกรมธรรม์ที่ 1 ถึงครบอายุ 98 ปี ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี อายุรับ 30 วัน – 70 ปี ทุนขั้นต่ำ 200,000 บาท</span></span></label>
@@ -1528,14 +1593,18 @@
         <label><input type="radio" name="mainPlan" value="easy_protection_5_5"> อีซี่ โพรเทคชั่น 5/5<span class="info-icon">i<span class="tooltip">คุ้มครอง 5 ปี ทุนสูงเบี้ยต่ำ อายุรับ 0 – 85 ปี ครบสัญญาไม่มีเงินคืน ลดหย่อนภาษีไม่ได้เพราะระยะเวลาต่ำกว่า 10 ปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="easy_protection_10_10"> อีซี่ โพรเทคชั่น 10/10<span class="info-icon">i<span class="tooltip">คุ้มครอง 10 ปี อายุรับ 0 – 80 ปี ลดหย่อนภาษีได้ ครบสัญญาไม่มีเงินคืน ถ้าแนบสัญญาเพิ่มเติมจะสิ้นสุดพร้อมกันเมื่อครบ 10 ปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="easy_protection_15_15"> อีซี่ โพรเทคชั่น 15/15<span class="info-icon">i<span class="tooltip">คุ้มครอง 15 ปี อายุรับ 0 – 75 ปี ลดหย่อนภาษีได้ แยกตารางอัตราตามระดับทุน ตั้งแต่ 1 ล้านบาทขึ้นไปอัตราถูกกว่าราว 15%</span></span></label>
+        <div class="plan-group-label">กลุ่มทุนสูง HNW และชำระครั้งเดียว</div>
         <label><input type="radio" name="mainPlan" value="premier_legacy_99_5"> พรีเมียร์ เลกาซี่ 99/5 (HNW)<span class="info-icon">i<span class="tooltip">กลุ่ม HNW ทุนขั้นต่ำ 10,000,000 บาท ชำระ 5 ปี คุ้มครองถึงอายุ 99 ปี อายุรับ 0 – 70 ปี เอกสารระบุตรงว่าไม่มีส่วนลดเบี้ยรายปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="premier_legacy_99_10"> พรีเมียร์ เลกาซี่ 99/10 (HNW)<span class="info-icon">i<span class="tooltip">กลุ่ม HNW ทุนขั้นต่ำ 10,000,000 บาท ชำระ 10 ปี คุ้มครองถึงอายุ 99 ปี อายุรับ 0 – 70 ปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="legacy_wealth_99_5"> เลกาซี่ เวลธ์ 99/5 (HNW ค่าเวนคืนคงที่)<span class="info-icon">i<span class="tooltip">คนละแบบกับพรีเมียร์ เลกาซี่ 99/5 ทุนขั้นต่ำ 10,000,000 บาท อายุรับถึง 75 ปี อัตราเบี้ยต่ำกว่าพรีเมียร์ เลกาซี่ คงที่ทุกช่องราว 6.3% และไม่มีอัตรา Preferred</span></span></label>
         <label><input type="radio" name="mainPlan" value="premier_legacy_99_1"> พรีเมียร์ เลกาซี่ 99/1 (ชำระครั้งเดียว)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียว คุ้มครองถึงอายุ 99 ปี มูลค่าเวนคืนคงที่ตลอดสัญญา อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 10,000,000 บาท แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ · อัตราตรวจไขว้ SmartWeb และเว็บตัวแทนตรงกันครบทุกค่า</span></span></label>
         <label><input type="radio" name="mainPlan" value="whole_life_99_1_cashback"> คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียวเท่ากับจำนวนเงินเอาประกันภัยพอดี คุ้มครองชีวิต 105% มีเงินคืนทุกปีถึงอายุ 99 ปี ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 30 วัน – 70 ปี ทุนขั้นต่ำ 1,000,000 บาท แนบสัญญาเพิ่มเติมไม่ได้ ต้องจองสิทธิ์การขายก่อน</span></span></label>
         <label><input type="radio" name="mainPlan" value="whole_life_99_1_nocash"> เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียว ไม่มีเงินคืนระหว่างสัญญา มูลค่าเวนคืนเพิ่มขึ้นตามปีกรมธรรม์ อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 10,000,000 บาท แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ · อัตราตรวจไขว้ SmartWeb และเว็บตัวแทนตรงกันครบทุกค่า รวมจุดที่ชายอายุ 30 ปี</span></span></label>
+        <div class="plan-group-label">บำนาญ</div>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
       </div>
+      </div>
+      <div class="hint">เลื่อนในกรอบด้านบนเพื่อดูแบบอื่น แบบที่ใช้บ่อยที่สุดอยู่บนสุด</div>
       <div id="pensionMainWrap" class="hidden" style="margin-top:10px;">
         <label class="first">เลือกแบบบำนาญ</label>
         <select id="pensionMainSelect" onchange="onPensionMainChange()"></select>
@@ -8416,14 +8485,96 @@ function renderAiPackageCard(pkg, idx, input){
     ${vsMain}`}
     <ul>${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
     ${warnHtml}
-    ${(pkg.why||[]).length?`<div class="ai-note">${pkg.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>`:''}
-    ${pkg.raisedSum ? whyHigherSumHtml(input.age) : ''}
-    ${advGapTableHtml(pkg.gapTable)}
+    ${(() => {
+      const why = pkg.why || [];
+      if(!why.length) return '';
+      const head = why.slice(0, 3);
+      const more = why.length - head.length;
+      return `<div class="ai-note">${head.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}` +
+        (more > 0 || pkg.raisedSum || (pkg.gapTable||[]).length
+          ? `<div class="ai-note-more">ยังมีเหตุผลและข้อควรระวังอีก${more>0?` ${more} ข้อ`:''}</div>` : '') +
+        `</div>`;
+    })()}
     ${(pkg.missing||[]).length?`<p class="warn-inline">ตารางเบี้ยบางรายการไม่ครบช่วงอายุ: ${pkg.missing.join(', ')}</p>`:''}
-    <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyAiPackage(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
+    <button class="btn btn-ghost" style="padding:9px;margin-top:12px;" onclick="openPkgModal(${idx})">ดูรายละเอียดเต็มของแผนนี้</button>
+    <button class="btn" style="padding:9px;margin-top:8px;" onclick="applyAiPackage(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
   </div>`;
 }
+/* ---------- หน้าต่างรายละเอียดแผนแบบเกือบเต็มจอ ----------
+   การ์ดบนหน้าเก็บแค่สามบรรทัดแรกพอให้กวาดตาเทียบกันได้
+   ใครอยากอ่านครบค่อยกดเปิดหน้าต่างนี้ จะได้ไม่ต้องเลื่อนยาวตอนเทียบหลายแผน */
+let PKG_MODAL_LAST_FOCUS = null;
+function pkgModalEl(){
+  let el = document.getElementById('pkgModal');
+  if(el) return el;
+  el = document.createElement('div');
+  el.id = 'pkgModal';
+  el.className = 'pkg-modal';
+  el.setAttribute('role','dialog');
+  el.setAttribute('aria-modal','true');
+  el.innerHTML = `<div class="pkg-modal-backdrop" onclick="closePkgModal()"></div>
+    <div class="pkg-modal-box" role="document">
+      <button class="pkg-modal-close" onclick="closePkgModal()" aria-label="ปิดหน้าต่าง">&times;</button>
+      <div class="pkg-modal-body" id="pkgModalBody"></div>
+    </div>`;
+  document.body.appendChild(el);
+  return el;
+}
+function openPkgModal(idx){
+  const pkg = (AI_PACKAGES || [])[idx];
+  if(!pkg) return;
+  const input = AI_LAST_INPUT || {};
+  const el = pkgModalEl();
+  const budgetVal = input.budget || 0;
+  const diff = budgetVal ? (pkg.premium - budgetVal) : null;
+  const badge = pkg.recommended ? '<span class="adv-badge adv-badge-main">ข้อเสนอหลัก</span>'
+    : pkg.tier === 'upgrade' ? '<span class="adv-badge adv-badge-up">ดีกว่า จ่ายเพิ่ม</span>'
+    : pkg.tier === 'economy' ? '<span class="adv-badge adv-badge-eco">ประหยัดกว่า</span>'
+    : '<span class="adv-badge adv-badge-alt">ทางเลือกสำรอง</span>';
+  const conflict = pkg.conflictsStated ? ' <span class="adv-badge adv-badge-conflict">ขัดกับที่ลูกค้าแจ้ง</span>' : '';
+  const tags = (pkg.diffTags||[]).length
+    ? `<div class="adv-diff-row">${pkg.diffTags.map(t=>`<span class="adv-diff">${plannerEscapeHtml(t)}</span>`).join('')}</div>` : '';
+  const budgetLine = diff === null ? ''
+    : diff <= 0 ? `<p class="meta" style="color:var(--ok);">อยู่ในงบ ต่ำกว่างบ ${fmt(Math.abs(diff))} บาท</p>`
+                : `<p class="meta" style="color:var(--danger);"><b>เกินงบ ${fmt(diff)} บาท</b></p>`;
+  const warnHtml = (pkg.warnings||[]).length
+    ? `<div class="adv-warn">${pkg.warnings.map(w=>`<div>• ${plannerEscapeHtml(w)}</div>`).join('')}</div>` : '';
+
+  document.getElementById('pkgModalBody').innerHTML = `
+    <div class="adv-badge-row">${badge}${conflict}</div>
+    <h3 class="pkg-modal-title">${plannerEscapeHtml(pkg.name)}</h3>
+    ${tags}
+    <div class="premium">${(pkg.missing||[]).length ? 'ยังเสนอราคาชุดนี้ไม่ได้' : fmt(pkg.premium)+' บาท/ปีแรก'}</div>
+    ${(pkg.missing||[]).length ? '' : budgetLine}
+    <h4 class="pkg-modal-h">รายการในแผนนี้</h4>
+    <ul class="pkg-modal-items">${pkg.items.map(it=>`<li>${packageLabelItem(it)} <span style="color:var(--muted);">(${fmt(it.premium)} บ./ปี)</span></li>`).join('')}</ul>
+    ${warnHtml}
+    ${(pkg.why||[]).length ? `<h4 class="pkg-modal-h">เหตุผลที่ระบบจัดแบบนี้</h4>
+      <ul class="pkg-modal-why">${pkg.why.map(w=>`<li>${plannerEscapeHtml(w)}</li>`).join('')}</ul>` : ''}
+    ${pkg.raisedSum ? whyHigherSumHtml(input.age || 40) : ''}
+    ${advGapTableHtml(pkg.gapTable)}
+    ${(pkg.missing||[]).length ? `<p class="warn-inline">ตารางเบี้ยบางรายการไม่ครบช่วงอายุ: ${pkg.missing.join(', ')}</p>` : ''}
+    <button class="btn" style="padding:11px;margin-top:16px;width:100%;" onclick="closePkgModal(); applyAiPackage(${idx});">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>`;
+
+  PKG_MODAL_LAST_FOCUS = document.activeElement;
+  el.classList.add('is-open');
+  document.body.classList.add('pkg-modal-open');
+  el.querySelector('.pkg-modal-body').scrollTop = 0;
+  const close = el.querySelector('.pkg-modal-close');
+  if(close) close.focus();
+}
+function closePkgModal(){
+  const el = document.getElementById('pkgModal');
+  if(!el) return;
+  el.classList.remove('is-open');
+  document.body.classList.remove('pkg-modal-open');
+  if(PKG_MODAL_LAST_FOCUS && PKG_MODAL_LAST_FOCUS.focus) PKG_MODAL_LAST_FOCUS.focus();
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closePkgModal(); });
+
+let AI_LAST_INPUT = null;
 function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, errorText=''){
+  AI_LAST_INPUT = input;
   AI_PACKAGES = result.packages;
   window.AI_PRIMARY_PREMIUM = result.primary ? result.primary.premium : 0;
   const genderText = input.gender==='m'?'ชาย':'หญิง';
