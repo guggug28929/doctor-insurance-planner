@@ -63,7 +63,7 @@ test("อินโฟกราฟิกสามก้อนต้องใช�
 
 test("หน้าแผนต้องมีปุ่มลิงก์ไปคู่มือ ข้างหัวข้อสัญญาเพิ่มเติมสุขภาพ", () => {
   assert.match(html, /id = 'guideLinkBtn'/);
-  assert.match(html, /วิธีเลือกประกันสุขภาพ →/);
+  assert.match(html, /วิธีเลือกประกันสุขภาพ<span class="bgl-arrow"/);
   assert.match(html, /t\.id === 'compareModeToggle' && !document\.getElementById\('guideLinkBtn'\)/);
 });
 
@@ -84,4 +84,23 @@ test("ก้อนทุนชั่วคราวต้องคุ้มค�
   assert.match(html, /function lifeCoverYears\(p, age\)/);
   assert.match(html, /const needYears = bucket === 'temporary'/);
   assert.match(html, /const enough = cands\.filter\(p => lifeCoverYears\(p, age\) >= needYears\)/);
+});
+
+test("ปุ่มลิงก์คู่มือต้องมีสไตล์จริง ไม่ใช่ปุ่ม default ของเบราว์เซอร์", () => {
+  // เคยพลาด: ใส่คลาส btn-outline ที่ไม่มีนิยามใน CSS ปุ่มเลยไม่มีสไตล์เลย
+  const classes = [...html.matchAll(/className = '([a-z0-9 -]*btn-guide-link[a-z0-9 -]*)'/g)].map((m) => m[1]);
+  assert.equal(classes.length, 1);
+  for (const c of classes[0].split(/\s+/)) {
+    assert.ok(new RegExp(`\\.${c}\\s*\\{`).test(html), `คลาส .${c} ต้องมีนิยามใน CSS`);
+  }
+  // ปุ่มคู่ต้องอยู่ในกล่องเดียวกัน จะได้สูงเท่ากันและตกบรรทัดพร้อมกัน
+  assert.match(html, /\.group-break-actions\s*\{/);
+  assert.match(html, /actions\.appendChild\(btn\)/);
+});
+
+test("ห้ามนิยาม group-break-with-action ซ้ำจนกฎตีกันเอง", () => {
+  const base = [...html.matchAll(/\.group-break-with-action\s*\{([^}]*)\}/g)].map((m) => m[1]);
+  const aligns = base.filter((b) => /align-items/.test(b));
+  // อนุญาตให้ override ได้เฉพาะใน media query เท่านั้น จึงต้องไม่เกินสองที่
+  assert.ok(aligns.length <= 2, `นิยาม align-items ซ้ำ ${aligns.length} ที่`);
 });
