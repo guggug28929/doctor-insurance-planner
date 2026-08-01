@@ -14,9 +14,30 @@ test("หน้าความรู้ต้องมีสองแท็บ �
   assert.match(html, /function setKnowTab\(tab\)/);
 });
 
-test("คู่มือต้องมีครบห้าหัวข้อ พร้อมสารบัญและตารางแมปแบบของเมืองไทย", () => {
+test("ชื่อหัวข้อต้องไม่ยัดชื่อบริษัท ให้ขายผ่านเนื้อหาแทน", () => {
+  // ชื่อหัวข้อควรเป็นความรู้กลาง ๆ คนอ่านไม่รู้สึกว่ากำลังโดนขาย
+  const titles = [...html.matchAll(/num:'\d', title:'([^']+)'/g)].map((m) => m[1]);
+  assert.equal(titles.length, 5);
+  for (const t of titles) {
+    assert.ok(!/เมืองไทย/.test(t), `ชื่อหัวข้อไม่ควรมีคำว่าเมืองไทย: ${t}`);
+  }
+  // แต่ชื่อแบบประกันยังต้องอยู่ในเนื้อหาและตาราง เพื่อให้ขายได้จริง
+  assert.match(html, /<th>แบบที่เรามีให้เลือก<\/th>/);
+});
+
+test("ต้องมีเรื่องเบี้ยคงที่แบบควบการลงทุน ซึ่งเป็นกับดักที่คนเข้าใจผิดบ่อย", () => {
+  assert.match(html, /title:'แปดเรื่องที่ต้องเคลียร์ก่อนเซ็นใบคำขอ'/);
+  assert.match(html, /คำว่าเบี้ยคงที่ ในแบบควบการลงทุน ไม่ได้แปลว่าจ่ายเท่านี้แล้วจบ/);
+  assert.match(html, /ค่าการประกันภัยที่ยังขึ้นตามอายุเหมือนเดิม/);
+  assert.match(html, /ให้ดูช่องที่จำลองผลตอบแทนต่ำด้วยเสมอ/);
+  // ต้องเสนอทางเลือกจัดการเบี้ยหลังเกษียณมากกว่าหนึ่งทาง ไม่ใช่เชียร์ทางเดียว
+  assert.match(html, /ถ้ากลัวเบี้ยหลังเกษียณ มีสามทางให้เลือก ไม่ใช่ทางเดียว/);
+});
+
+test("คู่มือต้องมีครบห้าหัวข้อ พร้อมสารบัญและตารางแมปแบบที่เรามี", () => {
   const ids = [...html.matchAll(/id:'(g-[a-z]+)'/g)].map((m) => m[1]);
   assert.deepEqual(ids, ["g-why", "g-bucket", "g-type", "g-trap", "g-pick"]);
+  assert.equal([...html.matchAll(/\{t:'/g)].length >= 8, true, "ควรมีแปดเรื่องที่ต้องเคลียร์");
   assert.match(html, /function healthGuideBucketsHtml\(\)/);
   assert.match(html, /function healthGuideTypeTableHtml\(\)/);
   assert.match(html, /function healthGuideMapHtml\(\)/);
