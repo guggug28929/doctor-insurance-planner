@@ -1,13 +1,44 @@
 {
   "rewrites": [
-    { "source": "/brochures/d-health-lite.pdf", "destination": "/api/brochure?file=d-health-lite.pdf" },
-    { "source": "/brochures/cancer.pdf", "destination": "/api/brochure?file=cancer.pdf" },
-    { "source": "/plans", "destination": "/index.html" },
-    { "source": "/plans/:path*", "destination": "/index.html" },
-    { "source": "/hnw", "destination": "/index.html" },
-    { "source": "/health-knowledge", "destination": "/index.html" },
-    { "source": "/calculator", "destination": "/index.html" },
-    { "source": "/plan-advisor", "destination": "/index.html" },
-    { "source": "/contact", "destination": "/index.html" }
+    {
+      "source": "/brochures/d-health-lite.pdf",
+      "destination": "/api/brochure?file=d-health-lite.pdf"
+    },
+    {
+      "source": "/brochures/cancer.pdf",
+      "destination": "/api/brochure?file=cancer.pdf"
+    },
+    {
+      "source": "/plans",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/plans/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/hnw",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/health-knowledge",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/calculator",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/plan-advisor",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/index.html"
+    }
   ]
 }
