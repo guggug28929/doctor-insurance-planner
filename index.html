@@ -5050,7 +5050,7 @@ function lifeMethodTable(a){
     ['หัก สินทรัพย์ + ทุนที่มีอยู่แล้ว', '− ' + fmt(a.offset) + ' บาท', 'ส่วนนี้ครอบครัวมีอยู่แล้ว ไม่ต้องซื้อซ้ำ'],
     ['ช่องว่างที่ต้องปิดด้วยประกันชีวิต', '<b>' + fmt(a.gap) + ' บาท</b>', a.gap > 0 ? 'คือทุนที่ควรเสนอ' : 'ทุนที่มีอยู่เพียงพอแล้ว'],
   ];
-  return renderBenefitTable(['รายการ','จำนวนเงิน','ที่มา'], rows);
+  return renderBenefitTable(['จำนวนเงิน','ที่มา'], rows);
 }
 
 function renderLifeAdvisorResult(){
