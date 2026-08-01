@@ -7286,12 +7286,26 @@ function lifeAdvisorAge(){
   if(!y) return 0;
   return (new Date().getFullYear() + 543) - y;
 }
+let lifeResultTimer = null;
 function setLifeField(key, val){
   const numKeys = ['birthYear','incomeAnnual','dependencyYears','selfSpendPct','debtOther',
                    'mortgage','children','eduPerChild','liquidAssets','existingCover','budget',
                    'finalExpenses','legacyWish'];
   lifeAdvisorState[key] = numKeys.includes(key) ? (parseFloat(val) || 0) : val;
-  renderLifeAdvisor();
+  // อัปเดตเฉพาะข้อความช่วยในฟอร์มที่ขึ้นกับค่าที่กรอก ไม่แตะตัวช่องกรอกเอง
+  lifeSyncFormHints();
+  // ผลลัพธ์คำนวณใหม่แบบหน่วงเล็กน้อย จะได้ไม่คิดใหม่ทุกตัวอักษรที่พิมพ์
+  clearTimeout(lifeResultTimer);
+  lifeResultTimer = setTimeout(renderLifeAdvisorResultOnly, 160);
+}
+/* ข้อความช่วยบางอันขึ้นกับอายุที่กรอก อัปเดตแค่ข้อความ ไม่สร้าง input ใหม่
+   เพราะการสร้างใหม่ทำให้เคอร์เซอร์หลุดทุกครั้งที่พิมพ์ตัวเลข */
+function lifeSyncFormHints(){
+  const age = lifeAdvisorAge();
+  const h1 = document.getElementById('lifeHintAge');
+  if(h1) h1.textContent = `อายุที่คำนวณได้ ${age} ปี`;
+  const h2 = document.getElementById('lifeHintDep');
+  if(h2) h2.textContent = `ใส่ 0 เพื่อให้ระบบใช้ค่าเริ่มต้น ${Math.max(5, LIFE_RETIRE_AGE - age)} ปี (นับถึงอายุ ${LIFE_RETIRE_AGE} ปี)`;
 }
 function lifeReadState(){
   return Object.assign({}, lifeAdvisorState, {age: lifeAdvisorAge(), gender: lifeAdvisorState.gender});
@@ -7335,7 +7349,7 @@ function renderLifeAdvisorForm(){
       <div>
         <label class="first">ปีเกิด (พ.ศ.)</label>
         <input type="number" value="${lifeAdvisorState.birthYear}" oninput="setLifeField('birthYear', this.value)">
-        <div class="hint">อายุที่คำนวณได้ ${age} ปี</div>
+        <div class="hint" id="lifeHintAge">อายุที่คำนวณได้ ${age} ปี</div>
       </div>
       <div>
         <label>วัตถุประสงค์หลัก</label>
@@ -7351,7 +7365,7 @@ function renderLifeAdvisorForm(){
       <div>
         <label>ครอบครัวต้องพึ่งรายได้นี้อีกกี่ปี</label>
         <input type="number" value="${lifeAdvisorState.dependencyYears}" min="0" step="1" oninput="setLifeField('dependencyYears', this.value)">
-        <div class="hint">ใส่ 0 เพื่อให้ระบบใช้ค่าเริ่มต้น ${defaultDep} ปี (นับถึงอายุ ${LIFE_RETIRE_AGE} ปี)</div>
+        <div class="hint" id="lifeHintDep">ใส่ 0 เพื่อให้ระบบใช้ค่าเริ่มต้น ${defaultDep} ปี (นับถึงอายุ ${LIFE_RETIRE_AGE} ปี)</div>
       </div>
       <div>
         <label>ค่าใช้จ่ายส่วนตัวของผู้เอาประกัน (% ของรายได้)</label>
@@ -7536,10 +7550,23 @@ function applyLifeOption(idx){
   renderAll();
 }
 
+/* ฟอร์มสร้างครั้งเดียว ผลลัพธ์สร้างใหม่ได้เรื่อย ๆ
+   ถ้าเอาสองอย่างมารวมกันแล้วเขียนทับทั้งก้อน ช่องกรอกจะถูกสร้างใหม่
+   ทำให้เคอร์เซอร์หลุดทุกครั้งที่พิมพ์ ซึ่งเป็นบัคที่ทำให้กรอกตัวเลขไม่ได้เลย */
 function renderLifeAdvisor(){
   const box = document.getElementById('advTab-life');
   if(!box) return;
-  box.innerHTML = renderLifeAdvisorForm() + renderLifeAdvisorResult();
+  if(!document.getElementById('lifeAdvForm')){
+    box.innerHTML = `<div id="lifeAdvForm">${renderLifeAdvisorForm()}</div><div id="lifeAdvResult"></div>`;
+  }
+  renderLifeAdvisorResultOnly();
+  lifeSyncFormHints();
+}
+function renderLifeAdvisorResultOnly(){
+  const out = document.getElementById('lifeAdvResult');
+  if(!out) return;
+  out.innerHTML = renderLifeAdvisorResult();
+  if(typeof dgApplyReveal === 'function') dgApplyReveal(out);
 }
 
 /* =========================================================================
