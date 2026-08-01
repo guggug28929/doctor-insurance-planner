@@ -1231,7 +1231,7 @@
   .faq-hero>p{margin:0 0 18px;color:#5f4a53;line-height:1.85;}
   .faq-search-wrap{position:relative;max-width:560px;}
   .faq-search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.5;font-size:.95rem;}
-  #faqSearch{width:100%;padding:12px 40px 12px 40px;border:1.5px solid #eab9cd;border-radius:999px;
+  #faqSearch{width:100%;padding:12px 42px 12px 44px;border:1.5px solid #eab9cd;border-radius:999px;
     font-family:inherit;font-size:.92rem;background:#fff;color:#3d2b33;}
   #faqSearch:focus{outline:none;border-color:var(--pink-deep);box-shadow:0 0 0 3px rgba(143,13,64,.1);}
   .faq-clear{display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);
@@ -3042,9 +3042,9 @@
       <h1>คำถามที่พบบ่อย เรื่องประกันสุขภาพ</h1>
       <p>รวมคำถามที่ลูกค้าถามผมบ่อยที่สุด ตั้งแต่ก่อนสมัครจนถึงตอนเคลม ตอบจากเงื่อนไขสัญญาจริงและจากสิ่งที่ผมเห็นในห้องตรวจ</p>
       <div class="faq-search-wrap">
-        <span class="faq-search-ico" aria-hidden="true">\u{1F50D}</span>
+        <span class="faq-search-ico" aria-hidden="true">🔍</span>
         <input id="faqSearch" type="search" placeholder="พิมพ์คำที่อยากรู้ เช่น แถลงสุขภาพ ระยะรอคอย copayment" oninput="renderFaq()" aria-label="ค้นหาคำถาม">
-        <button type="button" id="faqClear" class="faq-clear" onclick="faqClearSearch()" aria-label="ล้างคำค้น">\u2715</button>
+        <button type="button" id="faqClear" class="faq-clear" onclick="faqClearSearch()" aria-label="ล้างคำค้น">✕</button>
       </div>
     </div>
     <div id="faqChips" class="faq-chips"></div>
@@ -9518,7 +9518,7 @@ function faqCrossLinkHtml(){
   return `<div class="content-card hg-cross">
     <div class="hg-cross-t">อ่านจบแล้วยังมีคำถามค้างอยู่</div>
     <p>หน้านี้ตอบว่า “ควรเลือกแผนแบบไหน” ส่วนคำถามที่เจอตอนกรอกใบคำขอและตอนเคลมจริง รวมไว้อีกหน้าหนึ่ง</p>
-    <button class="btn" onclick="showPage('faq')">ไปที่คำถามที่พบบ่อย \u2192</button>
+    <button class="btn" onclick="showPage('faq')">ไปที่คำถามที่พบบ่อย →</button>
   </div>`;
 }
 function healthGuideMapHtml(){
@@ -10476,7 +10476,7 @@ function initCompareToggle(){
       g.className = 'btn-guide-link';
       g.type = 'button';
       // อ่านก่อนเทียบ จึงให้น้ำหนักเบากว่าปุ่มเปรียบเทียบ แต่สูงเท่ากัน
-      g.innerHTML = '<span class="bgl-ico" aria-hidden="true">\u{1F4D6}</span>วิธีเลือกประกันสุขภาพ<span class="bgl-arrow" aria-hidden="true">\u2192</span>';
+      g.innerHTML = '<span class="bgl-ico" aria-hidden="true">\u{1F4D6}</span>วิธีเลือกประกันสุขภาพ<span class="bgl-arrow" aria-hidden="true">→</span>';
       g.title = 'อ่านหลักการเลือกแผน ก่อนเทียบตัวเลข';
       g.onclick = () => { showPage('knowledge'); setKnowTab('guide'); };
       actions.appendChild(g);
