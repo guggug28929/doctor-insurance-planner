@@ -9491,11 +9491,12 @@ function renderFaq(){
       <span class="faq-chip-l">${g.label}</span><span class="faq-chip-n">${countIn(g.id)}</span></button>`)).join('');
 
   const groups = FAQ_GROUPS.filter(g => activeG === 'all' || g.id === activeG);
-  let html = '';
+  let html = '', found = 0;
   if(q) html += `<p class="faq-result">พบ ${hits.length} คำถามที่ตรงกับ “${q}”</p>`;
   for(const g of groups){
     const list = hits.filter(it => it.g === g.id);
     if(!list.length) continue;
+    found += list.length;
     html += `<section class="faq-sec">
       <div class="faq-sec-h"><span class="faq-sec-i" aria-hidden="true">${g.icon}</span>
         <div><div class="faq-sec-t">${g.label}</div><div class="faq-sec-d">${g.desc}</div></div></div>
@@ -9509,7 +9510,7 @@ function renderFaq(){
       </details>`).join('')}
     </section>`;
   }
-  if(!html) html = `<div class="content-card faq-empty">ไม่พบคำถามที่ตรงกับคำค้นนี้ ลองใช้คำสั้นลง เช่น แถลง เคลม ยกเว้น</div>`;
+  if(!found) html += `<div class="content-card faq-empty">ไม่พบคำถามที่ตรงกับคำค้นนี้ ลองใช้คำสั้นลง เช่น แถลง เคลม ยกเว้น copayment</div>`;
   box.innerHTML = html;
 }
 
