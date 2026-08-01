@@ -1183,6 +1183,7 @@
         <label><input type="radio" name="mainPlan" value="99_99"> 99/99 (จ่ายถึง 99 ปี)<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่อยากเริ่มต้นเบี้ยถูกกว่า และอยากทุ่มงบส่วนใหญ่ไปกับสัญญาสุขภาพ/โรคร้ายแรงเป็นหลัก มากกว่าตัวสัญญาหลัก</span></span></label>
         <label><input type="radio" name="mainPlan" value="99_7"> 99/7 (จ่าย 7 ปี)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นเพียง 7 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว ทุนขั้นต่ำ 150,000 บาท และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ</span></span></label>
         <label><input type="radio" name="mainPlan" value="80_10"> 80/10 (จ่าย 10 ปี คุ้มครองถึง 80)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี ตั้งแต่ปีกรมธรรม์ที่ 6 ทุนคุ้มครองเพิ่มเป็น 150% และอยู่ครบสัญญาที่อายุ 80 ปี รับเงินก้อน 150% ของทุนประกัน อายุ 20–59 ปี รวมสิทธิยกเว้นเบี้ยกรณีทุพพลภาพสิ้นเชิงถาวรมาให้แล้ว</span></span></label>
+        <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
@@ -2481,6 +2482,7 @@ function mainPlanDisplayName(plan, capital){
     const v = p.variants[currentPensionMain.vk];
     return v.label || p.shortName;
   }
+  if(plan === 'flexi_99_5') return 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5';
   if(plan === '80_10') return 'สมาร์ท โพรเทคชั่น 80/10';
   if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
@@ -2539,6 +2541,12 @@ function updateMainCapitalHint(){
     capitalInput.step = 1000;
     if(!product.capitals.includes(Number(capitalInput.value))) capitalInput.value = product.capitals[0];
     document.getElementById('mainCapitalHint').textContent = `${mainPlanDisplayName(plan)}: ชำระรายปีเท่านั้น • เลือกทุนได้ ${product.capitals.map(fmt).join(' / ')} บาท • ไม่สามารถแนบสัญญาเพิ่มเติมได้`;
+  } else if(plan === 'flexi_99_5'){
+    capitalInput.min = 500000;
+    capitalInput.step = 100000;
+    document.getElementById('mainCapitalHint').innerHTML =
+      'ทุนประกันขั้นต่ำแผน เฟล็กซี่ โพรเทคชั่น 99/5 คือ 500,000 บาท • ชำระเบี้ยเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี • '
+      + '<b>ส่วนลดตามระดับทุน:</b> ต่ำกว่า 2 ล้าน ไม่มีส่วนลด · ตั้งแต่ 2 ล้านถึงต่ำกว่า 5 ล้าน ลด 5 บาทต่อทุน 1,000 · ตั้งแต่ 5 ล้าน ลด 10 บาทต่อทุน 1,000';
   } else if(plan === '80_10'){
     capitalInput.min = 100000;
     capitalInput.step = 10000;
@@ -2624,6 +2632,29 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const band = product.bands.find(([from,to]) => entryAge >= from && entryAge <= to);
     const idx = product.capitals.indexOf(capital);
     return band && idx >= 0 ? band[idx+2] : null;
+  }
+  if(plan === 'flexi_99_5'){
+    // อัตราต่อทุน 1,000 บาท มีส่วนลดตามระดับทุนที่หัก "จากอัตรารายปี" ก่อน
+    // แล้วอัตรางวดอื่นจึงคิดจากอัตรารายปีหลังหักส่วนลด x ตัวคูณที่เอกสารกำหนด
+    // ตรวจแล้วว่าสูตรนี้สร้างคอลัมน์งวดที่พิมพ์ในตารางได้ตรงครบ 336 จาก 336 ช่อง
+    const g = RATES.flexi_protection_99_5;
+    if(!g) return null;
+    if(capital < (g.capital_min || 0)) return null;
+    const annual = rateAtStart(g.rates.annual[gender], entryAge, g.age_start ?? 0);
+    if(annual === null || annual === undefined) return null;
+    let disc = 0;
+    for(const band of (g.annual_discount_per_1000 || [])){
+      const hi = band.toExclusive == null ? Infinity : band.toExclusive;
+      if(capital >= band.from && capital < hi){ disc = band.discount; break; }
+    }
+    const net = annual - disc;
+    if(freq === 'annual') return net * capital / 1000;
+    const f = (g.instalment_factors || {})[freq];
+    if(f == null) return null;
+    const dp = freq === 'monthly' ? 3 : 2;
+    // ปัดขึ้นเมื่อตำแหน่งถัดไปตั้งแต่ 5 ตามที่เอกสารระบุ
+    const rate = Math.round((net * f + Number.EPSILON) * Math.pow(10, dp)) / Math.pow(10, dp);
+    return rate * capital / 1000;
   }
   if(plan === '80_10'){
     // อัตราต่อทุน 1,000 บาท ครบ 4 งวดชำระ และ PDF ระบุว่าไม่มีส่วนลดตามจำนวนเงินเอาประกันภัย
@@ -4060,6 +4091,33 @@ const PLAN_DETAILS = {
     rateNote: 'เบี้ยคงที่ตามอายุ ณ วันทำสัญญา (level premium) ไม่เปลี่ยนแปลงตลอด 20 ปีที่ชำระเบี้ย ทุนประกันอื่นคำนวณแบบเป็นสัดส่วนจากตารางนี้ ตารางงวดชำระอื่นแสดงถึงอายุ 70 ปีเท่านั้น (อายุรับประกันใหม่สูงสุดของแผนนี้)',
   },
 
+  flexi995: {
+    title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
+    overview: 'ประกันชีวิตตลอดชีพที่<b>ชำระเบี้ยสั้นที่สุดในระบบ เพียง 5 ปี</b> แต่คุ้มครองถึงอายุ 99 ปี เหมาะกับคนที่มีเงินก้อนช่วงนี้และอยากปิดภาระเบี้ยให้เร็วที่สุด จุดต่างจากตระกูลสมาร์ท โพรเทคชั่นคือ<b>มีส่วนลดเบี้ยตามระดับทุน</b> ยิ่งทำทุนสูงยิ่งได้อัตราถูกลง จึงเหมาะกับการวางแผนมรดกด้วยทุนก้อนใหญ่',
+    images: [],
+    coverage: [
+      'คุ้มครองชีวิตถึงอายุ 99 ปี โดยชำระเบี้ยเพียง 5 ปีแรก',
+      'อัตราเบี้ยคงที่ตามอายุ ณ วันทำสัญญา ไม่ปรับขึ้นตามอายุ',
+      'มีมูลค่าเวนคืนกรมธรรม์ กู้ยืมหรือเวนคืนได้ตามเงื่อนไข',
+    ],
+    conditions: [
+      'อายุรับประกัน 0 – 55 ปี',
+      'ทุนประกันขั้นต่ำ 500,000 บาท',
+      'ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี',
+      'เลือกงวดชำระได้ทั้ง รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน',
+      '<b>ส่วนลดอัตราเบี้ยรายปี ต่อทุน 1,000 บาท</b> — ทุน 500,000 ถึงต่ำกว่า 2,000,000 บาท: ไม่มีส่วนลด · ทุน 2,000,000 ถึงต่ำกว่า 5,000,000 บาท: ลด 5 บาท · ทุนตั้งแต่ 5,000,000 บาทขึ้นไป: ลด 10 บาท',
+      'ข้อมูลชุดนี้มาจากภาพตารางอัตราเบี้ยทางการ ยังไม่ได้ยืนยันซ้ำจากไฟล์ PDF ต้นฉบับ ผลประโยชน์และเงื่อนไขรับประกันบางส่วนจึงยังไม่ครบ ควรเช็กใบเสนอจริงก่อนปิดการขาย',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 55, [
+      {label:'ชาย 1,000,000บ.', arr: ageSeriesFromFn(0,55, age=>mainPremiumAtEntry('flexi_99_5',1000000,'m',age,freq))},
+      {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,55, age=>mainPremiumAtEntry('flexi_99_5',1000000,'f',age,freq))},
+      {label:'ชาย 5,000,000บ.', arr: ageSeriesFromFn(0,55, age=>mainPremiumAtEntry('flexi_99_5',5000000,'m',age,freq))},
+      {label:'หญิง 5,000,000บ.', arr: ageSeriesFromFn(0,55, age=>mainPremiumAtEntry('flexi_99_5',5000000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคอลัมน์ทุน 5,000,000 บาทได้หักส่วนลด 10 บาทต่อทุน 1,000 บาทแล้ว ส่วนคอลัมน์ทุน 1,000,000 บาทไม่มีส่วนลด อัตราคัดลอกตรงจากตารางทางการ ไม่ได้คำนวณเอง',
+  },
+
   main8010: {
     title: 'สมาร์ท โพรเทคชั่น 80/10', category: 'สัญญาหลัก (ประกันชีวิต คุ้มครองถึงอายุ 80 ปี)',
     overview: 'ชำระเบี้ยสั้น <b>10 ปี</b> คุ้มครองถึงอายุ 80 ปี จุดต่างจากแบบตลอดชีพคือ<b>ทุนคุ้มครองเพิ่มเป็น 150% ตั้งแต่ปีกรมธรรม์ที่ 6</b> และถ้าอยู่ครบสัญญาได้เงินก้อน 150% ของทุนประกันคืน เหมาะกับคนที่อยากได้ทั้งความคุ้มครองและเงินก้อนตอนอายุ 80 ปี แต่ต้องเข้าใจว่าคุ้มครองไม่ถึงตลอดชีพ',
@@ -4615,6 +4673,7 @@ const PLAN_ROUTES = {
   main9920: '/plans/smart-protection-99-20',
   main997: '/plans/smart-protection-99-7',
   main8010: '/plans/smart-protection-80-10',
+  flexi995: '/plans/flexi-protection-99-5',
   main9999: '/plans/lifetime-protection-99-99',
   flexi9920: '/plans/flexi-protection-99-20',
   smartlink153: '/plans/smart-linked-15-3',
@@ -4851,6 +4910,16 @@ const LIFE_PRODUCTS = [
     tradeoff:'เบี้ยต่อปีสูงกว่าแบบ 99/99 ที่ทุนเท่ากัน เพราะอัดค่าเบี้ยทั้งหมดไว้ใน 20 ปี',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_20',cap,g,age,freq),
     calcPlanValue:'99_20',
+  },
+  {
+    id:'flexi_99_5', name:'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5', short:'99/5',
+    purposes:['family','legacy','tax'],
+    payYears:5, coverToAge:99, entryAgeMin:0, entryAgeMax:55,
+    capitalMin:500000, capitalMax:null, capitalStep:100000,
+    strength:'ชำระเบี้ยสั้นที่สุดเพียง 5 ปี แล้วคุ้มครองยาวถึงอายุ 99 ปี และมีส่วนลดเบี้ยตามระดับทุน ทำทุนตั้งแต่ 2 ล้านลด 5 บาทต่อพัน ตั้งแต่ 5 ล้านลด 10 บาทต่อพัน จึงคุ้มขึ้นเรื่อย ๆ เมื่อทุนสูง เหมาะกับวางแผนมรดกด้วยเงินก้อน',
+    tradeoff:'เบี้ยต่อปีสูงที่สุดในกลุ่ม เพราะอัดค่าเบี้ยทั้งชีวิตไว้ใน 5 ปี และทุนขั้นต่ำ 500,000 บาท จึงไม่เหมาะกับลูกค้างบน้อย',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('flexi_99_5',cap,g,age,freq),
+    calcPlanValue:'flexi_99_5',
   },
   {
     id:'80_10', name:'เมืองไทย สมาร์ท โพรเทคชั่น 80/10', short:'80/10',
