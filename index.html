@@ -1743,6 +1743,41 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">สัญญาหลัก · HNW</div>
+      <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/5</h3>
+      <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li>มีอัตราเบี้ยพิเศษ Preferred สำหรับผู้ที่สุขภาพดีกว่ามาตรฐาน ถูกลงประมาณ 6% (อายุ 16–70 ปี)</li>
+        <li>ต้องมีสินทรัพย์ภายใต้การจัดการ (AUM) ตั้งแต่ 10 ล้านบาทขึ้นไป</li>
+        <li>เลือกไม่ตรวจสุขภาพได้ตามเกณฑ์ อายุ 16–55 ปี ทุนไม่เกิน 50 ล้านบาท</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('premierlegacy995')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาหลัก · HNW</div>
+      <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/10</h3>
+      <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li>เงื่อนไขเหมือน 99/5 ทุกอย่าง ต่างแค่กระจายภาระเบี้ยเป็น 10 ปี</li>
+        <li>เบี้ยต่อปีถูกกว่าแบบ 99/5 ประมาณ 9–32% แล้วแต่ช่วงอายุ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('premierlegacy9910')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาหลัก · HNW</div>
+      <h3>เมืองไทย เลกาซี่ เวลธ์ 99/5 <span class="badge-best">แบบค่าเวนคืนคงที่</span></h3>
+      <p class="meta">อายุรับ 30 วัน – 75 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li>แบบที่ใช้ในโครงการ พรีเมียร์ เลกาซี่ (แบบเงินค่าเวนคืนกรมธรรม์คงที่) คนละแบบกับ พรีเมียร์ เลกาซี่ 99/5</li>
+        <li>เบี้ยถูกกว่าแบบปกติประมาณ 6.3% ทุกช่วงอายุ โดยความคุ้มครองชีวิตเท่าเดิม แลกกับค่าเวนคืนแบบคงที่</li>
+        <li>รับทำถึงอายุ 75 ปี กว้างกว่าแบบปกติที่รับถึง 70 ปี แต่ไม่มีอัตรา Preferred</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('legacywealth995')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">สัญญาหลัก</div>
       <h3>คุ้มครองตลอดชีพ 99/99</h3>
       <p class="meta">อายุรับ 30 วัน – 90 ปี • ทุนเริ่มต้น 50,000 บาท • ชำระเบี้ยยาวถึงอายุ 99 ปี</p>
@@ -2643,6 +2678,27 @@ function currentBEYear(){
 }
 
 // ---- main premium (level for life, fixed at entry age; published age 0-70 for 99/20, 0-90 for 99/99) ----
+// แบบประกันกลุ่ม HNW ที่ใช้อัตราต่อทุน 1,000 บาท ไม่มีส่วนลดรายปี ทุนขั้นต่ำ 10 ล้านบาท
+const HNW_LEGACY_PLANS = {
+  premier_legacy_99_5: 'premier_legacy_99_5',
+  premier_legacy_99_10: 'premier_legacy_99_10',
+  legacy_wealth_99_5: 'legacy_wealth_99_5',
+};
+// อัตรา Preferred สำหรับผู้ที่สุขภาพดีกว่ามาตรฐาน มีเฉพาะ พรีเมียร์ เลกาซี่ อายุ 16-70 ปี
+// คืน null เมื่อไม่มีอัตราในตาราง ห้ามคำนวณหรือประมาณค่าเอง
+function hnwPreferredRate(plan, capital, gender, entryAge, freq){
+  const g = RATES[HNW_LEGACY_PLANS[plan]];
+  if(!g || !g.preferred_rates) return null;
+  if(capital < (g.capital_min || 0)) return null;
+  const annual = rateAtStart(g.preferred_rates.annual[gender], entryAge, g.age_start ?? 0);
+  if(annual === null || annual === undefined) return null;
+  if(freq === 'annual') return annual * capital / 1000;
+  const f = (g.instalment_factors || {})[freq];
+  if(f == null) return null;
+  const dp = freq === 'monthly' ? 3 : 2;
+  const rate = Math.round((annual * f + Number.EPSILON) * Math.pow(10, dp)) / Math.pow(10, dp);
+  return rate * capital / 1000;
+}
 function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
   freq = freq || 'annual';
   if(isPensionMainPlan(plan)){
@@ -2680,6 +2736,23 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const dp = freq === 'monthly' ? 3 : 2;
     // ปัดขึ้นเมื่อตำแหน่งถัดไปตั้งแต่ 5 ตามที่เอกสารระบุ
     const rate = Math.round((net * f + Number.EPSILON) * Math.pow(10, dp)) / Math.pow(10, dp);
+    return rate * capital / 1000;
+  }
+  if(HNW_LEGACY_PLANS[plan]){
+    // กลุ่ม HNW (พรีเมียร์ เลกาซี่ 99/5, 99/10 และ เลกาซี่ เวลธ์ 99/5)
+    // อัตราต่อทุน 1,000 บาท เป็นอัตรารายปี งวดอื่นได้จากอัตรารายปี x ตัวคูณที่หน้า SmartWeb ระบุ
+    // ทั้งสามแบบระบุตรงว่า "ส่วนลดอัตราเบี้ยประกันภัยรายปี : ไม่มี" จึงไม่มีขั้นบันไดส่วนลด
+    // คิดอัตรา Standard เสมอ ส่วนอัตรา Preferred ใช้ hnwPreferredRate() ในหน้าตารางเบี้ยเท่านั้น
+    const g = RATES[HNW_LEGACY_PLANS[plan]];
+    if(!g) return null;
+    if(capital < (g.capital_min || 0)) return null;
+    const annual = rateAtStart(g.rates.annual[gender], entryAge, g.age_start ?? 0);
+    if(annual === null || annual === undefined) return null;
+    if(freq === 'annual') return annual * capital / 1000;
+    const f = (g.instalment_factors || {})[freq];
+    if(f == null) return null;
+    const dp = freq === 'monthly' ? 3 : 2;
+    const rate = Math.round((annual * f + Number.EPSILON) * Math.pow(10, dp)) / Math.pow(10, dp);
     return rate * capital / 1000;
   }
   if(plan === '80_10'){
@@ -3976,6 +4049,7 @@ const PLAN_COVER_IMAGES = {
   main9920: {src:'/public/plan-covers/smart-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   main997: {src:'/public/plan-covers/smart-protection-99-7.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ สมาร์ท โพรเทคชั่น 99/7 เมืองไทยประกันชีวิต'},
   main9999: {src:'/public/plan-covers/lifetime-protection-9999.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
+  premierlegacy: {src:'/public/plan-covers/premierlegacy.png', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทย พรีเมียร์ เลกาซี่ เมืองไทยประกันชีวิต'},
   flexi9920: {src:'/public/plan-covers/flexi-protection-9920.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   smartlink153: {src:'/public/plan-covers/smart-linked-15-3.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
   smartlink156: {src:'/public/plan-covers/smart-linked-15-6.jpg', format:'portrait', caption:'ภาพจากข้อมูลผลิตภัณฑ์ เมืองไทยประกันชีวิต'},
@@ -4171,6 +4245,87 @@ const PLAN_DETAILS = {
       {label:'หญิง 1,000,000บ.', arr: ageSeriesFromFn(0,65, age=>mainPremiumAtEntry('80_10',1000000,'f',age,freq))},
     ]),
     rateNote: 'คัดลอกตรงจากเอกสารอัตราเบี้ยของบริษัท (ต่อทุน 1,000 บาท ฉบับ 01-10-62) ไม่ได้คำนวณเอง เบี้ยคงที่ตามอายุ ณ วันทำสัญญาตลอด 10 ปีที่ชำระ',
+  },
+
+  premierlegacy995: {
+    title: 'เมืองไทย พรีเมียร์ เลกาซี่ 99/5', category: 'สัญญาหลัก กลุ่ม HNW (ประกันชีวิตตลอดชีพ ทุนสูง)',
+    overview: 'ประกันชีวิตตลอดชีพสำหรับกลุ่มลูกค้าสินทรัพย์สูง (HNW) <b>ทุนขั้นต่ำ 10 ล้านบาท</b> ชำระเบี้ยเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี จุดต่างสำคัญจากแบบทั่วไปคือ<b>มีอัตราเบี้ยพิเศษ Preferred</b> สำหรับคนที่สุขภาพดีกว่ามาตรฐาน เช่น ไม่สูบบุหรี่และคอเลสเตอรอลไม่สูง ซึ่งถูกลงประมาณ 6% ใช้วางแผนส่งต่อมรดกเป็นหลัก',
+    images: [PLAN_COVER_IMAGES.premierlegacy],
+    coverage: [
+      'เสียชีวิต รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือเงินค่าเวนคืนกรมธรรม์ในขณะนั้น หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+      'อยู่ครบสัญญาที่อายุ 99 ปี รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+      'หากเคยขอเปลี่ยนแปลงกรมธรรม์และรับเงินค่าเวนคืนบางส่วนไปแล้ว บริษัทจะหักส่วนนั้นออกจากผลประโยชน์ที่คิดเป็นร้อยละของเบี้ย',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>30 วัน – 70 ปี</b> (อัตรา Preferred ใช้ได้เฉพาะอายุ 16 – 70 ปี)',
+      '<b>จำนวนเงินเอาประกันภัยขั้นต่ำ 10,000,000 บาท</b>',
+      'ผู้เอาประกันภัยต้องมีสินทรัพย์ภายใต้การจัดการ (AUM) ตั้งแต่ 10 ล้านบาทขึ้นไป',
+      'ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี เลือกงวดชำระได้ทั้ง รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน',
+      '<b>ไม่มีส่วนลดอัตราเบี้ยประกันภัยรายปี</b> (หน้าข้อมูลผลิตภัณฑ์ระบุตรงว่าไม่มี)',
+      'เลือกไม่ตรวจสุขภาพได้ตามเกณฑ์ — อายุ 30 วัน – 15 ปี ทุนไม่เกิน 20 ล้านบาท และอายุ 16 – 55 ปี ทุนไม่เกิน 50 ล้านบาท',
+      'ซื้อได้มากกว่า 1 สัญญา แต่ทุนรวมทุกกรมธรรม์ในกลุ่ม HNW ต้องไม่เกินตารางหลักเกณฑ์ HNW ของบริษัท',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 70, [
+      {label:'ชาย มาตรฐาน', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('premier_legacy_99_5',10000000,'m',age,freq))},
+      {label:'หญิง มาตรฐาน', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('premier_legacy_99_5',10000000,'f',age,freq))},
+      {label:'ชาย Preferred', arr: ageSeriesFromFn(0,70, age=>hnwPreferredRate('premier_legacy_99_5',10000000,'m',age,freq))},
+      {label:'หญิง Preferred', arr: ageSeriesFromFn(0,70, age=>hnwPreferredRate('premier_legacy_99_5',10000000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 10,000,000 บาท ซึ่งเป็นทุนขั้นต่ำของแบบนี้ อัตราต่อทุน 1,000 บาทคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง คอลัมน์ Preferred เว้นว่างในช่วงอายุที่บริษัทไม่ประกาศอัตราไว้ ระบบไม่เติมค่าให้เอง',
+  },
+
+  premierlegacy9910: {
+    title: 'เมืองไทย พรีเมียร์ เลกาซี่ 99/10', category: 'สัญญาหลัก กลุ่ม HNW (ประกันชีวิตตลอดชีพ ทุนสูง)',
+    overview: 'แบบเดียวกับ พรีเมียร์ เลกาซี่ 99/5 ทุกประการ ต่างกันที่<b>ยืดระยะชำระเบี้ยเป็น 10 ปี</b> อัตราเบี้ยต่อปีจึงถูกลงประมาณ 9% ถึง 32% แล้วแต่ช่วงอายุ เหมาะกับคนที่อยากกระจายภาระเบี้ยออกไปแทนการอัดจบใน 5 ปี',
+    images: [PLAN_COVER_IMAGES.premierlegacy],
+    coverage: [
+      'เสียชีวิต รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือเงินค่าเวนคืนกรมธรรม์ในขณะนั้น หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+      'อยู่ครบสัญญาที่อายุ 99 ปี รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>30 วัน – 70 ปี</b> (อัตรา Preferred ใช้ได้เฉพาะอายุ 16 – 70 ปี)',
+      '<b>จำนวนเงินเอาประกันภัยขั้นต่ำ 10,000,000 บาท</b>',
+      'ผู้เอาประกันภัยต้องมีสินทรัพย์ภายใต้การจัดการ (AUM) ตั้งแต่ 10 ล้านบาทขึ้นไป',
+      'ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี เลือกงวดชำระได้ครบ 4 แบบ',
+      '<b>ไม่มีส่วนลดอัตราเบี้ยประกันภัยรายปี</b>',
+      '<b>รอตรวจซ้ำ</b> — อัตราช่วงอายุ 66 – 70 ปี ในตารางต้นทางขยับเป็นขั้นเท่า ๆ กันทั้ง 4 คอลัมน์ ระบบถอดมาตรงตามที่ประกาศ แต่ยังไม่มีแบบคู่ขนานให้ตรวจไขว้ ควรเช็กใบเสนอจริงก่อนปิดการขายในช่วงอายุนี้',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 70, [
+      {label:'ชาย มาตรฐาน', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('premier_legacy_99_10',10000000,'m',age,freq))},
+      {label:'หญิง มาตรฐาน', arr: ageSeriesFromFn(0,70, age=>mainPremiumAtEntry('premier_legacy_99_10',10000000,'f',age,freq))},
+      {label:'ชาย Preferred', arr: ageSeriesFromFn(0,70, age=>hnwPreferredRate('premier_legacy_99_10',10000000,'m',age,freq))},
+      {label:'หญิง Preferred', arr: ageSeriesFromFn(0,70, age=>hnwPreferredRate('premier_legacy_99_10',10000000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 10,000,000 บาท อัตราต่อทุน 1,000 บาทคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง',
+  },
+
+  legacywealth995: {
+    title: 'เมืองไทย เลกาซี่ เวลธ์ 99/5', category: 'สัญญาหลัก กลุ่ม HNW (แบบเงินค่าเวนคืนกรมธรรม์คงที่)',
+    overview: 'แบบประกันที่ใช้ในโครงการ <b>เมืองไทย พรีเมียร์ เลกาซี่ (แบบเงินค่าเวนคืนกรมธรรม์คงที่)</b> คนละแบบกับ พรีเมียร์ เลกาซี่ 99/5 ปกติ จุดขายคือ<b>เบี้ยถูกกว่าประมาณ 6.3% ทุกช่วงอายุ โดยความคุ้มครองชีวิตเท่าเดิม</b> แลกกับการที่เงินค่าเวนคืนกรมธรรม์เป็นแบบคงที่ และ<b>รับทำได้ถึงอายุ 75 ปี</b> ซึ่งกว้างกว่าแบบปกติที่รับถึง 70 ปี',
+    images: [PLAN_COVER_IMAGES.premierlegacy],
+    coverage: [
+      'เสียชีวิต รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือเงินค่าเวนคืนกรมธรรม์ในขณะนั้น หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+      'อยู่ครบสัญญาที่อายุ 99 ปี รับ <b>จำนวนเงินเอาประกันภัย ณ วันเริ่มสัญญา</b> หรือ <b>101% ของเบี้ยที่ชำระมาแล้ว</b> แล้วแต่จำนวนใดมากกว่า',
+      'ข้อความผลประโยชน์เขียนเหมือนแบบปกติทุกตัวอักษร ความต่างอยู่ที่<b>ตารางเงินค่าเวนคืนกรมธรรม์</b> ซึ่งไม่ได้แสดงในหน้าข้อมูลผลิตภัณฑ์ ต้องดูจากใบเสนอขายจริง',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>30 วัน – 75 ปี</b>',
+      '<b>จำนวนเงินเอาประกันภัยขั้นต่ำ 10,000,000 บาท</b>',
+      'ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี เลือกงวดชำระได้ทั้ง รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน',
+      'ตรวจสุขภาพตามหลักเกณฑ์การรับประกันกลุ่ม HNW',
+      '<b>ไม่มีอัตรา Preferred</b> ต่างจาก พรีเมียร์ เลกาซี่ 99/5 ที่มี',
+      '<b>ไม่มีส่วนลดอัตราเบี้ยประกันภัยรายปี</b>',
+      'ซื้อสัญญาเพิ่มเติมแนบท้ายได้ตามเงื่อนไขของสัญญาเพิ่มเติมนั้น รวมถึงสัญญายกเว้นเบี้ยประกันภัย (WP)',
+      'ซื้อได้มากกว่า 1 กรมธรรม์ แต่ทุนรวมกลุ่ม HNW ต้องไม่เกินตารางหลักเกณฑ์ HNW',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(0, 75, [
+      {label:'ชาย', arr: ageSeriesFromFn(0,75, age=>mainPremiumAtEntry('legacy_wealth_99_5',10000000,'m',age,freq))},
+      {label:'หญิง', arr: ageSeriesFromFn(0,75, age=>mainPremiumAtEntry('legacy_wealth_99_5',10000000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 10,000,000 บาท อัตราต่อทุน 1,000 บาทคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง ตรวจไขว้กับ พรีเมียร์ เลกาซี่ 99/5 แล้ว อัตราส่วนคงที่ 0.9365 ถึง 0.9371 ตลอดทุกอายุและทุกเพศ',
   },
 
   main997: {
@@ -4700,6 +4855,9 @@ const PLAN_ROUTES = {
   main997: '/plans/smart-protection-99-7',
   main8010: '/plans/smart-protection-80-10',
   flexi995: '/plans/flexi-protection-99-5',
+  premierlegacy995: '/plans/premier-legacy-99-5',
+  premierlegacy9910: '/plans/premier-legacy-99-10',
+  legacywealth995: '/plans/legacy-wealth-99-5',
   main9999: '/plans/lifetime-protection-99-99',
   flexi9920: '/plans/flexi-protection-99-20',
   smartlink153: '/plans/smart-linked-15-3',
