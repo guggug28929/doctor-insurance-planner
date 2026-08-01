@@ -1462,6 +1462,9 @@
         <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
+        <label><input type="radio" name="mainPlan" value="lifetime_protection"> เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">สัญญาหลักที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัว ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ตลอดสัญญา อายุรับ 1-65 ปี ทุนขั้นต่ำ 150,000 บาท ระยะเวลาที่ไม่คุ้มครองโรคร้ายแรง 90 วัน</span></span></label>
+        <label><input type="radio" name="mainPlan" value="sabaijai_90_90"> วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)<span class="info-icon">i<span class="tooltip">ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 50-75 ปี ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท ชำระและคุ้มครองถึงอายุ 90 ปี ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% แนบได้เฉพาะอุบัติเหตุและชดเชยรายวันสำหรับผู้สูงอายุ</span></span></label>
+        <label><input type="radio" name="mainPlan" value="sabaijai_99_10"> วัยเก๋า คุ้มได้ใจ 99/10 (เพื่อผู้สูงอายุ)<span class="info-icon">i<span class="tooltip">ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 50-80 ปี ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี ทุนคุ้มครองเพิ่มขึ้นตามปีกรมธรรม์จนถึง 150% ลดหย่อนภาษีได้เฉพาะส่วนความคุ้มครองชีวิต</span></span></label>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
       </div>
       <div id="pensionMainWrap" class="hidden" style="margin-top:10px;">
@@ -2640,6 +2643,10 @@
   <div class="content-card">
     <h2>3. เบี้ยคงที่ กับ เบี้ยขึ้นตามอายุ ตัดกันเมื่อไร</h2>
     <p style="color:var(--muted);margin-bottom:12px;">นี่คือคำถามที่ตอบยากที่สุดเวลาลูกค้าถามว่า "แบบไหนคุ้มกว่า" คำตอบขึ้นกับว่าลูกค้าตั้งใจถือยาวแค่ไหน ตารางนี้เทียบ<b>เบี้ยสะสมตั้งแต่ปีแรกจนถึงอายุนั้น</b> ระหว่าง ไลฟ์ไทม์ โพรเทคชั่น (จ่าย 20 ปีจบ เบี้ยคงที่) กับ CI Perfect Care (สัญญาเพิ่มเติม เบี้ยขึ้นทุกปี ต้องต่ออายุไปเรื่อย ๆ)</p>
+    <div class="ci-pick ci-warn" style="margin-bottom:14px;">
+      <h4>อ่านตัวเลขนี้ให้ถูก — เป็นการบวกเบี้ยดิบ ไม่ใช่ผลตอบแทน</h4>
+      <p>ตารางนี้บวกเบี้ยที่จ่ายจริงในแต่ละปีตรง ๆ <b>ไม่ได้คิดมูลค่าเงินตามเวลา ไม่ได้หักมูลค่าเวนคืน ไม่ได้คิดภาษีที่ลดหย่อนได้ และไม่ได้ปรับให้ผลประโยชน์ของสองแบบเท่ากัน</b> ซึ่งจริง ๆ ต่างกันมาก เช่น ไลฟ์ไทม์ มีผลประโยชน์เสียชีวิตและเงินครบอายุ 99 ปีในตัว ส่วนสัญญาเพิ่มเติมไม่มี · จุดตัดจึงเป็นเพียง<b>เครื่องช่วยตั้งคำถามว่าลูกค้าตั้งใจถือยาวแค่ไหน</b> ไม่ใช่ตัวเลข ROI และไม่ควรใช้สรุปว่าแบบไหนคุ้มกว่าโดยลำพัง</p>
+    </div>
     <div id="ciCrossoverOut"></div>
   </div>
 
@@ -3053,6 +3060,38 @@ document.getElementById('use_hb').addEventListener('change', function(){
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
+/* ---- สัญญาหลักที่มีข้อจำกัดเฉพาะตัว รวมกฎไว้ที่เดียวเพื่อไม่ให้กระจายไปทั่วไฟล์ ----
+   ridersLocked = แนบสัญญาเพิ่มเติมชุดปกติของเว็บนี้ไม่ได้
+   กลุ่มวัยเก๋าแนบได้เฉพาะอุบัติเหตุ สบายใจ และสุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ)
+   ซึ่งเป็นคนละตัวกับสัญญาเพิ่มเติมในแผงด้านล่าง จึงต้องล็อกแผงไว้ ไม่ให้คิดเบี้ยผิด */
+const SPECIAL_MAIN_PLANS = {
+  lifetime_protection: {
+    label:'เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20',
+    entryAgeMin:1, entryAgeMax:65, coverToAge:99, payYears:20,
+    capitalMin:150000, capitalStep:50000,
+    capitalMaxOf: age => (age <= 15 ? 3000000 : 5000000),
+    ridersLocked:false,
+    hint:'ไลฟ์ไทม์ โพรเทคชั่น: อายุรับ 1-65 ปี • ทุนขั้นต่ำ 150,000 บาท • ทุนรวมทุกกรมธรรม์ของแบบนี้ไม่เกิน 3,000,000 บาท (อายุ 1-15 ปี) หรือ 5,000,000 บาท (อายุ 16-65 ปี) • ชำระ 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ • รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัวแล้ว ระยะเวลาที่ไม่คุ้มครอง 90 วัน',
+  },
+  sabaijai_90_90: {
+    label:'วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)',
+    entryAgeMin:50, entryAgeMax:75, coverToAge:90, payYears:null,
+    capitalMin:100000, capitalStep:100000, capitalMaxOf: () => 600000,
+    ridersLocked:true,
+    freqAllowed:['annual','monthly'],
+    hint:'วัยเก๋า คุ้มสุขใจ 90/90: อายุรับ 50-75 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระและคุ้มครองถึงอายุ 90 ปี • ชำระได้เฉพาะรายปีและรายเดือน • ปีกรมธรรม์ที่ 1-2 เสียชีวิตจากการเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน',
+  },
+  sabaijai_99_10: {
+    label:'วัยเก๋า คุ้มได้ใจ 99/10 (เพื่อผู้สูงอายุ)',
+    entryAgeMin:50, entryAgeMax:80, coverToAge:99, payYears:10,
+    capitalMin:100000, capitalStep:100000, capitalMaxOf: () => 600000,
+    ridersLocked:true,
+    freqAllowed:['annual','monthly'],
+    hint:'วัยเก๋า คุ้มได้ใจ 99/10: อายุรับ 50-80 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี • ชำระได้เฉพาะรายปีและรายเดือน • ปีกรมธรรม์ที่ 1-2 เสียชีวิตจากการเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน',
+  },
+};
+function specialMainPlan(plan){ return SPECIAL_MAIN_PLANS[plan] || null; }
+function isSeniorMainPlan(plan){ return plan === 'sabaijai_90_90' || plan === 'sabaijai_99_10'; }
 
 /* ---------- สัญญาหลักแบบบำนาญ ---------- */
 let currentPensionMain = null;   // {pid, vk}
@@ -3097,6 +3136,7 @@ function mainPlanDisplayName(plan, capital){
     const v = p.variants[currentPensionMain.vk];
     return v.label || p.shortName;
   }
+  if(SPECIAL_MAIN_PLANS[plan]) return SPECIAL_MAIN_PLANS[plan].label;
   if(plan === 'flexi_99_5') return 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5';
   if(plan === '80_10') return 'สมาร์ท โพรเทคชั่น 80/10';
   if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
@@ -3110,15 +3150,29 @@ function mainPlanDisplayName(plan, capital){
 function applySavingsPlanLock(plan){
   const pensionWrap = document.getElementById('pensionMainWrap');
   if(pensionWrap) pensionWrap.classList.toggle('hidden', plan !== 'pension');
-  const locked = isSavingsMainPlan(plan) || (isPensionMainPlan(plan) && !pensionMainRidersAllowed());
+  const sp = specialMainPlan(plan);
+  const locked = isSavingsMainPlan(plan) || (isPensionMainPlan(plan) && !pensionMainRidersAllowed()) || !!(sp && sp.ridersLocked);
   const panel = document.getElementById('ridersPanel');
   const notice = document.getElementById('riderLockNotice');
   const frequency = document.getElementById('paymentFrequency');
   panel.classList.toggle('riders-locked', locked);
   notice.classList.toggle('show', locked);
-  frequency.disabled = locked;
+  if(notice){
+    notice.innerHTML = isSeniorMainPlan(plan)
+      ? '<strong>แบบวัยเก๋าแนบสัญญาเพิ่มเติมชุดนี้ไม่ได้</strong><br>บริษัทให้แนบได้เฉพาะ อุบัติเหตุส่วนบุคคล สบายใจ และ สุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ) ซึ่งเป็นคนละตัวกับสัญญาเพิ่มเติมในแผงนี้ ระบบจึงปิดไว้เพื่อไม่ให้คิดเบี้ยผิด ดูเบี้ยของสองตัวนั้นได้ในหน้ารายละเอียดแผน'
+      : '<strong>แผน 15/3 และ 15/6 แนบสัญญาเพิ่มเติมไม่ได้</strong><br>ระบบจึงปิดตัวเลือกสุขภาพ OPD โรคร้ายแรง อุบัติเหตุ และ HB ทั้งหมด และใช้ตารางเบี้ยรายปีเท่านั้น';
+  }
+  // แบบวัยเก๋าเปิดได้ทั้งรายปีและรายเดือน จึงไม่ล็อกช่องงวดเหมือนแบบออม
+  const freqLocked = locked && !isSeniorMainPlan(plan);
+  frequency.disabled = freqLocked;
+  if(sp && sp.freqAllowed){
+    [...frequency.options].forEach(o => { o.disabled = !sp.freqAllowed.includes(o.value); });
+    if(!sp.freqAllowed.includes(frequency.value)) frequency.value = 'annual';
+  } else {
+    [...frequency.options].forEach(o => { o.disabled = false; });
+  }
   if(locked){
-    frequency.value = 'annual';
+    if(freqLocked) frequency.value = 'annual';
     panel.querySelectorAll('input[type="checkbox"]').forEach(el => { el.checked = false; });
     panel.querySelectorAll('.sub-fields').forEach(el => el.classList.add('hidden'));
     document.getElementById('pa_plan').value = 'none';
@@ -3150,6 +3204,20 @@ function updateMainCapitalHint(){
       `แบบบำนาญ: ทุนประกันขั้นต่ำ ${fmt(p.sumAssuredMin)} บาท (ทุนนี้ใช้คำนวณทั้งเบี้ยและเงินบำนาญที่จะได้รับ)`;
     return;
   }
+  const sp2 = specialMainPlan(plan);
+  if(sp2){
+    const age = Number(document.getElementById('age')?.value) || 0;
+    const capMax = sp2.capitalMaxOf ? sp2.capitalMaxOf(age) : null;
+    capitalInput.min = sp2.capitalMin;
+    capitalInput.step = sp2.capitalStep;
+    if(capMax) capitalInput.max = capMax; else capitalInput.removeAttribute('max');
+    let v = Number(capitalInput.value);
+    if(v < sp2.capitalMin) capitalInput.value = sp2.capitalMin;
+    else if(capMax && v > capMax) capitalInput.value = capMax;
+    document.getElementById('mainCapitalHint').innerHTML = sp2.hint;
+    return;
+  }
+  capitalInput.removeAttribute('max');
   if(isSavingsMainPlan(plan)){
     const product = savingsMainData(plan);
     capitalInput.min = Math.min(...product.capitals);
@@ -3852,7 +3920,11 @@ function renderAll(){
   const rows = [];
   let cumulative = 0;
   const payTermMain = inp.mainPlan === '99_20' ? 20 : inp.mainPlan === '99_99' ? 99 : savingsMainData(inp.mainPlan).pay_years;
-  const endAge = isSavingsMainPlan(inp.mainPlan) ? Math.min(98, entryAge + savingsMainData(inp.mainPlan).coverage_years - 1) : 98;
+  // แบบวัยเก๋า 90/90 คุ้มครองถึงอายุ 90 ปีเท่านั้น ตารางจึงต้องหยุดตามสัญญาจริง ไม่ลากถึง 98
+  const spEnd = specialMainPlan(inp.mainPlan);
+  const endAge = isSavingsMainPlan(inp.mainPlan)
+    ? Math.min(98, entryAge + savingsMainData(inp.mainPlan).coverage_years - 1)
+    : (spEnd && spEnd.coverToAge ? Math.min(98, spEnd.coverToAge) : 98);
   for(let age = entryAge; age <= endAge; age++){
     const policyYear = age - entryAge + 1;
     const row = {age, policyYear, values:{}};
@@ -4746,7 +4818,7 @@ function renderCiAgeGuide(){
 
 function renderCiReduceGuide(){
   const items = [
-    ['ลดทุน ดีกว่ายกเลิกเสมอ', 'ถ้าเบี้ยเริ่มหนัก ให้ลดทุนก่อน อย่ายกเลิกทั้งสัญญา เพราะถ้ายกเลิกแล้วอยากกลับมาทำใหม่ ต้องแถลงสุขภาพใหม่ทั้งหมด และโรคที่ตรวจเจอระหว่างนั้นจะกลายเป็นโรคที่มีมาก่อนซึ่งไม่คุ้มครองตลอดไป การลดทุนยังคงคุ้มครองครบทุกโรคเหมือนเดิม แค่ได้เงินก้อนน้อยลง'],
+    ['ลดทุน เป็นทางเลือกที่ควรขอใบเสนอเปรียบเทียบก่อนตัดสินใจ', 'ถ้าเบี้ยเริ่มหนัก การลดทุนมักเป็นทางเลือกที่ควรพิจารณาคู่กับการยกเลิก เพราะการลดทุนยังคงคุ้มครองครบทุกโรคเหมือนเดิม เพียงได้เงินก้อนน้อยลง ขณะที่<b>การยกเลิกแล้วกลับมาทำใหม่ต้องแถลงสุขภาพใหม่ทั้งหมด</b> และโรคที่ตรวจเจอระหว่างนั้นจะกลายเป็นโรคที่มีมาก่อน ซึ่งอาจไม่ได้รับความคุ้มครอง <b>แต่แต่ละเคสมีเงื่อนไขต่างกัน</b> ทั้งเรื่องมูลค่าเวนคืนที่มีอยู่ ทุนขั้นต่ำของแบบนั้น และผลกระทบต่อสัญญาเพิ่มเติมที่แนบอยู่ จึงควร<b>ขอใบเสนอทั้งสองทางจากบริษัทมาเทียบกันก่อนตัดสินใจ</b> ไม่ควรสรุปแทนลูกค้าล่วงหน้า'],
     ['สัญญาณว่าถึงเวลาลดทุน', 'ภาระที่ทุนก้อนนี้ตั้งใจปิดหมดไปแล้ว เช่น หนี้บ้านหมด ลูกเรียนจบ หรือมีเงินเก็บพอเป็นค่ารักษาแล้ว ทุนโรคร้ายแรงมีไว้ทดแทนรายได้ที่หายไประหว่างรักษา ไม่ใช่ไว้จ่ายค่าหมอ ถ้ารายได้ที่ต้องทดแทนลดลง ทุนก็ควรลดตาม'],
     ['ถ้าจ่ายไหวแค่อย่างเดียว ให้เลือกประกันสุขภาพก่อน', 'ค่ารักษาโรคร้ายแรงเบิกจากประกันสุขภาพเหมาจ่ายได้โดยตรง ส่วนเงินก้อนโรคร้ายแรงเป็นเงินทดแทนรายได้และค่าใช้จ่ายที่เบิกไม่ได้ ถ้างบมีจำกัดจริง ๆ ให้วางประกันสุขภาพเป็นฐานก่อน แล้วค่อยเติมเงินก้อนโรคร้ายแรงเมื่อมีงบเพิ่ม'],
     ['เข้าใจคำว่าจ่ายทิ้งให้ตรง', 'สัญญาเพิ่มเติมโรคร้ายแรงเป็นแบบ<b>ไม่มีมูลค่าเวนคืน</b> ถ้าไม่เคลมก็ไม่ได้อะไรคืน ซึ่งเป็นเรื่องปกติของการซื้อความคุ้มครอง เหมือนประกันรถ ส่วนไลฟ์ไทม์ โพรเทคชั่น มีมูลค่าเวนคืนและจ่ายเมื่อเสียชีวิตหรืออยู่ครบอายุ 99 ปี จึงไม่สูญเปล่า แต่แลกมาด้วยเบี้ยที่แพงกว่าหลายเท่าตั้งแต่ปีแรก <b>ไม่มีแบบไหนดีกว่าโดยสมบูรณ์</b> ขึ้นกับว่าลูกค้าให้ค่ากับการได้เงินคืนแค่ไหน'],
@@ -6323,6 +6395,56 @@ const LIFE_PRODUCTS = [
     calcPlanValue:'99_99',
   },
   {
+    id:'lifetime_protection', name:'เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20', short:'ไลฟ์ไทม์',
+    bucket:'permanent', purposes:['family','legacy','tax','ci'],
+    payYears:20, coverToAge:99, entryAgeMin:1, entryAgeMax:65,
+    capitalMin:150000, capitalMax:5000000, capitalMaxOf: age => (age <= 15 ? 3000000 : 5000000), capitalStep:50000,
+    strength:'เป็นแบบเดียวในระบบที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในสัญญาหลัก และเบี้ยคงที่ตลอด 20 ปี ไม่ถูกปรับขึ้นตามอายุเหมือนสัญญาเพิ่มเติมโรคร้ายแรง ตรวจพบขั้นรุนแรงรับ 150% ของทุน',
+    tradeoff:'เบี้ยต่อปีสูงกว่าแบบตลอดชีพธรรมดามาก ที่ทุน 1 ล้าน ชายอายุ 35 ปี แพงกว่า 99/20 ประมาณ 59% และเมื่อเคลมโรคร้ายแรงขั้นรุนแรงแล้วสัญญาสิ้นสุดทันที ถ้าเริ่มทำที่ชายอายุ 55 ปีขึ้นไปหรือหญิง 63 ปีขึ้นไป เบี้ยรวม 20 ปีจะแพงกว่าผลประโยชน์สูงสุด 150% ของทุน',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('lifetime_protection',cap,g,age,freq),
+    calcPlanValue:'lifetime_protection',
+  },
+  {
+    id:'sabaijai_99_10', name:'วัยเก๋า คุ้มได้ใจ 99/10 (เพื่อผู้สูงอายุ)', short:'วัยเก๋า 99/10',
+    bucket:'permanent', purposes:['family','legacy','tax'],
+    payYears:10, coverToAge:99, entryAgeMin:50, entryAgeMax:80,
+    capitalMin:100000, capitalMax:600000, capitalStep:100000,
+    strength:'รับสมัครถึงอายุ 80 ปี โดยไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ จึงเป็นทางออกสำหรับลูกค้าสูงอายุที่ทำแบบทั่วไปไม่ผ่าน ชำระเบี้ย 10 ปีจบ และทุนคุ้มครองเพิ่มขึ้นตามปีกรมธรรม์จนถึง 150%',
+    tradeoff:'ปีกรมธรรม์ที่ 1-2 ถ้าเสียชีวิตจากการเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน ต้องอธิบายให้ชัด และทุนรวมทุกช่องทางไม่เกิน 600,000 บาท จึงใช้ปิดช่องว่างทุนก้อนใหญ่ไม่ได้ แนบสัญญาเพิ่มเติมชุดปกติก็ไม่ได้',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('sabaijai_99_10',cap,g,age,freq),
+    calcPlanValue:'sabaijai_99_10',
+  },
+  {
+    id:'sabaijai_90_90', name:'วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)', short:'วัยเก๋า 90/90',
+    bucket:'permanent', purposes:['family','legacy'],
+    payYears:null, coverToAge:90, entryAgeMin:50, entryAgeMax:75,
+    capitalMin:100000, capitalMax:600000, capitalStep:100000,
+    strength:'ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อยู่ครบอายุ 90 ปีรับเงินก้อน 100% ของทุน และอุบัติเหตุสาธารณะจ่าย 200%',
+    tradeoff:'ต้องจ่ายเบี้ยไปจนอายุ 90 ปี ไม่มีวันปลดภาระเบี้ย เบี้ยรวมตลอดสัญญาอยู่ที่ 1.8-2.3 เท่าของทุน ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% และไม่ได้ระบุสิทธิลดหย่อนภาษีไว้เหมือน 99/10',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('sabaijai_90_90',cap,g,age,freq),
+    calcPlanValue:'sabaijai_90_90',
+  },
+  {
+    id:'easy_protection_15_15', name:'อีซี่ โพรเทคชั่น 15/15 (แบบชั่วระยะเวลา)', short:'EP 15/15',
+    bucket:'temporary', purposes:['family','tax'],
+    payYears:15, coverToAge:null, coverYears:15, entryAgeMin:0, entryAgeMax:75,
+    capitalMin:50000, capitalMax:null, capitalStep:100000,
+    strength:'ได้ทุนคุ้มครองสูงมากด้วยเบี้ยต่ำ เพราะไม่สะสมมูลค่า จึงเหมาะกับการปิดภาระที่มีวันหมด เช่น หนี้บ้านหรือช่วงที่ลูกยังเรียนอยู่ และระยะ 15 ปีทำให้ลดหย่อนภาษีได้',
+    tradeoff:'ครบ 15 ปีความคุ้มครองจบ ไม่มีเงินคืน และถ้าใช้เป็นสัญญาหลักแนบสุขภาพไว้ สัญญาเพิ่มเติมจะสิ้นสุดตามไปด้วย จึงไม่ควรใช้เป็นฐานของความคุ้มครองสุขภาพระยะยาว',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('easy_protection_15_15',cap,g,age,freq),
+    calcPlanValue:null,
+  },
+  {
+    id:'easy_protection_10_10', name:'อีซี่ โพรเทคชั่น 10/10 (แบบชั่วระยะเวลา)', short:'EP 10/10',
+    bucket:'temporary', purposes:['family','tax'],
+    payYears:10, coverToAge:null, coverYears:10, entryAgeMin:0, entryAgeMax:80,
+    capitalMin:50000, capitalMax:null, capitalStep:100000,
+    strength:'ทุนสูงเบี้ยต่ำเหมือน 15/15 แต่ผูกภาระสั้นกว่า เหมาะกับหนี้ที่เหลืออีกราวสิบปี และยังลดหย่อนภาษีได้เพราะระยะเวลา 10 ปี',
+    tradeoff:'ครบ 10 ปีจบ ไม่มีเงินคืน ต้องวางแผนล่วงหน้าว่าเมื่อครบแล้วจะทำอย่างไรต่อ',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('easy_protection_10_10',cap,g,age,freq),
+    calcPlanValue:null,
+  },
+  {
     id:'15_3', name:'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)', short:'15/3',
     isSavings:true, purposes:['saving','tax'],
     payYears:3, coverToAge:null, coverYears:15, entryAgeMin:0, entryAgeMax:80,
@@ -6393,7 +6515,19 @@ function lifeNeedAnalysis(st){
 }
 
 /* ---------- ปัดทุนให้เป็นตัวเลขที่แบบประกันรับได้จริง ---------- */
-function lifeRoundCapital(product, want){
+/** เพดานทุนของแบบนั้น บางแบบเพดานขึ้นกับอายุ เช่น ไลฟ์ไทม์ เด็ก 3 ล้าน ผู้ใหญ่ 5 ล้าน */
+function lifeCapMax(product, age){
+  if(typeof product.capitalMaxOf === 'function'){
+    const v = product.capitalMaxOf(age);
+    if(v != null) return v;
+  }
+  return product.capitalMax || null;
+}
+/** ก้อนที่แบบนี้ใช้ปิด: permanent = ทุนถาวร | temporary = ทุนชั่วคราว | saving = แบบออม ไม่นับเป็นทุนปิดความเสี่ยง */
+function lifeBucket(product){
+  return product.bucket || (product.isSavings ? 'saving' : 'permanent');
+}
+function lifeRoundCapital(product, want, age){
   if(product.capitals && product.capitals.length){
     const fit = product.capitals.filter(c => c >= want);
     return fit.length ? fit[0] : product.capitals[product.capitals.length - 1];
@@ -6401,7 +6535,8 @@ function lifeRoundCapital(product, want){
   const step = product.capitalStep || 50000;
   let c = Math.ceil(want / step) * step;
   if(product.capitalMin && c < product.capitalMin) c = product.capitalMin;
-  if(product.capitalMax && c > product.capitalMax) c = product.capitalMax;
+  const max = lifeCapMax(product, age);
+  if(max && c > max) c = max;
   return c;
 }
 /** ทุนสูงสุดที่งบต่อปีนี้ซื้อไหว (ค้นแบบไบเซกชัน ใช้เฉพาะตารางเบี้ยจริง) */
@@ -6421,7 +6556,8 @@ function lifeCapitalForBudget(product, gender, age, budget, freq){
   let lo = min, hi = min;
   for(let i=0;i<40 && (product.premiumOf(hi + step*Math.pow(2,i), gender, age, freq) ?? Infinity) <= budget;i++){
     hi = hi + step*Math.pow(2,i);
-    if(product.capitalMax && hi >= product.capitalMax) return product.capitalMax;
+    const capMax = lifeCapMax(product, age);
+    if(capMax && hi >= capMax) return capMax;
   }
   hi = hi + step*64;
   while(hi - lo > step){
@@ -6430,6 +6566,10 @@ function lifeCapitalForBudget(product, gender, age, budget, freq){
     const pr = product.premiumOf(mid, gender, age, freq);
     if(pr != null && pr <= budget) lo = mid; else hi = mid;
   }
+  // ตัดที่เพดานทุนของแบบนั้นเสมอ เพราะฟังก์ชันเบี้ยของบางแบบยอมคำนวณทุนเกินเพดานให้
+  // ถ้าไม่ตัด ระบบจะเสนอทุนที่บริษัทไม่รับ เช่น ไลฟ์ไทม์ ที่เพดาน 5 ล้านบาท
+  const capMaxFinal = lifeCapMax(product, age);
+  if(capMaxFinal && lo > capMaxFinal) return capMaxFinal;
   return lo;
 }
 
@@ -6479,7 +6619,7 @@ function lifeBuildResult(st){
       warnings.push('แบบออมให้ทุนคุ้มครองเสียชีวิตต่ำมากเมื่อเทียบกับเบี้ยที่จ่าย ห้ามนำมานับเป็นทุนที่ใช้ปิดช่องว่างความเสี่ยงครอบครัว');
     } else {
       let want = gapClosed ? (p.capitalMin || 50000) : analysis.gap;
-      capital = lifeRoundCapital(p, want);
+      capital = lifeRoundCapital(p, want, age);
       premium = p.premiumOf(capital, gender, age, freq);
       if(budget && (premium == null || premium > budget)){
         const afford = lifeCapitalForBudget(p, gender, age, budget, freq);
@@ -6541,7 +6681,78 @@ const lifeAdvisorState = {
   incomeAnnual:600000, dependencyYears:0, selfSpendPct:30,
   debtOther:0, mortgage:0, children:0, eduPerChild:1000000,
   liquidAssets:0, existingCover:0, budget:0, freq:'annual',
+  finalExpenses:500000, legacyWish:0,
 };
+
+/* =========================================================================
+   โมเดลสองก้อน — ทุนถาวร กับ ทุนชั่วคราว
+   หลักคิด: ภาระบางอย่างมีวันหมด (หนี้ ค่าเล่าเรียน รายได้ที่ต้องทดแทนจนลูกโต)
+   บางอย่างไม่มีวันหมด (ค่าใช้จ่ายสุดท้าย เงินที่ตั้งใจส่งต่อ)
+   สองก้อนนี้ใช้เครื่องมือคนละแบบ ก้อนชั่วคราวใช้แบบชั่วระยะเวลาซึ่งเบี้ยถูกกว่ามาก
+   ก้อนถาวรต้องใช้แบบตลอดชีพเพราะต้องมีอยู่วันที่เสียชีวิตจริง ไม่ว่าจะอายุเท่าไร
+
+   กฎสำคัญ: ถ้างบไม่พอ ระบบจะ "ไม่" ย้ายทุนถาวรไปเป็นแบบชั่วระยะเวลาให้อัตโนมัติ
+   แต่จะคงยอดที่จำเป็นของแต่ละก้อนไว้ แล้วแสดงส่วนที่งบครอบคลุมกับส่วนที่ยังขาด
+   แยกกัน เพื่อให้ตัวแทนกับลูกค้าตัดสินใจ trade-off เอง
+   ========================================================================= */
+function lifeTwoBucket(st){
+  const a = lifeNeedAnalysis(st);
+  // ก้อนชั่วคราว: ภาระที่มีวันหมด
+  const tempGross = Math.round(a.incomeNeed + a.breakdown.D + a.breakdown.M + a.breakdown.E);
+  // ก้อนถาวร: ภาระที่ไม่มีวันหมด
+  const permGross = Math.round(Math.max(0, st.finalExpenses || 0) + Math.max(0, st.legacyWish || 0));
+
+  // หักสินทรัพย์และทุนเดิม โดยหักจากก้อนชั่วคราวก่อน เพราะเป็นภาระที่มาถึงเร็วกว่า
+  // ส่วนที่เหลือจึงไปหักก้อนถาวร วิธีนี้ทำให้ก้อนถาวรไม่ถูกกลบหายไปโดยไม่รู้ตัว
+  const offset = a.offset;
+  const offsetToTemp = Math.min(offset, tempGross);
+  const offsetToPerm = Math.min(offset - offsetToTemp, permGross);
+  const tempNeed = Math.max(0, tempGross - offsetToTemp);
+  const permNeed = Math.max(0, permGross - offsetToPerm);
+
+  return {
+    analysis: a,
+    permanent: {gross: permGross, offset: offsetToPerm, need: permNeed},
+    temporary: {gross: tempGross, offset: offsetToTemp, need: tempNeed},
+    offsetTotal: offset, totalNeed: permNeed + tempNeed,
+    yearsCovered: a.depYears,
+  };
+}
+
+/** เลือกแบบที่ดีที่สุดของก้อนหนึ่ง ตามทุนที่ต้องการและงบที่ให้มา
+ *  คืน null ถ้าไม่มีแบบไหนรับอายุนี้ · ไม่ตัดทุนลงเองถ้าไม่ได้ส่งงบมา */
+function lifeBucketPick(bucket, need, st, budgetForBucket){
+  const age = st.age, gender = st.gender, freq = st.freq || 'annual';
+  const cands = LIFE_PRODUCTS.filter(p =>
+    lifeBucket(p) === bucket && age >= p.entryAgeMin && age <= p.entryAgeMax);
+  const rows = [];
+  for(const p of cands){
+    const wantCap = lifeRoundCapital(p, Math.max(need, p.capitalMin || 0), age);
+    const wantPr = p.premiumOf(wantCap, gender, age, freq);
+    let capital = wantCap, premium = wantPr, short = 0;
+    if(budgetForBucket != null && (wantPr == null || wantPr > budgetForBucket)){
+      const afford = lifeCapitalForBudget(p, gender, age, budgetForBucket, freq);
+      if(afford == null){ capital = null; premium = null; }
+      else { capital = afford; premium = p.premiumOf(afford, gender, age, freq); }
+      short = capital == null ? need : Math.max(0, need - capital);
+    }
+    if(premium == null && wantPr == null) continue;
+    rows.push({
+      productId: p.id, name: p.name, short: p.short,
+      capital, premium: premium == null ? null : Math.round(premium),
+      fullCapital: wantCap, fullPremium: wantPr == null ? null : Math.round(wantPr),
+      shortfall: short, capMax: lifeCapMax(p, age),
+      strength: p.strength, tradeoff: p.tradeoff,
+    });
+  }
+  // เรียงตามเบี้ยต่อทุนหนึ่งล้าน ถูกที่สุดก่อน เพราะเป็นเกณฑ์ที่เทียบกันได้จริง
+  rows.sort((x,y) => {
+    const cx = x.fullPremium && x.fullCapital ? x.fullPremium / (x.fullCapital/1000000) : Infinity;
+    const cy = y.fullPremium && y.fullCapital ? y.fullPremium / (y.fullCapital/1000000) : Infinity;
+    return cx - cy;
+  });
+  return rows;
+}
 function lifeAdvisorAge(){
   const y = parseInt(lifeAdvisorState.birthYear,10) || 0;
   if(!y) return 0;
@@ -6549,7 +6760,8 @@ function lifeAdvisorAge(){
 }
 function setLifeField(key, val){
   const numKeys = ['birthYear','incomeAnnual','dependencyYears','selfSpendPct','debtOther',
-                   'mortgage','children','eduPerChild','liquidAssets','existingCover','budget'];
+                   'mortgage','children','eduPerChild','liquidAssets','existingCover','budget',
+                   'finalExpenses','legacyWish'];
   lifeAdvisorState[key] = numKeys.includes(key) ? (parseFloat(val) || 0) : val;
   renderLifeAdvisor();
 }
@@ -6625,9 +6837,78 @@ function renderLifeAdvisorForm(){
         <input type="number" value="${lifeAdvisorState.children}" min="0" max="10" step="1" oninput="setLifeField('children', this.value)">
       </div>
       ${lifeNumField('งบการศึกษาต่อลูก 1 คน (บาท)','eduPerChild','ค่าเริ่มต้น 1,000,000 บาท คือประมาณการจนจบปริญญาตรี ปรับได้ตามโรงเรียนที่ลูกค้าเล็งไว้')}
+      ${lifeNumField('ค่าใช้จ่ายสุดท้าย (บาท)','finalExpenses','ค่าจัดการงานศพและค่าใช้จ่ายเฉพาะหน้าของครอบครัว เป็นภาระที่เกิดแน่นอนไม่ว่าจะเสียชีวิตตอนอายุเท่าไร จึงนับเป็นทุนถาวร ค่าเริ่มต้น 500,000 บาท')}
+      ${lifeNumField('เงินที่ตั้งใจส่งต่อเป็นมรดก (บาท)','legacyWish','เงินก้อนที่อยากทิ้งไว้ให้ลูกหลานโดยเฉพาะ ไม่ใช่เงินทดแทนรายได้ ถ้าไม่มีความตั้งใจนี้ให้ใส่ 0')}
       ${lifeNumField('เงินออม/สินทรัพย์ที่ใช้ได้ทันที (บาท)','liquidAssets','เงินฝาก กองทุน หุ้น ที่ครอบครัวเอาออกมาใช้ได้จริง ไม่รวมบ้านที่อยู่อาศัย')}
       ${lifeNumField('ทุนประกันชีวิตที่มีอยู่แล้ว (บาท)','existingCover','รวมประกันกลุ่มของที่ทำงานและกรมธรรม์เดิมทุกฉบับ')}
     </div>
+  </div>`;
+}
+
+/* ---------- ส่วนแสดงผลโมเดลสองก้อน ---------- */
+function renderTwoBucketSection(st){
+  const tb = lifeTwoBucket(st);
+  const budget = st.budget || 0;
+  const freq = st.freq || 'annual';
+
+  // แบ่งงบตามสัดส่วนความต้องการของสองก้อน เป็นเพียงจุดตั้งต้นให้เห็นภาพ
+  // ไม่ได้แปลว่าต้องแบ่งแบบนี้ และไม่ได้ย้ายทุนข้ามก้อนให้เอง
+  const totalNeed = tb.totalNeed;
+  const permBudget = budget && totalNeed ? Math.round(budget * tb.permanent.need / totalNeed) : null;
+  const tempBudget = budget && totalNeed ? budget - permBudget : null;
+
+  const permRows = lifeBucketPick('permanent', tb.permanent.need, st, permBudget);
+  const tempRows = lifeBucketPick('temporary', tb.temporary.need, st, tempBudget);
+
+  function bucketCard(title, sub, data, rows, bucketBudget){
+    if(data.need <= 0){
+      return `<div class="ci-pick"><h4>${title}</h4><p>${sub}<br><b>ไม่ต้องซื้อเพิ่ม</b> — ความจำเป็นของก้อนนี้คือ ${fmt(data.gross)} บาท และถูกหักด้วยสินทรัพย์กับทุนเดิมที่มีอยู่แล้ว ${fmt(data.offset)} บาท จึงเหลือ 0</p></div>`;
+    }
+    const best = rows[0];
+    const covered = best && best.capital ? Math.min(best.capital, data.need) : 0;
+    const gap = Math.max(0, data.need - covered);
+    const list = rows.slice(0,3).map(r => `<tr>
+        <td>${r.name}</td>
+        <td style="text-align:right;">${r.fullCapital == null ? '-' : fmt(r.fullCapital)}</td>
+        <td style="text-align:right;">${r.fullPremium == null ? '<span class="meta">ไม่มีอัตราสำหรับอายุนี้</span>' : fmt(r.fullPremium)}</td>
+        <td style="text-align:right;">${r.capital == null ? '<span class="meta">งบไม่พอแม้ทุนต่ำสุด</span>' : fmt(r.capital)}</td>
+        <td style="text-align:right;">${r.premium == null ? '-' : fmt(r.premium)}</td>
+      </tr>`).join('');
+    return `<div class="ci-pick">
+      <h4>${title}</h4>
+      <p>${sub}</p>
+      <div class="stat-row" style="margin-top:10px;">
+        <div class="stat"><div class="k">ทุนที่ควรมี</div><div class="v">${fmt(data.need)} บาท</div></div>
+        <div class="stat"><div class="k">${bucketBudget == null ? 'ยังไม่ได้ใส่งบ' : 'งบที่จัดให้ก้อนนี้'}</div><div class="v">${bucketBudget == null ? '-' : fmt(bucketBudget) + ' บาท/ปี'}</div></div>
+        <div class="stat"><div class="k">งบครอบคลุมได้</div><div class="v">${bucketBudget == null ? '-' : fmt(covered) + ' บาท'}</div></div>
+        <div class="stat"><div class="k">ยังขาด</div><div class="v" style="${gap>0 && bucketBudget!=null ? 'color:#a5301f;' : ''}">${bucketBudget == null ? '-' : fmt(gap) + ' บาท'}</div></div>
+      </div>
+      ${rows.length ? `<div class="table-wrap" style="margin-top:10px;"><table><thead><tr>
+        <th>แบบประกัน</th><th style="text-align:right;">ทุนเต็มที่ควรมี</th><th style="text-align:right;">เบี้ยถ้าซื้อเต็ม</th>
+        <th style="text-align:right;">ทุนที่งบซื้อได้</th><th style="text-align:right;">เบี้ยตามงบ</th>
+      </tr></thead><tbody>${list}</tbody></table></div>`
+      : '<p class="meta" style="margin-top:8px;">ยังไม่มีแบบในระบบที่รับอายุนี้สำหรับก้อนนี้</p>'}
+    </div>`;
+  }
+
+  const warn = (budget && (tb.permanent.need > 0 || tb.temporary.need > 0)) ? `
+    <div class="ci-pick ci-warn">
+      <h4>งบไม่พอทั้งสองก้อน ต้องให้ลูกค้าเลือกเอง</h4>
+      <p>ระบบ<b>ไม่ย้ายทุนถาวรไปเป็นแบบชั่วระยะเวลาให้อัตโนมัติ</b> แม้งบจะไม่พอ เพราะสองก้อนนี้ทำหน้าที่คนละอย่าง ทุนถาวรต้องมีอยู่ในวันที่เสียชีวิตจริงไม่ว่าจะอายุเท่าไร ถ้าย้ายไปแบบชั่วระยะเวลาแล้วสัญญาครบก่อนเสียชีวิต ก้อนนั้นจะหายไปทั้งก้อน<br><br>
+      ตัวเลือกที่ควรวางให้ลูกค้าตัดสินใจคือ <b>1)</b> ลดทุนก้อนใดก้อนหนึ่งลงตามงบที่มี <b>2)</b> เพิ่มงบ <b>3)</b> ทยอยซื้อ โดยเริ่มจากก้อนที่ความเสี่ยงมาถึงก่อน แล้วเติมอีกก้อนเมื่อรายได้เพิ่ม — <b>ทั้งสามทางต้องให้ลูกค้ายืนยันเอง</b> ไม่ควรตัดสินใจแทน</p>
+    </div>` : '';
+
+  return `<div class="content-card">
+    <h2>แยกทุนเป็นสองก้อน ทุนถาวร กับ ทุนชั่วคราว</h2>
+    <p style="color:var(--muted);margin-bottom:14px;">ภาระของลูกค้าไม่ได้หมดอายุพร้อมกัน หนี้บ้านและค่าเล่าเรียนมีวันจบ แต่ค่าใช้จ่ายสุดท้ายกับเงินที่ตั้งใจส่งต่อไม่มีวันจบ สองก้อนนี้จึงควรใช้เครื่องมือคนละแบบ และ<b>ไม่ควรรวมเป็นตัวเลขเดียว</b> เพราะจะทำให้เลือกแบบประกันผิด</p>
+    ${bucketCard('ก้อนที่ 1 ทุนถาวร — ต้องมีอยู่วันที่เสียชีวิตจริง',
+      `รวมค่าใช้จ่ายสุดท้ายและเงินที่ตั้งใจส่งต่อ = ${fmt(tb.permanent.gross)} บาท หักสินทรัพย์และทุนเดิมส่วนที่เหลือจากก้อนชั่วคราว ${fmt(tb.permanent.offset)} บาท · ต้องใช้แบบตลอดชีพ เพราะไม่มีวันหมดอายุสัญญา`,
+      tb.permanent, permRows, permBudget)}
+    ${bucketCard('ก้อนที่ 2 ทุนชั่วคราว — มีวันหมด',
+      `รวมทดแทนรายได้ ${fmt(tb.analysis.incomeNeed)} บาท หนี้ ${fmt(tb.analysis.breakdown.D + tb.analysis.breakdown.M)} บาท และค่าเล่าเรียน ${fmt(tb.analysis.breakdown.E)} บาท = ${fmt(tb.temporary.gross)} บาท หักสินทรัพย์และทุนเดิม ${fmt(tb.temporary.offset)} บาท · ภาระนี้หมดในราว ${tb.yearsCovered} ปี จึงใช้แบบชั่วระยะเวลาซึ่งได้ทุนสูงด้วยเบี้ยต่ำกว่ามาก`,
+      tb.temporary, tempRows, tempBudget)}
+    ${warn}
+    <p class="meta" style="margin-top:10px;">การแบ่งงบระหว่างสองก้อนที่แสดงไว้เป็นเพียงจุดตั้งต้นตามสัดส่วนความจำเป็น ไม่ใช่คำแนะนำให้แบ่งแบบนี้ · เบี้ยทุกตัวคำนวณจากตารางอัตราจริงในระบบที่งวด${freq === 'annual' ? 'รายปี' : freq} ไม่ใช่การประมาณ</p>
   </div>`;
 }
 
@@ -6699,6 +6980,8 @@ function renderLifeAdvisorResult(){
     ${lifeMethodTable(a)}
     ${a.debtFloor > 0 ? `<div class="ai-note" style="margin-top:10px;">พื้นขั้นต่ำ: หนี้สินรวมทั้งหมด ${fmt(a.debtFloor)} บาท ต้องปิดให้ได้เป็นอย่างน้อย ไม่งั้นครอบครัวรับภาระต่อ</div>` : ''}
   </div>
+
+  ${renderTwoBucketSection(st)}
 
   <div class="content-card">
     <h2>แบบประกันที่เหมาะกับโจทย์นี้</h2>
