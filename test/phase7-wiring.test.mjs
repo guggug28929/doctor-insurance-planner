@@ -59,6 +59,8 @@ vm.runInContext(
     fn("function lifeRoundCapital("),
     fn("function lifeCapitalForBudget("),
     fn("function lifeTwoBucket("),
+    fn("function lifeDefaultDependencyYears("),
+    fn("function lifeCoverYears("),
     fn("function lifeBucketPick("),
   ].join("\n"),
   sandbox
