@@ -3873,6 +3873,19 @@ const PLAN_COVER_IMAGES = {
   pa: {src:'/public/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
 };
 
+// หน้าปกโบรชัวร์ของแบบประกันบำนาญ — คีย์ตรงกับ plan id ใน data/pension-plans.json
+// เพิ่มแบบใหม่: วางไฟล์ใน /public/plan-covers/ แล้วเพิ่มหนึ่งบรรทัดตรงนี้
+const PENSION_COVER_IMAGES = {
+  flexi_retire_90xx:  {src:'/public/plan-covers/pension-flexi-9055-9060-9065.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เฟล็กซี่ รีไทร์ 9055 / 9060 / 9065'},
+  flexi_retire_90_1:  {src:'/public/plan-covers/pension-flexi-90-1.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เฟล็กซี่ รีไทร์ 90/1 ดี 55, 60, 65'},
+  flexi_retire_90_5:  {src:'/public/plan-covers/pension-flexi-90-5.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ Flexi Retire 90/5'},
+  mt_8560_g15:        {src:'/public/plan-covers/pension-8560-g15.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เมืองไทย 8560 จี15'},
+  mt_8555_g20:        {src:'/public/plan-covers/pension-8555-g20.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เมืองไทย 8555 จี20'},
+  mt_8501:            {src:'/public/plan-covers/pension-8501.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เมืองไทย 8501 และ เมืองไทย 9901 (บำนาญแบบลดหย่อนได้)'},
+  mt_9901_d65:        {src:'/public/plan-covers/pension-9901-d65.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เมืองไทย 9901 ดี65'},
+  mt_happy_retire_60: {src:'/public/plan-covers/pension-happy-retire-60.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เมืองไทย แฮปปี้ รีไทร์ 60'},
+};
+
 // Brochure PDFs currently available under /public/brochures — only these plans
 // get a download button; plans without a published PDF here show nothing.
 const PLAN_BROCHURES = {
@@ -7153,6 +7166,7 @@ function buildPensionPlanDetails(){
       title: p.shortName,
       category: 'ประกันชีวิตแบบบำนาญ',
       overview: pensionOverview(pid),
+      images: PENSION_COVER_IMAGES[pid] ? [PENSION_COVER_IMAGES[pid]] : [],
       coverage,
       conditions,
       freqSupported: false,
