@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.vercel
+node_modules
+npm-debug.log*
+
+# เอกสารภายในของเมืองไทยประกันชีวิต ห้ามเผยแพร่ต่อสาธารณะ
+# ถ้า commit ขึ้นไป Vercel จะ serve ให้ดาวน์โหลดได้ที่ /HNW_criteria.pdf ทันที
+# สาระที่ตัวแทนต้องใช้ถูกถอดไว้ในแผ่นอ้างอิงหลัง Google Sign-In ที่ /agent.html แล้ว
+HNW_criteria.pdf
+*_criteria.pdf
+

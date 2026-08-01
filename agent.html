@@ -173,6 +173,26 @@ header.top{
   display:none;align-items:flex-end;justify-content:center;
 }
 #settings.show{display:flex;}
+#hnwref{
+  position:fixed;inset:0;z-index:61;background:rgba(20,14,18,.62);
+  display:none;align-items:flex-end;justify-content:center;
+}
+#hnwref.show{display:flex;}
+#hnwref .sheet{max-width:760px;}
+#hnwref h2{
+  background:linear-gradient(96deg,#8a6a33,#c8a35c 45%,#c76e97);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hnw-sec{border-top:1px solid var(--line);padding-top:13px;margin-top:15px;}
+.hnw-sec h3{font-size:14px;margin:0 0 8px;color:#8a6a33;}
+.hnw-sec ul{margin:6px 0 8px;padding-left:19px;font-size:13px;line-height:1.65;}
+.hnw-sec ul li{margin-bottom:4px;}
+.hnw-p{margin:10px 0 3px;font-size:13px;}
+.hnw-note{font-size:11.5px;line-height:1.6;color:var(--muted);margin:6px 0 0;}
+.hnw-tb{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0;}
+.hnw-tb th{background:#f3e9d6;color:#6b5124;padding:5px 6px;text-align:left;font-weight:600;border:1px solid #e6d7bd;}
+.hnw-tb td{padding:5px 6px;border:1px solid #eee3ee;vertical-align:top;line-height:1.45;}
+.hnw-tb tr:nth-child(even) td{background:#fbf7f9;}
 .sheet{
   background:var(--card);width:100%;max-width:520px;border-radius:18px 18px 0 0;
   padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;
@@ -225,7 +245,10 @@ header.top{
           ชุดข้อความตัวแทน
           <small id="whoami">—</small>
         </div>
-        <button class="icon-btn" onclick="openSettings()">ตั้งค่า</button>
+        <div style="display:flex;gap:8px;">
+          <button class="icon-btn" onclick="openHnwRef()">เกณฑ์ HNW</button>
+          <button class="icon-btn" onclick="openSettings()">ตั้งค่า</button>
+        </div>
       </div>
       <div class="search-row">
         <span class="mag">⌕</span>
@@ -240,6 +263,175 @@ header.top{
     <div class="footnote">
       ข้อความทั้งหมดเป็นแนวทางการสื่อสารกับลูกค้า<br>
       กรุณาตรวจทานให้ตรงกับเคสจริงก่อนส่งทุกครั้ง
+    </div>
+  </div>
+</div>
+
+<!-- ================= HNW REFERENCE (ตัวแทนเท่านั้น) =================
+     หลักเกณฑ์การรับประกันภัยกลุ่ม HNW ประกาศคำสั่งที่ 126/2566 (Update 03.07.69)
+     เอกสารต้นทางระบุว่าใช้ภายในบริษัทและห้ามแสดง/เผยแพร่แก่ลูกค้า
+     จึงวางไว้เฉพาะในหน้าตัวแทนที่ต้องล็อกอิน ไม่อยู่บนเว็บสาธารณะ  -->
+<div id="hnwref" onclick="if(event.target===this)closeHnwRef()">
+  <div class="sheet">
+    <h2>หลักเกณฑ์การรับประกัน HNW</h2>
+    <p class="sub">ประกาศคำสั่งที่ 126/2566 มีผล 25 ต.ค. 2566 · เอกสารอัปเดต 03.07.69 · <b>ใช้ภายในเท่านั้น ห้ามส่งต่อหรือแสดงให้ลูกค้า</b></p>
+
+    <div class="hnw-sec">
+      <h3>1. นิยาม HNW</h3>
+      <ul>
+        <li><b>Non-Private Bank</b> — ผู้ขอเอาประกันภัยต้องมี AUM ขั้นต่ำ 10 ล้านบาท</li>
+        <li><b>Private Bank</b> — ต้องมี AUM ขั้นต่ำ 50 ล้านบาท</li>
+      </ul>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>2. แบบประกันในกลุ่ม HNW (11 แบบ)</h3>
+      <p class="hnw-p"><b>HNW Savings</b></p>
+      <ul>
+        <li>เพื่อสะสมทรัพย์ 10/1 (มีเงินคืน 2.5%)</li>
+        <li>เพื่อสะสมทรัพย์ 15/1 (มีเงินคืน 2.75%)</li>
+        <li>เพื่อสะสมทรัพย์ 15/1 (มีเงินปันผล)</li>
+        <li>อีซี่ เซฟเวอร์ 15/1 (มีเงินปันผล)</li>
+      </ul>
+      <p class="hnw-p"><b>HNW Protection</b></p>
+      <ul>
+        <li>เพื่อคุ้มครองตลอดชีพ 99/1 (ไม่มีเงินคืน)</li>
+        <li>เมืองไทย พรีเมียร์ เลกาซี่ 99/1 (แบบเงินค่าเวนคืนกรมธรรม์คงที่)</li>
+        <li>เมืองไทย พรีเมียร์ เลกาซี่ 99/5</li>
+        <li>เมืองไทย เลกาซี่ เวลธ์ 99/5</li>
+        <li>เมืองไทย พรีเมียร์ เลกาซี่ 99/10</li>
+        <li>คุ้มครองตลอดชีพ 99/99 (พรีเมียร์)</li>
+        <li>โครงการ เมืองไทย สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)</li>
+      </ul>
+      <p class="hnw-note">ช่องทางตัวแทนขายได้ 4 แบบจากทั้งหมด 8 แบบตามสรุปหน้า 19 ของเอกสาร</p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>3. การนับทุนประกัน — นับคนละฐานกัน ระวังสลับ</h3>
+      <ul>
+        <li><b>นับเพื่อตรวจสุขภาพ</b> = ทุนใหม่ + ทุนกรมธรรม์เดิม <b>เฉพาะกลุ่ม HNW</b> ที่มีผลบังคับ <b>ภายใน 1 ปี</b> ทุกช่องทางการขาย</li>
+        <li><b>นับเพื่อขอเอกสารการเงิน</b> = ทุนใหม่ + ทุนเดิม <b>ORD + ILP + HNW</b> ที่มีผลบังคับ <b>ทั้งหมด</b> ทุกช่องทาง ทั้ง CP และ Non CP</li>
+        <li><b>นับเพื่อเช็คทุนสูงสุด</b> = ทุนของแบบในกลุ่ม HNW และ ILP ที่มีผลบังคับ ทุกช่องทาง</li>
+        <li>ทุนประกัน หมายถึงความคุ้มครองชีวิตของสัญญาหลัก และของสัญญาเพิ่มเติมที่มีความคุ้มครองชีวิต</li>
+        <li>แบบกลุ่ม HNW เป็นประเภท Non Credit Plan (NCP)</li>
+      </ul>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>4. เกณฑ์ตรวจสุขภาพ — อัตราปกติ (Standard)</h3>
+      <table class="hnw-tb">
+        <tr><th>ทุนประกัน (บาท)</th><th>0–5 ปี</th><th>6–15</th><th>16–40</th><th>41–50</th><th>51–55</th><th>56–75</th><th>76–80</th></tr>
+        <tr><td>10,000,000</td><td rowspan="2">Non Medical</td><td rowspan="2">Non Medical</td><td rowspan="3">Non Medical</td><td rowspan="3">Non Medical</td><td rowspan="3">Non Medical</td><td>Non Medical</td><td>MAQ*</td></tr>
+        <tr><td>10,000,001–20,000,000</td><td rowspan="4">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="3">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG, MAQ*</td></tr>
+        <tr><td>20,000,001–35,000,000</td><td colspan="2">HR or ME</td></tr>
+        <tr><td>35,000,001–50,000,000</td><td colspan="2" rowspan="2">HR or ME, APS</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td></tr>
+        <tr><td>50,000,001–60,000,000</td></tr>
+        <tr><td>60,000,001–75,000,000</td><td colspan="2" rowspan="4">พิจารณาเป็นรายบุคคล<br>โดยส่งบริษัทรับประกันภัยต่อ</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV, MU</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="2">ME, TMX or ECHO,<br>BP, HbA1c, TG,<br>BUN, HIV, MU, PSA</td><td rowspan="2">ME, TMX or ECHO,<br>BP, HbA1c, TG,<br>BUN, HIV, MU, PSA</td></tr>
+        <tr><td>75,000,001–200,000,000</td></tr>
+        <tr><td>200,000,001–500,000,000</td><td rowspan="2">ME, BP, HbA1c,<br>TG, BUN, HIV,<br>MU, ECG</td><td rowspan="2">ME, TMX, BP,<br>HbA1c, TG, BUN,<br>HIV, MU, PSA</td><td rowspan="2">ME, TMX, BP,<br>HbA1c, TG, BUN,<br>HIV, MU, PSA</td><td rowspan="2">ME, TMX or ECHO,<br>BP, HbA1c, TG,<br>BUN, HIV, MU, PSA</td><td rowspan="2">ME, TMX or ECHO,<br>BP, HbA1c, TG,<br>BUN, HIV, MU, PSA</td></tr>
+        <tr><td style="opacity:.5;">(ต่อ)</td></tr>
+      </table>
+      <p class="hnw-note">*MAQ = แบบสอบถามแพทย์ผู้ทำการตรวจ สำหรับอายุ 76 ปีขึ้นไป <b>เฉพาะโครงการ เมืองไทย สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)</b><br>
+      อายุ 30 วัน – 15 ปี บริษัทจะนำส่งเฉพาะราย (facultative acceptance) และอาจขอเอกสารเพิ่มเติม การรับประกันยังไม่ได้รับการยืนยันจนกว่าบริษัทรับประกันภัยต่อจะตอบกลับ<br>
+      ตารางนี้ถอดจากเอกสารต้นฉบับ ถ้าเคสอยู่ตรงรอยต่อของช่วงทุนหรือช่วงอายุ ให้ยืนยันกับ Agency Help Desk ก่อนนัดตรวจ</p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>5. เกณฑ์ตรวจสุขภาพ — อัตรา Preferred</h3>
+      <p class="hnw-p">ใช้ได้เฉพาะ <b>เมืองไทย พรีเมียร์ เลกาซี่ 99/5 และ 99/10</b> เท่านั้น และต้องยื่นแบบฟอร์มขอพิจารณา Preferred Rate</p>
+      <ul>
+        <li><b>อายุ 0–15 ปี : Not allow</b> — ไม่มีอัตรา Preferred</li>
+        <li>ทุน 10–50 ล้าน อายุ 16–55 : ME, BP, HbA1c, TG, BUN, HIV, MU, Urine Cotinine</li>
+        <li>ทุน 10–50 ล้าน อายุ 56–80 : เพิ่ม ECG</li>
+        <li>ทุน 50–75 ล้าน : อายุ 16–40 เพิ่ม ECG · อายุ 41 ขึ้นไปมี ECG + Urine Cotinine</li>
+        <li>ทุน 75–500 ล้าน อายุ 41–55 : ME, TMX, BP, HbA1c, TG, BUN, HIV, MU, PSA, Urine Cotinine</li>
+        <li>ทุน 75–500 ล้าน อายุ 56–80 : ME, TMX or ECHO, BP, HbA1c, TG, BUN, HIV, MU, PSA, Urine Cotinine</li>
+        <li>PSA ตรวจเฉพาะเพศชาย</li>
+      </ul>
+      <p class="hnw-note">จุดต่างสำคัญจาก Standard คือ Preferred <b>ต้องตรวจเสมอ ไม่มี Non Medical</b> และเพิ่ม Urine Cotinine ทุกกรณีเพื่อยืนยันว่าไม่สูบบุหรี่</p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>6. คำนิยามรายการตรวจ</h3>
+      <table class="hnw-tb">
+        <tr><td><b>ME</b></td><td>รายงานการตรวจทางการแพทย์ ตามแบบฟอร์มบริษัท</td></tr>
+        <tr><td><b>BP</b></td><td>Blood and Profile — CBC, FBS, Cholesterol, HDL-C, Creatinine, AST, ALT, ALP, HBsAg, HBeAg, Triglyceride, HbA1C, GGT</td></tr>
+        <tr><td><b>BUN</b></td><td>ปริมาณไนโตรเจนในเลือด</td></tr>
+        <tr><td><b>HbA1c</b></td><td>น้ำตาลสะสมในเลือด</td></tr>
+        <tr><td><b>TG</b></td><td>ไตรกลีเซอไรด์</td></tr>
+        <tr><td><b>MU</b></td><td>ตรวจปัสสาวะโดยละเอียด</td></tr>
+        <tr><td><b>HIV</b></td><td>ตรวจหาแอนติเจนของเชื้อ HIV</td></tr>
+        <tr><td><b>Urine Cotinine</b></td><td>สารโคตินินในปัสสาวะ (ยืนยันไม่สูบบุหรี่)</td></tr>
+        <tr><td><b>PSA</b></td><td>สารบ่งชี้มะเร็งต่อมลูกหมาก เพศชายเท่านั้น</td></tr>
+        <tr><td><b>ECG</b></td><td>คลื่นไฟฟ้าหัวใจขณะพัก</td></tr>
+        <tr><td><b>TMX</b></td><td>Treadmill — สมรรถภาพหัวใจขณะออกกำลังกาย</td></tr>
+        <tr><td><b>ECHO</b></td><td>ตรวจหัวใจด้วยคลื่นความถี่สูง</td></tr>
+        <tr><td><b>APS</b></td><td>ประวัติการรักษาจากสถานพยาบาล</td></tr>
+        <tr><td><b>HR</b></td><td>สมุดบันทึกสุขภาพผู้เยาว์ ตรวจครั้งล่าสุดต้องไม่เกิน 3 เดือนก่อนวันขอเอาประกัน ถ้าไม่ครบให้ส่ง APS แทน</td></tr>
+      </table>
+      <p class="hnw-note"><b>Mobile Check up</b> ใช้ได้เมื่อทุนรวมไม่เกิน 50 ล้านบาท · <b>ยกเว้น เพื่อคุ้มครองตลอดชีพ 99/1 (ไม่มีเงินคืน) ใช้ไม่ได้</b></p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>7. เอกสารทางการเงิน</h3>
+      <p class="hnw-p"><b>ทุนรวม 10–100 ล้าน</b> (Non Private Bank, AUM ขั้นต่ำ 10 ล้าน)</p>
+      <ul>
+        <li>แถลงรายได้ในใบคำขอให้ครบถ้วน</li>
+        <li>บวกเอกสาร <b>อย่างใดอย่างหนึ่ง</b> ที่ยืนยัน AUM 10 ล้าน — LAQ ตามแบบฟอร์มบริษัทลงนามโดยผู้ขอเอาประกัน / ใบรับรองฐานะการเงินจากธนาคาร (BRL) / เอกสารการเงินอื่น</li>
+        <li>เจ้าของกิจการ : Bank statement 6 เดือน หรือ งบดุลและงบกำไรขาดทุน 3 ปี หรือ หนังสือจดทะเบียนการค้าและผู้ถือหุ้น</li>
+        <li>บุคคลธรรมดา : Bank statement 6 เดือน หรือ หนังสือรับรองเงินเดือน หรือ สำเนาการเสียภาษีเงินได้ หรือ โฉนดที่ดิน / ตั๋วใช้เงิน / พันธบัตร / พอร์ตการลงทุน</li>
+      </ul>
+      <p class="hnw-p"><b>ทุนรวม 100–250 ล้าน</b></p>
+      <ul>
+        <li>แถลงรายได้ในใบคำขอ + <b>LAQ</b> + <b>BRL</b> แสดง AUM ตั้งแต่ <b>50 ล้านบาท</b> ขึ้นไป (บังคับครบทั้งสามอย่าง ไม่ใช่เลือกอย่างใดอย่างหนึ่ง)</li>
+      </ul>
+      <p class="hnw-p"><b>ทุนรวมตั้งแต่ 250 ล้านขึ้นไป</b></p>
+      <ul>
+        <li>แถลงรายได้ + LAQ + BRL แสดง AUM ตั้งแต่ <b>65 ล้านบาท</b> ขึ้นไป</li>
+        <li>บวกหลักฐานแสดงรายได้ย้อนหลัง 2 ปี เช่น แบบแสดงรายการภาษีเงินได้บุคคลธรรมดา 2 ปี หรือ งบการเงินของกิจการ 2 ปี พร้อมหลักฐานการถือหุ้น</li>
+      </ul>
+      <p class="hnw-note">
+        BRL ต้องระบุครบ : ชื่อผู้ถือบัญชี · สถานะบัญชี · ระยะเวลาที่เป็นลูกค้าธนาคาร · AUM ปัจจุบัน · Return on AUM (% เฉลี่ยต่อปี) · ลงนาม ระบุวันที่ และชื่อผู้จัดการธุรกิจสัมพันธ์<br>
+        ถ้า AUM ในใบรับรองไม่พอ ส่งหลักฐานรายได้และ/หรือสินทรัพย์เพิ่มได้<br>
+        <b>ผู้เยาว์ทุนเกิน 10 ล้าน</b> ต้องมี Insurance Questionnaire ลงนามโดยผู้ปกครอง และ LAQ ของผู้ปกครองด้วย<br>
+        จำนวนเงินเอาประกันภัยในตารางนี้ = ทุกกรมธรรม์ที่มีผลบังคับกับบริษัท · บริษัทสงวนสิทธิ์ขอเอกสารเพิ่ม · อัปเดต 20 มิ.ย. 2567
+      </p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>8. ทุนประกันสูงสุด</h3>
+      <table class="hnw-tb">
+        <tr><th>แบบประกัน</th><th>อายุ 30 วัน – 15 ปี</th><th>ตั้งแต่ 16 ปีขึ้นไป</th></tr>
+        <tr><td>สะสมทรัพย์ 10/1, 15/1 (2 แบบ), อีซี่ เซฟเวอร์ 15/1 <span class="hnw-note">(นับรวม 4 แบบนี้)</span></td><td>250 ล้าน</td><td><b>300 ล้าน</b></td></tr>
+        <tr><td>พรีเมียร์ เลกาซี่ 99/5 · 99/10</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td>คุ้มครองตลอดชีพ 99/99 (พรีเมียร์)</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td>เพื่อคุ้มครองตลอดชีพ 99/1 (ไม่มีเงินคืน)</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td>พรีเมียร์ เลกาซี่ 99/1 (ค่าเวนคืนคงที่)</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td>เลกาซี่ เวลธ์ 99/5</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td>สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)</td><td>250 ล้าน</td><td>500 ล้าน</td></tr>
+        <tr><td><b>ทุนรวมทุกแบบในกลุ่ม HNW ทุกช่องทาง</b></td><td><b>250 ล้าน</b></td><td><b>500 ล้าน</b></td></tr>
+      </table>
+      <p class="hnw-note">
+        เพดานนี้คือทุนประกันรวมกับจำนวนเงินเสี่ยงภัยสุทธิ โดยนับรวมแบบ ILP ด้วย<br>
+        <b>สังเกต</b> กลุ่มสะสมทรัพย์เพดาน 300 ล้าน ไม่ใช่ 500 ล้านเหมือนกลุ่มคุ้มครอง<br>
+        ผู้เยาว์อายุต่ำกว่า 16 ปี ผู้ปกครองโดยชอบธรรมต้องมีทุนประกันรวมมากกว่าหรือเท่ากับผู้ขอเอาประกันภัย
+      </p>
+    </div>
+
+    <div class="hnw-sec">
+      <h3>9. ขั้นตอนเช็คทุนรวมก่อนส่งงาน</h3>
+      <ul>
+        <li>โทร <b>Agent Call 02-290-2555</b> (Agency Help Desk) แจ้งชื่อ-นามสกุล และเลขบัตรประชาชนหรือเลขกรมธรรม์ของลูกค้า</li>
+        <li>ขอ 3 ตัวเลข : ทุนรวมเพื่อตรวจสุขภาพ (ย้อนหลัง 1 ปี) · ทุนรวมเพื่อขอเอกสารการเงิน (ทุกฉบับที่มีผลบังคับ) · ทุนสูงสุดกลุ่ม HNW</li>
+        <li><b>ข้อจำกัด</b> สอบถามได้เฉพาะลูกค้าที่เคยมีประกันชีวิตกับช่องทางตัวแทนมาก่อนเท่านั้น</li>
+        <li>อีกทางคือให้ลูกค้าเปิดดูเองใน <b>MTL Click</b> เมนูกรมธรรม์ แล้วเลือกดูความคุ้มครองทั้งหมด</li>
+        <li>กรณีลูกค้าเป็นนิติบุคคล/เจ้าของกิจการ เช็คงบการเงินย้อนหลัง 5 ปีได้เองที่ <b>datawarehouse.dbd.go.th</b> และขอคัดสำเนางบการเงินหรือหนังสือรับรองได้จากเว็บเดียวกัน</li>
+        <li>เตรียมเอกสารครบแล้วจึงส่งงานเข้า New Sales Tool</li>
+      </ul>
+    </div>
+
+    <div class="act-row">
+      <button class="btn" onclick="closeHnwRef()">ปิด</button>
     </div>
   </div>
 </div>
@@ -1099,6 +1291,9 @@ function closeSettings(){
   saveSettings(false);
   document.getElementById('settings').classList.remove('show');
 }
+// แผ่นอ้างอิงเกณฑ์ HNW สำหรับตัวแทน อยู่หลัง Google Sign-In เท่านั้น
+function openHnwRef(){ document.getElementById('hnwref').classList.add('show'); }
+function closeHnwRef(){ document.getElementById('hnwref').classList.remove('show'); }
 function collectSettings(){
   Object.keys(FIELD_MAP).forEach(id => {
     const el = document.getElementById(id);

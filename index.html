@@ -888,6 +888,18 @@
   .pension-card .pc-note{font-size:.68rem;color:var(--muted);line-height:1.35;}
   .pension-h4{margin:20px 0 8px;font-size:.95rem;}
   .pension-hint{font-size:.75rem;color:var(--muted);line-height:1.6;margin:8px 0;}
+  /* ปุ่มเลือกแผนแบบชิปในหน้าเปรียบเทียบบำนาญ — เดิมไม่มี CSS ทำให้ span ทั้งแถว
+     กลายเป็นข้อความติดกันที่ไม่รู้ว่ากดได้ และกดโดนยาก */
+  .opt-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .opt-grid .tog{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1.5px solid var(--line);
+    border-radius:999px;background:#fff;font-size:.82rem;font-weight:600;color:var(--ink);cursor:pointer;
+    line-height:1.25;transition:border-color .15s,background .15s,color .15s;user-select:none;}
+  .opt-grid .tog:hover{border-color:var(--pink);}
+  .opt-grid .tog .dot{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
+    flex:0 0 17px;border:1.5px solid var(--line);border-radius:50%;background:#fff;font-size:.62rem;
+    line-height:1;color:transparent;}
+  .opt-grid .tog.on{border-color:var(--pink);background:var(--pink-soft);color:var(--pink-deep);}
+  .opt-grid .tog.on .dot{border-color:var(--pink);background:var(--pink);color:#fff;}
   .pension-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;}
   .pension-table{border-collapse:collapse;width:100%;min-width:520px;font-size:.78rem;}
   .pension-table th{position:sticky;top:0;background:#7d1f3d;color:#fff;padding:8px 10px;text-align:right;white-space:nowrap;font-weight:600;z-index:1;}
@@ -1122,6 +1134,186 @@
   }
   .adv-gap-table th{background:#faf3f6;color:var(--pink-deep);font-weight:700;white-space:nowrap;}
   .adv-gap-table td:first-child{min-width:170px;}
+
+  /* ==================================================================
+     โหมด HNW — ธีมดำ-ทอง แต้มชมพู สำหรับลูกค้าสินทรัพย์สูง
+     เปิด/ปิดด้วยการเติมคลาส .hnw ที่ <body> เท่านั้น ไม่แตะโครงสร้าง HTML
+     ================================================================== */
+  /* แผนกลุ่ม HNW ย้ายไปอยู่เมนูของตัวเองแล้ว จึงไม่แสดงซ้ำในหน้าแผนประกันทั้งหมด */
+  .hnw-only{display:none !important;}
+
+  /* ปุ่มเมนู HNW ให้เด่นด้วยทองแม้อยู่ในธีมปกติ */
+  .navbar button.nav-hnw{
+    border-color:#e0c691 !important;
+    background:linear-gradient(100deg,rgba(184,134,59,.13),rgba(224,81,140,.10)) !important;
+    color:#8a6a33 !important;font-weight:700;
+  }
+  .navbar button.nav-hnw.active{
+    background:linear-gradient(100deg,#3a2b1c,#241722) !important;border-color:#d4af6a !important;color:#f0dcb0 !important;
+  }
+
+  /* หัวเรื่องและบล็อกเฉพาะของหน้า HNW */
+  .hnw-head{margin:6px 0 20px;}
+  .hnw-kicker{font-family:"Kanit",sans-serif;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+  .hnw-title{font-family:"Kanit",sans-serif;font-size:1.55rem;margin:0 0 8px;
+    background:linear-gradient(96deg,#f6e6c2 0%,#d4af6a 45%,#e8a9c6 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hnw-lead{font-size:.9rem;line-height:1.7;color:#cdbfb5;max-width:720px;margin:0;}
+  .hnw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
+  .hnw-stat{background:linear-gradient(150deg,rgba(212,175,106,.13),rgba(224,81,140,.06));
+    border:1px solid rgba(212,175,106,.28);border-radius:13px;padding:15px 16px;}
+  .hnw-stat .hs-num{font-family:"Kanit",sans-serif;font-size:1.3rem;font-weight:700;color:#f0dcb0;line-height:1.2;}
+  .hnw-stat .hs-cap{font-size:.74rem;color:#a89a9f;margin-top:3px;}
+  .hnw-tier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:13px;margin:14px 0;}
+  .hnw-tier{border:1px solid rgba(212,175,106,.30);border-radius:12px;padding:14px 15px;background:rgba(212,175,106,.05);}
+  .hnw-tier .ht-name{font-family:"Kanit",sans-serif;font-size:.92rem;font-weight:700;color:#f0dcb0;}
+  .hnw-tier .ht-aum{font-size:1.02rem;font-weight:700;color:#e8a9c6;margin:5px 0 7px;}
+  .hnw-tier .ht-note{font-size:.78rem;line-height:1.6;color:#a89a9f;margin:0;}
+  .hnw-plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:14px;margin-top:12px;}
+  .hnw-plan{border:1px solid rgba(212,175,106,.26);border-radius:14px;padding:16px 17px 18px;
+    background:linear-gradient(165deg,rgba(255,255,255,.035),rgba(0,0,0,.16));display:flex;flex-direction:column;}
+  .hnw-plan:hover{border-color:rgba(212,175,106,.60);}
+  .hnw-plan .hp-tag{display:inline-block;align-self:flex-start;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+    color:#1a1214;background:linear-gradient(100deg,#d4af6a,#f0dcb0);padding:3px 9px;border-radius:999px;font-weight:700;}
+  .hnw-plan h3{font-family:"Kanit",sans-serif;font-size:1rem;margin:9px 0 3px;color:#f2e6d2;}
+  .hnw-plan .hp-meta{font-size:.75rem;color:#a89a9f;margin:0 0 9px;}
+  .hnw-plan ul{margin:0 0 14px;padding-left:18px;font-size:.8rem;line-height:1.65;color:#ddd1c6;}
+  .hnw-plan ul li{margin-bottom:4px;}
+  .hnw-plan .btn{margin-top:auto;padding:9px;font-size:.82rem;}
+  .hnw-steps{margin:10px 0 14px;padding-left:20px;font-size:.85rem;line-height:1.8;color:#ddd1c6;}
+  .hnw-steps li{margin-bottom:9px;}
+  .hnw-steps b{color:#f0dcb0;}
+  .hnw-note{border-left:3px solid var(--gold);background:rgba(212,175,106,.08);padding:12px 14px;
+    border-radius:0 10px 10px 0;font-size:.82rem;line-height:1.7;color:#cdbfb5;}
+
+  body.hnw{
+    --ink:#f3ece4;
+    --paper:#0c0a0b;
+    --panel:#171215;
+    --line:rgba(212,175,106,.20);
+    --pink:#e0518c;
+    --pink-deep:#f2a3c4;
+    --pink-soft:rgba(224,81,140,.13);
+    --gold:#d4af6a;
+    --gold-hi:#f0dcb0;
+    --gold-deep:#8a6a33;
+    --muted:#a3949a;
+    --danger:#ff8b7a;
+    --danger-bg:rgba(192,57,43,.16);
+    --ok:#5fd39b;
+    background:
+      radial-gradient(1100px 520px at 100% -12%, rgba(212,175,106,.15) 0%, transparent 62%),
+      radial-gradient(820px 460px at -8% 8%, rgba(224,81,140,.11) 0%, transparent 58%),
+      var(--paper);
+    color:var(--ink);
+  }
+  body.hnw .hero{
+    background:
+      radial-gradient(700px 320px at 88% -30%, rgba(212,175,106,.30) 0%, transparent 65%),
+      linear-gradient(118deg, #120d10 0%, #241722 48%, #14100f 100%);
+    border-bottom:1px solid rgba(212,175,106,.28);
+  }
+  body.hnw .hero::after{background:rgba(212,175,106,.07);}
+  body.hnw .hero::before{background:rgba(224,81,140,.06);}
+  body.hnw .eyebrow{color:var(--gold);}
+  body.hnw .hero h1{
+    background:linear-gradient(96deg,#f6e6c2 0%,#d4af6a 42%,#f2cf9a 70%,#e8a9c6 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  body.hnw .sub{color:#cbbcb2;}
+
+  body.hnw .navbar button{
+    background:rgba(255,255,255,.05);border-color:rgba(212,175,106,.28);color:#e3d8cd;
+  }
+  body.hnw .navbar button:hover{border-color:var(--gold);color:var(--gold-hi);}
+  body.hnw .navbar button.active{
+    background:linear-gradient(100deg,#d4af6a,#f0dcb0 55%,#e8a9c6);border-color:transparent;
+    color:#1a1214;font-weight:700;
+  }
+
+  body.hnw .card,
+  body.hnw .content-card,
+  body.hnw .plan-card,
+  body.hnw .pension-card,
+  body.hnw .table-wrap,
+  body.hnw .pension-table-wrap{
+    background:var(--panel);border-color:var(--line);box-shadow:0 2px 18px rgba(0,0,0,.42);
+  }
+  body.hnw .plan-card:hover{border-color:rgba(212,175,106,.55);}
+  body.hnw .card h2,
+  body.hnw .content-card h2,
+  body.hnw .plan-card h3,
+  body.hnw .pension-h4{color:var(--gold-hi);}
+  body.hnw .plan-card .cat,
+  body.hnw .content-card .cat{color:var(--gold);}
+  body.hnw .pension-card .pc-value{color:var(--gold-hi);}
+
+  body.hnw input,body.hnw select,body.hnw textarea,
+  body.hnw .pf-row select,body.hnw .pf-row input{
+    background:#1e181b;border-color:var(--line);color:var(--ink);
+  }
+  body.hnw input::placeholder,body.hnw textarea::placeholder{color:#7d7076;}
+  body.hnw label{color:#d8ccc3;}
+
+  body.hnw .btn{
+    background:linear-gradient(100deg,#c99f56 0%,#eBcf95 48%,#d9a8bf 100%);
+    color:#1a1214;border:none;font-weight:700;
+  }
+  body.hnw .btn:hover{filter:brightness(1.07);}
+  body.hnw .btn.secondary{
+    background:transparent;border:1.5px solid var(--gold);color:var(--gold-hi);
+  }
+  body.hnw .btn-compare-toggle{border-color:var(--gold);color:var(--gold-hi);background:transparent;}
+  body.hnw .btn-compare-toggle.active{background:var(--gold);color:#1a1214;}
+
+  body.hnw .opt-grid .tog{background:#1e181b;border-color:var(--line);color:#ded2c8;}
+  body.hnw .opt-grid .tog:hover{border-color:var(--gold);}
+  body.hnw .opt-grid .tog .dot{background:#1e181b;border-color:var(--line);}
+  body.hnw .opt-grid .tog.on{border-color:var(--gold);background:rgba(212,175,106,.14);color:var(--gold-hi);}
+  body.hnw .opt-grid .tog.on .dot{background:var(--gold);border-color:var(--gold);color:#1a1214;}
+
+  body.hnw .benefit-table th,
+  body.hnw .pension-table th,
+  body.hnw .rate-table th{background:linear-gradient(100deg,#2a1f26,#3a2b1c);color:var(--gold-hi);}
+  body.hnw .benefit-table td,
+  body.hnw .pension-table td,
+  body.hnw .rate-table td{border-bottom-color:rgba(212,175,106,.13);color:var(--ink);}
+  body.hnw .benefit-table tr:nth-child(even) td,
+  body.hnw .pension-table tr:nth-child(even) td{background:rgba(255,255,255,.022);}
+  body.hnw .benefit-group td{background:rgba(212,175,106,.10);}
+  body.hnw .group-title{color:var(--gold-hi);}
+  body.hnw .group-break h2{color:var(--gold-hi);}
+  body.hnw .group-break p{color:var(--muted);}
+
+  body.hnw .badge-best,body.hnw .tag{
+    background:linear-gradient(100deg,#d4af6a,#f0dcb0);color:#1a1214;border:none;
+  }
+  body.hnw .notice-box{background:rgba(224,81,140,.10);border-color:rgba(224,81,140,.34);color:#f6c9dc;}
+  body.hnw .benefit-subnote,body.hnw .pension-hint,body.hnw .meta{color:var(--muted);}
+  body.hnw a{color:var(--gold-hi);}
+
+  /* ------------------------------------------------------------------
+     โหมดปกติ — ยังคุมโทนชมพู แต่ให้เมนูและป้ายหมวดมีสีหลากหลายขึ้น
+     จะได้ไม่ชมพูทั้งหน้าจนอ่านยาก โดยยังดูพรีเมียม
+     ------------------------------------------------------------------ */
+  :root{
+    --a1:#0f6f6c;  /* เขียวมรกต */
+    --a2:#7b4bb7;  /* ม่วง */
+    --a3:#b8863b;  /* ทอง */
+    --a4:#1f5fa8;  /* น้ำเงิน */
+    --a5:#c2543a;  /* ส้มอิฐ */
+  }
+  body:not(.hnw) .navbar button:nth-child(1):not(.active){border-color:#bfe0df;color:var(--a1);}
+  body:not(.hnw) .navbar button:nth-child(2):not(.active){border-color:#d9cbee;color:var(--a2);}
+  body:not(.hnw) .navbar button:nth-child(3):not(.active){border-color:#ecd9b6;color:var(--a3);}
+  body:not(.hnw) .navbar button:nth-child(4):not(.active){border-color:#c6d9ee;color:var(--a4);}
+  body:not(.hnw) .navbar button:nth-child(5):not(.active){border-color:#f0cfc6;color:var(--a5);}
+  body:not(.hnw) .navbar button:nth-child(6):not(.active){border-color:#f0c9d8;color:var(--pink);}
+  body:not(.hnw) .plan-card:nth-of-type(5n+1) .cat{color:var(--a1);}
+  body:not(.hnw) .plan-card:nth-of-type(5n+2) .cat{color:var(--a2);}
+  body:not(.hnw) .plan-card:nth-of-type(5n+3) .cat{color:var(--a3);}
+  body:not(.hnw) .plan-card:nth-of-type(5n+4) .cat{color:var(--a4);}
+  body:not(.hnw) .plan-card:nth-of-type(5n+5) .cat{color:var(--a5);}
 </style>
 </head>
 <body>
@@ -1136,6 +1328,7 @@
       <button data-page="ai">ผู้ช่วยออกแบบแผนประกัน</button>
       <button data-page="calc">คำนวณเบี้ยประกัน</button>
       <button data-page="plans">แผนประกันทั้งหมด</button>
+      <button data-page="hnw" class="nav-hnw">แผน HNW</button>
       <button data-page="knowledge">ความรู้ประกันสุขภาพ</button>
       <button data-page="contact">ติดต่อหมอกึ๊ก</button>
     </div>
@@ -1742,7 +1935,7 @@
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('main8010')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
-    <div class="plan-card">
+    <div class="plan-card hnw-only">
       <div class="cat">สัญญาหลัก · HNW</div>
       <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/5</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
@@ -1754,7 +1947,7 @@
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('premierlegacy995')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
-    <div class="plan-card">
+    <div class="plan-card hnw-only">
       <div class="cat">สัญญาหลัก · HNW</div>
       <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/10</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี</p>
@@ -1765,7 +1958,7 @@
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('premierlegacy9910')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
-    <div class="plan-card">
+    <div class="plan-card hnw-only">
       <div class="cat">สัญญาหลัก · HNW</div>
       <h3>เมืองไทย เลกาซี่ เวลธ์ 99/5 <span class="badge-best">แบบค่าเวนคืนคงที่</span></h3>
       <p class="meta">อายุรับ 30 วัน – 75 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
@@ -2084,6 +2277,128 @@
     </div>
 
   </div>
+</div>
+</div>
+
+<!-- ============ PAGE: HNW ============ -->
+<!-- แบบประกันกลุ่ม High Net Worth แยกออกมาเป็นเมนูของตัวเอง เพราะทุนขั้นต่ำ 10 ล้านบาท
+     และมีเงื่อนไขสินทรัพย์ที่ลูกค้าทั่วไปไม่เข้าเกณฑ์ หน้านี้ใช้ธีมดำ-ทองเฉพาะตัว
+     เนื้อหาบนหน้านี้เป็นระดับที่สื่อสารกับลูกค้าได้ ส่วนหลักเกณฑ์การพิจารณารับประกัน
+     ฉบับเต็มของบริษัทอยู่ในหน้าตัวแทนที่ต้องล็อกอิน ไม่เผยแพร่บนหน้าสาธารณะ -->
+<div id="page-hnw" class="page">
+<div class="wrap">
+
+  <div class="hnw-head">
+    <div class="hnw-kicker">High Net Worth</div>
+    <h2 class="hnw-title">แบบประกันสำหรับผู้มีสินทรัพย์สูง</h2>
+    <p class="hnw-lead">กลุ่มแบบประกันที่ออกแบบมาเพื่อการส่งต่อความมั่งคั่ง วางแผนมรดก และสร้างสภาพคล่องให้กองมรดก
+      โดยทุนประกันเริ่มต้นที่ 10 ล้านบาท และรับได้สูงสุดถึง 500 ล้านบาท</p>
+  </div>
+
+  <div class="hnw-stats">
+    <div class="hnw-stat"><div class="hs-num">10 ล้าน</div><div class="hs-cap">ทุนประกันขั้นต่ำ</div></div>
+    <div class="hnw-stat"><div class="hs-num">500 ล้าน</div><div class="hs-cap">ทุนสูงสุด อายุ 16 ปีขึ้นไป</div></div>
+    <div class="hnw-stat"><div class="hs-num">99 ปี</div><div class="hs-cap">คุ้มครองชีวิตถึงอายุ</div></div>
+    <div class="hnw-stat"><div class="hs-num">5–10 ปี</div><div class="hs-cap">ระยะเวลาชำระเบี้ย</div></div>
+  </div>
+
+  <div class="content-card">
+    <h2>ใครเข้าเกณฑ์กลุ่ม HNW</h2>
+    <p>บริษัทแบ่งลูกค้ากลุ่มนี้ออกเป็น 2 ระดับ ตามมูลค่าสินทรัพย์ภายใต้การจัดการ (AUM)</p>
+    <div class="hnw-tier-grid">
+      <div class="hnw-tier">
+        <div class="ht-name">Non-Private Bank</div>
+        <div class="ht-aum">AUM ตั้งแต่ 10 ล้านบาท</div>
+        <p class="ht-note">เป็นเกณฑ์เริ่มต้นของกลุ่ม HNW ใช้ได้กับทุนประกันช่วง 10–100 ล้านบาท</p>
+      </div>
+      <div class="hnw-tier">
+        <div class="ht-name">Private Bank</div>
+        <div class="ht-aum">AUM ตั้งแต่ 50 ล้านบาท</div>
+        <p class="ht-note">ทุนประกันตั้งแต่ 100 ล้านบาทขึ้นไปจะใช้เกณฑ์ระดับนี้ และสูงกว่านั้นบริษัทอาจกำหนดเกณฑ์เพิ่ม</p>
+      </div>
+    </div>
+    <p class="meta">AUM หมายถึงมูลค่าสินทรัพย์ภายใต้การจัดการ เช่น เงินฝาก กองทุน หลักทรัพย์ พันธบัตร หรือสินทรัพย์อื่นที่แสดงมูลค่าได้จากแหล่งที่เชื่อถือได้</p>
+  </div>
+
+  <div class="content-card">
+    <h2>แบบประกันในกลุ่มนี้ที่หมอกึ๊กเสนอได้</h2>
+    <div class="hnw-plan-grid">
+
+      <div class="hnw-plan">
+        <div class="hp-tag">คุ้มครองตลอดชีพ</div>
+        <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/5</h3>
+        <p class="hp-meta">อายุรับ 30 วัน – 70 ปี • ชำระเบี้ย 5 ปี</p>
+        <ul>
+          <li>มีอัตราเบี้ยพิเศษ Preferred สำหรับผู้ที่สุขภาพดีกว่ามาตรฐาน ถูกลงประมาณ 6% (อายุ 16–70 ปี)</li>
+          <li>ปิดภาระเบี้ยเร็วที่สุดในกลุ่ม</li>
+        </ul>
+        <button class="btn" onclick="showPlanDetail('premierlegacy995')">ดูรายละเอียด + ตารางเบี้ย &rarr;</button>
+      </div>
+
+      <div class="hnw-plan">
+        <div class="hp-tag">คุ้มครองตลอดชีพ</div>
+        <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/10</h3>
+        <p class="hp-meta">อายุรับ 30 วัน – 70 ปี • ชำระเบี้ย 10 ปี</p>
+        <ul>
+          <li>เงื่อนไขเหมือน 99/5 แต่กระจายภาระเบี้ยเป็น 10 ปี</li>
+          <li>เบี้ยต่อปีถูกกว่าแบบ 99/5 ประมาณ 9–32% แล้วแต่ช่วงอายุ</li>
+        </ul>
+        <button class="btn" onclick="showPlanDetail('premierlegacy9910')">ดูรายละเอียด + ตารางเบี้ย &rarr;</button>
+      </div>
+
+      <div class="hnw-plan">
+        <div class="hp-tag">ค่าเวนคืนคงที่</div>
+        <h3>เมืองไทย เลกาซี่ เวลธ์ 99/5</h3>
+        <p class="hp-meta">อายุรับ 30 วัน – 75 ปี • ชำระเบี้ย 5 ปี</p>
+        <ul>
+          <li>แบบที่ใช้ในโครงการ พรีเมียร์ เลกาซี่ (แบบเงินค่าเวนคืนกรมธรรม์คงที่)</li>
+          <li>เบี้ยถูกกว่าแบบปกติประมาณ 6.3% ทุกช่วงอายุ โดยความคุ้มครองชีวิตเท่าเดิม</li>
+          <li>รับทำถึงอายุ 75 ปี กว้างกว่าแบบปกติ แต่ไม่มีอัตรา Preferred</li>
+        </ul>
+        <button class="btn" onclick="showPlanDetail('legacywealth995')">ดูรายละเอียด + ตารางเบี้ย &rarr;</button>
+      </div>
+
+      <div class="hnw-plan">
+        <div class="hp-tag">ทุน 10 ล้านขึ้นไป</div>
+        <h3>สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)</h3>
+        <p class="hp-meta">อายุรับ 30 วัน – 90 ปี • ชำระเบี้ยถึงอายุ 99 ปี</p>
+        <ul>
+          <li>คือแบบ คุ้มครองตลอดชีพ 99/99 ที่ทุนตั้งแต่ 10 ล้านบาทขึ้นไป ซึ่งใช้ชุดอัตราเบี้ยพรีเมียร์คนละชุด</li>
+          <li>ถ้าทุนต่ำกว่า 10 ล้านบาท จะเป็นแบบปกติ อยู่ในหน้าแผนประกันทั้งหมดตามเดิม</li>
+          <li>รับทำถึงอายุ 90 ปี กว้างที่สุดในกลุ่ม เหมาะกับการวางแผนมรดกช่วงปลาย</li>
+        </ul>
+        <button class="btn" onclick="showPlanDetail('main9999')">ดูรายละเอียด + ตารางเบี้ย &rarr;</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="content-card">
+    <h2>ขั้นตอนและสิ่งที่ต้องเตรียม</h2>
+    <ol class="hnw-steps">
+      <li><b>คุยความต้องการและกำหนดทุนประกัน</b> — ดูว่าต้องการส่งต่อเท่าไร มีภาระภาษีมรดกหรือหนี้ที่ต้องปิดหรือไม่ แล้วเลือกว่าจะชำระเบี้ย 5 ปีหรือ 10 ปี</li>
+      <li><b>ตรวจสุขภาพตามเกณฑ์</b> — กลุ่มนี้ทุนสูง บริษัทจึงมีการตรวจสุขภาพ โดยรายการตรวจจะมากขึ้นตามทุนประกันและอายุ ตั้งแต่ตรวจร่างกายโดยแพทย์ ตรวจเลือด ตรวจปัสสาวะ ไปจนถึงตรวจคลื่นไฟฟ้าหัวใจหรือตรวจสมรรถภาพหัวใจในกรณีทุนสูงมากหรืออายุมาก บางช่วงทุนและอายุอาจไม่ต้องตรวจเลย หมอกึ๊กจะเช็กเกณฑ์ที่ตรงกับกรณีของคุณให้ก่อนนัดตรวจ</li>
+      <li><b>ยื่นเอกสารแสดงฐานะทางการเงิน</b> — เพื่อยืนยันว่าทุนประกันที่ขอสอดคล้องกับสินทรัพย์และรายได้จริง เอกสารที่ใช้มีหลายทางเลือก เช่น คำแถลงฐานะทางการเงินตามแบบฟอร์มบริษัท ใบรับรองฐานะการเงินจากธนาคาร หรือเอกสารทางการเงินอื่น ยิ่งทุนสูงเอกสารยิ่งละเอียดขึ้น หมอกึ๊กจะบอกล่วงหน้าว่ากรณีของคุณต้องเตรียมอะไรบ้าง</li>
+      <li><b>ยื่นใบคำขอและรอผลพิจารณา</b> — บริษัทอาจขอเอกสารหรือผลตรวจเพิ่มเติมได้ตามดุลพินิจการพิจารณารับประกัน</li>
+    </ol>
+    <div class="hnw-note">
+      รายละเอียดของรายการตรวจสุขภาพและเอกสารการเงินที่ต้องใช้ ขึ้นกับทุนประกันและอายุของแต่ละคน
+      เป็นหลักเกณฑ์การพิจารณารับประกันของบริษัท จึงขอไม่ลงรายละเอียดบนหน้าเว็บ
+      ทักมาคุยได้เลยครับ เดี๋ยวหมอกึ๊กเช็กเกณฑ์ที่ตรงกับกรณีของคุณให้
+    </div>
+  </div>
+
+  <div class="content-card">
+    <h2>ข้อควรทราบ</h2>
+    <ul>
+      <li>ทุนประกันจะถูกนับรวมกับกรมธรรม์กลุ่ม HNW อื่นที่มีผลบังคับอยู่ ทั้งเกณฑ์ตรวจสุขภาพและเกณฑ์ทุนสูงสุด ซื้อหลายฉบับได้แต่ทุนรวมต้องไม่เกินเพดานที่บริษัทกำหนด</li>
+      <li>ผู้เยาว์อายุต่ำกว่า 16 ปี รับทุนได้สูงสุด 250 ล้านบาท และผู้ปกครองต้องมีทุนประกันของตัวเองไม่น้อยกว่าผู้เยาว์</li>
+      <li>เบี้ยประกันชีวิตของแบบประกันกลุ่มนี้ใช้สิทธิลดหย่อนภาษีเงินได้บุคคลธรรมดาได้ตามหลักเกณฑ์กรมสรรพากร</li>
+      <li>ตัวเลขเบี้ยในเว็บนี้ใช้เพื่อการนำเสนอเบื้องต้น ผลประโยชน์และเงื่อนไขที่มีผลจริงยึดตามกรมธรรม์ที่บริษัทออกให้</li>
+    </ul>
+    <button class="btn" style="width:auto;padding:10px 22px;margin-top:6px;" onclick="showPage('contact')">ปรึกษาหมอกึ๊ก &rarr;</button>
+  </div>
+
 </div>
 </div>
 
@@ -4846,6 +5161,7 @@ const PAGE_ROUTES = {
   plans: '/plans',
   compare: '/plans/compare',
   'pension-compare': '/plans/compare-pension',
+  hnw: '/hnw',
   knowledge: '/health-knowledge',
   contact: '/contact',
 };
@@ -4968,6 +5284,7 @@ function showPlanDetail(id, options = {}){
     </div>` : ''}
   `;
   showPage('plan-detail', {updateUrl:false});
+  applyHnwSkin('plan-detail', id);
   if(p.pension) renderPensionCalc(id);
   if(options.updateUrl !== false) replaceOrPushPath(PLAN_ROUTES[id] || '/plans');
 }
@@ -6182,6 +6499,7 @@ function showPage(name, options = {}){
   if(!target) return;
   target.classList.add('active');
   document.querySelectorAll('#navbar button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  applyHnwSkin(name);
   if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
   if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
@@ -6748,6 +7066,18 @@ const COMPARE_ROW_DEFS = [
 let compareMode = false;
 let compareSelected = [];
 let compareTierByProduct = {};
+
+// ---- ธีมของเมนู HNW ----
+// แบบประกันกลุ่ม HNW แยกเป็นเมนูของตัวเอง เพราะทุนขั้นต่ำ 10 ล้านบาทและต้องมี AUM
+// ตามเกณฑ์บริษัท ไม่ใช่แผนที่ลูกค้าทั่วไปทำได้ หน้าเว็บจึงเปลี่ยนเป็นธีมดำ-ทองเฉพาะ
+// ตอนอยู่ในเมนูนี้และหน้ารายละเอียดของแบบประกันในกลุ่มนี้ ด้วยการเติมคลาส .hnw ที่ <body>
+// main9999 ไม่อยู่ในลิสต์นี้ เพราะหน้าเดียวกันใช้ทั้งทุนต่ำกว่าและตั้งแต่ 10 ล้าน
+// (ชื่อพรีเมียร์ใช้เฉพาะทุน 10 ล้านขึ้นไป) จึงคงธีมปกติไว้ไม่ให้ลูกค้าทั่วไปสับสน
+const HNW_PLAN_IDS = ['premierlegacy995','premierlegacy9910','legacywealth995'];
+function applyHnwSkin(pageName, planId){
+  const on = pageName === 'hnw' || (pageName === 'plan-detail' && HNW_PLAN_IDS.includes(planId));
+  document.body.classList.toggle('hnw', on);
+}
 
 // Tags every plan-card in the /plans list with its plan id, read straight off
 // the id already used by its own "ดูรายละเอียดเต็ม" button, so nothing about
