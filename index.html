@@ -971,6 +971,55 @@
   .compare-col-summary.compare-col-add .compare-col-title{color:var(--muted);}
   .compare-col-summary.compare-col-add .compare-tier-select{margin-bottom:0;}
 
+  /* ป้ายจุดขายเด่นของแผน พร้อมบรรทัดขยายความที่ต้องอ่านคู่กันเสมอ
+     แยกหัวข้อกับคำอธิบายชัดเจน เพื่อไม่ให้อ่านแล้วเข้าใจว่าไม่มีเงื่อนไขอื่นเลย */
+  .plan-notice{
+    border:1.5px solid var(--gold);
+    border-left-width:5px;
+    border-radius:12px;
+    padding:13px 16px;
+    margin:14px 0 4px;
+    background:linear-gradient(100deg,#fffdf7,#fff6fa);
+  }
+  .plan-notice .pn-head{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    font-weight:700;font-size:1rem;color:var(--pink-deep);line-height:1.5;
+  }
+  .plan-notice .pn-chip{
+    display:inline-block;padding:3px 11px;border-radius:999px;
+    background:var(--gold);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.02em;
+  }
+  .plan-notice .pn-body{
+    margin-top:8px;font-size:.85rem;color:var(--ink);line-height:1.75;
+  }
+  .plan-notice .pn-body b{color:var(--pink-deep);}
+  body.hnw .plan-notice{background:rgba(212,175,106,.09);}
+  body.hnw .plan-notice .pn-body{color:#ece2d6;}
+  @media (max-width:520px){
+    .plan-notice{padding:11px 13px;}
+    .plan-notice .pn-head{font-size:.93rem;}
+  }
+  /* หน้าเทียบประกันโรคร้ายแรง */
+  .ci-form{display:flex;flex-wrap:wrap;gap:12px;}
+  .ci-form label{display:flex;flex-direction:column;gap:5px;font-size:.8rem;font-weight:600;color:var(--muted);flex:1 1 170px;}
+  .ci-form input,.ci-form select{
+    padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;
+    font-size:.9rem;font-family:inherit;color:var(--ink);background:#fff;
+  }
+  .ci-form input:focus,.ci-form select:focus{outline:none;border-color:var(--pink);}
+  .ci-tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:700;}
+  .ci-tag.fix{background:#e8f4ee;color:#1d6b45;}
+  .ci-tag.rise{background:#fdeee6;color:#a4521c;}
+  .ci-tag.main{background:#eceaf8;color:#4a3d8f;}
+  .ci-tag.rider{background:#e6f0fa;color:#1f5786;}
+  .ci-pick{border-left:5px solid var(--gold);background:linear-gradient(100deg,#fffdf7,#fff6fa);
+    border-radius:11px;padding:13px 16px;margin-bottom:12px;}
+  .ci-pick h4{margin:0 0 6px;font-size:.98rem;color:var(--pink-deep);}
+  .ci-pick p{margin:0;font-size:.85rem;line-height:1.75;color:var(--ink);}
+  .ci-warn{border-left-color:#c0392b;background:linear-gradient(100deg,#fff8f7,#fff1ef);}
+  .ci-warn h4{color:#a5301f;}
+  body.hnw .ci-pick{background:rgba(212,175,106,.09);}
+  body.hnw .ci-pick p{color:#ece2d6;}
   details.faq{
     border:1px solid var(--line);
     border-radius:10px;
@@ -1993,6 +2042,42 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">สัญญาหลัก · รวมโรคร้ายแรงในตัว</div>
+      <h3>เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20</h3>
+      <p class="meta">อายุรับ 1 – 65 ปี • ทุนขั้นต่ำ 150,000 บาท • ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li><b>คุ้มครองโรคร้ายแรง เจอจ่ายเงินก้อน 15 โรคร้ายแรง เบี้ยคงที่</b> ไม่ปรับขึ้นตามอายุเหมือนสัญญาเพิ่มเติม</li>
+        <li>ขั้นรุนแรงรับ 150% ของทุน · รวมสูงสุด 200% เฉพาะกรณีเคลมตาราง (ข) ครบ 2 รายการก่อน</li>
+        <li>เคลมโรคขั้นรุนแรงได้ครั้งเดียวแล้วสัญญาจบ · ชายอายุ 55 ขึ้นไปและหญิง 63 ขึ้นไป เบี้ยรวมแพงกว่าผลประโยชน์สูงสุด</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('lifetimeprotection')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาหลัก · โครงการเพื่อผู้สูงอายุ</div>
+      <h3>วัยเก๋า คุ้มสุขใจ 90/90</h3>
+      <p class="meta">อายุรับ 50 – 75 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระและคุ้มครองถึงอายุ 90 ปี</p>
+      <ul>
+        <li><b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> — แต่ปีที่ 1 – 2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน</li>
+        <li>อยู่ครบอายุ 90 ปี รับเงินก้อน 100% ของทุน · อุบัติเหตุสาธารณะจ่าย 200%</li>
+        <li>แนบได้เฉพาะอุบัติเหตุและชดเชยรายวันสำหรับผู้สูงอายุ ใช้เป็นสัญญาหลักของประกันสุขภาพเหมาจ่ายไม่ได้</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('waigao9090')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาหลัก · โครงการเพื่อผู้สูงอายุ</div>
+      <h3>วัยเก๋า คุ้มได้ใจ 99/10</h3>
+      <p class="meta">อายุรับ 50 – 80 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <ul>
+        <li><b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> — แต่ปีที่ 1 – 2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% ไม่ใช่ทุนประกัน</li>
+        <li>ทุนคุ้มครองเพิ่มขึ้นตามปีกรมธรรม์จนถึง 150% · อุบัติเหตุสาธารณะสูงสุด 300% · ลดหย่อนภาษีได้</li>
+        <li>อายุ 76 – 80 ปี ทำได้เฉพาะสัญญาหลัก เพราะสัญญาเพิ่มเติมรับถึงอายุ 75 ปี</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('waigao9910')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">สัญญาหลัก · มีเงินคืนทุกปี</div>
       <h3>เมืองไทย แฮปปี้ รีเทิร์น 99/7</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 200,000 บาท • ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี</p>
@@ -2188,6 +2273,13 @@
     </div>
 
     <div class="group-break"><h2>สัญญาเพิ่มเติมโรคร้ายแรง</h2><p>ใช้เติมเงินก้อนหรือวงเงินรักษาเฉพาะโรคร้ายแรง โดยเฉพาะมะเร็ง ไต หัวใจ หลอดเลือดสมอง และกลุ่มโรคสำคัญอื่น — Care Plus เป็นวงเงินค่ารักษาเฉพาะโรค ไม่ใช่แบบเจอจ่ายจบ</p></div>
+
+    <div class="plan-notice" style="margin-bottom:16px;">
+      <div class="pn-head"><span class="pn-chip">เครื่องมือ</span>ไม่แน่ใจว่าลูกค้าควรซื้อแบบไหน</div>
+      <div class="pn-body">หน้า <b>เทียบประกันโรคร้ายแรงทุกแบบ</b> เทียบเกณฑ์การจ่ายของทุกแบบไว้ในตารางเดียว พร้อมกรอกอายุกับงบแล้วดูเบี้ยจริงของแต่ละแบบ คำนวณว่าแบบเบี้ยคงที่กับแบบเบี้ยขึ้นตามอายุตัดกันที่อายุเท่าไร และคำแนะนำว่าเมื่อไรควรลดทุนแทนการยกเลิก
+        <div style="margin-top:10px;"><button class="btn" style="width:auto;padding:9px 20px;font-size:.85rem;" onclick="showPage('ci-compare')">เปิดหน้าเทียบประกันโรคร้ายแรง &rarr;</button></div>
+      </div>
+    </div>
 
     <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
@@ -2501,6 +2593,68 @@
 </div>
 </div>
 
+<!-- ============ PAGE: CRITICAL ILLNESS COMPARE ============ -->
+<div id="page-ci-compare" class="page">
+<div class="wrap">
+  <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
+
+  <div class="content-card" style="margin-top:14px;">
+    <h2>เทียบประกันโรคร้ายแรงทุกแบบ และเลือกให้ตรงกับลูกค้า</h2>
+    <p style="color:var(--muted);">หน้านี้ตอบสามคำถามที่ลูกค้าถามบ่อยที่สุด คือ <b>แต่ละแบบจ่ายเงินตอนไหน</b> · <b>อายุเท่านี้ควรซื้อแบบไหน</b> · และ <b>เมื่อไรควรลดทุนหรือหยุดจ่าย</b> ตัวเลขทุกตัวคำนวณจากตารางอัตราเบี้ยทางการที่เก็บอยู่ในระบบนี้ ไม่ได้ประมาณเอา</p>
+  </div>
+
+  <div class="content-card">
+    <h2>1. เกณฑ์การจ่ายของแต่ละแบบ</h2>
+    <p style="color:var(--muted);margin-bottom:12px;">ข้อที่ทำให้ลูกค้าเข้าใจผิดบ่อยที่สุดคือ <b>"จ่ายกี่ครั้ง"</b> และ <b>"จ่ายแล้วสัญญาจบไหม"</b> จึงวางไว้เป็นสองแถวแรก</p>
+    <div id="ciCompareTable"></div>
+  </div>
+
+  <div class="content-card">
+    <h2>2. เทียบเบี้ยจริงของลูกค้ารายนี้</h2>
+    <p style="color:var(--muted);margin-bottom:12px;">กรอกอายุ เพศ และทุนที่อยากได้ ระบบจะดึงเบี้ยจริงจากตารางของแต่ละแบบมาเทียบ พร้อมคำนวณเบี้ยสะสมระยะยาว เพื่อดูว่าแบบเบี้ยคงที่กับแบบเบี้ยขึ้นตามอายุ ตัดกันที่อายุเท่าไร</p>
+    <div class="ci-form">
+      <label>อายุลูกค้า
+        <input type="number" id="ciAge" value="35" min="1" max="80" oninput="renderCiAdvisor()">
+      </label>
+      <label>เพศ
+        <select id="ciSex" onchange="renderCiAdvisor()">
+          <option value="m">ชาย</option>
+          <option value="f">หญิง</option>
+        </select>
+      </label>
+      <label>ทุนโรคร้ายแรงที่ต้องการ
+        <select id="ciSum" onchange="renderCiAdvisor()">
+          <option value="500000">500,000 บาท</option>
+          <option value="1000000" selected>1,000,000 บาท</option>
+          <option value="2000000">2,000,000 บาท</option>
+          <option value="3000000">3,000,000 บาท</option>
+        </select>
+      </label>
+      <label>งบต่อปีที่ลูกค้ารับได้ (ไม่บังคับ)
+        <input type="number" id="ciBudget" placeholder="เช่น 20000" oninput="renderCiAdvisor()">
+      </label>
+    </div>
+    <div id="ciAdvisorOut" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="content-card">
+    <h2>3. เบี้ยคงที่ กับ เบี้ยขึ้นตามอายุ ตัดกันเมื่อไร</h2>
+    <p style="color:var(--muted);margin-bottom:12px;">นี่คือคำถามที่ตอบยากที่สุดเวลาลูกค้าถามว่า "แบบไหนคุ้มกว่า" คำตอบขึ้นกับว่าลูกค้าตั้งใจถือยาวแค่ไหน ตารางนี้เทียบ<b>เบี้ยสะสมตั้งแต่ปีแรกจนถึงอายุนั้น</b> ระหว่าง ไลฟ์ไทม์ โพรเทคชั่น (จ่าย 20 ปีจบ เบี้ยคงที่) กับ CI Perfect Care (สัญญาเพิ่มเติม เบี้ยขึ้นทุกปี ต้องต่ออายุไปเรื่อย ๆ)</p>
+    <div id="ciCrossoverOut"></div>
+  </div>
+
+  <div class="content-card">
+    <h2>4. คำแนะนำตามช่วงอายุ</h2>
+    <div id="ciAgeGuide"></div>
+  </div>
+
+  <div class="content-card">
+    <h2>5. ควรลดทุน หรือหยุดจ่ายเมื่อไร</h2>
+    <div id="ciReduceGuide"></div>
+  </div>
+</div>
+</div>
+
 <!-- ============ PAGE: PLAN COMPARE ============ -->
 <div id="page-compare" class="page">
 <div class="wrap">
@@ -2675,6 +2829,12 @@
           <li><b>ประกันโรคร้ายแรง:</b> ระยะรอคอย 60–120 วัน ขึ้นอยู่กับแผนที่เลือก ส่วนใหญ่อยู่ที่ 90 วัน โรค/การเจ็บป่วยที่ตรวจพบในช่วงนี้จะไม่สามารถเคลมเงินก้อนได้ แต่ไม่เป็นเหตุให้บอกล้างสัญญาหรือเพิ่มเงื่อนไข สัญญายังอยู่ และหากเจ็บป่วยด้วยโรคร้ายแรงอื่นในภายหลังก็ยังเคลมได้ปกติ</li>
           <li><b>ประกันอุบัติเหตุ:</b> ไม่มีระยะรอคอย คุ้มครองทันทีหลังกรมธรรม์อนุมัติ เพราะเป็นเหตุการณ์ที่ไม่สามารถคาดการณ์ล่วงหน้าได้</li>
         </ul>
+        <div class="plan-notice" style="margin:14px 0 4px;">
+          <div class="pn-head"><span class="pn-chip">เครื่องมือ</span>เทียบประกันโรคร้ายแรงทุกแบบในตารางเดียว</div>
+          <div class="pn-body">แต่ละแบบมีระยะเวลารอคอย เกณฑ์การจ่าย และจำนวนครั้งที่จ่ายไม่เท่ากัน เช่น <b>บางแบบเคลมครั้งเดียวแล้วสัญญาจบ</b> บางแบบจ่ายได้หลายกลุ่มโรครวมสูงสุด 400% หน้าเทียบจะแสดงเกณฑ์ทั้งหมดคู่กัน พร้อมกรอกอายุกับงบเพื่อดูเบี้ยจริง และดูว่าแบบเบี้ยคงที่กับแบบเบี้ยขึ้นตามอายุตัดกันที่อายุเท่าไร
+            <div style="margin-top:10px;"><button class="btn" style="width:auto;padding:9px 20px;font-size:.85rem;" onclick="showPage('ci-compare')">เปิดหน้าเทียบประกันโรคร้ายแรง &rarr;</button></div>
+          </div>
+        </div>
         <h3>ข้อแนะนำเพิ่มเติม</h3>
         <ul>
           <li>หากมีปัญหาสุขภาพก่อนสมัครหรือมีโรคประจำตัว บริษัทอาจพิจารณาช้าขึ้น 3–7 วันทำการ หรืออาจนานกว่านั้น เพื่อขอประวัติการรักษาหรือตรวจสุขภาพเพิ่มเติม</li>
@@ -3104,6 +3264,51 @@ const HAPPY_RETURN_PLANS = {
   happy_return_99_7: 'happy_return_99_7',
   happy_return_99_9: 'happy_return_99_9',
 };
+// ---- ไลฟ์ไทม์ โพรเทคชั่น (โครงการเมืองไทย ยิ้มสู้โรคร้าย) ----
+// เป็นสัญญาหลักที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัว ไม่ใช่สัญญาเพิ่มเติม
+// เก็บอัตราที่พิมพ์จริงครบทั้ง 4 งวด จึงอ่านตรงจากตาราง ไม่คูณตัวคูณเอง
+// อัตรานี้ยังไม่รวมสัญญาเพิ่มเติมยกเว้นเบี้ยกรณีทุพพลภาพ ซึ่งมีตารางแยกใน wp_rider
+function lifetimeProtectionPremium(capital, gender, entryAge, freq){
+  const g = RATES.lifetime_protection;
+  if(!g || !g.rates) return null;
+  if(!(g.available_frequencies || []).includes(freq)) return null;
+  if(capital < (g.capital_min || 0)) return null;
+  const set = g.rates[freq];
+  if(!set) return null;
+  const base = rateAtStart(set[gender], entryAge, g.age_start ?? 0);
+  if(base === null || base === undefined) return null;
+  return base * capital / 1000;
+}
+// เบี้ยของสัญญาเพิ่มเติมยกเว้นเบี้ยกรณีทุพพลภาพ คิดจากตารางของตัวเอง อายุ 15-59 ปี
+function lifetimeWpRiderPremium(capital, gender, entryAge, freq){
+  const g = RATES.lifetime_protection && RATES.lifetime_protection.wp_rider;
+  if(!g || !g.rates || !g.rates[freq]) return null;
+  const base = rateAtStart(g.rates[freq][gender], entryAge, g.age_start ?? 0);
+  if(base === null || base === undefined) return null;
+  return base * capital / 1000;
+}
+// ---- โครงการเพื่อผู้สูงอายุ (วัยเก๋า) ----
+// ชื่อบนสื่อการขายคือชื่อ "โครงการ" ส่วนแบบประกันหลักจริงคือ เมืองไทยสบายใจ 90/90 และ 99/10
+// หน้า SmartWeb ระบุงวดชำระไว้เพียง รายปี และรายเดือน จึงไม่เปิดราย 6 เดือน และราย 3 เดือน
+// ทั้งตารางรายปีและรายเดือนเป็นอัตราที่พิมพ์จริง อ่านตรงจากตาราง ไม่คูณตัวคูณเอง
+// เบี้ยสุดท้ายปัดเป็นจำนวนเต็มบาทตามกติกาที่หน้า SmartWeb กำหนดไว้เอง
+const SENIOR_PLANS = {
+  sabaijai_90_90: 'sabaijai_90_90',
+  sabaijai_99_10: 'sabaijai_99_10',
+};
+function seniorPremium(plan, capital, gender, entryAge, freq){
+  const g = RATES[SENIOR_PLANS[plan]];
+  if(!g || !g.rates) return null;
+  if(!(g.available_frequencies || []).includes(freq)) return null;
+  if(capital < (g.capital_min || 0)) return null;
+  if(g.capital_max_per_person_all_channels && capital > g.capital_max_per_person_all_channels) return null;
+  const set = g.rates[freq];
+  if(!set) return null;
+  const base = rateAtStart(set[gender], entryAge, g.age_start ?? 0);
+  if(base === null || base === undefined) return null;
+  // ปัดครึ่งขึ้นเป็นจำนวนเต็มบาท ตามข้อความบนหน้า SmartWeb
+  return Math.round(base * capital / 1000 + Number.EPSILON);
+}
 // แบบประกันกลุ่ม HNW ที่ใช้อัตราต่อทุน 1,000 บาท ไม่มีส่วนลดรายปี ทุนขั้นต่ำ 10 ล้านบาท
 const HNW_LEGACY_PLANS = {
   premier_legacy_99_5: 'premier_legacy_99_5',
@@ -3177,6 +3382,12 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const base = rateAtStart(set[freq][gender], entryAge, g.age_start ?? 0);
     if(base === null || base === undefined) return null;
     return base * capital / 1000;
+  }
+  if(plan === 'lifetime_protection'){
+    return lifetimeProtectionPremium(capital, gender, entryAge, freq);
+  }
+  if(SENIOR_PLANS[plan]){
+    return seniorPremium(plan, capital, gender, entryAge, freq);
   }
   if(HAPPY_RETURN_PLANS[plan]){
     // แฮปปี้ รีเทิร์น 99/7 และ 99/9 เก็บอัตราที่ "พิมพ์จริง" ครบทุกงวดชำระไว้แล้ว
@@ -4286,6 +4497,274 @@ function renderBandTable(headers, bands){
   return `<div class="table-wrap" style="max-height:420px;"><table><thead>${thead}</thead><tbody>${rowsHtml}</tbody></table></div>`;
 }
 
+// ================= หน้าเทียบประกันโรคร้ายแรง =================
+// เกณฑ์ทุกช่องคัดจากหน้ารายละเอียดแผนในเว็บนี้ ซึ่งมาจากหน้าข้อมูลผลิตภัณฑ์และเอกสารทางการ
+// ไม่มีช่องไหนที่เขียนจากความจำ ถ้าแหล่งไม่ได้ระบุจะเขียนว่า "ไม่พบข้อมูลในแหล่งที่ตรวจ"
+const CI_PLANS = [
+  {
+    key:'lifetimeprotection', name:'ไลฟ์ไทม์ โพรเทคชั่น', kind:'สัญญาหลัก', kindTag:'main',
+    premiumType:'คงที่ตลอด 20 ปี', premiumTag:'fix',
+    diseases:'15 โรค', pay:'จ่ายเงินก้อนตามร้อยละของทุน ขั้นรุนแรง 150% ขั้นรอง 100% หรือ 50%',
+    times:'ตาราง (ก) จ่ายครั้งเดียว · ตาราง (ข) จ่ายได้อีกรายการละครั้ง',
+    endsAfterClaim:'จบทันทีเมื่อเคลมตาราง (ก)', maxBenefit:'สูงสุดรวม 200% (ต้องเคลม (ข) ครบ 2 รายการก่อน)',
+    wait:'90 วัน', entry:'1 – 65 ปี', renew:'ไม่ต้องต่ออายุ คุ้มครองถึง 99 ปี',
+    minSum:'150,000 บาท', death:'จ่าย 100% ของทุน', cashValue:'มีมูลค่าเวนคืน',
+    fit:'คนที่อยากปิดภาระเบี้ยให้จบและกลัวถูกปรับเบี้ยตอนแก่',
+  },
+  {
+    key:'cipc', name:'CI Perfect Care', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามอายุทุกปี', premiumTag:'rise',
+    diseases:'36 โรค', pay:'แบ่งจ่าย 3 ระยะ เริ่มต้น 25% กลาง 50% รุนแรง 100% (หักที่เคยรับแล้ว)',
+    times:'จ่ายไล่ระยะได้ จนครบ 100% ของทุน',
+    endsAfterClaim:'จบเมื่อจ่ายครบระยะรุนแรง', maxBenefit:'รวมโรคร้ายแรงและเสียชีวิต 100% ของทุน',
+    wait:'90 วัน', entry:'30 วัน – 65 ปี', renew:'ต่ออายุได้ถึง 84 ปี',
+    minSum:'100,000 บาท และไม่เกิน 10 เท่าของทุนสัญญาหลัก', death:'จ่าย 100% หักที่เคยรับ',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่อยากได้ทุนสูงด้วยเบี้ยต่ำในช่วงอายุน้อยถึงกลางคน',
+  },
+  {
+    key:'dcare', name:'D Care', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามอายุทุกปี', premiumTag:'rise',
+    diseases:'เลือกได้ 5 กลุ่มโรค หรือแผนโรคยอดฮิต', pay:'เลือกได้ 2 โหมด คือ เฉพาะระยะรุนแรง 100% หรือ ระยะเริ่มต้น 100% และรุนแรงอีก 100%',
+    times:'ตามโหมดที่เลือก',
+    endsAfterClaim:'จบเมื่อจ่ายครบตามโหมด', maxBenefit:'สูงสุด 200% ในโหมดสองระยะ',
+    wait:'90 วัน', entry:'30 วัน – 70 ปี', renew:'ต่ออายุได้ถึง 81 ปี',
+    minSum:'250,000 บาท (โหมดสองระยะ) · 500,000 บาท (เฉพาะระยะรุนแรง)', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่กังวลโรคเฉพาะกลุ่ม เช่น มะเร็งอย่างเดียว จะได้ไม่จ่ายเบี้ยส่วนที่ไม่ต้องการ',
+  },
+  {
+    key:'multipleci', name:'Multiple CI', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามช่วงอายุ', premiumTag:'rise',
+    diseases:'4 กลุ่ม 35 โรค', pay:'จ่าย 100% ของทุนต่อกลุ่มโรค',
+    times:'จ่ายได้หลายครั้ง กลุ่มละครั้ง',
+    endsAfterClaim:'เคลมกลุ่มแรกแล้ว อีก 3 กลุ่มยังคุ้มครองต่ออีก 10 ปีโดยไม่ต้องชำระเบี้ย',
+    maxBenefit:'รวมสูงสุด 400% ของทุน',
+    wait:'90 วัน', entry:'7 – 69 ปี', renew:'ต่ออายุได้ถึง 79 ปี',
+    minSum:'100,000 บาท และไม่เกิน 10 เท่าของทุนชีวิต', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่กลัวเป็นซ้ำหรือเป็นหลายโรค เช่น มีประวัติครอบครัวหลายกลุ่มโรค',
+  },
+  {
+    key:'cancer', name:'คุ้มครองโรคมะเร็ง', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามช่วงอายุ', premiumTag:'rise',
+    diseases:'มะเร็งอย่างเดียว', pay:'ระยะไม่ลุกลามรับส่วนหนึ่ง ระยะลุกลามรับจนครบ 100% ของทุน',
+    times:'จ่ายไล่ระยะจนครบ 100%',
+    endsAfterClaim:'จบเมื่อจ่ายครบ', maxBenefit:'100% ของทุน บวกชดเชยรายวันสูงสุด 10,000 บาทต่อวัน',
+    wait:'90 วัน', entry:'18 – 60 ปี (แคบที่สุดในกลุ่ม)', renew:'ต่ออายุได้ถึง 80 ปี',
+    minSum:'เลือกทุนได้ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'งบจำกัดและกังวลมะเร็งเป็นหลัก ซึ่งเป็นโรคที่เคลมบ่อยที่สุด',
+  },
+  {
+    key:'careplus', name:'Care Plus', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามอายุทุกปี', premiumTag:'rise',
+    diseases:'มะเร็ง และไตวายเรื้อรัง', pay:'จ่ายเป็น<b>ค่ารักษาตามจริง</b> ไม่ใช่เงินก้อน',
+    times:'เบิกได้ต่อเนื่องตามวงเงิน',
+    endsAfterClaim:'ไม่จบ ใช้วงเงินต่อได้', maxBenefit:'ตามวงเงินที่เลือก',
+    wait:'ดูเงื่อนไขของสัญญาเพิ่มเติมนี้', entry:'ดูหน้ารายละเอียดแผน', renew:'ต่ออายุรายปี',
+    minSum:'เลือกวงเงิน 1,000,000 หรือ 5,000,000 บาท', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่อยากได้ค่ารักษามะเร็งเต็มจำนวน ไม่ใช่เงินก้อนไปบริหารเอง',
+  },
+];
+
+function renderCiCompareTable(){
+  const rows = [
+    ['จ่ายกี่ครั้ง', p=>p.times],
+    ['เคลมแล้วสัญญาจบไหม', p=>p.endsAfterClaim],
+    ['ชนิดสัญญา', p=>`<span class="ci-tag ${p.kindTag}">${p.kind}</span>`],
+    ['ลักษณะเบี้ย', p=>`<span class="ci-tag ${p.premiumTag}">${p.premiumType}</span>`],
+    ['โรคที่คุ้มครอง', p=>p.diseases],
+    ['รูปแบบการจ่าย', p=>p.pay],
+    ['ผลประโยชน์รวมสูงสุด', p=>p.maxBenefit],
+    ['ระยะเวลาที่ไม่คุ้มครอง', p=>p.wait],
+    ['อายุที่รับทำ', p=>p.entry],
+    ['การต่ออายุ', p=>p.renew],
+    ['ทุนประกัน', p=>p.minSum],
+    ['ผลประโยชน์กรณีเสียชีวิต', p=>p.death],
+    ['มูลค่าเวนคืน', p=>p.cashValue],
+    ['เหมาะกับใคร', p=>p.fit],
+  ];
+  const head = `<tr><th style="min-width:132px;">หัวข้อ</th>${CI_PLANS.map(p=>`<th style="min-width:172px;">${p.name}</th>`).join('')}</tr>`;
+  const body = rows.map(([label, fn]) =>
+    `<tr><td style="font-weight:600;">${label}</td>${CI_PLANS.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`
+  ).join('');
+  return `<div class="table-wrap"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+
+// ช่วงอายุที่บริษัท "รับทำใหม่" ซึ่งแคบกว่าช่วงที่ตารางเบี้ยครอบคลุม
+// เพราะตารางหลายแบบมีแถวของช่วงต่ออายุรวมอยู่ด้วย หน้านี้ใช้สำหรับเลือกซื้อใหม่
+// จึงต้องปิดช่วงต่ออายุ ไม่งั้นจะเสนอราคาให้ลูกค้าที่บริษัทไม่รับทำ
+const CI_NEW_BUSINESS_AGE = {
+  lifetimeprotection: [1, 65],
+  cipc: [0, 65],
+  dcare: [0, 70],
+  multipleci: [7, 69],
+  cancer: [18, 60],
+  careplus: [0, 80],
+};
+function ciAgeAllowed(key, age){
+  const r = CI_NEW_BUSINESS_AGE[key];
+  return !r || (age >= r[0] && age <= r[1]);
+}
+// คืนเบี้ยรายปีจริงของแต่ละแบบ ที่อายุและทุนที่กำหนด · null คือแบบนั้นรับทำใหม่ไม่ได้ที่อายุนี้
+function ciAnnualPremiums(age, sex, sum){
+  const out = {};
+  out.lifetimeprotection = ciAgeAllowed('lifetimeprotection', age)
+    ? mainPremiumAtEntry('lifetime_protection', sum, sex, age, 'annual') : null;
+  out.cipc = ciAgeAllowed('cipc', age) ? cipcPremium(sum, sex, age, 'annual') : null;
+  out.dcare = ciAgeAllowed('dcare', age) ? dcarePremium('popular', sum, sex, age, 'annual') : null;
+  out.cancer = (function(){
+    if(!ciAgeAllowed('cancer', age)) return null;
+    const map = {500000:'500k', 1000000:'1m', 2000000:'2m'};
+    return map[sum] ? cancerPremium(map[sum], sex, age, 'annual') : null;
+  })();
+  out.multipleci = (function(){
+    if(!ciAgeAllowed('multipleci', age)) return null;
+    const g = RATES.multiple_ci; if(!g) return null;
+    const col = {500000:2, 1000000:3, 2000000:4}[sum];
+    if(col === undefined) return null;
+    const band = (g[sex] || []).find(b => age >= b[0] && age <= b[1]);
+    return band ? band[col] : null;
+  })();
+  out.careplus = (function(){
+    if(!ciAgeAllowed('careplus', age)) return null;
+    // careplusPremium(sum, plan, gender, age, occupationClass, freq)
+    // sum เป็นวงเงิน '1m'/'5m' · plan 'ca' คือแผนมะเร็งอย่างเดียว · ใช้กลุ่มอาชีพ 1
+    const v = sum >= 3000000 ? '5m' : '1m';
+    return careplusPremium(v, 'ca', sex, age, '1', 'annual');
+  })();
+  return out;
+}
+
+function renderCiAdvisor(){
+  const age = parseInt(document.getElementById('ciAge').value, 10);
+  const sex = document.getElementById('ciSex').value;
+  const sum = parseInt(document.getElementById('ciSum').value, 10);
+  const budgetRaw = document.getElementById('ciBudget').value;
+  const budget = budgetRaw === '' ? null : Number(budgetRaw);
+  const out = document.getElementById('ciAdvisorOut');
+  if(!Number.isFinite(age) || age < 1 || age > 90){ out.innerHTML = '<p class="meta">กรุณากรอกอายุระหว่าง 1 ถึง 90 ปี</p>'; return; }
+
+  const pr = ciAnnualPremiums(age, sex, sum);
+  const rows = CI_PLANS.map(p => {
+    const v = pr[p.key];
+    const note = v === null || v === undefined
+      ? (p.key === 'cancer' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
+        : p.key === 'multipleci' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
+        : 'อายุนี้ทำไม่ได้')
+      : '';
+    const within = budget !== null && v !== null && v !== undefined && v <= budget;
+    return {p, v, note, within};
+  });
+
+  const table = `<div class="table-wrap"><table><thead><tr>
+      <th>แบบประกัน</th><th style="text-align:right;">เบี้ยปีแรก</th>
+      <th style="text-align:right;">เบี้ยต่อเดือนโดยประมาณ</th><th>ลักษณะเบี้ย</th>${budget!==null?'<th>อยู่ในงบไหม</th>':''}
+    </tr></thead><tbody>${rows.map(r=>`<tr>
+      <td>${r.p.name}</td>
+      <td style="text-align:right;">${r.v==null?`<span class="meta">${r.note}</span>`:fmt(Math.round(r.v))}</td>
+      <td style="text-align:right;">${r.v==null?'-':fmt(Math.round(r.v/12))}</td>
+      <td><span class="ci-tag ${r.p.premiumTag}">${r.p.premiumType}</span></td>
+      ${budget!==null?`<td>${r.v==null?'-':(r.within?'อยู่ในงบ':'เกินงบ')}</td>`:''}
+    </tr>`).join('')}</tbody></table></div>`;
+
+  out.innerHTML = table
+    + `<p class="meta" style="margin-top:8px;">เบี้ยต่อเดือนในตารางคือเบี้ยรายปีหารสิบสองเพื่อให้ลูกค้าเห็นภาระต่อเดือน ไม่ใช่เบี้ยงวดรายเดือนจริงของบริษัท ซึ่งจะแพงกว่าเมื่อรวมทั้งปี · Care Plus จ่ายเป็นค่ารักษาตามจริง ไม่ใช่เงินก้อน จึงเทียบราคาตรง ๆ กับแบบอื่นไม่ได้ ให้ดูเป็นทางเลือกคนละแบบ</p>`
+    + renderCiPicks(age, sex, sum, pr, budget);
+  renderCiCrossover(age, sex, sum);
+}
+
+function renderCiPicks(age, sex, sum, pr, budget){
+  const picks = [];
+  const ltp = pr.lifetimeprotection, cipc = pr.cipc;
+  if(ltp != null && cipc != null){
+    const ratio = ltp / cipc;
+    picks.push(`<div class="ci-pick"><h4>ราคาปีแรกต่างกัน ${ratio.toFixed(1)} เท่า</h4><p>ที่อายุ ${age} ปี ทุน ${fmt(sum)} บาท ไลฟ์ไทม์ โพรเทคชั่น เบี้ยปีแรก ${fmt(Math.round(ltp))} บาท ส่วน CI Perfect Care ${fmt(Math.round(cipc))} บาท ส่วนต่างนี้คือราคาของการล็อกเบี้ยไว้ไม่ให้ขึ้น และการปิดภาระเบี้ยให้จบใน 20 ปี</p></div>`);
+  }
+  if(budget !== null && Number.isFinite(budget)){
+    const affordable = CI_PLANS.filter(p => pr[p.key] != null && pr[p.key] <= budget);
+    if(affordable.length === 0){
+      const cheapest = CI_PLANS.filter(p => pr[p.key] != null).sort((a,b)=>pr[a.key]-pr[b.key])[0];
+      picks.push(`<div class="ci-pick ci-warn"><h4>งบยังไม่พอทุนขนาดนี้</h4><p>ที่ทุน ${fmt(sum)} บาท แบบที่ถูกที่สุดคือ ${cheapest ? cheapest.name + ' เบี้ย ' + fmt(Math.round(pr[cheapest.key])) + ' บาทต่อปี' : 'ไม่มีแบบที่รับอายุนี้'} <b>อย่าเพิ่งเปลี่ยนไปแบบที่คุ้มครองแคบลงเพื่อให้เข้างบ</b> ให้ลองลดทุนลงก่อน แล้วดูว่าทุนเท่าไรถึงพอดีกับงบ เพราะการลดทุนยังคงคุ้มครองครบทุกโรค ส่วนการเปลี่ยนแบบจะทำให้โรคบางกลุ่มหายไปเลย</p></div>`);
+    } else {
+      picks.push(`<div class="ci-pick"><h4>แบบที่อยู่ในงบ ${fmt(budget)} บาทต่อปี</h4><p>${affordable.map(p=>p.name+' ('+fmt(Math.round(pr[p.key]))+' บาท)').join(' · ')}</p></div>`);
+    }
+  }
+  return picks.join('');
+}
+
+// เทียบเบี้ยสะสมของแบบเบี้ยคงที่กับแบบเบี้ยขึ้นตามอายุ เพื่อหาว่าตัดกันที่อายุเท่าไร
+function ciCumulative(startAge, sex, sum, untilAge){
+  const g = RATES.lifetime_protection;
+  const payYears = g ? g.premium_paying_years : 20;
+  const perYear = mainPremiumAtEntry('lifetime_protection', sum, sex, startAge, 'annual');
+  let ltp = 0, rider = 0, crossover = null;
+  const series = [];
+  for(let age = startAge; age <= untilAge; age++){
+    if(perYear != null && age < startAge + payYears) ltp += perYear;
+    const r = cipcPremium(sum, sex, age, 'annual');
+    if(r != null) rider += r;
+    if(crossover === null && age > startAge && perYear != null && rider > ltp) crossover = age;
+    series.push({age, ltp: perYear == null ? null : ltp, rider});
+  }
+  return {series, crossover, perYear};
+}
+
+function renderCiCrossover(age, sex, sum){
+  const box = document.getElementById('ciCrossoverOut');
+  if(!box) return;
+  const {series, crossover, perYear} = ciCumulative(age, sex, sum, 84);
+  if(perYear == null){
+    box.innerHTML = `<p class="meta">ไลฟ์ไทม์ โพรเทคชั่น รับทำถึงอายุ 65 ปี อายุ ${age} ปีจึงทำแบบนี้ไม่ได้ เหลือเฉพาะสัญญาเพิ่มเติมที่เบี้ยขึ้นตามอายุ</p>`;
+    return;
+  }
+  const marks = series.filter(s => (s.age - age) % 10 === 0 || s.age === 84 || s.age === crossover);
+  const rows = marks.map(s => `<tr>
+      <td>${s.age}</td>
+      <td style="text-align:right;">${fmt(Math.round(s.ltp))}</td>
+      <td style="text-align:right;">${fmt(Math.round(s.rider))}</td>
+      <td>${crossover !== null && s.age === crossover ? 'จุดที่เบี้ยสะสมของสัญญาเพิ่มเติมแซง' : ''}</td>
+    </tr>`).join('');
+  const verdict = crossover === null
+    ? `<div class="ci-pick"><h4>ถือถึงอายุ 84 ปี สัญญาเพิ่มเติมยังถูกกว่า</h4><p>ในช่วงอายุนี้ เบี้ยสะสมของ CI Perfect Care ยังไม่แซงไลฟ์ไทม์ โพรเทคชั่น แม้ถือจนถึงอายุ 84 ปี แปลว่าถ้าลูกค้าไม่ได้ตั้งใจถือยาวมาก การใช้สัญญาเพิ่มเติมประหยัดกว่า</p></div>`
+    : `<div class="ci-pick"><h4>จุดตัดอยู่ที่อายุ ${crossover} ปี</h4><p>ถ้าลูกค้าถือความคุ้มครองไปถึงอายุ ${crossover} ปีขึ้นไป ไลฟ์ไทม์ โพรเทคชั่น จะจ่ายเบี้ยรวมน้อยกว่า แต่ถ้าคิดว่าจะยกเลิกหรือลดทุนก่อนอายุ ${crossover} ปี สัญญาเพิ่มเติมจะประหยัดกว่า <b>ให้ถามลูกค้าตรง ๆ ว่าตั้งใจถือถึงอายุเท่าไร</b> แล้วค่อยเลือก อย่าตัดสินจากเบี้ยปีแรกอย่างเดียว</p></div>`;
+  box.innerHTML = `<div class="table-wrap"><table><thead><tr>
+      <th>อายุ</th><th style="text-align:right;">ไลฟ์ไทม์ สะสม</th>
+      <th style="text-align:right;">CI Perfect Care สะสม</th><th></th>
+    </tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="meta" style="margin-top:8px;">คิดที่ทุน ${fmt(sum)} บาท เริ่มทำอายุ ${age} ปี · ไลฟ์ไทม์ ชำระ 20 ปีแล้วหยุด เบี้ยสะสมจึงคงที่หลังจากนั้น ส่วนสัญญาเพิ่มเติมต้องจ่ายต่อทุกปีและเบี้ยขึ้นตามอายุ · CI Perfect Care ต่ออายุได้ถึง 84 ปี ตารางจึงหยุดที่อายุนั้น</p>
+    ${verdict}`;
+}
+
+function renderCiAgeGuide(){
+  const items = [
+    ['อายุ 1 – 20 ปี', 'ทำในนามลูกได้ตั้งแต่อายุ 1 ปี เบี้ยถูกที่สุดในชีวิต ถ้าครอบครัวมีประวัติโรคร้ายแรงชัดเจน การล็อกเบี้ยคงที่ตั้งแต่เด็กคุ้มมาก แต่ต้องยอมรับว่าเป็นเงินที่ผูกไว้ยาว ถ้างบจำกัดให้ทำประกันสุขภาพก่อนเสมอ เพราะเด็กป่วยบ่อยกว่าเป็นโรคร้ายแรง'],
+    ['อายุ 21 – 35 ปี', 'ช่วงที่สัญญาเพิ่มเติมถูกมากเมื่อเทียบกับทุนที่ได้ ถ้ายังไม่แน่ใจว่าจะถือยาวหรือรายได้ยังไม่นิ่ง ให้เริ่มจากสัญญาเพิ่มเติมทุนสูงไว้ก่อน แล้วค่อยย้ายบางส่วนไปแบบเบี้ยคงที่ตอนรายได้มั่นคง จุดสำคัญคือ<b>ต้องมีทุนไว้ก่อนสุขภาพเปลี่ยน</b> เพราะโรคร้ายแรงซื้อไม่ได้หลังตรวจเจอ'],
+    ['อายุ 36 – 50 ปี', 'ช่วงที่ควรตัดสินใจให้จบว่าจะใช้แบบไหนเป็นแกน เพราะเบี้ยสัญญาเพิ่มเติมเริ่มเร่งขึ้นเร็ว และไลฟ์ไทม์ โพรเทคชั่น ยังทำได้อยู่ ถ้าตั้งใจถือยาวถึงวัยเกษียณ การล็อกเบี้ยตอนนี้มีเหตุผล ถ้าไม่แน่ใจ ให้แบ่งเป็นสองก้อน คือทุนถาวรก้อนหนึ่งกับทุนสัญญาเพิ่มเติมอีกก้อนหนึ่ง'],
+    ['อายุ 51 – 65 ปี', 'ไลฟ์ไทม์ โพรเทคชั่น เริ่มไม่คุ้มในแง่เบี้ยรวม เพราะเบี้ยรวม 20 ปีแพงกว่าผลประโยชน์สูงสุด 150% ของทุน เมื่อเริ่มทำที่<b>ชายอายุ 55 ปีขึ้นไป และหญิงอายุ 63 ปีขึ้นไป</b> ช่วงนี้ควรเทียบกับการใช้สัญญาเพิ่มเติมทุนพอประมาณ แล้วเอาเงินส่วนต่างไปลงประกันสุขภาพเหมาจ่ายซึ่งได้ใช้แน่นอนกว่า'],
+    ['อายุ 66 ปีขึ้นไป', 'แบบเบี้ยคงที่ทำไม่ได้แล้ว เหลือเฉพาะการต่ออายุสัญญาเพิ่มเติมที่มีอยู่เดิม ถ้ายังไม่เคยมีเลย ให้พิจารณาว่าเบี้ยที่ต้องจ่ายคุ้มกับทุนที่จะได้หรือไม่ หลายเคสการเก็บเงินก้อนไว้เองตรง ๆ สมเหตุสมผลกว่า และควรให้น้ำหนักกับประกันสุขภาพและชดเชยรายวันมากกว่าเงินก้อนโรคร้ายแรง'],
+  ];
+  return items.map(([h,b]) => `<div class="ci-pick"><h4>${h}</h4><p>${b}</p></div>`).join('');
+}
+
+function renderCiReduceGuide(){
+  const items = [
+    ['ลดทุน ดีกว่ายกเลิกเสมอ', 'ถ้าเบี้ยเริ่มหนัก ให้ลดทุนก่อน อย่ายกเลิกทั้งสัญญา เพราะถ้ายกเลิกแล้วอยากกลับมาทำใหม่ ต้องแถลงสุขภาพใหม่ทั้งหมด และโรคที่ตรวจเจอระหว่างนั้นจะกลายเป็นโรคที่มีมาก่อนซึ่งไม่คุ้มครองตลอดไป การลดทุนยังคงคุ้มครองครบทุกโรคเหมือนเดิม แค่ได้เงินก้อนน้อยลง'],
+    ['สัญญาณว่าถึงเวลาลดทุน', 'ภาระที่ทุนก้อนนี้ตั้งใจปิดหมดไปแล้ว เช่น หนี้บ้านหมด ลูกเรียนจบ หรือมีเงินเก็บพอเป็นค่ารักษาแล้ว ทุนโรคร้ายแรงมีไว้ทดแทนรายได้ที่หายไประหว่างรักษา ไม่ใช่ไว้จ่ายค่าหมอ ถ้ารายได้ที่ต้องทดแทนลดลง ทุนก็ควรลดตาม'],
+    ['ถ้าจ่ายไหวแค่อย่างเดียว ให้เลือกประกันสุขภาพก่อน', 'ค่ารักษาโรคร้ายแรงเบิกจากประกันสุขภาพเหมาจ่ายได้โดยตรง ส่วนเงินก้อนโรคร้ายแรงเป็นเงินทดแทนรายได้และค่าใช้จ่ายที่เบิกไม่ได้ ถ้างบมีจำกัดจริง ๆ ให้วางประกันสุขภาพเป็นฐานก่อน แล้วค่อยเติมเงินก้อนโรคร้ายแรงเมื่อมีงบเพิ่ม'],
+    ['เข้าใจคำว่าจ่ายทิ้งให้ตรง', 'สัญญาเพิ่มเติมโรคร้ายแรงเป็นแบบ<b>ไม่มีมูลค่าเวนคืน</b> ถ้าไม่เคลมก็ไม่ได้อะไรคืน ซึ่งเป็นเรื่องปกติของการซื้อความคุ้มครอง เหมือนประกันรถ ส่วนไลฟ์ไทม์ โพรเทคชั่น มีมูลค่าเวนคืนและจ่ายเมื่อเสียชีวิตหรืออยู่ครบอายุ 99 ปี จึงไม่สูญเปล่า แต่แลกมาด้วยเบี้ยที่แพงกว่าหลายเท่าตั้งแต่ปีแรก <b>ไม่มีแบบไหนดีกว่าโดยสมบูรณ์</b> ขึ้นกับว่าลูกค้าให้ค่ากับการได้เงินคืนแค่ไหน'],
+    ['ระวังกับดักการเปลี่ยนแบบเพื่อให้เข้างบ', 'การย้ายจากแบบคุ้มครอง 36 โรค ไปแบบคุ้มครองมะเร็งอย่างเดียวเพราะเบี้ยถูกกว่า ทำให้ความเสี่ยงกลุ่มหัวใจและสมองหายไปทั้งหมด ถ้างบไม่พอ ให้ลดทุนของแบบที่ครอบคลุมกว้าง แทนการเปลี่ยนไปแบบที่แคบลง ยกเว้นลูกค้ามีเหตุผลชัดเจนว่ากังวลโรคเดียวจริง ๆ'],
+  ];
+  return items.map(([h,b]) => `<div class="ci-pick"><h4>${h}</h4><p>${b}</p></div>`).join('');
+}
+
+function renderCiComparePage(){
+  const t = document.getElementById('ciCompareTable');
+  if(t) t.innerHTML = renderCiCompareTable();
+  const g = document.getElementById('ciAgeGuide');
+  if(g) g.innerHTML = renderCiAgeGuide();
+  const r = document.getElementById('ciReduceGuide');
+  if(r) r.innerHTML = renderCiReduceGuide();
+  renderCiAdvisor();
+}
+
 function renderMultipleCiTables(freq){
   freq = freq || 'annual';
   const headers = ['อายุ', 'ทุน 500,000', 'ทุน 1,000,000', 'ทุน 2,000,000'];
@@ -4764,6 +5243,133 @@ const PLAN_DETAILS = {
       {label:'19/19 หญิง', arr: ageSeriesFromFn(15,59, a=>termRiderPremium('19/19',1000000,'f',a,'annual'))},
     ]),
     rateNote: 'ตารางคิดที่ทุนประกัน 1,000,000 บาท เป็นเบี้ยรายปี แสดง 4 แผนจากทั้งหมด 9 แผนเพื่อให้อ่านง่าย อีก 5 แผน (15/5, 19/5, 19/14, 19/15, 19/16) มีข้อมูลครบในระบบและใช้คำนวณได้ อัตราคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง',
+  },
+
+  lifetimeprotection: {
+    title: 'เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ ที่รวมความคุ้มครองโรคร้ายแรงไว้ในตัว)',
+    notice: {
+      chip: 'จุดเด่น',
+      head: 'คุ้มครองโรคร้ายแรง เจอจ่ายเงินก้อน 15 โรคร้ายแรง · เบี้ยคงที่',
+      body: 'เป็น<b>สัญญาหลัก</b> ที่มีความคุ้มครองโรคร้ายแรงอยู่ในตัว ไม่ต้องแนบสัญญาเพิ่มเติม ' +
+            '<b>เบี้ยประกันภัยคงที่ตลอด 20 ปี</b> ไม่ปรับขึ้นตามอายุเหมือนสัญญาเพิ่มเติมโรคร้ายแรงทั่วไป ' +
+            'ตรวจพบโรคขั้นรุนแรงรับเงินก้อนสูงสุด <b>150% ของทุนประกัน</b> · ' +
+            'ที่โฆษณาว่า <b>รวมสูงสุด 200% ต้องเข้าใจให้ตรง</b> — เกิดได้เฉพาะกรณีเคลมโรคในตาราง (ข) ' +
+            'ครบทั้ง 2 รายการ รวม 50% ก่อน แล้วต่อมาจึงเคลมโรคขั้นรุนแรงในตาราง (ก) ที่จ่าย 150% ' +
+            'ไม่ใช่ผลประโยชน์ที่ทุกเคสจะได้ · และเมื่อเคลมตาราง (ก) แล้ว <b>สัญญาสิ้นสุดทันที</b>',
+    },
+    overview: 'ประกันชีวิตตลอดชีพที่<b>รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในสัญญาหลัก</b> ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี จุดต่างจากการซื้อสัญญาหลักแล้วแนบสัญญาเพิ่มเติมโรคร้ายแรงคือ<b>เบี้ยคงที่ตลอดสัญญา</b> ไม่ต้องต่ออายุรายปีและไม่ถูกปรับเบี้ยขึ้นตามอายุ แต่แลกมาด้วยเบี้ยที่สูงกว่าแบบตลอดชีพธรรมดามาก และ<b>เคลมโรคขั้นรุนแรงได้ครั้งเดียวแล้วสัญญาจบ</b>',
+    images: [],
+    coverage: [
+      '<b>ตรวจพบโรคร้ายแรงในตาราง (ก) 13 โรค</b> รับเงินก้อนตามร้อยละของทุนประกัน หรือมูลค่าเวนคืนในขณะนั้น แล้วแต่จำนวนใดมากกว่า — <b>จ่ายเพียงรายการเดียวเท่านั้น แล้วสัญญาสิ้นสุด</b>',
+      'กลุ่ม <b>150%</b> — มะเร็งขั้นรุนแรง · กล้ามเนื้อหัวใจตายเฉียบพลันขั้นรุนแรง · หลอดเลือดสมองแตกหรืออุดตันขั้นรุนแรง · การเจ็บป่วยระยะสุดท้าย',
+      'กลุ่ม <b>100%</b> — มะเร็งระยะลุกลาม · เนื้องอกในสมองชนิดไม่ใช่มะเร็ง · กล้ามเนื้อหัวใจตายเฉียบพลัน · ผ่าตัดเส้นเลือดเลี้ยงกล้ามเนื้อหัวใจ · โรคกล้ามเนื้อหัวใจ · ผ่าตัดลิ้นหัวใจโดยเปิดหัวใจ · ผ่าตัดหัวใจแบบเปิด · หลอดเลือดสมองแตกหรืออุดตัน (Major stroke)',
+      'กลุ่ม <b>50%</b> — หลอดเลือดสมองโป่งพองที่ต้องรักษาโดยการผ่าตัด',
+      '<b>ตาราง (ข) อีก 2 โรค จ่าย 25% แต่ไม่เกิน 500,000 บาทต่อรายการ</b> คือ มะเร็งระยะไม่ลุกลาม และ หลอดเลือดหัวใจตีบที่รักษาด้วยการสวนหลอดเลือด — จ่ายแต่ละรายการครั้งเดียวตลอดอายุ และ<b>สัญญายังมีผลบังคับต่อ</b>',
+      '<b>เสียชีวิต</b> รับจำนวนเงินเอาประกันภัย หรือมูลค่าเวนคืนในขณะนั้น แล้วแต่จำนวนใดมากกว่า',
+      '<b>มีชีวิตอยู่ถึงอายุ 99 ปี</b> รับเท่ากับจำนวนเงินเอาประกันภัย',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>1 – 65 ปี</b> · ชำระเบี้ย <b>20 ปี</b> · คุ้มครองถึงอายุ 99 ปี · <b>อัตราเบี้ยคงที่ตลอดสัญญา</b>',
+      'จำนวนเงินเอาประกันภัยขั้นต่ำ <b>150,000 บาท</b>',
+      '<b>เพดานทุนของแบบนี้รวมทุกกรมธรรม์</b> — อายุ 1 – 15 ปี ไม่เกิน 3,000,000 บาท · อายุ 16 – 65 ปี ไม่เกิน 5,000,000 บาท',
+      '<b>เพดานเมื่อรวมกับสัญญาเพิ่มเติมโรคร้ายแรงอื่นทุกกรมธรรม์</b> — อายุ 1 – 15 ปี ไม่เกิน 5,000,000 บาท · อายุ 16 – 65 ปี ไม่เกิน 20,000,000 บาท',
+      'ชำระได้ทั้ง <b>รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน</b> · เอกสารระบุตรงว่า<b>ไม่มีส่วนลดเบี้ยประกันภัย</b>',
+      'ซื้อสัญญาเพิ่มเติมแนบท้ายได้ ตามเงื่อนไขการพิจารณารับประกันของสัญญานั้น',
+      'ลดหย่อนภาษีเงินได้บุคคลธรรมดาได้ ตามประกาศอธิบดีกรมสรรพากรเกี่ยวกับภาษีเงินได้ ฉบับที่ 172 และ 315',
+      '<b>อัตราในตารางยังไม่รวมสัญญาเพิ่มเติมยกเว้นเบี้ยกรณีทุพพลภาพ</b> ซึ่งมีตารางอัตราแยกต่างหาก รับอายุ 15 – 59 ปี ถ้าลูกค้าซื้อต้องบวกเพิ่ม',
+      '<b>ระยะเวลาที่ไม่คุ้มครอง 90 วัน</b> — ไม่คุ้มครองโรคร้ายแรงและการผ่าตัดที่เป็นมาก่อนวันที่บริษัทตกลงรับประกันภัย หรือก่อนวันต่ออายุ หรือ<b>ภายใน 90 วันนับตั้งแต่วันเริ่มมีผลคุ้มครอง</b> แล้วแต่กรณีใดเกิดขึ้นหลังสุด (ยืนยันจากเล่มกรมธรรม์ฉบับจริง)',
+      '<b>ข้อยกเว้นของความคุ้มครองโรคร้ายแรงมีเพียง 2 ข้อ</b> คือ (1) การเจ็บป่วยหรือการผ่าตัดที่นอกเหนือจากคำนิยามของกรมธรรม์ และกรณี 90 วันข้างต้น (2) การเจ็บป่วยหรือการผ่าตัดที่มีผลโดยตรงหรือโดยอ้อมจากโรคภูมิคุ้มกันบกพร่อง (AIDS and HIV) — นอกเหนือจากนี้ยังมีเงื่อนไขทั่วไปของกรมธรรม์ที่ใช้กับทุกแบบประกัน',
+      '<b>กำหนดเวลาเรียกร้องสินไหม</b> — ต้องแจ้งบริษัทเป็นลายลักษณ์อักษร<b>ภายใน 60 วัน</b> นับแต่วันวินิจฉัยโรคร้ายแรงครั้งแรกหรือวันผ่าตัด และยื่นเอกสาร<b>ไม่เกิน 180 วัน</b> หลังวันวินิจฉัยหรือผ่าตัด ค่าใช้จ่ายในการหาเอกสารเป็นของผู้เอาประกันภัย · การแจ้งช้าไม่ทำให้สิทธิเสียไปหากมีเหตุจำเป็นอันสมควร',
+      'บริษัทสงวนสิทธิขอตรวจเพิ่มเติมรวมถึง<b>การตรวจภาวะภูมิคุ้มกันบกพร่อง (HIV)</b> ประกอบการพิจารณา และหากผู้เอาประกันภัย<b>ไม่ยินยอมให้ตรวจสอบประวัติการรักษาพยาบาล บริษัทปฏิเสธความคุ้มครองได้</b>',
+      '<b>ข้อควรระวังเรื่องความคุ้มค่า</b> — เบี้ยรวม 20 ปีจะแพงกว่าผลประโยชน์สูงสุด 150% ของทุน เมื่อเริ่มทำที่<b>ชายอายุ 55 ปีขึ้นไป</b> และ<b>หญิงอายุ 63 ปีขึ้นไป</b> ช่วงอายุนี้ควรเทียบกับการซื้อสัญญาหลักถูก ๆ แล้วแนบสัญญาเพิ่มเติมโรคร้ายแรงแทน',
+      '<b>เทียบราคากับแบบตลอดชีพธรรมดา</b> — ที่ทุน 1,000,000 บาท ชายอายุ 35 ปี ไลฟ์ไทม์ เบี้ยปีละ 41,180 บาท ส่วนสมาร์ท โพรเทคชั่น 99/20 (คุ้มครองชีวิตอย่างเดียว) ปีละ 25,980 บาท ต่างกัน 15,200 บาทต่อปี หรือ 59% ซึ่งเป็นราคาของความคุ้มครองโรคร้ายแรงแบบเบี้ยคงที่',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(1, 65, [
+      {label:'ชาย', arr: ageSeriesFromFn(1,65, age=>mainPremiumAtEntry('lifetime_protection',1000000,'m',age,freq))},
+      {label:'หญิง', arr: ageSeriesFromFn(1,65, age=>mainPremiumAtEntry('lifetime_protection',1000000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 1,000,000 บาท เป็นเบี้ยของสัญญาหลักอย่างเดียว ยังไม่รวมสัญญาเพิ่มเติมยกเว้นเบี้ยกรณีทุพพลภาพ อัตราคัดลอกตรงจากเอกสารอัตราเบี้ยทางการ ตรวจไขว้กับหน้าข้อมูลผลิตภัณฑ์แล้วตรงกันครบ 520 จาก 520 ช่อง และคอลัมน์รายงวดสร้างจากอัตรารายปีตามสูตรที่เอกสารระบุเอง (คูณ 0.52 / 0.27 / 0.09) ได้ตรงครบ 390 จาก 390 ช่อง',
+  },
+
+  waigao9090: {
+    title: 'วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ · โครงการเพื่อผู้สูงอายุ)',
+    notice: {
+      chip: 'จุดเด่น',
+      head: 'ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ',
+      body: 'สมัครได้เลยแม้มีโรคประจำตัว ไม่ต้องตอบคำถามสุขภาพและไม่ต้องตรวจสุขภาพ ' +
+            '<b>แต่ไม่ได้แปลว่าไม่มีเงื่อนไข</b> — สิ่งที่ต้องอธิบายลูกค้าให้ครบคือ ' +
+            '<b>ปีกรมธรรม์ที่ 1 – 2 ถ้าเสียชีวิตจากการเจ็บป่วย บริษัทจ่ายคืน 102% ของเบี้ยที่ชำระแล้ว ไม่ใช่จำนวนเงินเอาประกันภัย</b> ' +
+            '(กรณีอุบัติเหตุได้ทุนเต็มตั้งแต่ปีแรก) · <b>บริษัทรับเฉพาะกลุ่มอาชีพ 1 และ 2</b> ' +
+            'ไม่รับอาชีพที่เสี่ยงอุบัติเหตุสูง · และ<b>ข้อยกเว้นความคุ้มครองเป็นไปตามที่ระบุในกรมธรรม์ฉบับจริง</b> ' +
+            'ซึ่งหน้าข้อมูลผลิตภัณฑ์ไม่ได้แสดงรายการไว้ จึงต้องอ่านจากเล่มกรมธรรม์',
+    },
+    overview: 'แบบประกันหลักคือ <b>เมืองไทยสบายใจ 90/90 (เพื่อผู้สูงอายุ)</b> ส่วน "วัยเก๋า คุ้มสุขใจ" เป็นชื่อโครงการที่ขายเป็นแพ็กเกจ ชำระเบี้ยและคุ้มครองยาวจนอายุครบ 90 ปี จุดขายคือ<b>รับสมัครโดยไม่ถามและไม่ตรวจสุขภาพ</b> จึงเป็นทางออกสำหรับผู้สูงอายุที่ทำแบบทั่วไปไม่ผ่าน แลกมาด้วยเบี้ยที่แพงเมื่อเทียบกับทุน และเงื่อนไข 2 ปีแรกที่ต้องอธิบายให้ชัด',
+    images: [],
+    coverage: [
+      '<b>เสียชีวิตจากการเจ็บป่วย</b> — ปีกรมธรรม์ที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว</b> · ปีที่ 3 เป็นต้นไป รับ <b>100% ของจำนวนเงินเอาประกันภัย</b>',
+      '<b>เสียชีวิตจากอุบัติเหตุ</b> (ภายใน 180 วันนับแต่วันเกิดเหตุ) — ปีที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว บวก 100% ของทุนประกัน</b> · ปีที่ 3 เป็นต้นไป รับ 100% ของทุนประกัน',
+      '<b>เสียชีวิตจากอุบัติเหตุสาธารณะ</b> (ภายใน 180 วัน) — ปีที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว บวก 200% ของทุนประกัน</b> · ปีที่ 3 เป็นต้นไป รับ <b>200% ของทุนประกัน</b>',
+      '<b>มีชีวิตอยู่จนครบอายุ 90 ปี</b> รับ 100% ของจำนวนเงินเอาประกันภัยเป็นเงินก้อน',
+      'แนบสัญญาเพิ่มเติมได้ 2 ตัว คือ <b>อุบัติเหตุส่วนบุคคล สบายใจ</b> (ค่ารักษาจากอุบัติเหตุสูงสุด 25,000 บาท/ครั้ง) และ <b>สุขภาพวงเงินแน่นอน</b> (ชดเชยรายวันสูงสุด 2,000 บาท/วัน และ 2 เท่าเมื่อนอน ไอ.ซี.ยู.)',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>50 – 75 ปี</b> · ชำระเบี้ยและคุ้มครองจนอายุครบ 90 ปี',
+      '<b>ทุนประกันรวมทุกช่องทาง สูงสุดไม่เกิน 600,000 บาทต่อคน</b> ซื้อได้มากกว่า 1 กรมธรรม์แต่นับรวมกัน (ตารางเบี้ยที่เผยแพร่มีทุน 100,000 / 200,000 / 300,000 / 500,000 บาท)',
+      'ชำระเบี้ยได้เฉพาะ <b>รายปี และรายเดือน</b> เท่านั้น ไม่มีราย 6 เดือนและราย 3 เดือน · เบี้ยรายเดือน = เบี้ยรายปี × 0.09 ปัดเป็นจำนวนเต็มบาท (จ่าย 12 งวดจะแพงกว่ารายปี 8%)',
+      '<b>รับเฉพาะกลุ่มอาชีพ 1 และ 2</b> — บริษัทจะไม่พิจารณารับผู้ที่ทำงานเสี่ยงอุบัติเหตุระดับสูง เช่น งานช่าง กระบวนการผลิต ใช้เครื่องจักรกลหนัก ผู้ใช้แรงงาน และงานขนส่งที่ต้องเดินทาง',
+      '<b>ซื้อสัญญาเพิ่มเติมอื่นแนบท้ายไม่ได้</b> ยกเว้นอุบัติเหตุส่วนบุคคล สบายใจ และสุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ) เท่านั้น จึงใช้เป็นสัญญาหลักรองรับประกันสุขภาพเหมาจ่ายไม่ได้',
+      'สัญญาเพิ่มเติมสุขภาพวงเงินแน่นอน <b>2 ปีแรกคุ้มครองเฉพาะกรณีอุบัติเหตุ</b> · ซื้อได้ไม่เกิน 1 สัญญาต่อคน และต้องแนบกับกรมธรรม์ใหม่เท่านั้น',
+      'สัญญาเพิ่มเติมอุบัติเหตุฯ ต่ออายุได้ถึง 75 ปี คุ้มครองถึงอายุ 76 ปี · สุขภาพวงเงินแน่นอน ต่ออายุได้ถึง 89 ปี คุ้มครองถึงอายุ 90 ปี',
+      '<b>เบี้ยรวมตลอดสัญญาสูงกว่าทุนประกัน</b> ประมาณ 1.8 – 2.3 เท่า แล้วแต่เพศและอายุที่เริ่มทำ เพราะเป็นแบบที่แลกการรับประกันโดยไม่ถามสุขภาพมาด้วยอัตราเบี้ยที่สูง ควรอธิบายลูกค้าตรง ๆ ว่าเป็นการซื้อความคุ้มครองและการส่งต่อมรดก ไม่ใช่การออม',
+      '<b>ไม่พบข้อมูลส่วนลดเบี้ยรายปีในแหล่งที่ตรวจ ระบบจึงยังไม่ใช้ส่วนลด</b> ไม่ใช่ข้อสรุปว่าบริษัทไม่มีส่วนลด',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(50, 75, [
+      {label:'ชาย', arr: ageSeriesFromFn(50,75, age=>mainPremiumAtEntry('sabaijai_90_90',500000,'m',age,freq))},
+      {label:'หญิง', arr: ageSeriesFromFn(50,75, age=>mainPremiumAtEntry('sabaijai_90_90',500000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 500,000 บาท เป็นเบี้ยรวมของแบบประกันหลักอย่างเดียว ยังไม่รวมสัญญาเพิ่มเติมอุบัติเหตุและชดเชยรายวัน อัตราคัดลอกตรงจากตารางอัตราเบี้ยบน SmartWeb (อัตราต่อทุน 1,000 บาท) แล้วคูณทุนและปัดเป็นจำนวนเต็มตามกติกาที่หน้าเดียวกันระบุไว้ ตรวจไขว้กับตารางจำนวนเงินเต็ม 4 ระดับทุนบนเว็บตัวแทนแล้วตรงกันครบ 208 จาก 208 ช่อง และคอลัมน์รายเดือนตรงกับสูตร รายปี × 0.09 ครบทั้ง 52 ช่อง',
+  },
+
+  waigao9910: {
+    title: 'วัยเก๋า คุ้มได้ใจ 99/10 (เพื่อผู้สูงอายุ)', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ · โครงการเพื่อผู้สูงอายุ)',
+    notice: {
+      chip: 'จุดเด่น',
+      head: 'ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ',
+      body: 'สมัครได้ถึงอายุ 80 ปี แม้มีโรคประจำตัว ไม่ต้องตอบคำถามสุขภาพและไม่ต้องตรวจสุขภาพ ' +
+            '<b>แต่ไม่ได้แปลว่าไม่มีเงื่อนไข</b> — สิ่งที่ต้องอธิบายลูกค้าให้ครบคือ ' +
+            '<b>ปีกรมธรรม์ที่ 1 – 2 ถ้าเสียชีวิตจากการเจ็บป่วย บริษัทจ่ายคืน 102% ของเบี้ยที่ชำระแล้ว ไม่ใช่จำนวนเงินเอาประกันภัย</b> ' +
+            '(กรณีอุบัติเหตุได้ทุนเต็มตั้งแต่ปีแรก) · <b>บริษัทรับเฉพาะกลุ่มอาชีพ 1 และ 2</b> ' +
+            'ไม่รับอาชีพที่เสี่ยงอุบัติเหตุสูง · และ<b>ข้อยกเว้นความคุ้มครองเป็นไปตามที่ระบุในกรมธรรม์ฉบับจริง</b> ' +
+            'ซึ่งหน้าข้อมูลผลิตภัณฑ์ไม่ได้แสดงรายการไว้ จึงต้องอ่านจากเล่มกรมธรรม์',
+    },
+    overview: 'แบบประกันหลักคือ <b>เมืองไทยสบายใจ 99/10 (เพื่อผู้สูงอายุ)</b> ส่วน "วัยเก๋า คุ้มได้ใจ" เป็นชื่อโครงการ จุดต่างจาก 90/90 คือ<b>ชำระเบี้ยสั้นแค่ 10 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี</b> และ<b>ทุนคุ้มครองเพิ่มขึ้นตามปีกรมธรรม์จนถึง 150%</b> (กรณีอุบัติเหตุสาธารณะสูงสุด 300%) รับสมัครถึงอายุ 80 ปี และ<b>ลดหย่อนภาษีได้</b> ซึ่ง 90/90 ไม่ได้ระบุไว้',
+    images: [],
+    coverage: [
+      '<b>เสียชีวิตจากการเจ็บป่วย</b> — ปีกรมธรรม์ที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว</b> · ปีที่ 3 เป็นต้นไป รับตามตารางร้อยละของทุนประกัน <b>ปีที่ 3–6 = 100% · 7–10 = 110% · 11–15 = 120% · 16–20 = 130% · 21 ปีขึ้นไปจนครบอายุ 99 = 150%</b> หรือเงินค่าเวนคืนกรมธรรม์ในขณะนั้น หรือ 101% ของเบี้ยที่ชำระแล้ว แล้วแต่จำนวนใดมากกว่า',
+      '<b>เสียชีวิตจากอุบัติเหตุ</b> (ภายใน 180 วัน) — ปีที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว บวก 100% ของทุนประกัน</b> · ปีที่ 3 เป็นต้นไป ใช้ตารางร้อยละชุดเดียวกับกรณีเจ็บป่วย',
+      '<b>เสียชีวิตจากอุบัติเหตุสาธารณะ</b> (ภายใน 180 วัน) — ปีที่ 1 – 2 รับ <b>102% ของเบี้ยที่ชำระแล้ว บวก 200% ของทุนประกัน</b> · ปีที่ 3 เป็นต้นไปใช้ตารางคูณสอง คือ <b>200% / 220% / 240% / 260% / 300%</b>',
+      '<b>ครบอายุ 99 ปี</b> รับ 150% ของทุนประกัน หรือ 101% ของเบี้ยที่ชำระแล้ว แล้วแต่จำนวนใดมากกว่า',
+      'แนบสัญญาเพิ่มเติมได้ 2 ตัวเหมือน 90/90 คือ อุบัติเหตุส่วนบุคคล สบายใจ และ สุขภาพวงเงินแน่นอน (เพื่อผู้สูงอายุ)',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>50 – 80 ปี</b> · <b>ชำระเบี้ย 10 ปี</b> · คุ้มครองจนอายุครบ 99 ปี',
+      '<b>ทุนประกันรวมทุกช่องทาง สูงสุดไม่เกิน 600,000 บาทต่อคน</b> (ตารางเบี้ยที่เผยแพร่มีทุน 100,000 / 200,000 / 300,000 / 500,000 บาท)',
+      'ชำระเบี้ยได้เฉพาะ <b>รายปี และรายเดือน</b> · เบี้ยรายเดือน = เบี้ยรายปี × 0.09 ปัดเป็นจำนวนเต็มบาท (จ่าย 12 งวดแพงกว่ารายปี 8%)',
+      '<b>ลดหย่อนภาษีได้ไม่เต็มจำนวนเบี้ย</b> — เอกสารทางการระบุว่า "ลดหย่อนภาษีได้ เฉพาะเบี้ยในส่วนของความคุ้มครองชีวิตเท่านั้น" ส่วนที่ลดหย่อนไม่ได้อยู่ราว <b>0.5 – 1.2% ของเบี้ยรวม</b> เช่น ชายอายุ 50 ปี ทุน 500,000 บาท เบี้ยรวม 68,380 บาท ลดหย่อนได้ 67,645 บาท ต้องแจ้งตัวเลขนี้ให้ลูกค้าตอนยื่นภาษี ไม่ใช่แจ้งยอดเบี้ยที่จ่ายจริง (เพดานรวมทุกกรมธรรม์ 100,000 บาทต่อปี ตามหลักเกณฑ์กรมสรรพากร)',
+      '<b>รับเฉพาะกลุ่มอาชีพ 1 และ 2</b> ไม่รับผู้ที่ทำงานเสี่ยงอุบัติเหตุระดับสูง',
+      '<b>ซื้อสัญญาเพิ่มเติมอื่นแนบท้ายไม่ได้</b> ยกเว้น 2 ตัวที่กำหนด · สัญญาเพิ่มเติมทั้งสองรับอายุ 50 – 75 ปี แม้สัญญาหลักจะรับถึง 80 ปี ดังนั้น<b>ลูกค้าอายุ 76 – 80 ปี จะทำได้เฉพาะสัญญาหลัก</b>',
+      'สัญญาเพิ่มเติมสุขภาพวงเงินแน่นอน <b>2 ปีแรกคุ้มครองเฉพาะกรณีอุบัติเหตุ</b> ซื้อได้ไม่เกิน 1 สัญญาต่อคน และต้องแนบกรมธรรม์ใหม่',
+      '<b>เบี้ยรวม 10 ปี อยู่ที่ประมาณ 1.3 – 2.1 เท่าของทุนประกัน</b> แล้วแต่เพศและอายุที่เริ่มทำ เทียบกับผลประโยชน์ครบอายุ 99 ที่ 150% ของทุน จึงเหมาะกับการวางแผนส่งต่อมรดกและปิดภาระเบี้ยให้จบใน 10 ปี ไม่ใช่แบบที่ให้ผลตอบแทนการออม',
+      '<b>ไม่พบข้อมูลส่วนลดเบี้ยรายปีในแหล่งที่ตรวจ ระบบจึงยังไม่ใช้ส่วนลด</b>',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(50, 80, [
+      {label:'ชาย', arr: ageSeriesFromFn(50,80, age=>mainPremiumAtEntry('sabaijai_99_10',500000,'m',age,freq))},
+      {label:'หญิง', arr: ageSeriesFromFn(50,80, age=>mainPremiumAtEntry('sabaijai_99_10',500000,'f',age,freq))},
+    ]),
+    rateNote: 'ตารางคิดที่ทุนประกัน 500,000 บาท เป็นเบี้ยของแบบประกันหลักอย่างเดียว ยังไม่รวมสัญญาเพิ่มเติม อัตราคัดลอกตรงจากตารางบน SmartWeb (อัตราต่อทุน 1,000 บาท) แล้วคูณทุนและปัดเป็นจำนวนเต็มตามกติกาที่หน้าเดียวกันระบุ ตรวจไขว้กับตารางจำนวนเงินเต็มบนเว็บตัวแทนแล้วตรงกันครบ 248 จาก 248 ช่อง และคอลัมน์รายเดือนตรงกับสูตร รายปี × 0.09 ครบทั้ง 62 ช่อง',
   },
 
   happyreturn997: {
@@ -5416,6 +6022,7 @@ const PAGE_ROUTES = {
   plans: '/plans',
   compare: '/plans/compare',
   'pension-compare': '/plans/compare-pension',
+  'ci-compare': '/plans/compare-ci',
   hnw: '/hnw',
   knowledge: '/health-knowledge',
   contact: '/contact',
@@ -5426,6 +6033,9 @@ const PLAN_ROUTES = {
   main997: '/plans/smart-protection-99-7',
   main8010: '/plans/smart-protection-80-10',
   flexi995: '/plans/flexi-protection-99-5',
+  lifetimeprotection: '/plans/lifetime-protection',
+  waigao9090: '/plans/waigao-90-90',
+  waigao9910: '/plans/waigao-99-10',
   easyprotection: '/plans/easy-protection',
   termrider: '/plans/term-rider',
   happyreturn997: '/plans/happy-return-99-7',
@@ -5514,6 +6124,7 @@ function showPlanDetail(id, options = {}){
       <div class="cat">${p.category}</div>
       <h2 style="margin-top:4px;">${p.title}</h2>
       ${renderBrochureButtons(id)}
+      ${p.notice ? `<div class="plan-notice"><div class="pn-head"><span class="pn-chip">${p.notice.chip}</span>${p.notice.head}</div><div class="pn-body">${p.notice.body}</div></div>` : ''}
       <p>${p.overview}</p>
       ${p.images && p.images.length ? `<div class="brochure-strip">${p.images.map((img,idx)=>`<div class="brochure-card"><img class="cover-${typeof img==='string'?'landscape':(img.format||'landscape')}" src="${planCoverUrl(typeof img==='string'?img:img.src)}" alt="${(typeof img==='string'?p.title:img.alt)||p.title}" loading="lazy"><div class="brochure-caption">${(typeof img==='string'?'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์':img.caption)||'ภาพประกอบจากโบรชัวร์/เอกสารผลิตภัณฑ์'}</div></div>`).join('')}</div>` : ''}
     </div>
@@ -6761,6 +7372,7 @@ function showPage(name, options = {}){
   applyHnwSkin(name);
   if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
   if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
+  if(name === 'ci-compare' && typeof renderCiComparePage === 'function') renderCiComparePage();
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   window.scrollTo({top:0, behavior:'auto'});
 }

@@ -14,3 +14,9 @@ HNW_criteria.pdf
 easyprotection_slide.pdf
 *_slide.pdf
 
+# เล่มกรมธรรม์ของลูกค้า และภาพที่แปลงจากเล่ม มีเลขที่กรมธรรม์และตารางมูลค่าเวนคืน
+# ซึ่งเป็นข้อมูลเฉพาะบุคคล ห้ามขึ้น Git และห้าม deploy เด็ดขาด
+tmp/policy/
+mtl lifetime protection.pdf
+*กรมธรรม์*.pdf
+
