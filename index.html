@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>หมอกึ๊ก | เครื่องคำนวณและผู้ช่วยออกแบบแผนประกันสุขภาพ</title>
+<title>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก DoctorGugInsurance</title>
+<meta name="description" content="เลือกแผนประกันสุขภาพจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน คำนวณเบี้ยจากตารางจริงของเมืองไทยประกันชีวิต โดย นพ.หนึ่งบุรุษ เทียมถนอม แพทย์เวชศาสตร์ฉุกเฉินและตัวแทนประกันชีวิต">
+<meta property="og:title" content="วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก">
+<meta property="og:description" content="เลือกแผนประกันสุขภาพจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน คำนวณเบี้ยจากตารางจริงของบริษัท">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.doctor-insurance.com/">
+<meta name="twitter:card" content="summary">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#c81e5c">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1092,8 +1098,6 @@
   }
   .doc-avatar svg{display:block;width:100%;height:100%;}
   @keyframes dgFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-  .dg-chest{transform-box:fill-box;transform-origin:center;animation:dgPulse 2.2s ease-in-out infinite;}
-  @keyframes dgPulse{0%,100%{transform:scale(1);}18%{transform:scale(1.22);}36%{transform:scale(1);}}
   .dg-ecg{stroke-dasharray:60;stroke-dashoffset:60;animation:dgTrace 3s linear infinite;}
   @keyframes dgTrace{0%{stroke-dashoffset:60;}60%{stroke-dashoffset:0;}100%{stroke-dashoffset:-60;}}
   .dg-eyes{transform-box:fill-box;transform-origin:center;animation:dgBlink 6s ease-in-out infinite;}
@@ -1111,7 +1115,7 @@
   .ai-plan-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(143,13,64,.12);}
   /* เคารพผู้ใช้ที่ตั้งค่าลดการเคลื่อนไหว เช่นคนที่เวียนหัวง่าย */
   @media (prefers-reduced-motion: reduce){
-    .doc-avatar,.dg-chest,.dg-ecg,.dg-eyes{animation:none !important;}
+    .doc-avatar,.dg-ecg,.dg-eyes{animation:none !important;}
     .reveal{opacity:1;transform:none;transition:none;}
     .content-card,.btn,.ai-plan-card{transition:none;}
   }
@@ -1457,8 +1461,8 @@
 <div class="hero">
   <div class="hero-inner">
     <div class="eyebrow">หมอกึ๊ก DoctorGugInsurance • ตัวแทนเมืองไทยประกันชีวิต</div>
-    <h1>ผู้ช่วยออกแบบแผนประกันสุขภาพ + เครื่องคำนวณเบี้ย</h1>
-    <div class="sub">เริ่มจากผู้ช่วยออกแบบแผนแบบ Health-first ให้เลือก 3 Tier ตามความต้องการ แล้วกดนำแผนไปคำนวณเบี้ยรายปีและเบี้ยสะสมต่อได้ทันที</div>
+    <h1>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์</h1>
+    <div class="sub">เลือกแผนจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน ไม่ใช่จากโบรชัวร์ · คำนวณเบี้ยจากตารางจริงของบริษัท พร้อมทางเลือกที่ดีกว่าและประหยัดกว่าให้เทียบทุกครั้ง</div>
     <div class="navbar" id="navbar">
       <button data-page="home" class="active">หน้าแรก</button>
       <button data-page="ai">ผู้ช่วยออกแบบแผนประกัน</button>
@@ -1965,11 +1969,8 @@
             <!-- คอเสื้อ -->
             <path d="M84 157l-9 6 12 16z" fill="#dfe4ec"/>
             <path d="M116 157l9 6-12 16z" fill="#dfe4ec"/>
-            <!-- หูฟัง -->
-            <path d="M82 150c0 26 12 40 30 40s28-16 28-34" fill="none" stroke="#2b3a4a" stroke-width="6" stroke-linecap="round"/>
-            <path d="M82 150c0-6-1-9-1-13" fill="none" stroke="#2b3a4a" stroke-width="6" stroke-linecap="round"/>
-            <circle class="dg-chest" cx="140" cy="158" r="9" fill="#2b3a4a"/>
-            <circle cx="140" cy="158" r="4" fill="#5b6b7d"/>
+            <!-- กระเป๋าเสื้อกาวน์ -->
+            <rect x="126" y="176" r="2" width="30" height="24" rx="3" fill="#f7f9fc" stroke="#dfe4ec" stroke-width="1.5"/>
             <!-- คอ -->
             <path d="M88 118h24v26a12 12 0 0 1-24 0z" fill="#f0c39c"/>
             <!-- หน้า -->
@@ -1990,7 +1991,7 @@
             <circle cx="78" cy="103" r="5" fill="#f2a58f" opacity=".55"/>
             <circle cx="122" cy="103" r="5" fill="#f2a58f" opacity=".55"/>
             <!-- กราฟหัวใจบนกระเป๋าเสื้อ -->
-            <path class="dg-ecg" d="M126 186h10l4-9 6 18 5-9h10" fill="none" stroke="#c81e5c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="dg-ecg" d="M130 188h6l3-7 5 14 4-7h8" fill="none" stroke="#c81e5c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
           <circle cx="100" cy="100" r="94" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="3"/>
         </svg>
