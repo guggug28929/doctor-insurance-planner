@@ -1488,6 +1488,7 @@
         <label><input type="radio" name="mainPlan" value="premier_legacy_99_10"> พรีเมียร์ เลกาซี่ 99/10 (HNW)<span class="info-icon">i<span class="tooltip">กลุ่ม HNW ทุนขั้นต่ำ 10,000,000 บาท ชำระ 10 ปี คุ้มครองถึงอายุ 99 ปี อายุรับ 0 – 70 ปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="legacy_wealth_99_5"> เลกาซี่ เวลธ์ 99/5 (HNW ค่าเวนคืนคงที่)<span class="info-icon">i<span class="tooltip">คนละแบบกับพรีเมียร์ เลกาซี่ 99/5 ทุนขั้นต่ำ 10,000,000 บาท อายุรับถึง 75 ปี อัตราเบี้ยต่ำกว่าพรีเมียร์ เลกาซี่ คงที่ทุกช่องราว 6.3% และไม่มีอัตรา Preferred</span></span></label>
         <label><input type="radio" name="mainPlan" value="premier_legacy_99_1"> พรีเมียร์ เลกาซี่ 99/1 (ชำระครั้งเดียว)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียว คุ้มครองถึงอายุ 99 ปี มูลค่าเวนคืนคงที่ตลอดสัญญา อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 10,000,000 บาท แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ · อัตราตรวจไขว้ SmartWeb และเว็บตัวแทนตรงกันครบทุกค่า</span></span></label>
+        <label><input type="radio" name="mainPlan" value="whole_life_99_1_cashback"> คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียวเท่ากับจำนวนเงินเอาประกันภัยพอดี คุ้มครองชีวิต 105% มีเงินคืนทุกปีถึงอายุ 99 ปี ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 30 วัน – 70 ปี ทุนขั้นต่ำ 1,000,000 บาท แนบสัญญาเพิ่มเติมไม่ได้ ต้องจองสิทธิ์การขายก่อน</span></span></label>
         <label><input type="radio" name="mainPlan" value="whole_life_99_1_nocash"> เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียว ไม่มีเงินคืนระหว่างสัญญา มูลค่าเวนคืนเพิ่มขึ้นตามปีกรมธรรม์ อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 10,000,000 บาท แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ · อัตราตรวจไขว้ SmartWeb และเว็บตัวแทนตรงกันครบทุกค่า รวมจุดที่ชายอายุ 30 ปี</span></span></label>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (8 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
       </div>
@@ -3175,6 +3176,13 @@ const SPECIAL_MAIN_PLANS = {
     freqAllowed:['annual'],
     hint:'พรีเมียร์ เลกาซี่ 99/1: <b>ชำระเบี้ยครั้งเดียว</b> • อายุรับ 30 วัน – 80 ปี • ทุนเริ่มต้น 10,000,000 บาท • คุ้มครองถึงอายุ 99 ปี • มูลค่าเวนคืนคงที่ตลอดสัญญา • แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ • ไม่รับชำระด้วยบัตรเครดิต • พิจารณารับประกันตามหลักเกณฑ์กลุ่ม HNW',
   },
+  whole_life_99_1_cashback: {
+    label:'คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)',
+    entryAgeMin:0, entryAgeMax:70, coverToAge:99, payYears:1,
+    capitalMin:1000000, capitalStep:100000, capitalMaxOf: () => 500000000, ridersLocked:true,
+    freqAllowed:['annual'],
+    hint:'คุ้มครองตลอดชีพ 99/1 มีเงินคืน: <b>เบี้ยชำระครั้งเดียวเท่ากับจำนวนเงินเอาประกันภัยพอดี</b> เพราะอัตราคือ 1,000 บาทต่อทุน 1,000 บาท เท่ากันทุกเพศทุกอายุ • คุ้มครองชีวิต <b>105%</b> ของทุน • การันตีมีเงินคืนทุกปีถึงอายุ 99 ปี • อายุรับ 30 วัน – 70 ปี • ทุน 1,000,000 ถึง 500,000,000 บาท • <b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> • แนบสัญญาเพิ่มเติมไม่ได้ • ไม่รับบัตรเครดิต • ต้องจองสิทธิ์การขายก่อนส่งงาน',
+  },
   whole_life_99_1_nocash: {
     label:'เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว ไม่มีเงินคืน)',
     entryAgeMin:0, entryAgeMax:80, coverToAge:99, payYears:1,
@@ -3189,12 +3197,14 @@ function specialMainPlan(plan){ return SPECIAL_MAIN_PLANS[plan] || null; }
 const SINGLE_PREMIUM_PLANS = {
   premier_legacy_99_1: 'premier_legacy_99_1',
   whole_life_99_1_nocash: 'whole_life_99_1_nocash',
+  whole_life_99_1_cashback: 'whole_life_99_1_cashback',
 };
 function singlePremiumPlanPremium(plan, capital, gender, entryAge, freq){
   const g = RATES[SINGLE_PREMIUM_PLANS[plan]];
   if(!g || !g.rates) return null;
   if((freq || 'annual') !== 'annual') return null;   // ชำระครั้งเดียว ไม่มีงวดย่อย
   if(capital < (g.capital_min || 0)) return null;
+  if(g.capital_max_per_person && capital > g.capital_max_per_person) return null;
   const base = rateAtStart(g.rates.annual[gender], entryAge, g.age_start ?? 0);
   if(base === null || base === undefined) return null;
   return base * capital / 1000;
@@ -5502,6 +5512,43 @@ const PLAN_DETAILS = {
     rateNote: 'เบี้ยชำระครั้งเดียว ที่ทุนประกัน 10,000,000 บาท ซึ่งเป็นทุนขั้นต่ำของแบบนี้ · SmartWeb เผยแพร่เป็นอัตราต่อทุน 1,000 บาท ระบบคูณตามทุนที่เลือก ไม่ได้ประมาณค่าเอง · ค่าที่อายุ 30 ปีเพศชายคือ 2,663,200 บาท เป็นค่าที่ตรงกันทั้งสองแหล่ง',
   },
 
+  wholelife991cashback: {
+    title: 'เมืองไทย คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)', category: 'สัญญาหลัก (ตลอดชีพ ชำระเบี้ยครั้งเดียว · ไม่ต้องตอบคำถามสุขภาพ)',
+    notice: {
+      chip: 'จุดเด่น',
+      head: 'ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ · เบี้ยเท่ากันทุกเพศทุกอายุ',
+      body: 'SmartWeb ระบุอัตราเบี้ยไว้ที่ <b>1,000 บาท ต่อจำนวนเงินเอาประกันภัย 1,000 บาท เท่ากันทุกเพศ ทุกอายุ</b> ' +
+            'แปลว่าเบี้ยชำระครั้งเดียวเท่ากับจำนวนเงินเอาประกันภัยพอดี วางเงิน 1 ล้าน ได้ทุน 1 ล้าน · ' +
+            'ใช้ใบคำขอชนิด<b>ไม่มีคำถามสุขภาพ</b> และไม่มีการตรวจสุขภาพ · ' +
+            'ไม่ใช่แบบไม่มีข้อยกเว้น การจ่ายผลประโยชน์ยังเป็นไปตามข้อยกเว้นและเงื่อนไขในกรมธรรม์ ต้องอ่านเล่มก่อนเสนอลูกค้าเสมอ · ' +
+            '<b>ต้องจองสิทธิ์การขายก่อนส่งงานผ่าน New Sales Tool</b> จึงไม่ใช่แบบที่รับได้ตลอดเวลา',
+    },
+    overview: 'ประกันชีวิตตลอดชีพ<b>ชำระเบี้ยครั้งเดียว</b> ที่ออกแบบมาให้ใช้ง่ายกว่ากลุ่ม HNW ทุนเริ่มต้นเพียง 1,000,000 บาท ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ คุ้มครองชีวิต 105% ของทุน และการันตีมีเงินคืนทุกปีไปจนถึงอายุ 99 ปี เหมาะกับคนที่มีเงินก้อนและอยากแปลงเป็นหลักประกันให้ครอบครัวโดยไม่ติดเรื่องประวัติสุขภาพ',
+    images: [],
+    coverage: [
+      '<b>เสียชีวิตระหว่างสัญญา</b> รับ <b>105%</b> ของจำนวนเงินเอาประกันภัย ณ วันเริ่มมีผลคุ้มครอง',
+      '<b>เงินคืนทุกปี</b> การันตี ไปจนถึงอายุ 99 ปี · ชื่อแบบระบุอัตรา 1.75% ซึ่งเป็น % ของจำนวนเงินเอาประกันภัย',
+      '<b>ยังไม่พบตารางผลประโยชน์รายปีและผลประโยชน์ครบสัญญาในหน้าข้อมูลที่ตรวจ</b> ต้องอ่านจากใบปลิวหรือกรมธรรม์ก่อนยืนยันตัวเลขกับลูกค้า',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>30 วัน – 70 ปี</b> · <b>ชำระเบี้ยครั้งเดียว</b> · คุ้มครองถึงอายุ 99 ปี',
+      'จำนวนเงินเอาประกันภัย <b>1,000,000 ถึง 500,000,000 บาท</b>',
+      '<b>ไม่มีการตรวจสุขภาพ</b> และใช้ใบคำขอชนิดไม่มีคำถามสุขภาพ แบบที่ 1 รหัส 2-02-05-3380',
+      'รับประกัน Sub-Standard ได้ที่ EM สูงสุดไม่เกิน 200% <b>โดยไม่คิดเบี้ยเพิ่มพิเศษจากสุขภาพ</b> ใช้เบี้ยเท่ากับ Standard case',
+      '<b>แนบสัญญาเพิ่มเติมอื่นไม่ได้</b> · <b>ไม่รับชำระเบี้ยด้วยบัตรเครดิต</b> และไม่รับผ่านบัญชีบัตรเครดิตกสิกรไทย (CCP)',
+      'ลดหย่อนภาษีได้สูงสุด 100,000 บาทต่อปี ตามหลักเกณฑ์กรมสรรพากร',
+      '<b>ต้องจองสิทธิ์การขายก่อนส่งงานผ่านระบบ New Sales Tool</b>',
+      '<b>ไม่พบข้อมูลระยะเวลาที่ไม่คุ้มครองและรายการข้อยกเว้นในแหล่งที่ตรวจ</b> ต้องอ่านจากกรมธรรม์',
+      '<b>สถานะข้อมูล: ยืนยันจาก SmartWeb รหัสแบบ 239</b> — อัตราเบี้ยเป็นค่าคงที่ที่ระบุเป็นข้อความ ไม่ใช่ตารางรายอายุ จึงไม่มีจุดให้ตรวจไขว้รายอายุ และแบบนี้ไม่ปรากฏในหมวดตลอดชีพของเว็บตัวแทน',
+    ],
+    freqSupported: false,
+    rateTable: () => renderAgeTable(0, 70, [
+      {label:'ชาย (ทุน 1 ล้าน)', arr: ageSeriesFromFn(0,70, a=>mainPremiumAtEntry('whole_life_99_1_cashback',1000000,'m',a,'annual'))},
+      {label:'หญิง (ทุน 1 ล้าน)', arr: ageSeriesFromFn(0,70, a=>mainPremiumAtEntry('whole_life_99_1_cashback',1000000,'f',a,'annual'))},
+    ]),
+    rateNote: 'เบี้ยชำระครั้งเดียวที่ทุน 1,000,000 บาท · ตัวเลขเท่ากันทุกอายุทุกเพศ เพราะ SmartWeb ระบุอัตราไว้ที่ 1,000 บาทต่อทุน 1,000 บาทแบบคงที่ ไม่ใช่ความผิดพลาดของตาราง · เบี้ยจึงเท่ากับจำนวนเงินเอาประกันภัยที่เลือกเสมอ',
+  },
+
   lifetimeprotection: {
     title: 'เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ ที่รวมความคุ้มครองโรคร้ายแรงไว้ในตัว)',
     notice: {
@@ -6293,6 +6340,7 @@ const PLAN_ROUTES = {
   lifetimeprotection: '/plans/lifetime-protection',
   premierlegacy991: '/plans/premier-legacy-99-1',
   wholelife991nocash: '/plans/whole-life-99-1',
+  wholelife991cashback: '/plans/whole-life-99-1-cashback',
   waigao9090: '/plans/waigao-90-90',
   waigao9910: '/plans/waigao-99-10',
   easyprotection: '/plans/easy-protection',
@@ -6720,6 +6768,16 @@ const LIFE_PRODUCTS = [
     tradeoff:'เบี้ยแพงกว่าพรีเมียร์ เลกาซี่ 99/1 ราว 4 ถึง 15% ที่ทุนและอายุเดียวกัน · ทุนขั้นต่ำ 10,000,000 บาท · <b>ตารางเบี้ยขึ้นน้อยผิดจังหวะที่ชายอายุ 30 ปี และหญิงอายุ 25 – 29 ปี</b> ซึ่งเป็นตัวเลขที่บริษัทเผยแพร่จริง',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('whole_life_99_1_nocash',cap,g,age,freq),
     calcPlanValue:'whole_life_99_1_nocash',
+  },
+  {
+    id:'whole_life_99_1_cashback', name:'เมืองไทย คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)', short:'WL 99/1 คืน',
+    bucket:'permanent', purposes:['legacy','tax','saving'],
+    payYears:1, coverToAge:99, entryAgeMin:0, entryAgeMax:70,
+    capitalMin:1000000, capitalMax:500000000, capitalStep:100000,
+    strength:'ทุนเริ่มต้นเพียง 1,000,000 บาท ต่ำกว่ากลุ่ม HNW สิบเท่า · <b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> · คุ้มครองชีวิต 105% ของทุน และการันตีมีเงินคืนทุกปีจนถึงอายุ 99 ปี',
+    tradeoff:'ต้องวางเงินก้อนเท่ากับทุนประกันเต็มจำนวน เพราะเบี้ยคือ 100% ของทุน · แนบสัญญาเพิ่มเติมไม่ได้ · ไม่รับบัตรเครดิต · ต้องจองสิทธิ์การขายก่อนส่งงาน',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('whole_life_99_1_cashback',cap,g,age,freq),
+    calcPlanValue:'whole_life_99_1_cashback',
   },
   {
     id:'15_3', name:'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)', short:'15/3',
@@ -8305,7 +8363,7 @@ const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd',
   'main9920','main9999','main997','main8010','flexi995','lifetimeprotection',
   'waigao9090','waigao9910','easyprotection',
   'happyreturn997','happyreturn999','premierlegacy995','premierlegacy9910','legacywealth995',
-  'premierlegacy991','wholelife991nocash'];
+  'premierlegacy991','wholelife991nocash','wholelife991cashback'];
 
 /* ---------- จัดกลุ่มการเปรียบเทียบตามวัตถุประสงค์ ----------
    สัญญาเพิ่มเติมสุขภาพกับสัญญาหลักประกันชีวิตดูคนละเรื่องกันสิ้นเชิง
@@ -8316,7 +8374,7 @@ const COMPARE_GROUPS = {
   life:   {label:'สัญญาหลักประกันชีวิต', ids:['main9920','main9999','main997','main8010','flexi995',
              'lifetimeprotection','waigao9090','waigao9910','easyprotection',
              'happyreturn997','happyreturn999','premierlegacy995','premierlegacy9910','legacywealth995',
-             'premierlegacy991','wholelife991nocash']},
+             'premierlegacy991','wholelife991nocash','wholelife991cashback']},
 };
 function compareGroupOf(id){
   for(const k of Object.keys(COMPARE_GROUPS)) if(COMPARE_GROUPS[k].ids.includes(id)) return k;
@@ -8457,6 +8515,18 @@ const LIFE_COMPARE_PRODUCTS = {
       maturity:'ครบอายุ 99 ปี รับ 100% ของทุน', cash:'<b>มูลค่าเวนคืนคงที่ตลอดสัญญา</b>',
       tax:'ลดหย่อนได้สูงสุด 100,000 บาทต่อปี · <b>ชำระด้วยบัตรเครดิตไม่ได้</b>',
       wait:'ไม่พบข้อมูลระยะเวลาที่ไม่คุ้มครองในแหล่งที่ตรวจ'}},
+  wholelife991cashback: {title:'คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)', plan:'whole_life_99_1_cashback',
+    tiers:[{value:'1000000',label:'ทุน 1,000,000'},{value:'5000000',label:'ทุน 5,000,000'},{value:'10000000',label:'ทุน 10,000,000'}],
+    defaultValue:'1000000',
+    rows:{purpose:'แปลงเงินก้อนเป็นหลักประกัน โดยไม่ติดประวัติสุขภาพ', entry:'30 วัน – 70 ปี',
+      pay:'<b>ครั้งเดียว เท่ากับทุนประกันพอดี</b>', cover:'ถึงอายุ 99 ปี', ci:'ไม่มีในตัว',
+      riders:'<b>แนบสัญญาเพิ่มเติมไม่ได้</b>', minSum:'<b>1,000,000 บาท</b>',
+      maxSum:'500,000,000 บาท',
+      health:'<b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> · Sub-Standard รับได้ถึง EM 200% โดยไม่คิดเบี้ยเพิ่ม',
+      maturity:'ยังไม่พบข้อความระบุผลประโยชน์ครบสัญญาในแหล่งที่ตรวจ',
+      cash:'การันตีมีเงินคืนทุกปีถึงอายุ 99 ปี · คุ้มครองชีวิต 105% ของทุน',
+      tax:'ลดหย่อนได้สูงสุด 100,000 บาทต่อปี · <b>ชำระด้วยบัตรเครดิตไม่ได้</b>',
+      wait:'ไม่พบข้อมูลระยะเวลาที่ไม่คุ้มครองในแหล่งที่ตรวจ · ต้องจองสิทธิ์การขายก่อนส่งงาน'}},
   wholelife991nocash: {title:'เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว)', plan:'whole_life_99_1_nocash',
     tiers:[{value:'10000000',label:'ทุน 10,000,000'},{value:'20000000',label:'ทุน 20,000,000'},{value:'50000000',label:'ทุน 50,000,000'}],
     defaultValue:'10000000',
