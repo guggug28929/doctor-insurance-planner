@@ -7624,18 +7624,22 @@ function advTierAllowed(input, tierId){
   if(tierId === 'elite75') return input.opdNeed !== 'none';
   return true;
 }
+/* ข้อเสนอหลักยึดตามระดับที่ลูกค้าเลือกเอง ไม่ไต่ข้ามไปแบบที่แพงกว่าเองเพียงเพราะงบเหลือ
+   ถ้าอยากเสนอของที่ดีกว่า ให้ไปอยู่การ์ด "ทางเลือกดีกว่า" ซึ่งบอกส่วนต่างชัดเจน
+   ลูกค้าจะได้ตัดสินใจเองว่าจะจ่ายเพิ่มไหม ไม่ใช่ถูกยัดของแพงกว่ามาให้เงียบ ๆ */
 function advSelectTier(input){
-  const floor = advFloorTier(input);
-  if(!input.budget) return floor;
-  const candidates = ['elite100','elite75','elite20','dhl5']
-    .filter(t => ADV_TIER_RANK[t] >= ADV_TIER_RANK[floor])
-    .filter(t => advTierAllowed(input, t));
-  for(const t of candidates){
-    const state = advInitState(input, advHealthForTier(input, t));
-    const priced = advPricedItems(state, input);
-    if(!priced.missing.length && priced.premium <= input.budget) return t;
-  }
-  return floor;
+  return advFloorTier(input);
+}
+/* ข้อยกเว้นเดียวที่ระบบขยับให้เอง คือขยับวงเงิน D Health Lite จาก 1 ล้านเป็น 5 ล้าน
+   เพราะเป็นแบบเดียวกัน ไม่ได้เปลี่ยนโครงสร้างแผน และ 5 ล้านคือชุดที่ยึดเป็นสรณะ
+   ขยับได้ก็ต่อเมื่อแพ็กเกจเต็มรูปแบบที่ 5 ล้านยังอยู่ในงบ โดยไม่ต้องตัดอะไรออกเพิ่ม */
+function advResolveInput(input){
+  if(input.ipdNeed !== 'basic' || !input.budget) return {input, sumUpgraded:false};
+  const test = Object.assign({}, input, {ipdNeed:'balanced'});
+  const state = advInitState(test, advHealthForTier(test, 'dhl5'));
+  const priced = advPricedItems(state, test);
+  if(priced.missing.length || priced.premium > input.budget) return {input, sumUpgraded:false};
+  return {input:test, sumUpgraded:true, upgradedPremium:priced.premium};
 }
 
 /* ---------- ข้อเสนอหลัก ---------- */
@@ -7647,7 +7651,9 @@ function advTierName(tierId, healthItems){
   }
   return `ข้อเสนอหลัก — Elite Health Plus ${tierId.replace('elite','')} ล้าน`;
 }
-function advBuildRecommended(input){
+function advBuildRecommended(rawInput){
+  const resolved = advResolveInput(rawInput);
+  const input = resolved.input;
   const tierId = advSelectTier(input);
   const {state, priced, trace} = advRunLadder(input, advHealthForTier(input, tierId));
   const why = [];
@@ -7655,7 +7661,9 @@ function advBuildRecommended(input){
   const h0 = state.healthItems[0];
 
   if(h0.kind === 'dhl' && h0.sum === '5m'){
-    why.push('ตั้งต้นจากแผนที่ยึดเป็นสรณะ คือ D Health Lite 5 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาทต่อปีต่อโรค เพราะเป็นชุดที่ปิดความเสี่ยงระดับที่ทำให้ครอบครัวล้มละลายได้จริง');
+    why.push(resolved.sumUpgraded
+      ? 'ลูกค้าเลือกวงเงินระดับเริ่มต้น 1 ล้านบาท แต่งบที่ให้มาพอสำหรับ D Health Lite 5 ล้านบาทต่อครั้งการรักษาแบบเต็มรูปแบบ ระบบจึงขยับวงเงินให้ เป็นแบบเดียวกัน ไม่ได้เปลี่ยนโครงสร้างแผน แค่วงเงินต่อครั้งสูงขึ้นห้าเท่า ซึ่งคุ้มกว่าเก็บเงินส่วนต่างไว้เฉย ๆ'
+      : 'ตั้งต้นจากแผนที่ยึดเป็นสรณะ คือ D Health Lite 5 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus มะเร็งและไตวายเรื้อรัง 5 ล้านบาทต่อปีต่อโรค เพราะเป็นชุดที่ปิดความเสี่ยงระดับที่ทำให้ครอบครัวล้มละลายได้จริง');
   }else if(h0.kind === 'dhl'){
     why.push('ลูกค้าเลือกวงเงินระดับเริ่มต้น ระบบจึงตั้งต้นที่ D Health Lite 1 ล้านบาทต่อครั้งการรักษา คู่กับ Care Plus');
   }else{
@@ -7869,12 +7877,15 @@ function advBuildUpgrade(input, primary){
   if(!input.budget) return null;
   const cap = Math.round(input.budget * ADV_UPGRADE_TOLERANCE);
   const curRank = ADV_TIER_RANK[advTierOfItems(primary.items)] || 1;
+  // การ์ดนี้คือการ "เสนอให้ดู" จึงข้ามเงื่อนไขที่ห้ามระบบไต่ขึ้นเองได้
+  // แต่ยังต้องเคารพช่วงอายุที่บริษัทรับ และยังห้าม Elite 40 ล้านเหมือนเดิม
   const eliteOk = input.age >= 11 && input.age <= 90;
   // ขยายงบตามเพดาน และถ้าส่วนแรกเป็นสิ่งที่ระบบใส่เอง ไม่ใช่ลูกค้าเลือก ให้ถอดออกเป็นการอัปเกรด
   const upInput = Object.assign({}, input, {budget: cap});
   if(input.riskChoice === 'auto') upInput.riskChoice = 'none';
   const tiers = (eliteOk ? ['elite100','elite75','elite20','dhl5'] : ['dhl5'])
-    .filter(t => ADV_TIER_RANK[t] >= curRank);
+    .filter(t => ADV_TIER_RANK[t] >= curRank)
+    .filter(t => advTierPriceable(input, t));
   for(const t of tiers){
     const {state, priced, trace} = advRunLadder(upInput, advHealthForTier(upInput, t));
     if(priced.missing.length) continue;
@@ -7907,7 +7918,11 @@ function advBuildUpgrade(input, primary){
 }
 
 function advBuildEconomy(input, primary){
-  const target = Math.round((input.budget || primary.premium) * ADV_ECONOMY_TARGET);
+  // เทียบกับข้อเสนอหลักด้วย ไม่ใช่เทียบกับงบอย่างเดียว
+  // ไม่งั้นเวลาข้อเสนอหลักต่ำกว่างบอยู่แล้ว การ์ดประหยัดจะหายไปทั้งที่ลูกค้ายังอยากเห็นตัวเลือกถูกกว่า
+  const target = Math.round(Math.min(
+    input.budget ? input.budget * ADV_ECONOMY_TARGET : Infinity,
+    primary.premium * 0.85));
   const state = advInitState(input, advHealthForTier(input, 'dhl5'));
   const trace = [];
   const fromElite = advTierOfItems(primary.items) !== 'dhl5';
@@ -8019,14 +8034,16 @@ function advBuildAlternatives(input){
 function advBuildResult(input){
   const primary = advBuildRecommended(input);
   primary.tier = 'primary';
+  // ถ้าข้อเสนอหลักขยับวงเงินเป็น 5 ล้านแล้ว ทางเลือกอื่นต้องเทียบบนฐานเดียวกัน
+  const effInput = advResolveInput(input).input;
   const overBudget = !!(input.budget && primary.premium > input.budget);
   const packages = [primary];
   let followUps = null;
 
   // เสนอทางเลือกดีกว่าและประหยัดเสมอ เพื่อให้ลูกค้าเห็นสามระดับแล้วเลือกเอง
-  const upgrade = advBuildUpgrade(input, primary);
+  const upgrade = advBuildUpgrade(effInput, primary);
   if(upgrade) packages.push(upgrade);
-  const economy = advBuildEconomy(input, primary);
+  const economy = advBuildEconomy(effInput, primary);
   if(economy) packages.push(economy);
 
   if(overBudget){
