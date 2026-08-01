@@ -203,3 +203,34 @@ test("ทางเลือกดีกว่ามีได้หลายท�
     for (const p of ups) assert.equal(p.missing.length, 0);
   }
 });
+
+test("การ์ดต้องย่อคำอธิบาย และมีหน้าต่างรายละเอียดเต็มจอให้กดดู", () => {
+  // การ์ดโชว์แค่สามบรรทัดแรก ที่เหลือไปอยู่ในหน้าต่าง
+  assert.match(html, /const head = why\.slice\(0, 3\);/);
+  assert.match(html, /ยังมีเหตุผลและข้อควรระวังอีก/);
+  assert.match(html, /onclick="openPkgModal\(\$\{idx\}\)"/);
+  // หน้าต่างต้องมีครบ ชื่อแผน รายการ เหตุผล และปิดได้หลายทาง
+  assert.match(html, /function openPkgModal\(idx\)/);
+  assert.match(html, /function closePkgModal\(\)/);
+  assert.match(html, /pkg-modal-backdrop" onclick="closePkgModal\(\)/);
+  assert.match(html, /if\(e\.key === 'Escape'\) closePkgModal\(\)/);
+  assert.match(html, /setAttribute\('aria-modal','true'\)/);
+  // ฉากหลังต้องเบลอ และล็อกไม่ให้หน้าหลังเลื่อน
+  assert.match(html, /backdrop-filter:blur\(6px\)/);
+  assert.match(html, /body\.pkg-modal-open\{overflow:hidden;\}/);
+  // บทความเหตุผลวงเงินสูงย้ายไปอยู่ในหน้าต่างแล้ว ไม่ยืดบนการ์ด
+  assert.match(html, /\$\{pkg\.raisedSum \? whyHigherSumHtml\(input\.age \|\| 40\) : ''\}/);
+});
+
+test("รายการสัญญาหลักต้องอยู่ในกรอบเลื่อน และแบบที่ใช้บ่อยอยู่บนสุด", () => {
+  assert.match(html, /<div class="plan-scroll">/);
+  assert.match(html, /\.plan-scroll\{[\s\S]*?max-height:300px;[\s\S]*?overflow-y:auto;/);
+  assert.match(html, /<div class="plan-group-label">ใช้บ่อยที่สุด<\/div>/);
+  // สามแบบแรกต้องเป็น 99/20 99/99 99/7 ตามลำดับ
+  const order = [...html.matchAll(/name="mainPlan" value="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(order.slice(0, 3), ["99_20", "99_99", "99_7"]);
+  // ต้องมีหัวข้อกลุ่มครบทุกก้อน เพื่อให้กวาดตาหาได้เร็ว
+  for (const g of ["แบบตลอดชีพและชั่วระยะเวลาอื่น", "เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ", "กลุ่มทุนสูง HNW และชำระครั้งเดียว", "บำนาญ"]) {
+    assert.ok(html.includes(`<div class="plan-group-label">${g}</div>`), `ขาดหัวข้อกลุ่ม ${g}`);
+  }
+});
