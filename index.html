@@ -1422,16 +1422,7 @@
     <button id="advTabBtn-pension" class="adv-tab" onclick="setAdvisorTab('pension')">ประกันบำนาญ</button>
   </div>
 
-  <div id="advTab-life" style="display:none;">
-    <div class="content-card">
-      <h2>ผู้ช่วยออกแบบประกันชีวิต</h2>
-      <p style="color:var(--muted);">ส่วนนี้กำลังพัฒนา จะเปิดใช้งานเร็วๆ นี้ ระหว่างนี้ดูแบบประกันชีวิตทั้งหมดได้ที่หน้ารายการแผน หรือใช้เครื่องคำนวณเบี้ยได้เลย</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-        <button class="btn" style="width:auto;padding:9px 16px;font-size:.85rem;" onclick="showPage('plans')">ดูแบบประกันชีวิตทั้งหมด</button>
-        <button class="btn secondary" style="width:auto;padding:9px 16px;font-size:.85rem;" onclick="showPage('calc')">ไปหน้าคำนวณเบี้ย</button>
-      </div>
-    </div>
-  </div>
+  <div id="advTab-life" style="display:none;"></div>
 
   <div id="advTab-pension" style="display:none;">
     <div class="content-card">
@@ -4689,6 +4680,460 @@ function pricePackage(pkg, gender, age){
   return pkg;
 }
 /* =========================================================================
+   Life Advisor Engine v1 — คำนวณ "ทุนชีวิตที่ควรมี" แล้วแมปเข้ากับแบบประกันที่มี
+
+   วิธีคิดทุนประกัน ใช้ 3 วิธีมาตรฐานพร้อมกัน แล้วเลือกค่ากลาง
+   1) DIME  — รวมภาระที่ต้องปิดจริง: หนี้ + รายได้ที่ต้องทดแทน + บ้าน + การศึกษาลูก
+   2) HLV   — มูลค่าปัจจุบันของรายได้ส่วนที่ครอบครัวได้ใช้จริง จนถึงวันเกษียณ
+   3) 10 เท่าของรายได้ต่อปี — กฎง่าย ใช้เป็นตัวเทียบและกันตัวเลขหลุดโลก
+   เลือก "ค่ากลาง" เพราะกันทั้งการขายเกินจำเป็นและการเสนอทุนต่ำจนไม่ช่วยอะไรจริง
+   จากนั้นหักสินทรัพย์ที่ใช้ได้ทันทีและทุนประกันที่มีอยู่แล้ว เหลือเท่าไหร่คือ "ช่องว่าง"
+
+   การเพิ่มแบบประกันใหม่: เพิ่ม object ใน LIFE_PRODUCTS อย่างเดียว ไม่ต้องแก้ engine
+   ========================================================================= */
+
+const LIFE_REAL_DISCOUNT = 0.03;   // ผลตอบแทนหลังหักเงินเฟ้อ ใช้คิดมูลค่าปัจจุบันของรายได้
+const LIFE_RETIRE_AGE    = 60;
+const LIFE_TAX_DEDUCT_LIFE = 100000;    // ลดหย่อนประกันชีวิตทั่วไป
+const LIFE_TAX_DEDUCT_PENSION = 200000; // ลดหย่อนหมวดบำนาญ เพิ่มได้อีกก้อน
+
+/* ---------- ทะเบียนแบบประกันชีวิต ----------
+   purposes : family = ปกป้องครอบครัว | saving = ออมพร้อมคุ้มครอง | legacy = ส่งต่อมรดก | tax = ลดหย่อนภาษี
+   capitalMin / capitalMax : ขอบเขตทุนที่แบบนี้รับได้
+   capitals : ถ้าแบบนั้นให้เลือกได้เฉพาะทุนที่กำหนด (เช่น แบบออม)
+   premiumOf(capital, gender, age, freq) : ต้องคืนเบี้ยจริงจากตาราง หรือ null ถ้าไม่มีข้อมูล ห้ามเดา
+*/
+const LIFE_PRODUCTS = [
+  {
+    id:'99_20', name:'เมืองไทย สมาร์ท โพรเทคชั่น 99/20', short:'99/20',
+    purposes:['family','legacy','tax'],
+    payYears:20, coverToAge:99, entryAgeMin:0, entryAgeMax:70,
+    capitalMin:200000, capitalMax:null, capitalStep:100000,
+    strength:'จ่ายเบี้ยแค่ 20 ปี แล้วคุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่อยากปิดภาระเบี้ยให้จบก่อนเกษียณ',
+    tradeoff:'เบี้ยต่อปีสูงกว่าแบบ 99/99 ที่ทุนเท่ากัน เพราะอัดค่าเบี้ยทั้งหมดไว้ใน 20 ปี',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_20',cap,g,age,freq),
+    calcPlanValue:'99_20',
+  },
+  {
+    id:'99_99', name:'เมืองไทย คุ้มครองตลอดชีพ 99/99', short:'99/99',
+    purposes:['family','legacy','tax'],
+    payYears:null, coverToAge:99, entryAgeMin:0, entryAgeMax:90,
+    capitalMin:50000, capitalMax:null, capitalStep:50000,
+    strength:'เบี้ยต่อปีต่ำที่สุดต่อทุน 1 บาท จึงซื้อทุนสูงได้ในงบเท่ากัน และเป็นตัวเปิดให้แนบสัญญาสุขภาพได้ด้วยเบี้ยน้อยที่สุด',
+    tradeoff:'ต้องจ่ายเบี้ยไปเรื่อย ๆ ถึงอายุ 99 ปี ไม่มีวันปลดภาระเบี้ย',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('99_99',cap,g,age,freq),
+    calcPlanValue:'99_99',
+  },
+  {
+    id:'15_3', name:'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)', short:'15/3',
+    isSavings:true, purposes:['saving','tax'],
+    payYears:3, coverToAge:null, coverYears:15, entryAgeMin:0, entryAgeMax:80,
+    capitals:[20000,200000,500000,1000000],
+    strength:'จ่ายเบี้ยสั้นแค่ 3 ปี คุ้มครองและสะสมต่อ 15 ปี เหมาะกับคนมีเงินก้อนและอยากได้ทั้งออมทั้งคุ้มครอง',
+    tradeoff:'ทุนคุ้มครองเสียชีวิตต่ำเมื่อเทียบกับเบี้ยที่จ่าย ไม่ใช่เครื่องมือปิดความเสี่ยงครอบครัว',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('15_3',cap,g,age,freq),
+    calcPlanValue:'15_3',
+  },
+  {
+    id:'15_6', name:'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)', short:'15/6',
+    isSavings:true, purposes:['saving','tax'],
+    payYears:6, coverToAge:null, coverYears:15, entryAgeMin:0, entryAgeMax:80,
+    capitals:[20000,100000,500000,1000000],
+    strength:'จ่ายเบี้ย 6 ปี คุ้มครอง 15 ปี ผ่อนเบี้ยต่อปีเบากว่าแบบ 15/3',
+    tradeoff:'เหมือนกัน คือทุนคุ้มครองเสียชีวิตไม่ใช่จุดขาย ใช้ปิดช่องว่างทุนชีวิตไม่ได้',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('15_6',cap,g,age,freq),
+    calcPlanValue:'15_6',
+  },
+];
+function lifeProduct(id){ return LIFE_PRODUCTS.find(p => p.id === id) || null; }
+
+/* ---------- สูตรคำนวณทุน ---------- */
+/** มูลค่าปัจจุบันของเงินปีละ 1 บาท เป็นเวลา n ปี ที่อัตราคิดลด r */
+function lifeAnnuityFactor(n, r){
+  if(n <= 0) return 0;
+  if(!r) return n;
+  return (1 - Math.pow(1 + r, -n)) / r;
+}
+/**
+ * คำนวณทุนที่ควรมี 3 วิธี
+ * st = {age, incomeAnnual, dependencyYears, debtOther, mortgage, children, eduPerChild,
+ *       liquidAssets, existingCover, selfSpendPct}
+ */
+function lifeNeedAnalysis(st){
+  const income = Math.max(0, st.incomeAnnual || 0);
+  const selfPct = Math.min(0.8, Math.max(0, (st.selfSpendPct != null ? st.selfSpendPct : 30) / 100));
+  const yearsToRetire = Math.max(0, LIFE_RETIRE_AGE - (st.age || 0));
+  const depYears = st.dependencyYears != null && st.dependencyYears > 0
+    ? st.dependencyYears
+    : Math.max(5, yearsToRetire);
+
+  // --- ส่วนที่ 1: ทดแทนรายได้ คิด 3 วิธี แล้วเลือกค่ากลาง ---
+  // 1) แบบตรงไปตรงมา: รายได้เต็มจำนวน คูณจำนวนปีที่ครอบครัวต้องพึ่ง (ตัวสูงสุด ไม่คิดลด)
+  const incSimple = income * depYears;
+  // 2) HLV: มูลค่าปัจจุบันของรายได้เฉพาะส่วนที่ครอบครัวได้ใช้จริง
+  const incHLV = Math.round(income * (1 - selfPct) * lifeAnnuityFactor(depYears, LIFE_REAL_DISCOUNT));
+  // 3) กฎง่าย 10 เท่าของรายได้ต่อปี
+  const incThumb = income * 10;
+  const incomeNeed = [incSimple, incHLV, incThumb].slice().sort((a,b)=>a-b)[1];
+
+  // --- ส่วนที่ 2: ภาระที่เป็นก้อนตายตัว บวกเพิ่มทั้งหมด ไม่เอามาเฉลี่ย ---
+  const D = Math.max(0, st.debtOther || 0);
+  const M = Math.max(0, st.mortgage || 0);
+  const E = Math.max(0, (st.children || 0) * (st.eduPerChild || 0));
+  const debtFloor = D + M;
+
+  const gross = Math.round(incomeNeed + D + M + E);
+  const offset = Math.max(0, st.liquidAssets || 0) + Math.max(0, st.existingCover || 0);
+  const gap = Math.max(0, Math.round(gross - offset));
+
+  return {
+    incSimple, incHLV, incThumb, incomeNeed: Math.round(incomeNeed),
+    gross, debtFloor, offset, gap, depYears, yearsToRetire, selfPct,
+    breakdown: {D, M, E},
+    picked: incomeNeed === incHLV ? 'HLV' : incomeNeed === incThumb ? '10 เท่าของรายได้' : 'รายได้เต็มคูณจำนวนปี',
+  };
+}
+
+/* ---------- ปัดทุนให้เป็นตัวเลขที่แบบประกันรับได้จริง ---------- */
+function lifeRoundCapital(product, want){
+  if(product.capitals && product.capitals.length){
+    const fit = product.capitals.filter(c => c >= want);
+    return fit.length ? fit[0] : product.capitals[product.capitals.length - 1];
+  }
+  const step = product.capitalStep || 50000;
+  let c = Math.ceil(want / step) * step;
+  if(product.capitalMin && c < product.capitalMin) c = product.capitalMin;
+  if(product.capitalMax && c > product.capitalMax) c = product.capitalMax;
+  return c;
+}
+/** ทุนสูงสุดที่งบต่อปีนี้ซื้อไหว (ค้นแบบไบเซกชัน ใช้เฉพาะตารางเบี้ยจริง) */
+function lifeCapitalForBudget(product, gender, age, budget, freq){
+  if(!budget || budget <= 0) return null;
+  if(product.capitals && product.capitals.length){
+    let best = null;
+    for(const c of product.capitals){
+      const pr = product.premiumOf(c, gender, age, freq);
+      if(pr != null && pr <= budget) best = c;
+    }
+    return best;
+  }
+  const step = product.capitalStep || 50000;
+  const min = product.capitalMin || step;
+  if((product.premiumOf(min, gender, age, freq) ?? Infinity) > budget) return null;
+  let lo = min, hi = min;
+  for(let i=0;i<40 && (product.premiumOf(hi + step*Math.pow(2,i), gender, age, freq) ?? Infinity) <= budget;i++){
+    hi = hi + step*Math.pow(2,i);
+    if(product.capitalMax && hi >= product.capitalMax) return product.capitalMax;
+  }
+  hi = hi + step*64;
+  while(hi - lo > step){
+    const mid = Math.round((lo + hi) / 2 / step) * step;
+    if(mid <= lo || mid >= hi) break;
+    const pr = product.premiumOf(mid, gender, age, freq);
+    if(pr != null && pr <= budget) lo = mid; else hi = mid;
+  }
+  return lo;
+}
+
+/* ---------- เลือกแบบให้ตรงวัตถุประสงค์ ---------- */
+function lifeCandidates(st){
+  return LIFE_PRODUCTS.filter(p => {
+    if(st.age < p.entryAgeMin || st.age > p.entryAgeMax) return false;
+    return p.purposes.includes(st.purpose);
+  });
+}
+
+/**
+ * สร้างข้อเสนอ
+ * คืน {analysis, options:[{product, capital, premium, coversGap, why[], warnings[]}], notes[]}
+ */
+function lifeBuildResult(st){
+  const analysis = lifeNeedAnalysis(st);
+  const gender = st.gender, age = st.age;
+  const freq = st.freq || 'annual';
+  const budget = st.budget || 0;
+  const options = [];
+  const notes = [];
+
+  const cands = lifeCandidates(st);
+  if(!cands.length){
+    return {analysis, options:[], notes:['ยังไม่มีแบบประกันในระบบที่รับอายุนี้และตรงกับวัตถุประสงค์ที่เลือก']};
+  }
+
+  const gapClosed = analysis.gap <= 0;
+
+  for(const p of cands){
+    const why = [], warnings = [];
+    let capital, premium, cutByBudget = false;
+
+    if(p.isSavings){
+      // แบบออมไม่ใช่เครื่องมือปิดช่องว่างทุนชีวิต จึงกำหนดขนาดตามงบที่จ่ายไหว ไม่ใช่ตามช่องว่าง
+      capital = budget ? lifeCapitalForBudget(p, gender, age, budget, freq) : (p.capitals ? p.capitals[0] : null);
+      if(capital == null){
+        // งบไม่พอแม้ทุนต่ำสุด ให้แสดงทุนต่ำสุดพร้อมบอกตรง ๆ ว่าเกินงบ
+        capital = p.capitals ? p.capitals[0] : null;
+        cutByBudget = false;
+      }
+      if(capital == null) continue;
+      premium = p.premiumOf(capital, gender, age, freq);
+      if(premium == null) continue;
+      if(budget && premium > budget) warnings.push(`เบี้ยขั้นต่ำของแบบนี้คือ ${fmt(premium)} บาทต่อปี ซึ่งเกินงบ ${fmt(budget)} บาทที่ลูกค้าให้ไว้`);
+      warnings.push('แบบออมให้ทุนคุ้มครองเสียชีวิตต่ำมากเมื่อเทียบกับเบี้ยที่จ่าย ห้ามนำมานับเป็นทุนที่ใช้ปิดช่องว่างความเสี่ยงครอบครัว');
+    } else {
+      let want = gapClosed ? (p.capitalMin || 50000) : analysis.gap;
+      capital = lifeRoundCapital(p, want);
+      premium = p.premiumOf(capital, gender, age, freq);
+      if(budget && (premium == null || premium > budget)){
+        const afford = lifeCapitalForBudget(p, gender, age, budget, freq);
+        if(afford != null && afford < capital){
+          capital = afford;
+          premium = p.premiumOf(capital, gender, age, freq);
+          cutByBudget = true;
+        }
+      }
+      if(premium == null) continue;
+      if(cutByBudget){
+        warnings.push(`ทุนที่ควรมีคือ ${fmt(analysis.gap)} บาท แต่งบ ${fmt(budget)} บาทต่อปีซื้อได้ ${fmt(capital)} บาท ยังขาดอีก ${fmt(analysis.gap - capital)} บาท ต้องบอกลูกค้าตรง ๆ ห้ามปล่อยให้เข้าใจว่าพอแล้ว`);
+      }
+      if(capital >= 5000000){
+        warnings.push('ทุนระดับนี้ต้องผ่านการพิจารณาทางการเงินและอาจต้องตรวจสุขภาพเพิ่ม ตัวเลขเบี้ยเป็นการประมาณจากตารางเท่านั้น ต้องยืนยันกับบริษัทก่อนเสนอจริง');
+      }
+    }
+
+    if(gapClosed && !p.isSavings){
+      why.push('ช่องว่างทุนชีวิตปิดหมดแล้ว ทุนที่แสดงคือเล่มขั้นต่ำไว้ใช้เป็นฐานแนบสัญญาเพิ่มเติมด้านสุขภาพและโรคร้ายแรงเท่านั้น ไม่ได้เสนอเพื่อเพิ่มทุนชีวิต');
+    }
+    why.push(p.strength);
+    if(p.tradeoff) why.push('ข้อแลกเปลี่ยน: ' + p.tradeoff);
+    if(p.payYears) why.push(`ชำระเบี้ย ${p.payYears} ปี` + (p.coverToAge ? ` คุ้มครองถึงอายุ ${p.coverToAge} ปี` : (p.coverYears ? ` คุ้มครอง ${p.coverYears} ปี` : '')));
+    else if(p.coverToAge) why.push(`ชำระเบี้ยถึงอายุ ${p.coverToAge} ปี คุ้มครองถึงอายุ ${p.coverToAge} ปี`);
+
+    options.push({
+      productId:p.id, name:p.name, short:p.short, calcPlanValue:p.calcPlanValue,
+      isSavings: !!p.isSavings,
+      capital, premium: Math.round(premium), cutByBudget,
+      coversGap: p.isSavings ? null : (capital >= analysis.gap),
+      costPerMillion: p.isSavings ? null : Math.round(premium / (capital / 1000000)),
+      why, warnings,
+    });
+  }
+
+  // แบบคุ้มครองมาก่อนแบบออมเสมอ จากนั้นเรียงตามต้นทุนความคุ้มครองต่อทุน 1 ล้าน
+  options.sort((a,b) =>
+    (a.isSavings - b.isSavings) ||
+    ((b.coversGap?1:0) - (a.coversGap?1:0)) ||
+    ((a.costPerMillion ?? Infinity) - (b.costPerMillion ?? Infinity)));
+  options.forEach((o,i) => { o.recommended = i === 0; });
+
+  if(gapClosed){
+    notes.push(`ทุนประกันชีวิตที่มีอยู่ ${fmt(st.existingCover||0)} บาท รวมกับสินทรัพย์ ${fmt(st.liquidAssets||0)} บาท ครอบคลุมความต้องการ ${fmt(analysis.gross)} บาทแล้ว ไม่จำเป็นต้องเพิ่มทุนชีวิตอีก ควรพาไปคุยเรื่องสุขภาพ โรคร้ายแรง หรือแผนบำนาญแทน จะเป็นประโยชน์กับลูกค้ามากกว่า`);
+  }
+  if(st.purpose === 'tax'){
+    notes.push(`ประกันชีวิตทั่วไปลดหย่อนภาษีได้สูงสุด ${fmt(LIFE_TAX_DEDUCT_LIFE)} บาทต่อปี ถ้าอยากลดหย่อนเพิ่มอีก ${fmt(LIFE_TAX_DEDUCT_PENSION)} บาท ต้องใช้หมวดประกันบำนาญซึ่งเป็นคนละวงเงินกัน`);
+    notes.push('ตัวเลขลดหย่อนเป็นการประมาณตามเพดานทั่วไป สิทธิจริงขึ้นกับเงินได้และค่าลดหย่อนอื่นของลูกค้า ควรให้ลูกค้าตรวจกับผู้ทำบัญชีอีกครั้ง');
+  }
+  notes.push('ทุนที่ระบบเสนอมาจากการวิเคราะห์ความจำเป็น ไม่ใช่เพดานที่บริษัทรับได้ ทุนสูงมากต้องพิสูจน์รายได้และอาจต้องตรวจสุขภาพเพิ่ม');
+
+  return {analysis, options, notes};
+}
+
+/* ---------- สถานะฟอร์มประกันชีวิต ---------- */
+const lifeAdvisorState = {
+  gender:'m', birthYear:2533, purpose:'family',
+  incomeAnnual:600000, dependencyYears:0, selfSpendPct:30,
+  debtOther:0, mortgage:0, children:0, eduPerChild:1000000,
+  liquidAssets:0, existingCover:0, budget:0, freq:'annual',
+};
+function lifeAdvisorAge(){
+  const y = parseInt(lifeAdvisorState.birthYear,10) || 0;
+  if(!y) return 0;
+  return (new Date().getFullYear() + 543) - y;
+}
+function setLifeField(key, val){
+  const numKeys = ['birthYear','incomeAnnual','dependencyYears','selfSpendPct','debtOther',
+                   'mortgage','children','eduPerChild','liquidAssets','existingCover','budget'];
+  lifeAdvisorState[key] = numKeys.includes(key) ? (parseFloat(val) || 0) : val;
+  renderLifeAdvisor();
+}
+function lifeReadState(){
+  return Object.assign({}, lifeAdvisorState, {age: lifeAdvisorAge(), gender: lifeAdvisorState.gender});
+}
+
+function lifeNumField(label, key, hint){
+  return `<div>
+    <label>${label}</label>
+    <input type="number" value="${lifeAdvisorState[key]}" step="10000" min="0"
+           oninput="setLifeField('${key}', this.value)">
+    ${hint?`<div class="hint">${hint}</div>`:''}
+  </div>`;
+}
+
+function renderLifeAdvisorForm(){
+  const age = lifeAdvisorAge();
+  const st = lifeReadState();
+  const defaultDep = Math.max(5, LIFE_RETIRE_AGE - age);
+  return `
+  <div class="content-card">
+    <h2>ผู้ช่วยออกแบบประกันชีวิต</h2>
+    <p style="color:var(--muted);">คำนวณ <b>ทุนชีวิตที่ควรมี</b> จากภาระจริงของลูกค้า ด้วย 3 วิธีมาตรฐานพร้อมกัน แล้วเลือกค่ากลาง จากนั้นจึงแมปเข้ากับแบบประกันที่มีอยู่ในระบบ</p>
+    <div class="ai-note">
+      <b>DIME</b> รวมภาระเป็นก้อน: หนี้ + รายได้ที่ต้องทดแทน + บ้าน + การศึกษาลูก ·
+      <b>HLV</b> มูลค่าปัจจุบันของรายได้เฉพาะส่วนที่ครอบครัวได้ใช้จริง ·
+      <b>10 เท่าของรายได้</b> กฎง่ายไว้กันตัวเลขหลุดโลก<br>
+      ระบบเลือก <b>ค่ากลาง</b> ของสามวิธี เพราะกันทั้งการขายเกินจำเป็นและการเสนอทุนต่ำจนไม่ช่วยอะไรจริง แล้วหักสินทรัพย์กับทุนที่มีอยู่แล้วออก
+    </div>
+  </div>
+
+  <div class="content-card">
+    <h2>ข้อมูลลูกค้า</h2>
+    <div class="ai-grid">
+      <div>
+        <label class="first">เพศ</label>
+        <div class="radio-group">
+          <label><input type="radio" name="life_gender" value="m" ${st.gender==='m'?'checked':''} onchange="setLifeField('gender','m')"> ชาย</label>
+          <label><input type="radio" name="life_gender" value="f" ${st.gender==='f'?'checked':''} onchange="setLifeField('gender','f')"> หญิง</label>
+        </div>
+      </div>
+      <div>
+        <label class="first">ปีเกิด (พ.ศ.)</label>
+        <input type="number" value="${lifeAdvisorState.birthYear}" oninput="setLifeField('birthYear', this.value)">
+        <div class="hint">อายุที่คำนวณได้ ${age} ปี</div>
+      </div>
+      <div>
+        <label>วัตถุประสงค์หลัก</label>
+        <select onchange="setLifeField('purpose', this.value)">
+          <option value="family"${st.purpose==='family'?' selected':''}>ปกป้องครอบครัว ถ้าเราไม่อยู่แล้วเขาต้องอยู่ได้</option>
+          <option value="legacy"${st.purpose==='legacy'?' selected':''}>ส่งต่อมรดก / วางแผนภาษีมรดก</option>
+          <option value="saving"${st.purpose==='saving'?' selected':''}>ออมพร้อมคุ้มครอง</option>
+          <option value="tax"${st.purpose==='tax'?' selected':''}>เน้นลดหย่อนภาษี</option>
+        </select>
+      </div>
+      ${lifeNumField('งบเบี้ยที่จ่ายไหวต่อปี (บาท)','budget','ใส่ 0 ถ้ายังไม่จำกัดงบ')}
+      ${lifeNumField('รายได้ต่อปี (บาท)','incomeAnnual','รายได้รวมทุกทางก่อนหักภาษี')}
+      <div>
+        <label>ครอบครัวต้องพึ่งรายได้นี้อีกกี่ปี</label>
+        <input type="number" value="${lifeAdvisorState.dependencyYears}" min="0" step="1" oninput="setLifeField('dependencyYears', this.value)">
+        <div class="hint">ใส่ 0 เพื่อให้ระบบใช้ค่าเริ่มต้น ${defaultDep} ปี (นับถึงอายุ ${LIFE_RETIRE_AGE} ปี)</div>
+      </div>
+      <div>
+        <label>ค่าใช้จ่ายส่วนตัวของผู้เอาประกัน (% ของรายได้)</label>
+        <input type="number" value="${lifeAdvisorState.selfSpendPct}" min="0" max="80" step="5" oninput="setLifeField('selfSpendPct', this.value)">
+        <div class="hint">ส่วนนี้ครอบครัวไม่ได้ใช้ จึงหักออกตอนคำนวณ HLV โดยทั่วไปประมาณ 25–35%</div>
+      </div>
+      ${lifeNumField('หนี้สินรวม ไม่รวมบ้าน (บาท)','debtOther','บัตรเครดิต สินเชื่อรถ หนี้ส่วนตัว หนี้ธุรกิจส่วนที่ต้องรับผิดชอบเอง')}
+      ${lifeNumField('ยอดหนี้บ้านคงเหลือ (บาท)','mortgage','ถ้ามีประกันคุ้มครองสินเชื่อ MRTA อยู่แล้ว ให้ใส่เฉพาะส่วนที่ยังไม่ถูกคุ้มครอง')}
+      <div>
+        <label>จำนวนลูกที่ต้องส่งเรียน</label>
+        <input type="number" value="${lifeAdvisorState.children}" min="0" max="10" step="1" oninput="setLifeField('children', this.value)">
+      </div>
+      ${lifeNumField('งบการศึกษาต่อลูก 1 คน (บาท)','eduPerChild','ค่าเริ่มต้น 1,000,000 บาท คือประมาณการจนจบปริญญาตรี ปรับได้ตามโรงเรียนที่ลูกค้าเล็งไว้')}
+      ${lifeNumField('เงินออม/สินทรัพย์ที่ใช้ได้ทันที (บาท)','liquidAssets','เงินฝาก กองทุน หุ้น ที่ครอบครัวเอาออกมาใช้ได้จริง ไม่รวมบ้านที่อยู่อาศัย')}
+      ${lifeNumField('ทุนประกันชีวิตที่มีอยู่แล้ว (บาท)','existingCover','รวมประกันกลุ่มของที่ทำงานและกรมธรรม์เดิมทุกฉบับ')}
+    </div>
+  </div>`;
+}
+
+function lifeMethodTable(a){
+  const rows = [
+    ['§ส่วนที่ 1 ทดแทนรายได้ — คิด 3 วิธี แล้วเลือกค่ากลาง'],
+    ['รายได้เต็มจำนวน คูณจำนวนปีที่ต้องพึ่ง', fmt(a.incSimple) + ' บาท', `รายได้ทั้งก้อน ${a.depYears} ปี ไม่คิดลด เป็นตัวสูงสุด`],
+    ['HLV — มูลค่าปัจจุบันของรายได้', fmt(a.incHLV) + ' บาท',
+     `เฉพาะส่วนที่ครอบครัวได้ใช้ ${Math.round((1-a.selfPct)*100)}% คิดลด ${(LIFE_REAL_DISCOUNT*100).toFixed(0)}% ต่อปี ${a.depYears} ปี`],
+    ['10 เท่าของรายได้ต่อปี', fmt(a.incThumb) + ' บาท', 'กฎง่ายไว้เทียบ ไม่ได้ดูภาระจริง'],
+    ['<b>ค่ากลางที่เลือกใช้</b>', '<b>' + fmt(a.incomeNeed) + ' บาท</b>', 'มาจากวิธี ' + a.picked],
+    ['§ส่วนที่ 2 ภาระที่เป็นก้อนตายตัว — บวกเพิ่มทั้งหมด'],
+    ['หนี้สิน ไม่รวมบ้าน', fmt(a.breakdown.D) + ' บาท', 'ถ้าไม่ปิด ครอบครัวรับต่อทันที'],
+    ['ยอดหนี้บ้านคงเหลือ', fmt(a.breakdown.M) + ' บาท', 'ส่วนที่ยังไม่มีประกันคุ้มครองสินเชื่อรองรับ'],
+    ['ค่าการศึกษาลูก', fmt(a.breakdown.E) + ' บาท', 'ตามจำนวนลูกและงบต่อคนที่กรอก'],
+    ['§ผลสรุป'],
+    ['ทุนชีวิตที่ควรมีทั้งหมด', '<b>' + fmt(a.gross) + ' บาท</b>', 'ทดแทนรายได้ + ภาระก้อนตายตัว'],
+    ['หัก สินทรัพย์ + ทุนที่มีอยู่แล้ว', '− ' + fmt(a.offset) + ' บาท', 'ส่วนนี้ครอบครัวมีอยู่แล้ว ไม่ต้องซื้อซ้ำ'],
+    ['ช่องว่างที่ต้องปิดด้วยประกันชีวิต', '<b>' + fmt(a.gap) + ' บาท</b>', a.gap > 0 ? 'คือทุนที่ควรเสนอ' : 'ทุนที่มีอยู่เพียงพอแล้ว'],
+  ];
+  return renderBenefitTable(['รายการ','จำนวนเงิน','ที่มา'], rows);
+}
+
+function renderLifeAdvisorResult(){
+  const st = lifeReadState();
+  if(!st.age || st.age < 0 || st.age > 90){
+    return `<div class="content-card"><div class="validation-box bad">ตรวจสอบปีเกิดอีกครั้ง อายุที่คำนวณได้อยู่นอกช่วงที่แบบประกันในระบบรับทำ</div></div>`;
+  }
+  const r = lifeBuildResult(st);
+  const a = r.analysis;
+
+  const cards = r.options.map((o, idx) => {
+    const badge = o.recommended
+      ? '<span class="adv-badge adv-badge-main">ข้อเสนอหลัก</span>'
+      : '<span class="adv-badge adv-badge-alt">ทางเลือก</span>';
+    const warn = o.warnings.length
+      ? `<div class="adv-warn">${o.warnings.map(w=>`<div>• ${plannerEscapeHtml(w)}</div>`).join('')}</div>` : '';
+    const budgetLine = st.budget
+      ? (o.premium <= st.budget
+          ? `<p class="meta" style="color:var(--ok);">อยู่ในงบ ต่ำกว่างบ ${fmt(st.budget - o.premium)} บาท</p>`
+          : `<p class="meta" style="color:var(--danger);"><b>เกินงบ ${fmt(o.premium - st.budget)} บาท</b></p>`)
+      : '';
+    return `<div class="ai-plan-card ${o.recommended?'recommended':''}">
+      <div class="adv-badge-row">${badge}</div>
+      <h3>${plannerEscapeHtml(o.name)}</h3>
+      <div class="premium">${fmt(o.premium)} บาท/ปีแรก</div>
+      ${budgetLine}
+      <ul>
+        <li>ทุนประกันชีวิต <b>${fmt(o.capital)} บาท</b></li>
+        ${o.isSavings ? '<li>เป็นแบบออมทรัพย์ ไม่ใช้วัดต้นทุนความคุ้มครอง</li>'
+          : `<li>ต้นทุนความคุ้มครอง ${fmt(o.costPerMillion)} บาท ต่อทุน 1 ล้านบาทต่อปี</li>
+             <li>${o.coversGap ? 'ปิดช่องว่างได้ครบ' : 'ยังปิดช่องว่างไม่ครบ'}</li>`}
+      </ul>
+      ${warn}
+      <div class="ai-note">${o.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>
+      <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyLifeOption(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="content-card">
+    <h2>ทุนชีวิตที่ควรมี</h2>
+    <div class="ai-chip-row">
+      <span class="ai-chip">${st.gender==='m'?'ชาย':'หญิง'} อายุ ${st.age} ปี</span>
+      <span class="ai-chip">รายได้ ${fmt(st.incomeAnnual)} บาท/ปี</span>
+      <span class="ai-chip">พึ่งพา ${a.depYears} ปี</span>
+      ${st.budget?`<span class="ai-chip">งบ ${fmt(st.budget)} บาท/ปี</span>`:''}
+    </div>
+    ${lifeMethodTable(a)}
+    ${a.debtFloor > 0 ? `<div class="ai-note" style="margin-top:10px;">พื้นขั้นต่ำ: หนี้สินรวมทั้งหมด ${fmt(a.debtFloor)} บาท ต้องปิดให้ได้เป็นอย่างน้อย ไม่งั้นครอบครัวรับภาระต่อ</div>` : ''}
+  </div>
+
+  <div class="content-card">
+    <h2>แบบประกันที่เหมาะกับโจทย์นี้</h2>
+    ${r.notes.length?`<div class="ai-budget-filter">${r.notes.map(n=>`• ${plannerEscapeHtml(n)}`).join('<br>')}</div>`:''}
+    ${r.options.length ? `<div class="ai-result-grid">${cards}</div>`
+      : '<div class="validation-box bad">ยังไม่มีแบบประกันในระบบที่มีตารางเบี้ยรองรับอายุนี้และวัตถุประสงค์ที่เลือก</div>'}
+    <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณจากตารางจริงในระบบ ไม่รวมผลตรวจสุขภาพ การเพิ่มเบี้ย หรือข้อยกเว้นเฉพาะบุคคล ควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
+  </div>`;
+}
+
+let LIFE_LAST_OPTIONS = [];
+function applyLifeOption(idx){
+  const st = lifeReadState();
+  const r = lifeBuildResult(st);
+  const o = r.options[idx];
+  if(!o) return;
+  resetCalculatorSelections();
+  document.querySelector(`input[name=gender][value="${st.gender}"]`).checked = true;
+  setValue('birthYear', st.birthYear);
+  const radio = document.querySelector(`input[name=mainPlan][value="${o.calcPlanValue}"]`);
+  if(radio){ radio.checked = true; radio.dispatchEvent(new Event('change', {bubbles:true})); }
+  setValue('mainCapital', o.capital);
+  showPage('calc');
+  renderAll();
+}
+
+function renderLifeAdvisor(){
+  const box = document.getElementById('advTab-life');
+  if(!box) return;
+  box.innerHTML = renderLifeAdvisorForm() + renderLifeAdvisorResult();
+}
+
+/* =========================================================================
    Plan Advisor Engine v20 — "Anchor + Step-down Ladder"
 
    หลักคิดของตัวแทนมืออาชีพที่ยึดประโยชน์ลูกค้า:
@@ -6748,6 +7193,7 @@ function setAdvisorTab(tab){
     if(btn) btn.classList.toggle('active', t === tab);
   });
   if(tab === 'pension') renderPensionAdvisor();
+  if(tab === 'life') renderLifeAdvisor();
   try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){}
 }
 
