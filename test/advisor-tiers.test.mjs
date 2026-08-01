@@ -69,13 +69,16 @@ test("เคสหน้าจอจริง ชาย 40 งบ 50,000 ต้�
   assert.ok(tiers.includes("primary"), "ต้องมีข้อเสนอหลัก");
   assert.ok(tiers.includes("upgrade"), "ต้องมีทางเลือกดีกว่า");
   assert.ok(tiers.includes("economy"), "ต้องมีทางเลือกประหยัด");
-  const up = r.packages.find(p => p.tier === "upgrade");
+  const ups = r.packages.filter(p => p.tier === "upgrade");
   const eco = r.packages.find(p => p.tier === "economy");
-  assert.ok(up.premium > r.primary.premium, "ทางเลือกดีกว่าต้องแพงกว่าข้อเสนอหลักจริง");
+  assert.ok(ups.length >= 1);
+  for (const up of ups) {
+    assert.ok(up.premium > r.primary.premium, "ทางเลือกดีกว่าต้องแพงกว่าข้อเสนอหลักจริง");
+    assert.ok(up.premium <= base.budget * 1.25 + 1, `ทางเลือกดีกว่าต้องไม่เกินงบ 25% แต่ได้ ${up.premium}`);
+    assert.equal(up.recommended, false, "ทางเลือกดีกว่าต้องไม่ถูกตั้งเป็นข้อเสนอแรก");
+  }
   assert.ok(eco.premium < r.primary.premium, "ทางเลือกประหยัดต้องถูกกว่าข้อเสนอหลักจริง");
-  assert.ok(up.premium <= base.budget * 1.25 + 1, `ทางเลือกดีกว่าต้องไม่เกินงบ 25% แต่ได้ ${up.premium}`);
   assert.equal(r.primary.recommended, true);
-  assert.equal(up.recommended, false, "ทางเลือกดีกว่าต้องไม่ถูกตั้งเป็นข้อเสนอแรก");
 });
 
 test("ทุกแพ็กเกจต้องมีเบี้ยจริงจากตาราง ไม่มีรายการที่หาเบี้ยไม่เจอ", () => {
@@ -98,8 +101,8 @@ test("ทุกแพ็กเกจต้องมีเบี้ยจริ�
       const sum = p.items.reduce((t, it) => t + (it.premium || 0), 0);
       assert.ok(Math.abs(sum - p.premium) < 1, `${p.name} ผลรวมรายการไม่ตรงกับเบี้ยรวม`);
     }
-    const up = r.packages.find(p => p.tier === "upgrade");
-    if (up) assert.ok(up.premium <= b.budget * 1.25 + 1, "ทางเลือกดีกว่าเกินเพดาน 25%");
+    for (const up of r.packages.filter(p => p.tier === "upgrade"))
+      assert.ok(up.premium <= b.budget * 1.25 + 1, "ทางเลือกดีกว่าเกินเพดาน 25%");
     const eco = r.packages.find(p => p.tier === "economy");
     if (eco) assert.ok(eco.premium < r.primary.premium, "ทางเลือกประหยัดไม่ได้ถูกกว่าจริง");
   }
@@ -147,4 +150,56 @@ test("ป้ายบนการ์ดต้องแยกสามระด�
   assert.match(html, /ดีกว่า จ่ายเพิ่ม/);
   assert.match(html, /ประหยัดกว่า/);
   assert.match(html, /const ADV_UPGRADE_TOLERANCE = 1\.25;/);
+});
+
+test("ข้อเสนอหลักต้องไม่ไต่ข้ามระดับที่ลูกค้าเลือกเอง แต่ขยับ D Health Lite 1 ล้านเป็น 5 ล้านได้", () => {
+  // งบถึง: ลูกค้าเลือกวงเงินเริ่มต้น ต้องได้ 5 ล้าน ไม่ใช่กระโดดไป Elite
+  const rich = call("advBuildResult", { ...base, ipdNeed: "basic", budget: 60000 });
+  const h = rich.primary.items.find((i) => i.kind === "dhl");
+  assert.ok(h, "ข้อเสนอหลักต้องยังเป็น D Health Lite ไม่ใช่ Elite");
+  assert.equal(h.sum, "5m", "งบถึงแล้วต้องขยับเป็น 5 ล้าน");
+  assert.ok(!rich.primary.items.some((i) => i.kind === "ehp"), "ห้ามกระโดดไป Elite เอง");
+  assert.ok(rich.primary.why.some((w) => /ระบบจึงขยับวงเงินให้/.test(w)), "ต้องบอกว่าขยับวงเงินให้เพราะอะไร");
+  // Elite ต้องไปโผล่ในการ์ดดีกว่า เพื่อให้ลูกค้าเลือกเองว่าจะจ่ายเพิ่มไหม
+  const ups = rich.packages.filter((p) => p.tier === "upgrade");
+  assert.ok(ups.length >= 2, "ควรมีทางเลือกดีกว่าหลายทาง ให้ตัวแทนหยิบใบที่ตรงกับลูกค้า");
+  assert.ok(ups.some((p) => p.items.some((i) => i.kind === "ehp")), "Elite ต้องอยู่ในทางเลือกดีกว่าใบใดใบหนึ่ง");
+  assert.ok(ups.some((p) => p.raisedSum), "ใบที่เพิ่มวงเงินต้องติดธง raisedSum ไว้แนบบทความ");
+
+  // งบไม่ถึง: ต้องคงวงเงิน 1 ล้านตามที่ลูกค้าเลือก ไม่ดันขึ้นแล้วไปตัดของอื่นทิ้ง
+  const tight = call("advBuildResult", { ...base, ipdNeed: "basic", budget: 25000 });
+  assert.equal(tight.primary.items.find((i) => i.kind === "dhl").sum, "1m");
+
+  // เลือก Elite 20 พร้อมงบมหาศาล ก็ต้องได้ Elite 20 ไม่ใช่ Elite 100
+  const elite = call("advBuildResult", { ...base, ipdNeed: "elite20", budget: 300000 });
+  assert.equal(elite.primary.items.find((i) => i.kind === "ehp").plan, "20m");
+  const eliteUps = elite.packages.filter((p) => p.tier === "upgrade");
+  assert.ok(eliteUps.some((p) => { const e = p.items.find((i) => i.kind === "ehp"); return e && ["75m","100m"].includes(e.plan); }),
+    "ต้องมีทางเลือกที่ขยับขึ้น Elite ระดับสูงกว่า");
+});
+
+test("ทางเลือกประหยัดต้องยังมีให้ แม้ข้อเสนอหลักจะต่ำกว่างบอยู่แล้ว", () => {
+  const r = call("advBuildResult", { ...base, budget: 120000 });
+  const eco = r.packages.find((p) => p.tier === "economy");
+  assert.ok(eco, "งบเหลือเยอะก็ยังต้องมีทางเลือกประหยัดให้เทียบ");
+  assert.ok(eco.premium < r.primary.premium * 0.95, "ต้องถูกกว่าข้อเสนอหลักอย่างมีนัยสำคัญ");
+});
+
+test("การ์ดที่เพิ่มวงเงิน ต้องมีบทความอธิบายว่าทำไมถึงควรเลือกวงเงินสูงกว่า", () => {
+  assert.match(html, /ทำไมควรเลือกวงเงินเหมาจ่ายสูงกว่าที่ลูกค้าคิดไว้/);
+  assert.match(html, /เพิ่มวงเงินทีหลังไม่ได้ง่ายเหมือนตอนสมัครครั้งแรก/);
+  assert.match(html, /ส่วนต่างเบี้ยมักน้อยกว่าที่ลูกค้าคิด/);
+  assert.match(html, /โรคที่ทำให้ล้มละลายคือโรคที่วงเงินน้อยเอาไม่อยู่/);
+  assert.match(html, /ไม่ใช่อัตราที่บริษัทหรือหน่วยงานใดประกาศ/);
+  assert.match(html, /pkg\.raisedSum \? whyHigherSumHtml/);
+});
+
+test("ทางเลือกดีกว่ามีได้หลายทาง และแต่ละทางต้องต่างกันจริง", () => {
+  for (const budget of [40000, 60000, 90000, 150000]) {
+    const r = call("advBuildResult", { ...base, budget });
+    const ups = r.packages.filter((p) => p.tier === "upgrade");
+    const keys = ups.map((p) => p.items.map((i) => JSON.stringify(i)).sort().join("|"));
+    assert.equal(new Set(keys).size, keys.length, `งบ ${budget} มีทางเลือกดีกว่าที่ซ้ำกัน`);
+    for (const p of ups) assert.equal(p.missing.length, 0);
+  }
 });
