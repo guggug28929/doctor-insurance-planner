@@ -1274,14 +1274,31 @@
   body.hnw .opt-grid .tog.on{border-color:var(--gold);background:rgba(212,175,106,.14);color:var(--gold-hi);}
   body.hnw .opt-grid .tog.on .dot{background:var(--gold);border-color:var(--gold);color:#1a1214;}
 
-  body.hnw .benefit-table th,
-  body.hnw .pension-table th,
-  body.hnw .rate-table th{background:linear-gradient(100deg,#2a1f26,#3a2b1c);color:var(--gold-hi);}
-  body.hnw .benefit-table td,
-  body.hnw .pension-table td,
-  body.hnw .rate-table td{border-bottom-color:rgba(212,175,106,.13);color:var(--ink);}
+  /* ตารางเบี้ยสร้างจาก renderAgeTable() เป็น <table> เปล่าไม่มีคลาส สไตล์จึงมาจาก
+     กฎ element กลาง (thead th / tbody td / tr:nth-child(even)) ที่ฝังสีชมพูอ่อนไว้
+     ในโหมด HNW ต้องทับที่ระดับ element เดียวกัน ไม่ใช่ที่ .benefit-table
+     ไม่งั้นแถวสลับจะเป็นพื้นขาวบนหน้าดำ ซึ่งอ่านแล้วแสบตา */
+  body.hnw thead th{background:linear-gradient(100deg,#2a1f26,#3a2b1c) !important;color:var(--gold-hi);}
+  body.hnw thead th.total-col{background:linear-gradient(100deg,#4a3718,#6b5124) !important;}
+  body.hnw tbody td{border-bottom-color:rgba(212,175,106,.14);color:#ece2d6;}
+  body.hnw tbody tr:nth-child(even){background:rgba(255,255,255,.032);}
+  body.hnw tbody tr:hover{background:rgba(212,175,106,.13);}
+  body.hnw tbody td:first-child{color:var(--gold);font-weight:600;}
+  body.hnw tbody td:nth-child(2){color:#ece2d6;}
+  body.hnw tbody td.dash{color:#6f6469;}
+  body.hnw tbody td.total-col{color:var(--gold-hi);background:rgba(212,175,106,.12);}
+  body.hnw .table-wrap,
+  body.hnw .pension-table-wrap{background:var(--panel);border-color:var(--line);}
+  body.hnw .table-export-actions{background:rgba(255,255,255,.04);border-bottom-color:var(--line);}
   body.hnw .benefit-table tr:nth-child(even) td,
-  body.hnw .pension-table tr:nth-child(even) td{background:rgba(255,255,255,.022);}
+  body.hnw .pension-table tr:nth-child(even) td{background:transparent;}
+
+  /* ในหน้ารายละเอียดแผน คอลัมน์ที่ 2 เป็นจำนวนเงิน ไม่ใช่คอลัมน์อายุแบบตารางในเครื่องคำนวณ
+     กฎกลางที่จัดกึ่งกลางและทำให้สีจางจึงทำให้คอลัมน์แรกสุดของตัวเงินดูไม่เข้าพวก */
+  #page-plan-detail .table-wrap thead th:nth-child(2){text-align:right;}
+  #page-plan-detail .table-wrap tbody td:nth-child(2){text-align:right;}
+  #page-plan-detail .table-wrap tbody td:first-child{width:1%;padding-right:22px;}
+  #page-plan-detail .table-wrap thead th:first-child{width:1%;padding-right:22px;}
   body.hnw .benefit-group td{background:rgba(212,175,106,.10);}
   body.hnw .group-title{color:var(--gold-hi);}
   body.hnw .group-break h2{color:var(--gold-hi);}
