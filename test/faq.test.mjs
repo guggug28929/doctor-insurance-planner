@@ -81,3 +81,9 @@ test("ค้นแล้วไม่เจอ ต้องบอกทางอ�
   assert.match(html, /if\(!found\) html \+= /);
   assert.match(html, /ไม่พบคำถามที่ตรงกับคำค้นนี้ ลองใช้คำสั้นลง/);
 });
+
+test("ห้ามมีโค้ด escape หลุดไปแสดงเป็นตัวอักษรบนหน้าเว็บ", () => {
+  // เคยพลาด: เขียน \\u{1F50D} ในส่วน HTML แล้วมันโชว์เป็นตัวหนังสือดิบ
+  const faqBlock = html.slice(html.indexOf('id="page-faq"'), html.indexOf('id="page-knowledge"'));
+  assert.ok(!/\\u\{?[0-9A-Fa-f]{4}/.test(faqBlock), "ยังมี escape หลุดในส่วน HTML ของหน้า FAQ");
+});
