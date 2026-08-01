@@ -50,7 +50,9 @@ const REGISTRY = [
   {n:15, name:'วัยเก๋า คุ้มได้ใจ 99/10',       data:'sabaijai_99_10',       calc:'sabaijai_99_10',       lp:'sabaijai_99_10',       cmp:'waigao9910',        route:'/plans/waigao-99-10',           kind:'main'},
   {n:16, name:'Lifetime Protection 99/20',    data:'lifetime_protection',  calc:'lifetime_protection',  lp:'lifetime_protection',  cmp:'lifetimeprotection',route:'/plans/lifetime-protection',    kind:'main'},
   {n:17, name:'Smart Protection 99/20',       data:'main_99_20',           calc:'99_20',                lp:'99_20',                cmp:'main9920',          route:'/plans/smart-protection-99-20', kind:'main'},
-  {n:18, name:'Term rider ภายในระยะเวลา',      data:'term_rider',           calc:null, lp:null, cmp:null, route:'/plans/term-rider',                         kind:'rider'},
+  {n:18, name:'Premier Legacy 99/1 ชำระครั้งเดียว', data:'premier_legacy_99_1', calc:'premier_legacy_99_1', lp:'premier_legacy_99_1', cmp:'premierlegacy991', route:'/plans/premier-legacy-99-1', kind:'main'},
+  {n:19, name:'เพื่อคุ้มครองตลอดชีพ 99/1 ไม่มีเงินคืน', data:'whole_life_99_1_nocash', calc:'whole_life_99_1_nocash', lp:'whole_life_99_1_nocash', cmp:'wholelife991nocash', route:'/plans/whole-life-99-1', kind:'main'},
+  {n:20, name:'Term rider ภายในระยะเวลา',      data:'term_rider',           calc:null, lp:null, cmp:null, route:'/plans/term-rider',                         kind:'rider'},
 ];
 
 function inCalculator(key) {
@@ -100,13 +102,48 @@ test("ทุกแบบในกลุ่มเปรียบเทียบ�
 });
 
 test("แบบที่ยังไม่มีข้อมูล ต้องไม่ถูกอ้างถึงในระบบเลย ไม่ใช่ใส่ค่าเดา", () => {
-  // สี่แบบนี้ยังไม่มีตารางอัตราเบี้ยในระบบ จึงต้องไม่มี key หรือ route โผล่ที่ไหน
-  const blocked = ["premier_legacy_99_1", "main_99_1", "main_99_1_nocash", "whole_life_99_1"];
+  // คุ้มครองตลอดชีพ 99/1 รุ่นมีเงินคืน 1.75% ยังไม่มีตารางอัตราเบี้ยในระบบ
+  const blocked = ["whole_life_99_1_cashback", "main_99_1_cashback_175"];
   for (const key of blocked) {
     assert.equal(RATES[key], undefined, `${key} ไม่ควรมีในไฟล์ข้อมูล ถ้ายังไม่ได้ตรวจจากแหล่งทางการ`);
     assert.ok(!html.includes(`name="mainPlan" value="${key}"`), `${key} ไม่ควรอยู่ในเครื่องคำนวณ`);
     assert.ok(!lifeProductIds.has(key), `${key} ไม่ควรอยู่ใน LIFE_PRODUCTS`);
   }
+});
+
+test("แบบชำระครั้งเดียวสองแบบ ต้องตรวจไขว้สองแหล่งและบันทึกจุดผิดจังหวะไว้บนหน้าเว็บ", () => {
+  for (const key of ["premier_legacy_99_1", "whole_life_99_1_nocash"]) {
+    const g = RATES[key];
+    assert.equal(g.verification_status, "verified_two_sources", `${key} ต้องระบุว่าตรวจไขว้แล้ว`);
+    assert.match(g.source_type, /smartweb_primary/);
+    assert.match(g.source, /SmartWeb/);
+    assert.match(g.scaling_note, /ไม่ใช่การประมาณ/);
+    assert.match(g.riders_allowed, /แคร์ พลัส/);
+    assert.match(g.underwriting, /HNW/);
+    assert.equal(g.rates.annual.m.length, 81);
+    assert.equal(g.rates.annual.f.length, 81);
+    // ต้องเพิ่มตามอายุและหญิงถูกกว่าชายทุกอายุ
+    for (let i = 0; i < 80; i++) {
+      assert.ok(g.rates.annual.m[i + 1] > g.rates.annual.m[i], `${key} ชาย อายุ ${i}`);
+      assert.ok(g.rates.annual.f[i + 1] > g.rates.annual.f[i], `${key} หญิง อายุ ${i}`);
+    }
+    for (let i = 0; i <= 80; i++) {
+      assert.ok(g.rates.annual.f[i] < g.rates.annual.m[i], `${key} อายุ ${i} หญิงต้องถูกกว่าชาย`);
+    }
+  }
+  // จุดผิดปกติต้องถูกบันทึกไว้ พร้อมค่าที่พิมพ์จริง ไม่ใช่แก้เงียบ ๆ
+  const a = RATES.whole_life_99_1_nocash.anomaly_flag;
+  assert.equal(a.increment, 8800);
+  assert.equal(a.printed_values["30"], 2663200);
+  assert.equal(a.confirmed_on_smartweb, true, "จุดผิดจังหวะต้องระบุว่าตรวจกับ SmartWeb แล้ว");
+  assert.deepEqual(a.smartweb_rate_per_1000, {"29": 265.44, "30": 266.32});
+  assert.match(a.note, /ไม่แก้เอง/);
+  // หน้าเว็บต้องบอกจุดผิดจังหวะ และต้องไม่อ้างว่ายังไม่ได้ตรวจไขว้อีกต่อไป
+  assert.match(html, /เบี้ยเพศชาย อายุ 29 ไป 30 เพิ่มขึ้นเพียง 8,800 บาท/);
+  assert.match(html, /ไม่ใช่การพิมพ์ผิดของเว็บตัวแทน/);
+  assert.match(html, /SmartWeb รหัสแบบ 241 ตรงกับเว็บตัวแทนครบ 162 ค่า/);
+  assert.match(html, /SmartWeb รหัสแบบ 220 ตรงกับเว็บตัวแทนครบ 162 ค่า/);
+  assert.doesNotMatch(html, /ไม่ควรใช้ตัวเลขนี้ออกใบเสนอราคาจริง/);
 });
 
 test("ตัวเลือกสัญญาหลักในเครื่องคำนวณ ทุกตัวคำนวณเบี้ยได้จริง", () => {

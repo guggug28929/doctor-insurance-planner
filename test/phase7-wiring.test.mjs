@@ -46,6 +46,8 @@ vm.runInContext(
     fn("const EASY_PROTECTION_PLANS = "),
     fn("const HAPPY_RETURN_PLANS = "),
     fn("const HNW_LEGACY_PLANS = "),
+    fn("const SINGLE_PREMIUM_PLANS = "),
+    fn("function singlePremiumPlanPremium("),
     fn("function mainPremiumAtEntry("),
     fn("const LIFE_REAL_DISCOUNT = ") ? "" : "",
     "const LIFE_REAL_DISCOUNT = 0.03; const LIFE_RETIRE_AGE = 60;",
