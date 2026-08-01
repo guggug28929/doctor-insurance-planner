@@ -52,7 +52,8 @@ const REGISTRY = [
   {n:17, name:'Smart Protection 99/20',       data:'main_99_20',           calc:'99_20',                lp:'99_20',                cmp:'main9920',          route:'/plans/smart-protection-99-20', kind:'main'},
   {n:18, name:'Premier Legacy 99/1 ชำระครั้งเดียว', data:'premier_legacy_99_1', calc:'premier_legacy_99_1', lp:'premier_legacy_99_1', cmp:'premierlegacy991', route:'/plans/premier-legacy-99-1', kind:'main'},
   {n:19, name:'เพื่อคุ้มครองตลอดชีพ 99/1 ไม่มีเงินคืน', data:'whole_life_99_1_nocash', calc:'whole_life_99_1_nocash', lp:'whole_life_99_1_nocash', cmp:'wholelife991nocash', route:'/plans/whole-life-99-1', kind:'main'},
-  {n:20, name:'Term rider ภายในระยะเวลา',      data:'term_rider',           calc:null, lp:null, cmp:null, route:'/plans/term-rider',                         kind:'rider'},
+  {n:20, name:'คุ้มครองตลอดชีพ 99/1 มีเงินคืน 1.75%', data:'whole_life_99_1_cashback', calc:'whole_life_99_1_cashback', lp:'whole_life_99_1_cashback', cmp:'wholelife991cashback', route:'/plans/whole-life-99-1-cashback', kind:'main'},
+  {n:21, name:'Term rider ภายในระยะเวลา',      data:'term_rider',           calc:null, lp:null, cmp:null, route:'/plans/term-rider',                         kind:'rider'},
 ];
 
 function inCalculator(key) {
@@ -102,8 +103,8 @@ test("ทุกแบบในกลุ่มเปรียบเทียบ�
 });
 
 test("แบบที่ยังไม่มีข้อมูล ต้องไม่ถูกอ้างถึงในระบบเลย ไม่ใช่ใส่ค่าเดา", () => {
-  // คุ้มครองตลอดชีพ 99/1 รุ่นมีเงินคืน 1.75% ยังไม่มีตารางอัตราเบี้ยในระบบ
-  const blocked = ["whole_life_99_1_cashback", "main_99_1_cashback_175"];
+  // คีย์เก่าที่เคยใช้ชั่วคราวระหว่างทำงาน ต้องไม่หลงเหลือในระบบ
+  const blocked = ["main_99_1", "whole_life_99_1", "main_99_1_nocash"];
   for (const key of blocked) {
     assert.equal(RATES[key], undefined, `${key} ไม่ควรมีในไฟล์ข้อมูล ถ้ายังไม่ได้ตรวจจากแหล่งทางการ`);
     assert.ok(!html.includes(`name="mainPlan" value="${key}"`), `${key} ไม่ควรอยู่ในเครื่องคำนวณ`);
@@ -158,4 +159,30 @@ test("ตัวเลือกสัญญาหลักในเครื่�
       ["99_20", "99_99", "99_7", "80_10"].includes(v);           // อยู่ในสาขาเดิมของ mainPremiumAtEntry
     assert.ok(handled, `ตัวเลือก ${v} ไม่มีเส้นทางคำนวณเบี้ยรองรับ`);
   }
+});
+
+test("แบบอัตราคงที่ 99/1 มีเงินคืน ต้องเก็บอัตราตามที่ SmartWeb ระบุ และไม่แอบคิดเบี้ยเอง", () => {
+  const g = RATES.whole_life_99_1_cashback;
+  assert.equal(g.flat_rate_per_1000, 1000, "SmartWeb ระบุ 1,000 บาท ต่อทุน 1,000 บาท");
+  assert.equal(g.rates.annual.m.length, 71, "อายุ 0 – 70 ปี");
+  assert.equal(g.rates.annual.f.length, 71);
+  // เท่ากันทุกอายุทุกเพศ ตามที่แหล่งระบุ
+  for (let i = 0; i <= 70; i++) {
+    assert.equal(g.rates.annual.m[i], 1000, `ชาย อายุ ${i}`);
+    assert.equal(g.rates.annual.f[i], 1000, `หญิง อายุ ${i}`);
+  }
+  assert.equal(g.capital_min, 1000000);
+  assert.equal(g.capital_max_per_person, 500000000);
+  assert.match(g.riders_allowed, /ไม่สามารถซื้อสัญญาเพิ่มเติม/);
+  assert.equal(g.annual_discount_per_1000, null);
+  assert.match(g.annual_discount_note, /ไม่มี/);
+  assert.equal(g.verification_status, "verified_smartweb");
+  // หน้าเว็บต้องไม่ขายเกินจริงว่าไม่มีข้อยกเว้น และต้องบอกเรื่องจองสิทธิ์
+  assert.match(html, /ไม่ใช่แบบไม่มีข้อยกเว้น/);
+  assert.match(html, /ต้องจองสิทธิ์การขายก่อนส่งงานผ่าน/);
+  // ผลประโยชน์ที่ยังไม่มีหลักฐาน ต้องระบุว่ายังไม่พบ ไม่ใช่เดา
+  assert.match(g.maturity_benefit, /ยังไม่พบ/);
+  assert.match(g.cash_back_verification, /ต้องอ่านจากใบปลิวหรือกรมธรรม์/);
+  // เพดานทุนต้องถูกบังคับในเส้นทางคำนวณ
+  assert.match(html, /if\(g\.capital_max_per_person && capital > g\.capital_max_per_person\) return null;/);
 });
