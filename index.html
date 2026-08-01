@@ -2482,7 +2482,10 @@ function mainPlanDisplayName(plan, capital){
   }
   if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
-  if(plan === '99_99') return capital === 50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99';
+  if(plan === '99_99'){
+    if(capital >= 10000000) return 'สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)';
+    return capital === 50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'Smart Protection 99/99';
+  }
   return plan === '15_3' ? 'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)' : 'เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)';
 }
 function applySavingsPlanLock(plan){
@@ -2546,7 +2549,10 @@ function updateMainCapitalHint(){
   } else {
     capitalInput.min = 50000;
     capitalInput.step = 10000;
-    document.getElementById('mainCapitalHint').textContent = 'ทุน 50,000 บาท: คุ้มครองตลอดชีพ 99/99 • ตั้งแต่ 50,001 บาท: Smart Protection 99/99 ตาม Tier ทุนประกัน';
+    document.getElementById('mainCapitalHint').innerHTML =
+      'ทุน 50,000 บาท: คุ้มครองตลอดชีพ 99/99 • ตั้งแต่ 50,001 บาท: Smart Protection 99/99 • '
+      + '<b>ตั้งแต่ 10,000,000 บาทขึ้นไป: สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)</b> ซึ่งใช้ตารางเบี้ยคนละชุด '
+      + 'รับทำถึงอายุ 75 ปี ชำระรายปีเท่านั้น และผู้เอาประกันภัยต้องมีทรัพย์สินไม่ต่ำกว่า 10 ล้านบาท';
   }
 }
 updateMainCapitalHint();
@@ -2646,6 +2652,17 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     if(perThousand===null) return null;
     return perThousand * capital / 1000;
   } else {
+    // ทุนตั้งแต่ 10 ล้านบาทขึ้นไป ใช้ตารางของ "คุ้มครองตลอดชีพ 99/99 (พรีเมียร์)" ซึ่งเป็นคนละตารางกัน
+    if(capital >= 10000000){
+      if(freq !== 'annual') return null;
+      const g = RATES.main_99_99_premier;
+      if(!g) return null;
+      const arr = capital < 50000000 ? g[gender+'_10m'] : g[gender+'_50m'];
+      const denom = capital < 50000000 ? 10000000 : 50000000;
+      const base = rateAtStart(arr, entryAge, g.age_start ?? 0);
+      if(base === null || base === undefined) return null;
+      return base * capital / denom;
+    }
     if(capital === 50000){
       const g = RATES.main_99_99;
       const table = (g.payment_schedules && g.payment_schedules[freq]) ? g.payment_schedules[freq][gender] : (freq==='annual' ? g[gender] : null);
