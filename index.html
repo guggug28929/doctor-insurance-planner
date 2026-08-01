@@ -529,7 +529,20 @@
   }
   .info-icon:hover .tooltip, .info-icon:focus .tooltip{visibility:visible;opacity:1;}
   @media (max-width:600px){
-    .info-icon .tooltip{width:190px;left:-90px;}
+    /* บนมือถือ ตรึงกล่องคำอธิบายไว้ที่ขอบล่างของจอเสมอ แทนการวางลอยข้างไอคอน
+       เพราะไอคอนที่อยู่ท้ายบรรทัดจะดันกล่องล้นออกนอกจอ จนอ่านข้อความด้านขวาไม่ครบ
+       ตรึงล่างจอทำให้ตำแหน่งคาดเดาได้เสมอไม่ว่าไอคอนจะอยู่ตรงไหนของหน้า */
+    .info-icon .tooltip{
+      position:fixed;
+      left:12px;
+      right:12px;
+      width:auto;
+      bottom:16px;
+      font-size:.78rem;
+      padding:12px 14px;
+      box-shadow:0 8px 28px rgba(0,0,0,.18);
+      z-index:60;
+    }
   }
   .summary-divider{
     border:none;
