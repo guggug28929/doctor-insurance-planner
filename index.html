@@ -928,8 +928,29 @@
   .pension-table tr.pension-row-get{background:#fdf7f9;}
   .pension-table .pension-pos{color:#1c7a4f;font-weight:600;}
   .pension-table .pension-neg{color:#b3243f;}
-  .group-break.group-break-with-action{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
-  .group-break-text{flex:1;min-width:220px;}
+  .group-break.group-break-with-action{display:flex;justify-content:space-between;align-items:flex-end;gap:16px 20px;flex-wrap:wrap;}
+  .group-break-text{flex:1 1 300px;min-width:220px;}
+  /* กลุ่มปุ่มท้ายหัวข้อ: อ่านก่อน แล้วค่อยลงมือเทียบ ปุ่มสูงเท่ากันและชิดขอบล่างเดียวกัน */
+  .group-break-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .btn-guide-link{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--pink-soft,#fff0f5);border:1.5px solid transparent;color:var(--pink-deep);
+    font-weight:700;font-size:.82rem;padding:9px 16px;border-radius:999px;cursor:pointer;
+    white-space:nowrap;font-family:inherit;line-height:1.2;
+    transition:background .18s,border-color .18s,transform .18s;
+  }
+  .btn-guide-link:hover{background:#ffe3ee;border-color:#eab9cd;}
+  .btn-guide-link:active{transform:translateY(1px);}
+  .btn-guide-link:focus-visible{outline:2px solid var(--pink-deep);outline-offset:2px;}
+  .btn-guide-link .bgl-ico{font-size:.95rem;line-height:1;}
+  .btn-guide-link .bgl-arrow{opacity:.65;font-weight:600;}
+  body.hnw .btn-guide-link{background:rgba(198,164,92,.14);color:var(--gold-hi);}
+  body.hnw .btn-guide-link:hover{background:rgba(198,164,92,.24);border-color:var(--gold);}
+  @media(max-width:520px){
+    .group-break.group-break-with-action{align-items:stretch;}
+    .group-break-actions{width:100%;}
+    .group-break-actions>button{flex:1 1 auto;justify-content:center;}
+  }
   .btn-compare-toggle{
     background:#fff;border:1.5px solid var(--pink-deep);color:var(--pink-deep);
     font-weight:700;font-size:.82rem;padding:9px 18px;border-radius:999px;cursor:pointer;
@@ -1219,8 +1240,6 @@
   .hg-cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
   .hg-cta-row .btn{width:auto;padding:11px 22px;}
 
-  .btn-guide-link{margin-left:auto;}
-  .group-break-with-action{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
   .adv-run-card{text-align:center;}
   .adv-run-card h2{margin-bottom:6px;}
   .adv-run-card .btn{width:auto;padding:13px 34px;font-size:1rem;}
@@ -9949,15 +9968,23 @@ function initCompareToggle(){
       gb.appendChild(wrap);
     }
     // ปุ่มพาไปคู่มือวิธีเลือก วางไว้เฉพาะกลุ่มสุขภาพ เพราะเนื้อหาเป็นเรื่องสุขภาพล้วน
+    // ปุ่มทั้งหมดอยู่ในกล่องเดียวกัน จะได้สูงเท่ากันและตกบรรทัดพร้อมกันบนจอแคบ
+    let actions = gb.querySelector('.group-break-actions');
+    if(!actions){
+      actions = document.createElement('div');
+      actions.className = 'group-break-actions';
+      gb.appendChild(actions);
+    }
     if(t.id === 'compareModeToggle' && !document.getElementById('guideLinkBtn')){
       const g = document.createElement('button');
       g.id = 'guideLinkBtn';
-      g.className = 'btn-outline btn-guide-link';
+      g.className = 'btn-guide-link';
       g.type = 'button';
-      g.textContent = 'วิธีเลือกประกันสุขภาพ →';
+      // อ่านก่อนเทียบ จึงให้น้ำหนักเบากว่าปุ่มเปรียบเทียบ แต่สูงเท่ากัน
+      g.innerHTML = '<span class="bgl-ico" aria-hidden="true">\u{1F4D6}</span>วิธีเลือกประกันสุขภาพ<span class="bgl-arrow" aria-hidden="true">\u2192</span>';
       g.title = 'อ่านหลักการเลือกแผน ก่อนเทียบตัวเลข';
       g.onclick = () => { showPage('knowledge'); setKnowTab('guide'); };
-      gb.appendChild(g);
+      actions.appendChild(g);
     }
     const btn = document.createElement('button');
     btn.id = t.id;
@@ -9965,7 +9992,7 @@ function initCompareToggle(){
     btn.type = 'button';
     btn.textContent = 'เลือกแผนที่ต้องการเปรียบเทียบ';
     btn.addEventListener('click', toggleCompareMode);
-    gb.appendChild(btn);
+    actions.appendChild(btn);
   });
 }
 function toggleCompareMode(){
