@@ -176,13 +176,49 @@ test("แบบอัตราคงที่ 99/1 มีเงินคืน �
   assert.match(g.riders_allowed, /ไม่สามารถซื้อสัญญาเพิ่มเติม/);
   assert.equal(g.annual_discount_per_1000, null);
   assert.match(g.annual_discount_note, /ไม่มี/);
-  assert.equal(g.verification_status, "verified_smartweb");
+  assert.equal(g.verification_status, "verified_smartweb_and_brochure");
   // หน้าเว็บต้องไม่ขายเกินจริงว่าไม่มีข้อยกเว้น และต้องบอกเรื่องจองสิทธิ์
   assert.match(html, /ไม่ใช่แบบไม่มีข้อยกเว้น/);
   assert.match(html, /ต้องจองสิทธิ์การขายก่อนส่งงานผ่าน/);
-  // ผลประโยชน์ที่ยังไม่มีหลักฐาน ต้องระบุว่ายังไม่พบ ไม่ใช่เดา
-  assert.match(g.maturity_benefit, /ยังไม่พบ/);
-  assert.match(g.cash_back_verification, /ต้องอ่านจากใบปลิวหรือกรมธรรม์/);
+  // ผลประโยชน์ยืนยันจากใบปลิวแล้ว ต้องไม่เหลือข้อความว่ายังไม่พบ
+  assert.match(g.maturity_benefit, /101\.75%/);
+  assert.match(g.cash_back_verification, /ยืนยันจากใบปลิว/);
   // เพดานทุนต้องถูกบังคับในเส้นทางคำนวณ
   assert.match(html, /if\(g\.capital_max_per_person && capital > g\.capital_max_per_person\) return null;/);
+});
+
+test("ผลประโยชน์ 99/1 มีเงินคืน ต้องตรงกับใบปลิว และสูตรต้องพิสูจน์กับตัวอย่างในใบปลิวได้", () => {
+  const g = RATES.whole_life_99_1_cashback;
+  assert.equal(g.cash_back_rate_pct, 1.75);
+  assert.equal(g.cash_back_first_year, 1);
+  assert.equal(g.cash_back_last_age, 98);
+  assert.equal(g.maturity_pct, 101.75);
+  assert.match(g.death_benefit, /105%/);
+  assert.match(g.death_benefit, /แล้วแต่จำนวนใดสูงกว่า/);
+  assert.equal(g.exclusions.length, 3, "ใบปลิวระบุข้อยกเว้น 3 กรณี");
+
+  // สูตรที่หน้าเว็บใช้ ต้องได้ผลตรงกับตัวอย่างในใบปลิวพอดี ไม่ใช่ใกล้เคียง
+  const ex = g.brochure_example;
+  const totalPct = g.cash_back_rate_pct * (g.cash_back_last_age - ex.entry_age) + g.maturity_pct;
+  assert.equal(totalPct, ex.total_pct, "สูตรไม่ตรงกับตัวอย่างในใบปลิว");
+  assert.equal(Math.round((totalPct / 100) * ex.capital), ex.total_benefit);
+  assert.equal(g.cash_back_last_age - ex.entry_age, ex.cash_back_years);
+  assert.equal(Math.round((g.cash_back_rate_pct / 100) * ex.capital), ex.cash_back_per_year);
+  assert.equal(ex.total_benefit - ex.single_premium, ex.net_gain);
+
+  // หน้าเว็บต้องติดป้ายว่าเป็นผลรวมไม่คิดมูลค่าเวลา ไม่ใช่ผลตอบแทนต่อปี
+  assert.match(html, /ไม่คิดมูลค่าเวลาของเงิน ไม่ใช่ผลตอบแทนต่อปี/);
+  assert.match(html, /function cashback9901Rows\(/);
+  // ทุนสูงสุดต้องบอกว่านับรวมสามรุ่น ไม่ใช่รุ่นนี้รุ่นเดียว
+  assert.match(g.capital_max_note, /2\.25%/);
+  assert.match(g.capital_max_note, /2\.50%/);
+});
+
+test("เอกสารภายในของบริษัทต้องไม่หลุดขึ้น Git และผลประโยชน์ตัวแทนต้องไม่โผล่บนหน้าเว็บ", async () => {
+  const ignore = await readFile(new URL("../.gitignore", import.meta.url), "utf8");
+  assert.match(ignore, /9901returnslide\.pdf/, "สไลด์ภายในต้องถูก gitignore");
+  // ค่านายหน้าและช่องทางจองสิทธิ์ภายใน ห้ามอยู่บนเว็บลูกค้า
+  assert.ok(!html.includes("ค่านายหน้า"), "ห้ามมีข้อมูลค่านายหน้าบนหน้าเว็บ");
+  assert.ok(!html.includes("forms.gle"), "ห้ามมีลิงก์ฟอร์มจองสิทธิ์ภายในบนหน้าเว็บ");
+  assert.ok(!html.includes("asp.campaign@muangthai.co.th"), "ห้ามมีอีเมลภายในบนหน้าเว็บ");
 });
