@@ -271,7 +271,7 @@
     font-weight:700;
   }
   #page-knowledge .faq blockquote,
-  #page-knowledge .faq-note{
+  #page-faq .faq-note{
     margin:14px 22px;
     padding:12px 14px;
     background:#fff8fb;
@@ -281,13 +281,13 @@
     line-height:1.8;
   }
 
-  #page-knowledge .faq-toolbar{
+  #page-faq .faq-toolbar{
     display:flex;
     gap:10px;
     flex-wrap:wrap;
     margin:14px 22px 8px;
   }
-  #page-knowledge .faq-mini-btn{
+  #page-faq .faq-mini-btn{
     border:1px solid #e7b5ca;
     background:#fff;
     color:var(--pink-deep);
@@ -297,8 +297,8 @@
     font-weight:700;
     cursor:pointer;
   }
-  #page-knowledge .faq-mini-btn:hover{background:#fff1f6;}
-  #page-knowledge .faq-chatbot{
+  #page-faq .faq-mini-btn:hover{background:#fff1f6;}
+  #page-faq .faq-chatbot{
     margin:18px 22px 18px;
     padding:18px;
     border:1px solid #edbfd1;
@@ -306,7 +306,7 @@
     background:linear-gradient(135deg,#fff1f6 0%,#ffffff 72%);
     box-shadow:0 6px 22px rgba(143,13,64,.08);
   }
-  #page-knowledge .faq-chatbot h3{
+  #page-faq .faq-chatbot h3{
     margin:0 0 8px;
     padding:0;
     border:0;
@@ -314,18 +314,18 @@
     color:var(--pink-deep);
     font-size:1.08rem;
   }
-  #page-knowledge .faq-chatbot p{
+  #page-faq .faq-chatbot p{
     margin:8px 0 12px;
     color:#4a2635;
     line-height:1.8;
     font-size:.95rem;
   }
-  #page-knowledge .faq-chat-row{
+  #page-faq .faq-chat-row{
     display:flex;
     gap:10px;
     align-items:flex-start;
   }
-  #page-knowledge #faqChatInput{
+  #page-faq #faqChatInput{
     flex:1;
     min-height:82px;
     resize:vertical;
@@ -338,13 +338,13 @@
     color:#2d1822;
     background:#fff;
   }
-  #page-knowledge #faqChatInput:focus{outline:2px solid #ffd2e3;border-color:var(--pink);}
-  #page-knowledge .faq-chat-actions{
+  #page-faq #faqChatInput:focus{outline:2px solid #ffd2e3;border-color:var(--pink);}
+  #page-faq .faq-chat-actions{
     display:flex;
     flex-direction:column;
     gap:8px;
   }
-  #page-knowledge .faq-chat-actions button{
+  #page-faq .faq-chat-actions button{
     min-width:116px;
     border:0;
     border-radius:12px;
@@ -356,13 +356,13 @@
     cursor:pointer;
     box-shadow:0 4px 12px rgba(200,30,92,.18);
   }
-  #page-knowledge .faq-chat-actions button.secondary{
+  #page-faq .faq-chat-actions button.secondary{
     background:#fff;
     color:var(--pink-deep);
     border:1px solid #e7b5ca;
     box-shadow:none;
   }
-  #page-knowledge #faqChatAnswer{
+  #page-faq #faqChatAnswer{
     margin-top:14px;
     padding:14px 16px;
     border:1px solid #f0c9d8;
@@ -372,28 +372,28 @@
     line-height:1.85;
     font-size:.95rem;
   }
-  #page-knowledge #faqChatAnswer .hit-title{
+  #page-faq #faqChatAnswer .hit-title{
     color:var(--pink-deep);
     font-weight:800;
     margin:10px 0 5px;
   }
-  #page-knowledge #faqChatAnswer mark{
+  #page-faq #faqChatAnswer mark{
     background:#ffdce9;
     color:var(--pink-deep);
     padding:0 2px;
     border-radius:4px;
   }
-  #page-knowledge #faqChatAnswer .chat-meta{
+  #page-faq #faqChatAnswer .chat-meta{
     color:#7b5664;
     font-size:.9rem;
     margin-bottom:8px;
   }
-  #page-knowledge #faqChatAnswer a{
+  #page-faq #faqChatAnswer a{
     color:var(--pink-deep);
     font-weight:700;
   }
-  #page-knowledge .faq-chatbot code,
-  #page-knowledge #faqChatAnswer code{
+  #page-faq .faq-chatbot code,
+  #page-faq #faqChatAnswer code{
     background:#fff;
     border:1px solid #f0c9d8;
     border-radius:6px;
@@ -402,17 +402,17 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-size:.88em;
   }
-  #page-knowledge #faqChatAnswer .chat-ai-answer{
+  #page-faq #faqChatAnswer .chat-ai-answer{
     white-space:pre-wrap;
   }
-  #page-knowledge #faqChatAnswer .chat-error{
+  #page-faq #faqChatAnswer .chat-error{
     color:#7a1f2a;
     background:#fff6f6;
     border:1px solid #f1c7c7;
     border-radius:12px;
     padding:12px 14px;
   }
-  #page-knowledge #faqChatAnswer .chat-ok{
+  #page-faq #faqChatAnswer .chat-ok{
     color:#25543b;
     background:#f3fff7;
     border:1px solid #ccebd8;
@@ -421,10 +421,10 @@
     margin-bottom:10px;
   }
   @media(max-width:720px){
-    #page-knowledge .faq-chat-row{flex-direction:column;}
-    #page-knowledge .faq-chat-actions{flex-direction:row;flex-wrap:wrap;width:100%;}
-    #page-knowledge .faq-chat-actions button{flex:1;min-width:120px;}
-    #page-knowledge .faq, #page-knowledge .faq-chatbot, #page-knowledge .faq-note, #page-knowledge .faq-toolbar{margin-left:0;margin-right:0;}
+    #page-faq .faq-chat-row{flex-direction:column;}
+    #page-faq .faq-chat-actions{flex-direction:row;flex-wrap:wrap;width:100%;}
+    #page-faq .faq-chat-actions button{flex:1;min-width:120px;}
+    #page-knowledge .faq, #page-faq .faq-chatbot, #page-faq .faq-note, #page-faq .faq-toolbar{margin-left:0;margin-right:0;}
   }
   .ai-priority-box{
     margin-top:12px;
@@ -1233,6 +1233,8 @@
   .faq-search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.5;font-size:.95rem;}
   #faqSearch{width:100%;padding:12px 42px 12px 44px;border:1.5px solid #eab9cd;border-radius:999px;
     font-family:inherit;font-size:.92rem;background:#fff;color:#3d2b33;}
+  #faqSearch::-webkit-search-cancel-button,
+  #faqSearch::-webkit-search-decoration{-webkit-appearance:none;display:none;}
   #faqSearch:focus{outline:none;border-color:var(--pink-deep);box-shadow:0 0 0 3px rgba(143,13,64,.1);}
   .faq-clear{display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);
     border:0;background:#f4dde6;color:var(--pink-deep);width:26px;height:26px;border-radius:50%;
@@ -1287,16 +1289,14 @@
   .ig-h-n{flex:none;width:23px;height:23px;border-radius:50%;background:var(--pink-deep);color:#fff;
     display:grid;place-items:center;font-size:.78rem;}
   .ig-axis{display:flex;align-items:center;gap:10px;font-size:.74rem;color:#8a7480;margin-bottom:10px;}
-  .ig-axis-line{flex:1;height:4px;border-radius:2px;
-    background:linear-gradient(90deg,var(--pink-deep),#e88bad 55%,#f3d9e3);}
+  .ig-axis-line{flex:1;height:5px;border-radius:3px;
+    background:linear-gradient(90deg,#3f9c68 0%,#7bc79a 22%,#e9c76a 50%,#e08a99 78%,#c8384f 100%);}
   .ig-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .ig-col{border-radius:11px;padding:12px 13px;border:1px solid #f0dde5;background:#fffafc;}
-  .ig-col.ig-go{background:#fdeef4;border-color:#eab9cd;}
-  .ig-col.ig-mid{background:#fff7fa;}
-  .ig-col-badge{font-weight:800;font-size:.87rem;color:var(--pink-deep);}
-  .ig-col-sub{font-size:.75rem;color:#8a7480;margin:2px 0 8px;}
+  .ig-col{border-radius:11px;padding:12px 13px;border:1.5px solid;}
+  .ig-col-badge{font-weight:800;font-size:.87rem;display:flex;align-items:center;gap:6px;}
+  .ig-col-sub{font-size:.75rem;margin:3px 0 9px;opacity:.8;}
   .ig-col ul{margin:0;padding-left:16px;}
-  .ig-col li{font-size:.8rem;line-height:1.75;color:#4a3841;margin-bottom:3px;}
+  .ig-col li{font-size:.8rem;line-height:1.75;margin-bottom:3px;opacity:.92;}
   .ig-steps{display:grid;gap:7px;}
   .ig-step{display:flex;gap:11px;align-items:flex-start;background:#fffafc;border:1px solid #f4e3ea;
     border-radius:10px;padding:9px 12px;}
@@ -3086,7 +3086,7 @@
       <p>รวมคำถามที่ลูกค้าถามผมบ่อยที่สุด ตั้งแต่ก่อนสมัครจนถึงตอนเคลม ตอบจากเงื่อนไขสัญญาจริงและจากสิ่งที่ผมเห็นในห้องตรวจ</p>
       <div class="faq-search-wrap">
         <span class="faq-search-ico" aria-hidden="true">🔍</span>
-        <input id="faqSearch" type="search" placeholder="พิมพ์คำที่อยากรู้ เช่น แถลงสุขภาพ ระยะรอคอย copayment" oninput="renderFaq()" aria-label="ค้นหาคำถาม">
+        <input id="faqSearch" type="text" placeholder="พิมพ์คำที่อยากรู้ เช่น แถลงสุขภาพ ระยะรอคอย copayment" oninput="renderFaq()" aria-label="ค้นหาคำถาม">
         <button type="button" id="faqClear" class="faq-clear" onclick="faqClearSearch()" aria-label="ล้างคำค้น">✕</button>
       </div>
     </div>
@@ -7781,9 +7781,12 @@ const ADV_CUT_STEPS = [
   {n:'7', t:'ลดขอบเขต Care Plus', d:'ตัดสุดท้าย เพราะเป็นส่วนที่ต่อยอดวงเงินให้ครอบคลุมค่ารักษาที่แพงที่สุด'},
 ];
 function advPrincipleInfographic(){
+  // ใช้ชุดสีไฟจราจรเดียวกับหน้าคู่มือ เขียวคือควรโอน เหลืองคือแล้วแต่งบ แดงคือถือไว้เอง
+  const label = ['โอนให้ประกัน', 'แล้วแต่งบ', 'ถือไว้เอง'];
+  const dot = ['\u{1F7E2}', '\u{1F7E1}', '\u{1F534}'];
   const b = HEALTH_GUIDE_BUCKETS.map((g, i) => `
-    <div class="ig-col ig-${g.tone}">
-      <div class="ig-col-badge">${i === 0 ? 'โอนให้ประกัน' : i === 1 ? 'แล้วแต่งบ' : 'ถือไว้เอง'}</div>
+    <div class="ig-col hg-${g.tone}">
+      <div class="ig-col-badge"><span aria-hidden="true">${dot[i]}</span> ${label[i]}</div>
       <div class="ig-col-sub">${g.sub}</div>
       <ul>${g.items.slice(0, 4).map(x => `<li>${x}</li>`).join('')}</ul>
     </div>`).join('');
