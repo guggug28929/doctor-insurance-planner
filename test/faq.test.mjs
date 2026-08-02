@@ -96,9 +96,8 @@ test("รวมแท็บ FAQ เดิมเข้ามาแล้ว ต�
   assert.ok(!html.includes('id="knowTabBtn-faq"'), "ยังมีปุ่มแท็บเดิมค้างอยู่");
   // ลิงก์เก่าที่เรียก setKnowTab('faq') ต้องยังใช้ได้ โดยเด้งไปหน้าใหม่
   assert.match(html, /if\(tab === 'faq'\)\{ showPage\('faq'\); return; \}/);
-  // กล่องถาม AI ต้องย้ายมาอยู่หน้า FAQ ใหม่
-  const faqPage = html.slice(html.indexOf('id="page-faq"'), html.indexOf('id="page-knowledge"'));
-  assert.ok(faqPage.includes('faqChatAsk'), "กล่องถาม AI ไม่ได้ย้ายมาหน้า FAQ");
+  // กล่องถาม AI ปิดไว้ชั่วคราวจนกว่า backend จะพร้อม จึงไม่ต้องมีบนหน้า
+  assert.match(html, /const FAQ_AI_ENABLED = false;/);
 });
 
 test("เนื้อหาจากแท็บเดิมต้องถูกรวมเข้ามาครบ ไม่ใช่ทิ้ง", () => {
@@ -141,7 +140,7 @@ test("ช่องค้นหาต้องมีปุ่มล้างอ�
   assert.match(html, /#faqSearch::-webkit-search-cancel-button/);
 });
 
-test("กล่องถาม AI ต้องมีสไตล์ในหน้าใหม่ ไม่ใช่ปุ่มดิบของเบราว์เซอร์", () => {
+test("CSS กล่องถาม AI ต้องพร้อมใช้ทันทีถ้าเปิดกลับ", () => {
   // เคยพลาด: ย้าย HTML ไปหน้า faq แต่ CSS ยังผูกกับ #page-knowledge สไตล์เลยหลุดหมด
   for (const sel of ["#faqChatInput", ".faq-chat-actions button", ".faq-chatbot", "#faqChatAnswer"]) {
     assert.ok(html.includes("#page-faq " + sel), `CSS ของ ${sel} ยังไม่ตามมาที่หน้า faq`);

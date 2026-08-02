@@ -11,22 +11,28 @@ test("กล่องถาม AI ต้องดึงเนื้อหาจ�
   assert.ok(!html.includes("#faqList"), "ยังมีการอ้าง #faqList ซึ่งไม่มีอยู่ใน HTML แล้ว");
 });
 
-test("ถ้า AI backend ล่ม ต้องยังตอบลูกค้าได้จากเนื้อหาในเว็บ", () => {
-  assert.match(html, /function faqLocalAnswer\(q\)/);
-  assert.match(html, /const local = faqLocalAnswer\(q\);/);
-  // ต้องใช้ตัวค้นหาที่มีอยู่แล้ว ไม่ปล่อยให้เป็นโค้ดตาย
-  for (const fn of ["faqExpandQueryTerms", "faqScoreResource", "faqPickSnippet", "faqHighlight"]) {
-    const calls = (html.match(new RegExp("\\b" + fn + "\\b", "g")) || []).length;
-    assert.ok(calls >= 2, `${fn} ยังเป็นโค้ดตาย ไม่มีใครเรียก`);
-  }
+test("ปิดกล่องถาม AI ไว้ เพราะ backend ยังไม่พร้อม", () => {
+  // ระบบที่บอกว่าเป็น AI จริงแต่ตอบไม่ได้ เสียความน่าเชื่อถือมากกว่าไม่มี
+  assert.match(html, /const FAQ_AI_ENABLED = false;/);
+  // ตรวจเฉพาะส่วน HTML ของหน้า ไม่ใช่ CSS/JS ที่เก็บไว้เผื่อเปิดกลับ
+  const faqPage = html.slice(html.indexOf('id="page-faq"'), html.indexOf('id="page-knowledge"'));
+  assert.ok(!faqPage.includes('class="faq-ai"'), "ยังมีกล่องถาม AI แสดงอยู่บนหน้า");
+  assert.ok(!faqPage.includes('id="faqChatInput"'), "ยังมีช่องพิมพ์ถาม AI อยู่บนหน้า");
+  // ต้องเขียนวิธีเปิดกลับไว้ให้ชัด จะได้ไม่กลายเป็นโค้ดที่ไม่มีใครกล้าแตะ
+  assert.match(html, /วิธีเปิดกลับ: ตั้งค่า ANTHROPIC_API_KEY บน Vercel/);
 });
 
-test("ห้ามโชว์รายละเอียดเทคนิคให้ลูกค้าเห็นตอน backend ล่ม", () => {
+test("หน้า FAQ ต้องมีช่องทางทักหาหมอกึ๊กโดยตรง", () => {
+  assert.match(html, /href="https:\/\/line\.me\/R\/ti\/p\/@doctorguginsurance"/);
+  assert.match(html, /href="tel:0852312027"/);
+  assert.match(html, /ยังไม่เจอคำตอบที่ต้องการ/);
+});
+
+test("ห้ามโชว์รายละเอียดเทคนิคให้ลูกค้าเห็น", () => {
   const leaks = ["ANTHROPIC_API_KEY</code>", "api/insurance-chat.js", "extractTextFromClaude", "console.anthropic.com"];
   for (const t of leaks) {
     assert.ok(!html.includes(t), `ข้อความเทคนิคหลุดถึงลูกค้า: ${t}`);
   }
-  assert.match(html, /ตอนนี้ผู้ช่วย AI ยังใช้งานไม่ได้ชั่วคราว/);
 });
 
 test("ไม่มีฟังก์ชันตายที่อ้าง DOM ซึ่งถูกลบไปแล้ว", () => {
