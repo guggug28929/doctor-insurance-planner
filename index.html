@@ -960,8 +960,24 @@
   .compare-input-row input[type=number], .compare-input-row select{
     border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:.85rem;
   }
+  /* การ์ดด้านบนต้องเรียงตรงกับคอลัมน์ในตารางด้านล่าง
+     ตารางมีคอลัมน์ชื่อหัวข้ออยู่ซ้ายสุด การ์ดจึงต้องเว้นช่องซ้ายไว้เท่ากัน
+     แล้วเอาปุ่มเพิ่มแผนไปวางในช่องนั้น จะได้ไม่เหลือที่ว่างเปล่า */
   .compare-columns-summary{
     display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0;
+    align-items:stretch;
+  }
+  .compare-col-spacer{display:none;}
+  /* จอเล็กปล่อยให้ไหลเรียงลงเหมือนเดิม เพราะตารางเลื่อนแนวนอน จัดให้ตรงไม่ได้อยู่แล้ว */
+  @media(min-width:900px){
+    .compare-columns-summary.compare-aligned{
+      grid-template-columns:var(--cmp-label-w,240px) repeat(var(--cmp-cols,3),minmax(0,1fr));
+      gap:14px;
+    }
+    .compare-col-spacer{display:block;}
+    .plan-compare-table .benefit-table table{table-layout:fixed;width:100%;}
+    .plan-compare-table .benefit-table th:first-child,
+    .plan-compare-table .benefit-table td:first-child{width:var(--cmp-label-w,240px);}
   }
   .compare-col-summary{
     background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;
@@ -10860,7 +10876,7 @@ function renderPensionCompare(){
         <button class="compare-remove-btn" onclick="removePensionCompare('${c.pid}')">เอาแผนนี้ออก</button>
       </div>`;
     }).join('');
-    table = `<div class="compare-columns-summary">${heads}</div>
+    table = compareSummaryRow(heads, cols.length, false) + `
       <div class="plan-compare-table">${renderBenefitTable(headers, rows)}</div>
       <p class="pension-hint">ตัวเลขในกลุ่ม "ตัวเลขจากกรณีที่กรอก" คำนวณจากเพศ อายุ และทุนประกันที่ระบุด้านบน แบบที่เลือกทุนได้เฉพาะบางระดับจะใช้ทุนที่ใกล้เคียงที่สุด ผลประโยชน์จริงยึดตามกรมธรรม์</p>`;
   }
@@ -11261,7 +11277,7 @@ function renderLifeComparePage(el, inputs){
       </select>
       <div class="compare-price">${col.premium != null ? fmt(Math.round(col.premium))+' บาท/ปี' : 'อายุนี้ทำแบบนี้ไม่ได้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
-    </div>`).join('') + renderCompareAddSlot();
+    </div>`).join('');
   const headers = columns.map(c => c.product.title);
   const rows = buildLifeCompareRows(columns).concat(buildLifeAddonRows(columns, inputs));
   el.innerHTML = `
@@ -11275,10 +11291,19 @@ function renderLifeComparePage(el, inputs){
         <span class="meta" style="align-self:center;">อายุที่คำนวณได้ ${inputs.age} ปี</span>
       </div>
     </div>
-    <div class="compare-columns-summary">${summaryHtml}</div>
+    ${compareSummaryRow(summaryHtml, columns.length)}
     <div class="plan-compare-table">
       ${renderBenefitTable(headers, rows, 'เบี้ยเป็นรายปีปีแรก คำนวณจากตารางอัตราเบี้ยที่เผยแพร่จริงของแต่ละแบบ ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>สัญญาเพิ่มเติมในตารางท้ายเป็นเบี้ยแยกต่างหาก ยังไม่ได้บวกรวมกับเบี้ยสัญญาหลักด้านบน')}
     </div>`;
+}
+/* วางปุ่มเพิ่มแผนไว้ช่องซ้ายสุด ให้ตรงกับคอลัมน์ "หมวดความคุ้มครอง" ของตาราง
+   ถ้าเพิ่มไม่ได้แล้ว ยังต้องใส่ช่องว่างไว้ ไม่งั้นการ์ดจะเลื่อนไปทับคอลัมน์ผิด */
+function compareSummaryRow(cardsHtml, colCount, withAddSlot = true){
+  // หน้าบำนาญมีปุ่มเพิ่มแผนของตัวเองอยู่แล้ว ห้ามยัดของฝั่งชีวิตเข้าไป
+  const spacer = '<div class="compare-col-spacer" aria-hidden="true"></div>';
+  const add = (withAddSlot ? renderCompareAddSlot() : '') || spacer;
+  return `<div class="compare-columns-summary compare-aligned" style="--cmp-cols:${colCount};">`
+    + add + cardsHtml + '</div>';
 }
 function renderCompareAddSlot(){
   const group = compareActiveGroup();
@@ -11326,7 +11351,7 @@ function renderComparePage(){
       </select>
       <div class="compare-price">${col.premium != null ? fmt(col.premium)+' บาท/ปี' : 'ไม่มีอัตราเบี้ยสำหรับกลุ่มอาชีพนี้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
-    </div>`).join('') + renderCompareAddSlot();
+    </div>`).join('');
   const headers = columns.map(c => c.product.title);
   const rows = buildCompareBenefitRows(columns);
   el.innerHTML = `
@@ -11347,7 +11372,7 @@ function renderComparePage(){
         </label>
       </div>
     </div>
-    <div class="compare-columns-summary">${summaryHtml}</div>
+    ${compareSummaryRow(summaryHtml, columns.length)}
     <div class="plan-compare-table">
       ${renderBenefitTable(headers, rows, 'เบี้ยประมาณการเป็นรายปี คำนวณจากตารางเบี้ยที่เผยแพร่จริงของแต่ละแผน ไม่ใช่ใบเสนอราคาอย่างเป็นทางการ ควรออกใบเสนอราคาจริงก่อนปิดการขายเสมอ<br>เหมาจ่าย Extra และ Extra Care Plus รวมค่ายา/เวชภัณฑ์กลับบ้านไว้ในหมวด 2 (ไม่มีแถวแยกต่างหากแบบ D Health Lite/Elite)')}
     </div>
