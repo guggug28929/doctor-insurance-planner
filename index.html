@@ -9829,7 +9829,8 @@ function renderFaq(){
     html += `<p class="faq-result">พบ ${hits.length} คำถามที่ตรงกับ “${faqEsc(q)}”`
       + (() => { const u = tokens.filter(t => !FAQ_STOP.has(t)); return u.length > 1 ? ` <span class="faq-tok">แยกคำเป็น ${u.map(t=>`<b>${faqEsc(t)}</b>`).join(' + ')}</span>` : ''; })()
       + `</p>`;
-    if(other.length){
+    // ถ้าแท็บนี้ไม่เจอเลย กล่องว่างจะพาไปอีกแท็บให้อยู่แล้ว ไม่ต้องบอกซ้ำสองที่
+    if(other.length && hits.length){
       const meta = FAQ_TOPICS.find(t => t.id !== faqTopic);
       html += `<p class="faq-other">อีก ${other.length} คำถามที่ตรงกัน อยู่ในแท็บ${meta.label}
         <button type="button" class="faq-inline-link" onclick="faqSwitchKeepSearch('${meta.id}')">ดูเลย →</button></p>`;
