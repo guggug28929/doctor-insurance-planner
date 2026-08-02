@@ -1252,6 +1252,24 @@
     font-size:.86rem;line-height:1.75;}
   .uw-advice-t{font-weight:800;color:var(--pink-deep);margin-bottom:4px;}
   @media(max-width:640px){ .uw-row{grid-template-columns:1fr;gap:2px;} }
+  /* สั่งพิมพ์หรือบันทึกเป็น PDF ให้ติดที่มาไปด้วยทุกหน้า
+     และซ่อนปุ่มกับเมนูที่พิมพ์ออกมาแล้วไม่มีประโยชน์ */
+  @media print{
+    #navbar, .compare-remove-btn, .btn, .faq-search-wrap, .faq-tabs, .faq-chips{display:none !important;}
+    body{background:#fff;}
+    .content-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;}
+    .print-credit{display:block !important;text-align:center;font-size:.72rem;color:#666;
+      padding:10px 0;border-top:1px solid #ccc;margin-top:18px;}
+    a[href^="http"]::after{content:" (" attr(href) ")";font-size:.7rem;color:#666;}
+  }
+  .print-credit{display:none;}
+  .site-credit{text-align:center;font-size:.76rem;color:#8b7480;padding:26px 16px 34px;line-height:1.9;}
+  .site-credit b{color:var(--pink-deep);}
+  .hg-size{margin-top:22px;padding-top:20px;border-top:2px solid #f2dde6;}
+  .hg-size-h{font-family:"Kanit",sans-serif;font-weight:800;font-size:1.05rem;color:var(--pink-deep);margin-bottom:6px;}
+  .hg-size-lead{font-size:.9rem;line-height:1.85;color:#5d4a54;margin-bottom:12px;}
+  .hg-size-note{font-size:.8rem;color:#8b7480;margin-top:8px;}
+  .guide-jump-card .btn{margin-top:14px;width:auto;padding:11px 22px;}
   .faq-tabs{display:flex;gap:10px;margin:18px 0 4px;flex-wrap:wrap;}
   .faq-tab{flex:1 1 200px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;
     background:#fff;border:1.5px solid #f0dde5;border-radius:14px;padding:11px 16px;cursor:pointer;
@@ -2360,21 +2378,11 @@
   </div>
 
 
-  <div class="content-card">
-    <h2>เทียบประกันสุขภาพแบบ Size S / M / L / XL</h2>
-    <p class="meta">ใช้เป็นทางลัดในการคุยกับลูกค้า: เริ่มจากวงเงิน IPD, ความต้องการ OPD, สวัสดิการเดิม และงบประมาณ แล้วค่อยกดเข้าไปดูรายละเอียดแต่ละแผน</p>
-    <div class="table-wrap benefit-table compare-table">
-      <table>
-        <thead><tr><th>Size</th><th>ชุดแนะนำ</th><th>เหมาะกับใคร</th><th>IPD / OPD</th><th>โรคร้ายแรง</th></tr></thead>
-        <tbody>
-          <tr><td>S</td><td>เหมาจ่าย Extra หรือ Extra Care Plus</td><td>เริ่มต้นงบประหยัด ต้องการกันค่ารักษาก้อนใหญ่เบื้องต้น</td><td>วงเงิน 200,000–500,000 บาท/ครั้ง; OPD แนะนำซื้อเพิ่มเท่าที่จำเป็น</td><td>เพิ่ม CI / Cancer / D Care ตามงบ</td></tr>
-          <tr><td>M <span class="badge-best">Best Seller</span></td><td>D Health Lite 5 ล้าน + Care Plus 5 ล้าน</td><td>ลูกค้าส่วนใหญ่ที่อยากได้วงเงินสุขภาพสูง เบี้ยยังไม่แรงเกินไป และอยากอุดช่องมะเร็ง/ไต</td><td>IPD 5 ล้าน/ครั้ง; ถ้าใช้ OPD บ่อยให้เสริม OPD รายครั้ง/เหมาจ่าย</td><td>Care Plus 5 ล้าน ครอบคลุมมะเร็ง/ไตตามแผนที่เลือก</td></tr>
-          <tr><td>L</td><td>Elite Health Plus 20 ล้าน + CI</td><td>ต้องการโรงพยาบาลพรีเมียม วงเงิน IPD สูง แต่ยังคุมเบี้ยให้สมเหตุสมผล</td><td>IPD 20 ล้าน/ปี; OPD ยังไม่มีในตัว แนะนำเสริม OPD เฉพาะถ้าใช้จริง</td><td>แนะนำ CI/D Care เป็นเงินก้อนโรคร้ายแรง 1 ล้านบาทขึ้นไป</td></tr>
-          <tr><td>XL</td><td>Elite Health Plus 75 ล้าน + CI / Well-Being</td><td>เน้นความสบายสูง เลือกโรงพยาบาลและเทคโนโลยีการรักษาได้กว้าง พร้อม OPD ในตัวมากขึ้น</td><td>IPD 75 ล้าน/ปี; OPD ในตัว 40,000 บาท/ปี ถ้าอยากได้มากกว่านี้ค่อยพิจารณา 100 ล้าน</td><td>จัด CI/D Care เป็นเงินก้อนโรคร้ายแรงตามงบ โดยปกติไม่ต้องซ้อน Care Plus</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="meta" style="margin-top:8px;">หมายเหตุ: ไม่จัด Elite 40 ล้านเป็นแพ็กเกจหลัก เพราะความคุ้มค่าเบี้ย/วงเงินมักไม่เด่นเท่า Elite 20 ล้านหรือ 75 ล้าน</p>
+  <div class="content-card guide-jump-card">
+    <h2>ยังไม่แน่ใจว่าควรเริ่มที่แผนไหน</h2>
+    <p>รายการด้านบนเรียงตามแบบประกัน ไม่ได้เรียงตามงบ ถ้ายังไม่รู้ว่าตัวเองควรอยู่ระดับไหน
+      มีตารางเทียบแบบ Size S / M / L / XL ให้ดูในหน้าคู่มือ เริ่มจากงบที่จ่ายไหวแล้วไล่มาว่าได้อะไรบ้าง</p>
+    <button class="btn" onclick="showPage('knowledge')">ดูตารางเทียบตามงบ S / M / L / XL →</button>
   </div>
 
   <div class="content-card qa-card">
@@ -10012,6 +10020,28 @@ function faqCrossLinkHtml(){
     <button class="btn" onclick="showPage('faq')">ไปที่คำถามที่พบบ่อย →</button>
   </div>`;
 }
+function healthGuideSizeTableHtml(){
+  /* ย้ายมาจากหน้าแผนประกันทั้งหมด เพราะเป็นตารางช่วยตัดสินใจ ไม่ใช่รายการสินค้า
+     คำนำเดิมเขียนคุยกับตัวแทน ทั้งที่หน้านั้นลูกค้าอ่าน จึงเขียนใหม่ให้พูดกับลูกค้าตรง ๆ */
+  return `<div class="hg-size">
+    <div class="hg-size-h">เทียบเป็นไซซ์ S / M / L / XL</div>
+    <p class="hg-size-lead">ถ้ายังไม่รู้ว่าตัวเองควรอยู่ตรงไหน ให้เริ่มจากงบที่จ่ายไหวจริงในระยะยาว
+      แล้วดูว่าไซซ์นั้นได้วงเงินเท่าไร ครอบคลุมอะไร และยังขาดอะไรที่ต้องเติม
+      ไซซ์ที่ใหญ่กว่าไม่ได้แปลว่าดีกว่าเสมอ ถ้าจ่ายไม่ไหวจนต้องยกเลิกกลางทาง จะเสียเปรียบกว่าเลือกไซซ์เล็กแล้วถือยาวได้</p>
+    <div class="table-wrap benefit-table compare-table">
+      <table>
+        <thead><tr><th>ไซซ์</th><th>ชุดที่แนะนำ</th><th>เหมาะกับใคร</th><th>IPD / OPD</th><th>โรคร้ายแรง</th></tr></thead>
+        <tbody>
+<tr><td>S</td><td>เหมาจ่าย Extra หรือ Extra Care Plus</td><td>เริ่มต้นงบประหยัด ต้องการกันค่ารักษาก้อนใหญ่เบื้องต้น</td><td>วงเงิน 200,000–500,000 บาท/ครั้ง; OPD แนะนำซื้อเพิ่มเท่าที่จำเป็น</td><td>เพิ่ม CI / Cancer / D Care ตามงบ</td></tr>
+          <tr><td>M <span class="badge-best">Best Seller</span></td><td>D Health Lite 5 ล้าน + Care Plus 5 ล้าน</td><td>ลูกค้าส่วนใหญ่ที่อยากได้วงเงินสุขภาพสูง เบี้ยยังไม่แรงเกินไป และอยากอุดช่องมะเร็ง/ไต</td><td>IPD 5 ล้าน/ครั้ง; ถ้าใช้ OPD บ่อยให้เสริม OPD รายครั้ง/เหมาจ่าย</td><td>Care Plus 5 ล้าน ครอบคลุมมะเร็ง/ไตตามแผนที่เลือก</td></tr>
+          <tr><td>L</td><td>Elite Health Plus 20 ล้าน + CI</td><td>ต้องการโรงพยาบาลพรีเมียม วงเงิน IPD สูง แต่ยังคุมเบี้ยให้สมเหตุสมผล</td><td>IPD 20 ล้าน/ปี; OPD ยังไม่มีในตัว แนะนำเสริม OPD เฉพาะถ้าใช้จริง</td><td>แนะนำ CI/D Care เป็นเงินก้อนโรคร้ายแรง 1 ล้านบาทขึ้นไป</td></tr>
+          <tr><td>XL</td><td>Elite Health Plus 75 ล้าน + CI / Well-Being</td><td>เน้นความสบายสูง เลือกโรงพยาบาลและเทคโนโลยีการรักษาได้กว้าง พร้อม OPD ในตัวมากขึ้น</td><td>IPD 75 ล้าน/ปี; OPD ในตัว 40,000 บาท/ปี ถ้าอยากได้มากกว่านี้ค่อยพิจารณา 100 ล้าน</td><td>จัด CI/D Care เป็นเงินก้อนโรคร้ายแรงตามงบ โดยปกติไม่ต้องซ้อน Care Plus</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hg-size-note">หมายเหตุ: ไม่จัด Elite 40 ล้านเป็นแพ็กเกจหลัก เพราะความคุ้มค่าเบี้ย/วงเงินมักไม่เด่นเท่า Elite 20 ล้านหรือ 75 ล้าน</p>
+  </div>`;
+}
 function healthGuideMapHtml(){
   const rows = [
     ['งบจำกัด อยากได้แกนหลักก่อน','เหมาจ่าย Extra หรือ Extra Care Plus คู่กับ Care Plus','ได้วงเงินก้อนใหญ่ในเบี้ยที่เริ่มต้นได้ และ Care Plus อุดช่องมะเร็งกับไตวายที่แผนหลักไม่ครอบคลุม'],
@@ -10044,7 +10074,7 @@ function renderHealthGuide(){
         <div class="hg-trap"><div class="hg-trap-n">${i+1}</div><div><div class="hg-trap-t">${t.t}</div><p>${t.d}</p></div></div>`).join('')}</div>` : ''}
       ${(sec.steps||[]).length ? `<div class="hg-steps">${sec.steps.map(st=>`
         <div class="hg-step"><div class="hg-step-n">${st.n}</div><div class="hg-step-t">${st.t}</div><p>${st.d}</p></div>`).join('')}</div>` : ''}
-      ${sec.mapTable ? healthGuideMapHtml() : ''}
+      ${sec.mapTable ? healthGuideMapHtml() + healthGuideSizeTableHtml() : ''}
       ${typeof sec.extraHtml === 'function' ? sec.extraHtml() : ''}
     </div>`).join('') + faqCrossLinkHtml();
 
@@ -10136,6 +10166,26 @@ function openLegacyAnchor(hash){
   });
   return true;
 }
+
+/* =========================================================================
+   ติดเครดิตเวลาเนื้อหาถูกคัดลอกหรือสั่งพิมพ์
+   เจตนาไม่ใช่บล็อกลูกค้า เพราะบล็อกยังไงคนที่ตั้งใจเอาก็ผ่านได้อยู่ดี
+   (กด Ctrl+U ดู source หรือปิด JavaScript ก็จบ) แต่จะไปกวนลูกค้าจริง
+   ที่แค่อยากก๊อปเบอร์โทรหรือ LINE ID
+   วิธีนี้กลับกัน คือปล่อยให้คัดลอกได้ตามปกติ แต่ของที่ถูกลอกไปจะพ่วงที่มาไปด้วย
+   ใครเอาไปแปะที่อื่นก็เท่ากับช่วยโฆษณาให้
+   ========================================================================= */
+const CONTENT_CREDIT = 'ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance';
+/* ก๊อปสั้น ๆ เช่น เบอร์โทรหรือตัวเลขเบี้ย ไม่ต้องพ่วงเครดิต จะได้ไม่กวนลูกค้า
+   พ่วงเฉพาะตอนที่ยกเนื้อหาเป็นย่อหน้าไป ซึ่งคือกรณีที่เราห่วงจริง */
+const CREDIT_MIN_CHARS = 120;
+document.addEventListener('copy', (e) => {
+  const sel = (window.getSelection() || {}).toString() || '';
+  if(sel.trim().length < CREDIT_MIN_CHARS) return;   // ปล่อยผ่าน ไม่ยุ่ง
+  if(!e.clipboardData) return;
+  e.clipboardData.setData('text/plain', sel + '\n\n— ' + CONTENT_CREDIT);
+  e.preventDefault();
+});
 
 function routeFromLocation(){
   if(openLegacyAnchor(location.hash)) return;
@@ -12253,5 +12303,12 @@ updateMainCapitalHint();
 
 routeFromLocation();
 </script>
+<div class="print-credit">ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance</div>
+<div class="site-credit">
+  เนื้อหาและตารางเปรียบเทียบในเว็บนี้ <b>เรียบเรียงขึ้นเองโดย นพ.หนึ่งบุรุษ เทียมถนอม</b>
+  จากเงื่อนไขกรมธรรม์และตารางอัตราเบี้ยของบริษัท<br>
+  ยินดีให้อ่านและส่งต่อ หากนำไปเผยแพร่ซ้ำรบกวนอ้างอิงที่มาด้วยครับ ·
+  ติดต่อ LINE <b>@doctorguginsurance</b>
+</div>
 </body>
 </html>
