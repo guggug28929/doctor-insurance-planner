@@ -60,7 +60,9 @@ test("ต้องมีมุมของหมอ ซึ่งเป็นส�
 });
 
 test("ต้องค้นหาได้ กรองตามหมวดได้ และมีลิงก์ข้ามไปคู่มือ", () => {
-  assert.match(html, /function faqMatch\(item, q\)/);
+  assert.match(html, /function faqSegment\(q\)/);
+  assert.match(html, /function faqScore\(item, tokens\)/);
+  assert.match(html, /function faqSnippet\(item, tokens\)/);
   assert.match(html, /function faqSetGroup\(g\)/);
   assert.match(html, /function faqCrossLinkHtml\(\)/);
   // ตอนค้นหาต้องดูข้ามหมวด ไม่งั้นหาไม่เจอคำตอบที่อยู่คนละหมวด
