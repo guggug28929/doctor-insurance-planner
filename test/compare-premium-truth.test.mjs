@@ -90,3 +90,36 @@ test('หมุดตรวจ สมาร์ท ลิงค์ ชาย อ�
   // สองแบบนี้มีระดับทุนไม่เหมือนกัน ห้ามใช้ชุด tier ร่วมกัน
   assert.notDeepEqual(RATES.smart_link_15_3.capitals, RATES.smart_link_15_6.capitals);
 });
+
+test('ทุกแบบในหน้าเทียบต้องมีจำนวนปีชำระเบี้ยระบุไว้', () => {
+  // เคยพลาด: 4 แบบตกหล่นจากตาราง payYears แล้วไปขึ้นว่า "ชำระจนครบสัญญา"
+  // ขัดกับแถว "ระยะเวลาชำระเบี้ย" ในหน้าเดียวกันที่บอกว่า 20 ปี
+  const py = html.slice(html.indexOf('const payYears = {'));
+  const block = py.slice(0, py.indexOf('};'));
+  const inMap = [...block.matchAll(/'([a-z0-9_]+)'\s*:/g)].map(m => m[1]);
+  const lb = html.slice(html.indexOf('const LIFE_COMPARE_PRODUCTS = {'));
+  const plans = [...new Set([...lb.matchAll(/plan:'([a-z0-9_]+)'/g)].map(m => m[1]))];
+  for (const p of plans) {
+    assert.ok(inMap.includes(p), `แบบ ${p} ไม่มีในตาราง payYears จะขึ้นเบี้ยรวมผิด`);
+  }
+});
+
+test('แบบที่ไม่รู้จำนวนปีชำระ ต้องขึ้น "-" ไม่ใช่เดาว่าจ่ายจนตาย', () => {
+  assert.match(html, /if\(!\(plan in payYears\)\) return '<span class="compare-na">-<\/span>';/);
+});
+
+test('จำนวนปีชำระต้องตรงกับข้อมูลในตารางเบี้ย', () => {
+  const py = html.slice(html.indexOf('const payYears = {'));
+  const block = py.slice(0, py.indexOf('};'));
+  const get = k => {
+    const m = block.match(new RegExp(`'${k}'\\s*:\\s*(\\d+|null)`));
+    return m ? (m[1] === 'null' ? null : Number(m[1])) : undefined;
+  };
+  // แต่ละตารางเก็บชื่อฟิลด์ต่างกัน แบบชำระครั้งเดียวใช้ premium_paying_years
+  for (const key of ['smart_link_15_3', 'smart_link_15_6', 'whole_life_99_1_cashback']) {
+    const fromData = RATES[key].pay_years ?? RATES[key].premium_paying_years;
+    assert.ok(fromData != null, `${key} ไม่มีข้อมูลจำนวนปีชำระในตารางเบี้ย`);
+    assert.equal(get(key), fromData, `${key} ระบุปีชำระไม่ตรงกับตารางเบี้ย`);
+  }
+  assert.equal(get('flexi_99_20'), 20, 'เฟล็กซี่ 99/20 ชำระ 20 ปี ตามชื่อแบบ');
+});
