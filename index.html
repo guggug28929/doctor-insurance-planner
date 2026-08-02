@@ -11056,8 +11056,10 @@ function buildLifeCompareRows(columns){
         const plan = col.product.plan;
         if(!(plan in payYears)) return '<span class="compare-na">-</span>';   // ไม่รู้ ก็บอกว่าไม่รู้
         const y = payYears[plan];
-        return y ? fmt(Math.round(col.premium * y)) + ' บาท (' + y + ' ปี)'
-                 : '<span class="compare-na">ชำระจนครบสัญญา จึงขึ้นกับอายุที่เสียชีวิต</span>';
+        if(!y) return '<span class="compare-na">ชำระจนครบสัญญา จึงขึ้นกับอายุที่เสียชีวิต</span>';
+        // แบบชำระครั้งเดียวเขียนว่า "(1 ปี)" จะอ่านเหมือนคุ้มครองปีเดียว ทั้งที่คุ้มถึง 99
+        const note = y === 1 ? 'ชำระครั้งเดียว' : y + ' ปี';
+        return fmt(Math.round(col.premium * y)) + ' บาท (' + note + ')';
       }
       const v = col.product.rows[def.key];
       return v === undefined ? '<span class="compare-na">ไม่มีในแผนนี้</span>' : v;
