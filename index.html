@@ -214,10 +214,6 @@
     box-shadow:0 3px 14px rgba(143,13,64,.06);
     scroll-margin-top:24px;
   }
-  #page-knowledge .faq.faq-direct-target{
-    border-color:var(--pink);
-    box-shadow:0 0 0 3px rgba(200,30,92,.12),0 3px 14px rgba(143,13,64,.08);
-  }
   #page-knowledge .faq summary{
     cursor:pointer;
     list-style:none;
@@ -271,33 +267,7 @@
     font-weight:700;
   }
   #page-knowledge .faq blockquote,
-  #page-faq .faq-note{
-    margin:14px 22px;
-    padding:12px 14px;
-    background:#fff8fb;
-    border:1px dashed #e7b5ca;
-    border-radius:12px;
-    color:#4a2635;
-    line-height:1.8;
-  }
 
-  #page-faq .faq-toolbar{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin:14px 22px 8px;
-  }
-  #page-faq .faq-mini-btn{
-    border:1px solid #e7b5ca;
-    background:#fff;
-    color:var(--pink-deep);
-    border-radius:999px;
-    padding:7px 13px;
-    font-family:"Prompt","Noto Sans Thai",sans-serif;
-    font-weight:700;
-    cursor:pointer;
-  }
-  #page-faq .faq-mini-btn:hover{background:#fff1f6;}
   #page-faq .faq-chatbot{
     margin:18px 22px 18px;
     padding:18px;
@@ -424,7 +394,6 @@
     #page-faq .faq-chat-row{flex-direction:column;}
     #page-faq .faq-chat-actions{flex-direction:row;flex-wrap:wrap;width:100%;}
     #page-faq .faq-chat-actions button{flex:1;min-width:120px;}
-    #page-knowledge .faq, #page-faq .faq-chatbot, #page-faq .faq-note, #page-faq .faq-toolbar{margin-left:0;margin-right:0;}
   }
   .ai-priority-box{
     margin-top:12px;
@@ -1162,17 +1131,6 @@
   .plan-group-label:first-child{margin-top:0;padding-top:0;border-top:0;}
   .plan-count{font-size:.72rem;font-weight:600;color:var(--muted);}
   /* ---------- แท็บหน้าความรู้ ---------- */
-  .know-tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:1080px;margin:0 auto 18px;}
-  .know-tab{
-    text-align:left;padding:14px 18px;border-radius:14px;cursor:pointer;
-    background:#fff;border:1.5px solid var(--line);font-family:"Kanit",sans-serif;
-    transition:border-color .2s ease, box-shadow .2s ease, transform .15s ease;
-  }
-  .know-tab:hover{border-color:var(--pink);transform:translateY(-1px);}
-  .know-tab.active{background:linear-gradient(135deg,var(--pink),var(--pink-deep));border-color:transparent;box-shadow:0 8px 22px rgba(143,13,64,.2);}
-  .know-tab-t{display:block;font-weight:700;font-size:.98rem;color:var(--pink-deep);}
-  .know-tab-s{display:block;font-size:.76rem;color:var(--muted);margin-top:2px;}
-  .know-tab.active .know-tab-t,.know-tab.active .know-tab-s{color:#fff;}
   @media (max-width:600px){ .know-tabs{grid-template-columns:1fr;} }
 
   /* ---------- คู่มือวิธีเลือกประกันสุขภาพ ---------- */
@@ -9642,25 +9600,12 @@ function routeFromLocation(){
   }
   const page = Object.keys(PAGE_ROUTES).find(name => PAGE_ROUTES[name] === path) || 'home';
   showPage(page, {updateUrl:false});
-  if(page === 'knowledge') requestAnimationFrame(focusKnowledgeFaqFromHash);
 }
 
 window.addEventListener('popstate', routeFromLocation);
 window.addEventListener('hashchange', () => {
-  if(normalizedPathname() === PAGE_ROUTES.knowledge) focusKnowledgeFaqFromHash();
 });
 
-function focusKnowledgeFaqFromHash(){
-  const id = decodeURIComponent(window.location.hash.slice(1));
-  if(!id) return;
-  const target = document.getElementById(id);
-  if(!target || !target.matches('#faqList details.faq')) return;
-  document.querySelectorAll('#faqList details.faq.faq-direct-target')
-    .forEach(item => item.classList.remove('faq-direct-target'));
-  target.open = true;
-  target.classList.add('faq-direct-target');
-  requestAnimationFrame(() => target.scrollIntoView({behavior:'auto', block:'start'}));
-}
 
 function faqNormalizeText(s){
   return (s||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
@@ -9671,12 +9616,15 @@ function faqEscapeHtml(s){
 function faqEscapeRegExp(s){
   return (s||'').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+// อ่านจาก FAQ_ITEMS โดยตรง เคยพลาดตอนย้ายหน้า เพราะฟังก์ชันนี้ไปดึงจาก DOM ที่ถูกลบไปแล้ว
+// ทำให้ AI ได้ resource เปล่า แล้วตอบโดยไม่มีข้อมูลของเราเลย
 function faqGetResourceList(){
-  return Array.from(document.querySelectorAll('#faqList details.faq')).map((d, idx) => {
-    const title = (d.querySelector('summary')?.textContent || '').trim();
-    const bodyNodes = Array.from(d.children).filter(el => el.tagName !== 'SUMMARY');
-    const body = bodyNodes.map(el => el.textContent || '').join('\n').replace(/\n{3,}/g,'\n\n').trim();
-    return {idx, title, body, text:(title+'\n'+body).trim()};
+  const strip = t => (t || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  return FAQ_ITEMS.map((it, idx) => {
+    const title = it.q;
+    const body = [strip(it.lead), strip(it.body), it.doc ? 'มุมของหมอ: ' + strip(it.doc) : '']
+      .filter(Boolean).join('\n');
+    return {idx, title, body, text:(title + '\n' + body).trim()};
   });
 }
 const FAQ_CHAT_KEYWORDS = [
@@ -9737,6 +9685,20 @@ function faqFormatAiText(text){
   return faqEscapeHtml(text || '').replace(/\n/g, '<br>');
 }
 
+// ถ้า backend ยังไม่พร้อม อย่างน้อยต้องยังตอบลูกค้าได้จากเนื้อหาในเว็บ
+// และห้ามโชว์ชื่อไฟล์โค้ดหรือชื่อ API key ให้ลูกค้าเห็นเด็ดขาด
+function faqLocalAnswer(q){
+  const terms = faqExpandQueryTerms(q);
+  const hits = faqGetResourceList()
+    .map(r => ({r, sc: faqScoreResource(r, terms)}))
+    .filter(x => x.sc > 0).sort((a,b) => b.sc - a.sc).slice(0, 3);
+  if(!hits.length) return '';
+  return `<div class="chat-ok"><b>ตอบจากคำถามที่พบบ่อยในหน้านี้</b> — ผู้ช่วย AI ยังไม่พร้อมใช้งานชั่วคราว ระบบจึงค้นให้จากเนื้อหาในเว็บแทน</div>`
+    + hits.map(h => `<div class="hit-title">${faqEscapeHtml(h.r.title)}</div>
+        <div class="chat-ai-answer">${faqHighlight(faqPickSnippet(h.r.body, terms), terms)}</div>`).join('')
+    + `<div class="chat-meta" style="margin-top:12px;">ถ้ายังไม่ตรงกับที่สงสัย ทักมาถามหมอกึ๊กได้เลยครับ เคสสุขภาพแต่ละคนไม่เหมือนกัน</div>`;
+}
+
 async function faqChatAsk(){
   const input = document.getElementById('faqChatInput');
   const answer = document.getElementById('faqChatAnswer');
@@ -9776,31 +9738,20 @@ async function faqChatAsk(){
       <div class="chat-ai-answer">${faqFormatAiText(data.answer)}</div>
       <div class="chat-meta" style="margin-top:12px;">หมายเหตุ: คำตอบ AI ใช้เพื่อให้ข้อมูลเบื้องต้น เงื่อนไขจริงให้ยืนยันจากกรมธรรม์/ใบเสนอ/บริษัทอีกครั้ง โดยเฉพาะเคสรับประกันหรือเคลมจริง</div>`;
   }catch(err){
-    const errMsg = String(err?.message || err || '');
-    let title = 'ยังเชื่อมต่อ AI backend ไม่สำเร็จ';
-    let help = `สาเหตุที่พบบ่อยคือยังไม่ได้ deploy endpoint <code>${faqEscapeHtml(INSURANCE_AI_ENDPOINT)}</code> หรือยังไม่ได้ตั้งค่า <code>ANTHROPIC_API_KEY</code> บน server/serverless`;
-    if(/quota|billing|credit|exceeded|rate limit/i.test(errMsg)){
-      title = 'เชื่อมต่อ backend สำเร็จแล้ว แต่เครดิต/โควตา Anthropic API ไม่พอ';
-      help = 'ให้ตรวจ Billing / Credit / Usage limit ใน Anthropic Console (console.anthropic.com) หรือเปลี่ยน API key ที่มีเครดิต แล้ว Redeploy Vercel';
-    }else if(/รูปแบบ \{ answer \}|no text answer|no text/i.test(errMsg)){
-      title = 'backend เชื่อม Claude ได้แล้ว แต่คำตอบที่ส่งกลับมายังไม่ใช่ข้อความสำหรับหน้าเว็บ';
-      help = 'ให้ตรวจไฟล์ <code>api/insurance-chat.js</code> ว่าตัวอ่านคำตอบ (extractTextFromClaude) รองรับรูปแบบ content block ล่าสุดของ Anthropic Messages API หรือยัง';
-    }
-    answer.innerHTML = `<div class="chat-error"><b>${faqEscapeHtml(title)}</b><br>
-      ${help}<br><br>
-      เพื่อความปลอดภัย <b>ห้ามใส่ API key ในไฟล์ HTML ฝั่งลูกค้าโดยตรง</b> ต้องให้หน้าเว็บเรียก backend แล้ว backend ค่อยเรียก Claude API<br><br>
-      รายละเอียด error: ${faqEscapeHtml(errMsg)}</div>`;
+    // ลูกค้าไม่ควรเห็นรายละเอียดเทคนิค ให้ค้นจากเนื้อหาในเว็บแทนแล้วบอกทางออก
+    const local = faqLocalAnswer(q);
+    answer.innerHTML = local || `<div class="chat-error"><b>ตอนนี้ผู้ช่วย AI ยังใช้งานไม่ได้ชั่วคราว</b><br>
+      ลองใช้ช่องค้นหาด้านบนของหน้านี้ หรือทักมาถามหมอกึ๊กโดยตรงได้เลยครับ</div>`;
+    console.warn('insurance-chat backend error:', err);
   }
 }
+
 
 function faqChatClear(){
   const input = document.getElementById('faqChatInput');
   const answer = document.getElementById('faqChatAnswer');
   if(input) input.value = '';
   if(answer) answer.innerHTML = 'พร้อมเรียก AI ผ่าน backend <code>/api/insurance-chat</code> ครับ — ถ้ายังไม่ได้ deploy backend ระบบจะแจ้งวิธีเชื่อมต่อแทนการตอบมั่ว';
-}
-function faqToggleAll(open){
-  document.querySelectorAll('#faqList details.faq').forEach(d => d.open = !!open);
 }
 document.addEventListener('keydown', function(e){
   const input = document.getElementById('faqChatInput');
