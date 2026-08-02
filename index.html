@@ -972,8 +972,12 @@
   @media(min-width:900px){
     .compare-columns-summary.compare-aligned{
       grid-template-columns:var(--cmp-label-w,240px) repeat(var(--cmp-cols,3),minmax(0,1fr));
-      gap:14px;
+      /* ช่องตารางไม่มีช่องไฟ ถ้าการ์ดมี gap ความกว้างจะเพี้ยนไปจากคอลัมน์
+         จึงตั้ง gap เป็น 0 แล้วเว้นระยะด้วย margin ข้างในช่องแทน
+         ขอบซ้ายขวาของช่องจึงตรงกับคอลัมน์เป๊ะ และการ์ดอยู่กึ่งกลางคอลัมน์พอดี */
+      gap:0;
     }
+    .compare-columns-summary.compare-aligned > *{margin:0 7px;}
     .compare-col-spacer{display:block;}
     .plan-compare-table .benefit-table table{table-layout:fixed;width:100%;}
     .plan-compare-table .benefit-table th:first-child,
