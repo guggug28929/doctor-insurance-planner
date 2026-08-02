@@ -58,6 +58,11 @@ vm.runInContext(
     fn("function lifeBucket("),
     fn("function lifeRoundCapital("),
     fn("function lifeCapitalForBudget("),
+    // เพดานฝ่ายพิจารณา lifeTwoBucket เรียกใช้ จึงต้องดึงมาด้วย ไม่งั้น ReferenceError
+    arr("LIFE_UW_MULTIPLE"),
+    "const LIFE_UW_PREMIUM_PCT = 20;",
+    fn("function lifeUwBand("),
+    fn("function lifeUnderwriting("),
     fn("function lifeTwoBucket("),
     fn("function lifeDefaultDependencyYears("),
     fn("function lifeCoverYears("),
@@ -223,4 +228,62 @@ test("มีช่องกรอกค่าใช้จ่ายสุดท�
   assert.match(html, /ค่าใช้จ่ายสุดท้าย \(บาท\)/);
   assert.match(html, /เงินที่ตั้งใจส่งต่อเป็นมรดก \(บาท\)/);
   assert.match(html, /\$\{renderTwoBucketSection\(st\)\}/);
+});
+
+test("เพดานฝ่ายพิจารณาต้องหดลงตามอายุ และคุมเบี้ยไม่เกิน 20% ของรายได้", () => {
+  const income = 1000000;
+  const bands = [
+    [25, 20], [35, 15], [45, 10], [55, 10], [65, 5],
+  ];
+  let prev = Infinity;
+  for (const [age, mult] of bands) {
+    const uw = call("lifeUnderwriting", age, income);
+    assert.equal(uw.multiple, mult, `อายุ ${age} ตัวคูณควรเป็น ${mult}`);
+    assert.equal(uw.capitalMax, income * mult);
+    assert.equal(uw.premiumMax, income * 0.2);
+    assert.ok(uw.multiple <= prev, "ตัวคูณต้องไม่เพิ่มขึ้นตามอายุ");
+    prev = uw.multiple;
+  }
+  // ยังไม่กรอกรายได้ ต้องไม่เดาเพดานให้เอง
+  assert.equal(call("lifeUnderwriting", 35, 0), null);
+});
+
+test("ทุนที่ต้องการเกินเพดาน ต้องรายงานส่วนเกิน ไม่ใช่ตัดทุนเงียบ ๆ", () => {
+  const base = {
+    gender: "m", age: 35, incomeAnnual: 500000, dependencyYears: 20, selfSpendPct: 30,
+    debtOther: 0, mortgage: 5000000, children: 2, eduPerChild: 2000000,
+    liquidAssets: 0, existingCover: 0, finalExpenses: 500000, legacyWish: 0,
+  };
+  const tb = call("lifeTwoBucket", base);
+  assert.ok(tb.uw, "ต้องมีข้อมูลเพดานติดมากับผลลัพธ์");
+  assert.equal(tb.uw.capitalMax, 500000 * 15);
+  assert.ok(tb.totalNeed > tb.uw.capitalMax, "เคสนี้ควรทะลุเพดาน");
+  assert.equal(tb.uwOverCapital, tb.totalNeed - tb.uw.capitalMax);
+  // ทุนที่คำนวณได้ต้องไม่ถูกหั่นทิ้ง ผู้ใช้ต้องเห็นตัวเลขจริงเพื่อตัดสินใจเอง
+  assert.equal(tb.totalNeed, tb.permanent.need + tb.temporary.need);
+});
+
+test("อยู่ในเพดาน ต้องไม่รายงานว่าเกิน", () => {
+  const tb = call("lifeTwoBucket", {
+    gender: "f", age: 30, incomeAnnual: 3000000, dependencyYears: 5, selfSpendPct: 30,
+    debtOther: 0, mortgage: 0, children: 0, eduPerChild: 0,
+    liquidAssets: 0, existingCover: 0, finalExpenses: 500000, legacyWish: 0,
+  });
+  assert.equal(tb.uwOverCapital, 0);
+});
+
+test("กล่องเพดานต้องขึ้นบนหน้าจริง และบอกทางออกเมื่อเกิน", () => {
+  assert.match(html, /function lifeUwPanel\(st, tb\)/);
+  // ต้องถูกเสียบเข้าไปในผลลัพธ์จริง ไม่ใช่เขียนฟังก์ชันทิ้งไว้เฉย ๆ
+  assert.match(html, /\$\{lifeUwPanel\(st, lifeTwoBucket\(st\)\)\}/);
+  // ยังไม่กรอกรายได้ ต้องชวนให้กรอก ไม่ใช่หายไปเฉย ๆ
+  assert.match(html, /กรอกรายได้ต่อปีด้านบน/);
+  // เกินเพดานต้องเสนอทางออกที่ทำได้จริง 3 ทาง
+  assert.match(html, /ทยอยทำเป็นรอบ/);
+  assert.match(html, /แสดงรายได้ให้ครบ/);
+  assert.match(html, /ลดทุนก้อนชั่วคราวก่อน/);
+  // ห้ามบอกให้ลดก้อนถาวรก่อน เพราะเป็นส่วนที่ต้องมีอยู่แน่ในวันที่ใช้จริง
+  assert.ok(!/ลดทุนก้อนถาวรก่อน/.test(html));
+  // ต้องกำกับว่าเป็นแนวปฏิบัติทั่วไป ไม่ใช่เกณฑ์ทางการของบริษัท
+  assert.match(html, /เป็นแนวปฏิบัติทั่วไปของอุตสาหกรรม/);
 });
