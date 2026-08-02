@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก DoctorGugInsurance</title>
-<meta name="description" content="เลือกแผนประกันสุขภาพจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน คำนวณเบี้ยจากตารางจริงของเมืองไทยประกันชีวิต โดย นพ.หนึ่งบุรุษ เทียมถนอม แพทย์เวชศาสตร์ฉุกเฉินและตัวแทนประกันชีวิต">
+<meta name="description" content="คำนวณเบี้ยประกันสุขภาพและประกันชีวิตจากตารางจริงของเมืองไทยประกันชีวิต เทียบทุกแผนพร้อมข้อจำกัด และช่วยดูประวัติสุขภาพก่อนยื่น โดย นพ.หนึ่งบุรุษ เทียมถนอม แพทย์ที่เป็นตัวแทนประกันชีวิต">
 <meta property="og:title" content="วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก">
-<meta property="og:description" content="เลือกแผนประกันสุขภาพจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน คำนวณเบี้ยจากตารางจริงของบริษัท">
+<meta property="og:description" content="คำนวณเบี้ยจากตารางจริงของบริษัท เทียบทุกแผนพร้อมข้อจำกัด และช่วยดูประวัติสุขภาพก่อนยื่น">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.doctor-insurance.com/">
 <meta name="twitter:card" content="summary">
@@ -1221,6 +1221,12 @@
   .faq-item{background:#fff;border:1px solid #f0dde5;border-radius:12px;margin-bottom:9px;overflow:hidden;
     transition:border-color .18s,box-shadow .18s;}
   .faq-item[open]{border-color:#eab9cd;box-shadow:0 2px 12px rgba(143,13,64,.06);}
+  /* ลูกค้าที่มาจากลิงก์เก่า ต้องเห็นทันทีว่าหัวข้อไหนคือที่เขากดมา */
+  .faq-item.faq-flash{border-color:var(--pink-deep);box-shadow:0 0 0 3px rgba(143,13,64,.14);}
+  @media(prefers-reduced-motion:no-preference){
+    .faq-item.faq-flash{animation:faqFlash 2.2s ease-out 1;}
+    @keyframes faqFlash{0%,20%{box-shadow:0 0 0 5px rgba(143,13,64,.22);}100%{box-shadow:0 0 0 3px rgba(143,13,64,.10);}}
+  }
   .faq-item summary{display:flex;align-items:center;gap:12px;justify-content:space-between;
     padding:15px 17px;cursor:pointer;list-style:none;font-weight:700;color:#3d2b33;line-height:1.6;}
   .faq-item summary::-webkit-details-marker{display:none;}
@@ -1717,7 +1723,7 @@
   <div class="hero-inner">
     <div class="eyebrow">หมอกึ๊ก DoctorGugInsurance • ตัวแทนเมืองไทยประกันชีวิต</div>
     <h1>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์</h1>
-    <div class="sub">เลือกแผนจากความเสี่ยงที่เจอจริงในห้องฉุกเฉิน ไม่ใช่จากโบรชัวร์ · คำนวณเบี้ยจากตารางจริงของบริษัท พร้อมทางเลือกที่ดีกว่าและประหยัดกว่าให้เทียบทุกครั้ง</div>
+    <div class="sub">คำนวณเบี้ยจากตารางจริงของบริษัท เทียบทุกแผนให้เห็นทั้งข้อดีและข้อจำกัด และช่วยดูประวัติสุขภาพให้ก่อนยื่น โดยแพทย์ที่เป็นตัวแทนเอง</div>
     <div class="navbar" id="navbar">
       <button data-page="home" class="active">หน้าแรก</button>
       <button data-page="ai">ผู้ช่วยออกแบบแผนประกัน</button>
@@ -3085,7 +3091,7 @@
 <div class="foot-note">
   หมายเหตุ: ตารางนี้จัดทำจากตารางอัตราเบี้ยในไฟล์ต้นฉบับ (ชีท Calculate) และเกณฑ์การพิจารณารับประกันโดยสรุป เพื่อใช้ประกอบการนำเสนอเบื้องต้นเท่านั้น
   ไม่ใช่เอกสารเสนอขายอย่างเป็นทางการ เบี้ยและเงื่อนไขจริงต้องยืนยันกับใบเสนอราคาและเกณฑ์พิจารณารับประกันของบริษัทอีกครั้ง
-  ระบบใช้ตารางกลางจาก <b>data/premium-rates.json</b> เพียงแหล่งเดียว โดยตรวจสอบอัตราและเงื่อนไขผลิตภัณฑ์กับ muangthai-agent.com ตามแหล่งอ้างอิงที่บันทึกไว้ในไฟล์ข้อมูล
+  ทุกแผนในระบบนี้ใช้ตารางอัตราเบี้ยชุดเดียวกันทั้งเว็บ จึงเทียบข้ามแผนได้โดยไม่ต้องกังวลว่าใช้คนละเกณฑ์
   &nbsp;•&nbsp; <b>Care Plus:</b> ไม่มีอัตราเบี้ยสำหรับทุนประกัน 1 ล้านบาทที่อายุเกิน 80 ปี จึงแสดงเป็น "-" ในช่วงอายุนั้น
 </div>
 
@@ -8803,7 +8809,7 @@ function dgApplyReveal(root){
    คู่มือวิธีเลือกประกันสุขภาพ — เนื้อหาต้นฉบับของเราเอง
    เขียนจากหลักการรับความเสี่ยงที่เป็นความรู้ทั่วไปของอุตสาหกรรมประกัน
    บวกมุมมองเวชปฏิบัติ แล้วแมปเข้ากับแบบประกันของเมืองไทยที่มีอยู่จริงในระบบนี้
-   ตัวเลขความคุ้มครองทุกตัวอ้างจาก data/premium-rates.json และหน้าแผนของเราเอง
+   ตัวเลขความคุ้มครองทุกตัวอ้างจากตารางเบี้ยกลางและหน้าแผนของเราเอง
    ========================================================================= */
 
 const HEALTH_GUIDE_BUCKETS = [
@@ -9138,7 +9144,7 @@ const FAQ_ITEMS = [
    doc:'ตอนนัด follow up ให้ถามหมอตรง ๆ ว่า "ครั้งนี้ถือว่าหายขาดแล้วหรือยังครับ ขอให้บันทึกไว้ได้ไหม" ประโยคเดียวนี้มีค่ามาก เพราะหมอที่ตรวจหลายอาการพร้อมกันมักลืมบันทึกปิดบางอาการ แล้วฝ่ายพิจารณาจะต้องถือว่ายังไม่หาย'},
 
   /* ===== อะไรที่ไม่จ่าย ===== */
-  {g:'exclude', q:'ทำประกันแล้วป่วยเลย เคลมได้ไหม',
+  {g:'exclude', k:'waiting-period', q:'ทำประกันแล้วป่วยเลย เคลมได้ไหม',
    lead:'ยังไม่ได้ เพราะมีระยะรอคอย ซึ่งมีสองชั้น',
    body:`· <b>30 วันแรก</b> การเจ็บป่วยทั่วไปยังไม่คุ้มครอง
 · <b>120 วันแรก</b> สำหรับ 8 กลุ่มนี้ เนื้องอก ถุงน้ำ และมะเร็งทุกชนิด · ไส้เลื่อนทุกชนิด · การตัดทอนซิลหรืออดีนอยด์ · เส้นเลือดขอดที่ขา · ริดสีดวงทวาร · ต้อเนื้อและต้อกระจก · นิ่วทุกชนิด · เยื่อบุโพรงมดลูกเจริญผิดที่
@@ -9150,7 +9156,7 @@ const FAQ_ITEMS = [
 <b>จุดที่พลาดกันบ่อย</b> ถ้าบริษัทอนุมัติพร้อมยกเว้นบางโรคหรือขอเพิ่มเบี้ย ระยะรอคอยจะเริ่มนับใหม่<b>จากวันที่เซ็นรับข้อเสนอใหม่</b> ไม่ใช่วันที่ยื่นใบคำขอ · และช่วงระยะรอคอยไม่ควรไปตรวจสุขภาพประจำปีหรือตรวจพิเศษโดยไม่จำเป็น เพราะถ้าเจออะไรจะถือว่าเป็นมาก่อนทำประกัน
 เหตุผลที่มีระยะรอคอยคือกันคนที่รู้ตัวว่ากำลังจะป่วยแล้วรีบมาทำประกัน ซึ่งถ้าปล่อยไว้เงินกองกลางจะไม่พอจ่ายให้คนที่จ่ายเบี้ยมาตลอด`},
 
-  {g:'exclude', q:'ข้อยกเว้นทั่วไปมีอะไรบ้าง',
+  {g:'exclude', k:'health-exclusions', q:'ข้อยกเว้นทั่วไปมีอะไรบ้าง',
    lead:'มาตรฐานปี 2564 กำหนดไว้ 21 ข้อ ลดจากมาตรฐานเก่าที่มี 26 ข้อ',
    body:`1 ภาวะแต่กำเนิดที่แสดงอาการก่อนอายุ 16 ปี
 2 การเสริมสวย แก้ไขผิวพรรณ และควบคุมน้ำหนัก
@@ -9189,7 +9195,7 @@ const FAQ_ITEMS = [
 และแยกอีกเรื่องหนึ่ง คือถ้าเป็นไมเกรนมาก่อนทำประกันและยังไม่หายขาดเกิน 5 ปี ก็จะถูกยกเว้นในฐานะโรคที่เป็นมาก่อนอยู่แล้ว`},
 
   /* ===== Copayment ===== */
-  {g:'copay', q:'Copayment คืออะไร ทำไมเพิ่งมามีตอนนี้',
+  {g:'copay', k:'copayment', q:'Copayment คืออะไร ทำไมเพิ่งมามีตอนนี้',
    lead:'คือการร่วมจ่ายค่ารักษาบางส่วนในปีถัดไป สำหรับคนที่เคลมเข้าเกณฑ์ในปีก่อนหน้า เริ่มใช้กับสัญญาที่อนุมัติคุ้มครองตั้งแต่ 20 มีนาคม 2568',
    body:`ที่มาคือปัญหาสามฝ่ายพร้อมกัน คนส่วนน้อยที่เคลมเกินความจำเป็น โรงพยาบาลเอกชนที่ชาร์จหนักขึ้นเมื่อรู้ว่ามีประกัน และกติกาที่ห้ามบริษัทขึ้นเบี้ยรายบุคคล
 ผลคืออัตราการเคลมประกันสุขภาพพุ่งถึงราว 66% ของเบี้ยรวมทั้งหมด ซึ่งสูงกว่าประกันรถ และค่ารักษากลุ่มโรคเล็กน้อยที่ไม่จำเป็นต้องนอนโรงพยาบาลคิดเป็นราว 44% ของสินไหมทั้งหมด
@@ -9271,7 +9277,7 @@ const FAQ_ITEMS = [
 ภาพที่ผมเห็นบ่อยคือคนไข้เพิ่งผ่าตัด แผลยังไม่ตัดไหม แล้วต้องมานั่งโทรตามเรื่องเคลมเอง`,
    doc:'ผมไม่ได้บอกว่าออนไลน์ผิด ถ้าเป็นคนที่อ่านเงื่อนไขเองได้ครบ สุขภาพดี ไม่มีประวัติอะไรเลย และไม่รังเกียจการเดินเรื่องเอง ก็ทำได้ แต่ถ้ามีประวัติสุขภาพแม้เล็กน้อย การมีคนช่วยโต้แย้งกับฝ่ายพิจารณาให้ มีค่ามากกว่าส่วนลดปีแรกแน่นอน'},
 
-  {g:'claim', q:'แฟกซ์เคลม คืออะไร ทำไมบางครั้งยังต้องสำรองจ่าย',
+  {g:'claim', k:'fax-claim', q:'แฟกซ์เคลม คืออะไร ทำไมบางครั้งยังต้องสำรองจ่าย',
    lead:'คือการที่โรงพยาบาลส่งเรื่องให้บริษัทอนุมัติในวันที่กลับบ้าน เราจึงไม่ต้องควักเงินเอง ใช้ได้เฉพาะโรงพยาบาลคู่สัญญา และกรมธรรม์ต้องมีอายุอย่างน้อย 90 วันแล้ว',
    body:`ปกติใช้เวลาราว 15 ถึง 30 นาที บางครั้งถึง 1 ชั่วโมง ขึ้นกับประวัติและปริมาณเคลมช่วงนั้น
 <b>สาเหตุที่แฟกซ์เคลมไม่ผ่านและต้องสำรองจ่ายก่อน</b>
@@ -9478,7 +9484,7 @@ function renderFaq(){
     html += `<section class="faq-sec">
       <div class="faq-sec-h"><span class="faq-sec-i" aria-hidden="true">${g.icon}</span>
         <div><div class="faq-sec-t">${g.label}</div><div class="faq-sec-d">${g.desc}</div></div></div>
-      ${list.map(it => { const snip = q ? faqSnippet(it, tokens) : ''; return `<details class="faq-item"${q ? ' data-hit="1"' : ''}>
+      ${list.map(it => { const snip = q ? faqSnippet(it, tokens) : ''; return `<details class="faq-item"${it.k ? ` id="faq-${it.k}"` : ''}${q ? ' data-hit="1"' : ''}>
         <summary><span class="faq-qwrap"><span class="faq-q">${it.q}</span>${snip ? `<span class="faq-snip">${snip}</span>` : ''}</span><span class="faq-arrow" aria-hidden="true"></span></summary>
         <div class="faq-a">
           <p class="faq-lead">${it.lead}</p>
@@ -9591,7 +9597,40 @@ document.getElementById('navbar').addEventListener('click', (e) => {
   if(btn) showPage(btn.dataset.page);
 });
 
+/* ลิงก์ที่ส่งให้ลูกค้าไปแล้วห้ามตาย
+   เดิมเนื้อหาอยู่ที่ /health-knowledge#<anchor> ตอนนี้ย้ายมาอยู่ในหน้า /faq
+   ถ้าย้ายที่อีกในอนาคต ให้แก้ตารางนี้ที่เดียว ไม่ต้องไล่แก้หลายจุด
+   ตั้งใจไม่ผูกกับ path เพื่อให้ใช้ได้ทั้ง /health-knowledge#x และ /faq#x */
+const LEGACY_ANCHORS = {
+  'waiting-period':    {page:'faq', group:'exclude', key:'waiting-period'},
+  'health-exclusions': {page:'faq', group:'exclude', key:'health-exclusions'},
+  'fax-claim':         {page:'faq', group:'claim',   key:'fax-claim'},
+  'copayment':         {page:'faq', group:'copay',   key:'copayment'},
+};
+
+function openLegacyAnchor(hash){
+  const key = (hash || '').replace(/^#/, '');
+  const dest = LEGACY_ANCHORS[key];
+  if(!dest) return false;
+  showPage(dest.page, {updateUrl:false});
+  faqActiveGroup = dest.group;
+  const box = document.getElementById('faqSearch');
+  if(box) box.value = '';
+  renderFaq();
+  const el = document.getElementById('faq-' + dest.key);
+  if(!el) return true;
+  el.open = true;
+  // showPage เลื่อนขึ้นบนสุดไปแล้ว ต้องรอเฟรมถัดไปก่อนค่อยเลื่อนลงมาหาหัวข้อ
+  requestAnimationFrame(() => {
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('faq-flash');
+    setTimeout(() => el.classList.remove('faq-flash'), 2400);
+  });
+  return true;
+}
+
 function routeFromLocation(){
+  if(openLegacyAnchor(location.hash)) return;
   const path = normalizedPathname();
   const planId = Object.keys(PLAN_ROUTES).find(id => PLAN_ROUTES[id] === path);
   if(planId){
@@ -9603,8 +9642,7 @@ function routeFromLocation(){
 }
 
 window.addEventListener('popstate', routeFromLocation);
-window.addEventListener('hashchange', () => {
-});
+window.addEventListener('hashchange', () => { openLegacyAnchor(location.hash); });
 
 
 function faqNormalizeText(s){
@@ -10821,7 +10859,7 @@ initCompareToggle();
 
 /* =========================================================
    ประกันชีวิตแบบบำนาญ — ข้อมูล เครื่องคำนวณ และหน้ารายละเอียด
-   ข้อมูลทั้งหมดมาจาก data/pension-plans.json (SmartWeb + muangthai-agent)
+   ข้อมูลทั้งหมดมาจากตารางในไฟล์ข้อมูลของเราเอง
    ห้ามคำนวณ/ประมาณอัตราเบี้ยเอง ทุกค่าต้องมาจากตารางในไฟล์เท่านั้น
    ========================================================= */
 var PENSION = (function(){
