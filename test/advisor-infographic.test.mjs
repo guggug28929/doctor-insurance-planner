@@ -33,3 +33,13 @@ test("ลำดับการตัดในอินโฟกราฟิก �
 test("อินโฟกราฟิกต้องอ่านได้บนมือถือ ไม่ใช่สามคอลัมน์บีบ", () => {
   assert.match(html, /@media\(max-width:640px\)\{\s*\.ig-cols\{grid-template-columns:1fr;\}/);
 });
+
+test("สามกล่องต้องใช้สีไฟจราจรชุดเดียวกับหน้าคู่มือ", () => {
+  // ใช้คลาส hg-go / hg-mid / hg-stop ร่วมกัน จะได้ไม่ต้องดูแลสองชุด
+  assert.match(html, /<div class="ig-col hg-\$\{g\.tone\}">/);
+  assert.match(html, /\.hg-go\{background:#e9f6ee/);
+  assert.match(html, /\.hg-mid\{background:#fff8e8/);
+  assert.match(html, /\.hg-stop\{background:#fdeef0/);
+  // แถบไล่สีต้องไปทางเดียวกับกล่อง เขียวไปแดง
+  assert.match(html, /linear-gradient\(90deg,#3f9c68/);
+});

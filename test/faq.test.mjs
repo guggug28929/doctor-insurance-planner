@@ -134,3 +134,18 @@ test("ตัวเลขเกณฑ์ Copayment ต้องตรงกับ
 test("ลิงก์ไปหน้าเทียบโรคร้ายแรงต้องไม่หายไปตอนยุบแท็บเดิม", () => {
   assert.match(html, /class="faq-inline-link" onclick="showPage\('ci-compare'\)"/);
 });
+
+test("ช่องค้นหาต้องมีปุ่มล้างอันเดียว ไม่ซ้อนกับของเบราว์เซอร์", () => {
+  // input type=search มีปุ่มล้างในตัว พอทำเองด้วยเลยได้กากบาทสองอัน
+  assert.match(html, /<input id="faqSearch" type="text"/);
+  assert.match(html, /#faqSearch::-webkit-search-cancel-button/);
+});
+
+test("กล่องถาม AI ต้องมีสไตล์ในหน้าใหม่ ไม่ใช่ปุ่มดิบของเบราว์เซอร์", () => {
+  // เคยพลาด: ย้าย HTML ไปหน้า faq แต่ CSS ยังผูกกับ #page-knowledge สไตล์เลยหลุดหมด
+  for (const sel of ["#faqChatInput", ".faq-chat-actions button", ".faq-chatbot", "#faqChatAnswer"]) {
+    assert.ok(html.includes("#page-faq " + sel), `CSS ของ ${sel} ยังไม่ตามมาที่หน้า faq`);
+  }
+  assert.ok(!/#page-knowledge #faqChat/.test(html), "ยังมี CSS กล่อง AI ค้างที่หน้าความรู้");
+  assert.ok(!/#page-knowledge \.faq-chat/.test(html), "ยังมี CSS กล่อง AI ค้างที่หน้าความรู้");
+});
