@@ -57,3 +57,48 @@ test('พาดหัวหน้าแรกบอกสิ่งที่ล�
     'พาดหัวรองไม่ควรขึ้นต้นด้วยห้องฉุกเฉิน ลูกค้าอ่านแล้วไม่เข้าใจว่าเกี่ยวอะไรกับประกัน');
   assert.ok(/ตารางจริง/.test(hero[1]), 'พาดหัวรองควรบอกว่าคำนวณจากตารางจริง');
 });
+
+/* กันตัวแทนเจ้าอื่นลอกเนื้อหา ด้วยการติดเครดิตไปกับของที่ถูกลอก
+   ไม่ใช่บล็อกลูกค้า เพราะบล็อกยังไงคนตั้งใจก็ผ่านได้ แต่ลูกค้าจริงจะเดือดร้อน */
+test('ห้ามบล็อกคลิกขวาหรือการเลือกข้อความ เพราะกวนลูกค้าแต่กันคนตั้งใจไม่ได้', () => {
+  assert.ok(!/addEventListener\('contextmenu'[\s\S]{0,120}preventDefault/.test(html),
+    'มีการบล็อกคลิกขวา ลูกค้าจะก๊อปเบอร์โทรไม่ได้');
+  // ใช้ user-select:none บนปุ่มได้ปกติ (กันข้อความถูกไฮไลต์ตอนกดรัว ๆ)
+  // ที่ห้ามคือใส่บน body/html/* ซึ่งเท่ากับปิดทั้งหน้า
+  for (const sel of ['body', 'html', '\\*']) {
+    const re = new RegExp(`(^|[},;\\s])${sel}\\s*\\{[^}]{0,400}user-select\\s*:\\s*none`, 'i');
+    assert.ok(!re.test(html), `มีการปิดการเลือกข้อความที่ระดับ ${sel} ซึ่งเท่ากับปิดทั้งหน้า`);
+  }
+  assert.ok(!/addEventListener\('selectstart'[\s\S]{0,120}preventDefault/.test(html));
+});
+
+test('คัดลอกยาว ๆ ต้องพ่วงที่มาไปด้วย แต่คัดลอกสั้นต้องปล่อยผ่าน', () => {
+  assert.match(html, /const CONTENT_CREDIT = 'ที่มา doctor-insurance\.com/);
+  assert.match(html, /const CREDIT_MIN_CHARS = 120;/);
+  assert.match(html, /if\(sel\.trim\(\)\.length < CREDIT_MIN_CHARS\) return;/);
+  assert.match(html, /clipboardData\.setData\('text\/plain', sel \+ /);
+});
+
+test('สั่งพิมพ์ต้องติดที่มา และซ่อนปุ่มที่พิมพ์ออกมาแล้วไร้ประโยชน์', () => {
+  assert.match(html, /@media print\{/);
+  assert.match(html, /\.print-credit\{display:block !important;/);
+  assert.match(html, /<div class="print-credit">ที่มา doctor-insurance\.com/);
+});
+
+test('ต้องมีบรรทัดแสดงความเป็นเจ้าของเนื้อหาท้ายเว็บ', () => {
+  assert.match(html, /class="site-credit"/);
+  assert.match(html, /เรียบเรียงขึ้นเองโดย นพ\.หนึ่งบุรุษ เทียมถนอม/);
+});
+
+test('ตาราง Size S\/M\/L\/XL ต้องย้ายไปหน้าคู่มือ และเหลือลิงก์ไว้ที่หน้าแผน', () => {
+  assert.match(html, /function healthGuideSizeTableHtml\(\)/);
+  assert.match(html, /healthGuideMapHtml\(\) \+ healthGuideSizeTableHtml\(\)/);
+  // หน้าแผนต้องไม่มีตารางเต็มอีกแล้ว แต่ต้องมีกล่องชวนไปอ่าน
+  const plansStart = html.indexOf('id="page-plans"');
+  const plansEnd = html.indexOf('id="page-hnw"');
+  const plansHtml = html.slice(plansStart, plansEnd);
+  assert.ok(!plansHtml.includes('เทียบประกันสุขภาพแบบ Size'), 'ตารางเดิมยังค้างอยู่ที่หน้าแผน');
+  assert.ok(plansHtml.includes('guide-jump-card'), 'ไม่มีกล่องลิงก์ชวนไปอ่านที่หน้าแผน');
+  // คำนำต้องเลิกพูดกับตัวแทน แล้วพูดกับลูกค้า
+  assert.ok(!html.includes('ใช้เป็นทางลัดในการคุยกับลูกค้า'), 'ยังใช้คำที่พูดกับตัวแทนอยู่');
+});
