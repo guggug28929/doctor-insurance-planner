@@ -1220,6 +1220,18 @@
   .faq-sec-d{font-size:.83rem;color:#7a6570;margin-top:2px;}
   .faq-item{background:#fff;border:1px solid #f0dde5;border-radius:12px;margin-bottom:9px;overflow:hidden;
     transition:border-color .18s,box-shadow .18s;}
+  .uw-card.uw-ok{border-left:4px solid var(--ok,#1f9d55);}
+  .uw-card.uw-over{border-left:4px solid var(--danger,#c0392b);}
+  .uw-grid{display:grid;gap:10px;margin-top:14px;}
+  .uw-row{display:grid;grid-template-columns:190px 170px 1fr;gap:10px;align-items:baseline;
+    padding:10px 12px;background:#fff7fa;border-radius:10px;}
+  .uw-k{font-weight:700;color:var(--pink-deep);font-size:.9rem;}
+  .uw-v{font-weight:800;font-size:1rem;}
+  .uw-n{font-size:.82rem;color:#7d6873;}
+  .uw-advice{margin-top:14px;padding:12px 14px;background:#fff0f5;border-radius:10px;
+    font-size:.86rem;line-height:1.75;}
+  .uw-advice-t{font-weight:800;color:var(--pink-deep);margin-bottom:4px;}
+  @media(max-width:640px){ .uw-row{grid-template-columns:1fr;gap:2px;} }
   .faq-tabs{display:flex;gap:10px;margin:18px 0 4px;flex-wrap:wrap;}
   .faq-tab{flex:1 1 200px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;
     background:#fff;border:1.5px solid #f0dde5;border-radius:14px;padding:11px 16px;cursor:pointer;
@@ -7200,6 +7212,45 @@ const lifeAdvisorState = {
    แต่จะคงยอดที่จำเป็นของแต่ละก้อนไว้ แล้วแสดงส่วนที่งบครอบคลุมกับส่วนที่ยังขาด
    แยกกัน เพื่อให้ตัวแทนกับลูกค้าตัดสินใจ trade-off เอง
    ========================================================================= */
+/* =========================================================================
+   เพดานของฝ่ายพิจารณารับประกัน
+   คำนวณทุนจากภาระอย่างเดียวไม่พอ เพราะต่อให้ตัวเลขถูกต้องแค่ไหน
+   ถ้าเกินเกณฑ์ที่บริษัทรับได้ ใบคำขอก็ถูกลดทุนหรือขอเอกสารเพิ่มจนเรื่องค้าง
+   ระบบจึงต้องบอกเพดานให้เห็นตั้งแต่ตอนวางแผน ไม่ใช่ไปรู้ตอนยื่น
+
+   เกณฑ์สองชั้น
+     ชั้นที่ 1 ทุนสูงสุดเป็นกี่เท่าของรายได้ต่อปี ซึ่งหดลงตามอายุ
+     ชั้นที่ 2 เบี้ยรวมทุกฉบับต่อปี ไม่ควรเกิน 20% ของรายได้ต่อปี
+
+   ตัวเลขนี้เป็นแนวปฏิบัติทั่วไปของอุตสาหกรรม ใช้เพื่อเตือนล่วงหน้าเท่านั้น
+   เกณฑ์ที่ใช้จริงขึ้นกับบริษัทและช่วงเวลา ต้องยืนยันกับใบเสนอราคาอีกครั้ง
+   ========================================================================= */
+const LIFE_UW_MULTIPLE = [
+  {maxAge: 29, mult: 20, label: 'อายุไม่เกิน 29 ปี'},
+  {maxAge: 39, mult: 15, label: 'อายุ 30 ถึง 39 ปี'},
+  {maxAge: 49, mult: 10, label: 'อายุ 40 ถึง 49 ปี'},
+  {maxAge: 59, mult: 10, label: 'อายุ 50 ถึง 59 ปี'},
+  {maxAge: 999, mult: 5, label: 'อายุ 60 ปีขึ้นไป'},
+];
+const LIFE_UW_PREMIUM_PCT = 20;
+
+function lifeUwBand(age){
+  return LIFE_UW_MULTIPLE.find(b => age <= b.maxAge) || LIFE_UW_MULTIPLE[LIFE_UW_MULTIPLE.length - 1];
+}
+/** เพดานทุนและเพดานเบี้ยจากรายได้ต่อปี · คืน null ถ้ายังไม่ได้กรอกรายได้ */
+function lifeUnderwriting(age, incomeAnnual){
+  const income = Math.max(0, incomeAnnual || 0);
+  if(!income) return null;
+  const band = lifeUwBand(age);
+  return {
+    band: band.label,
+    multiple: band.mult,
+    capitalMax: Math.round(income * band.mult),
+    premiumMax: Math.round(income * LIFE_UW_PREMIUM_PCT / 100),
+    pct: LIFE_UW_PREMIUM_PCT,
+  };
+}
+
 function lifeTwoBucket(st){
   const a = lifeNeedAnalysis(st);
   // ก้อนชั่วคราว: ภาระที่มีวันหมด
@@ -7215,12 +7266,17 @@ function lifeTwoBucket(st){
   const tempNeed = Math.max(0, tempGross - offsetToTemp);
   const permNeed = Math.max(0, permGross - offsetToPerm);
 
+  const totalNeed = permNeed + tempNeed;
+  const uw = lifeUnderwriting(st.age, st.incomeAnnual);
   return {
     analysis: a,
     permanent: {gross: permGross, offset: offsetToPerm, need: permNeed},
     temporary: {gross: tempGross, offset: offsetToTemp, need: tempNeed},
-    offsetTotal: offset, totalNeed: permNeed + tempNeed,
+    offsetTotal: offset, totalNeed,
     yearsCovered: a.depYears,
+    uw,
+    // ทุนที่ต้องการ เทียบกับเพดานที่ฝ่ายพิจารณามักรับได้
+    uwOverCapital: uw ? Math.max(0, totalNeed - uw.capitalMax) : 0,
   };
 }
 
@@ -7479,6 +7535,47 @@ function runLifeAdvisor(){
   const out = document.getElementById('lifeAdvResult');
   if(out) out.scrollIntoView({behavior:'smooth', block:'start'});
 }
+
+/* กล่องเตือนเพดานฝ่ายพิจารณา
+   แสดงเสมอเมื่อกรอกรายได้แล้ว เพราะเป็นข้อมูลที่ใช้คุยกับลูกค้าได้ตั้งแต่ต้น
+   ไม่ใช่แสดงเฉพาะตอนเกิน ซึ่งจะกลายเป็นเซอร์ไพรส์ */
+function lifeUwPanel(st, tb){
+  const uw = tb.uw;
+  if(!uw){
+    return `<div class="content-card uw-card">
+      <h2>เพดานที่ฝ่ายพิจารณามักรับได้</h2>
+      <p class="meta">กรอกรายได้ต่อปีด้านบน ระบบจะคำนวณเพดานทุนและเพดานเบี้ยให้ จะได้รู้ตั้งแต่ตอนวางแผนว่ายื่นแล้วมีโอกาสผ่านแค่ไหน</p>
+    </div>`;
+  }
+  const over = tb.uwOverCapital;
+  const budgetOver = st.budget && st.budget > uw.premiumMax ? st.budget - uw.premiumMax : 0;
+  const tone = over > 0 ? 'uw-over' : 'uw-ok';
+  const rows = [
+    ['ทุนสูงสุดที่มักรับได้', `${fmt(uw.capitalMax)} บาท`,
+     `${uw.band} คิดที่ราว ${uw.multiple} เท่าของรายได้ต่อปี`],
+    ['ทุนที่โจทย์นี้ต้องการ', `${fmt(tb.totalNeed)} บาท`,
+     over > 0 ? `<b style="color:var(--danger);">เกินเพดานอยู่ ${fmt(over)} บาท</b>` : 'อยู่ในเพดาน ยื่นได้ตามนี้'],
+    ['เบี้ยรวมสูงสุดต่อปี', `${fmt(uw.premiumMax)} บาท`,
+     `เบี้ยรวมทุกฉบับไม่ควรเกิน ${uw.pct}% ของรายได้ต่อปี`],
+  ];
+  const overAdvice = over > 0 ? `<div class="uw-advice">
+      <div class="uw-advice-t">ทุนที่ต้องการเกินเพดาน ทำได้ 3 ทาง</div>
+      <div>1. <b>ทยอยทำเป็นรอบ</b> เพราะเกณฑ์นับทุนรวมเฉพาะกรมธรรม์ที่เพิ่งออก การเว้นช่วงแล้วค่อยเพิ่มจึงทำได้</div>
+      <div>2. <b>แสดงรายได้ให้ครบ</b> ถ้ามีรายได้ทางอื่นนอกจากเงินเดือน เช่น ค่าเช่าหรือกำไรกิจการ ให้นับรวมแล้วเตรียมเอกสารไว้</div>
+      <div>3. <b>ลดทุนก้อนชั่วคราวก่อน</b> ไม่ใช่ลดก้อนถาวร เพราะก้อนถาวรคือส่วนที่ต้องมีอยู่แน่ ๆ ในวันที่ใช้จริง</div>
+    </div>` : '';
+  const budgetWarn = budgetOver ? `<div class="uw-advice"><div class="uw-advice-t">งบที่ตั้งไว้สูงกว่าเพดานเบี้ย</div>
+      <div>งบ ${fmt(st.budget)} บาทต่อปี สูงกว่าเกณฑ์อยู่ ${fmt(budgetOver)} บาท ฝ่ายพิจารณาอาจขอดูที่มาของรายได้เพิ่ม ควรเตรียมเอกสารไว้ล่วงหน้า</div></div>` : '';
+  return `<div class="content-card uw-card ${tone}">
+    <h2>เพดานที่ฝ่ายพิจารณามักรับได้</h2>
+    <p class="meta">ทุนที่คำนวณจากภาระ ยังต้องผ่านอีกด่านคือความสมเหตุสมผลกับรายได้ ด่านนี้ทำให้ใบคำขอถูกลดทุนหรือขอเอกสารเพิ่มได้ จึงควรรู้ตั้งแต่ตอนวางแผน</p>
+    <div class="uw-grid">${rows.map(r => `<div class="uw-row">
+      <div class="uw-k">${r[0]}</div><div class="uw-v">${r[1]}</div><div class="uw-n">${r[2]}</div></div>`).join('')}</div>
+    ${overAdvice}${budgetWarn}
+    <div class="ai-note" style="margin-top:12px;">ตัวเลขนี้เป็นแนวปฏิบัติทั่วไปของอุตสาหกรรม ใช้เพื่อกะเกณฑ์ล่วงหน้า เกณฑ์ที่ใช้จริงขึ้นกับบริษัทและช่วงเวลา ต้องยืนยันกับใบเสนอราคาอีกครั้ง</div>
+  </div>`;
+}
+
 function renderLifeAdvisorResult(){
   const st = lifeReadState();
   // ยังไม่กดปุ่ม ให้แสดงปุ่มเรียกอย่างเดียว ไม่ยัดตารางยาวมาตั้งแต่เปิดหน้า
@@ -7537,6 +7634,8 @@ function renderLifeAdvisorResult(){
   </div>
 
   ${renderTwoBucketSection(st)}
+
+  ${lifeUwPanel(st, lifeTwoBucket(st))}
 
   <div class="content-card">
     <h2>แบบประกันที่เหมาะกับโจทย์นี้</h2>
