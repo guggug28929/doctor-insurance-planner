@@ -3231,7 +3231,7 @@ document.getElementById('use_hb').addEventListener('change', function(){
   document.getElementById('hb_fields').classList.toggle('hidden', !this.checked);
 });
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
-const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6']);
+const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6','smart_link_15_3','smart_link_15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
 /* ---- สัญญาหลักที่มีข้อจำกัดเฉพาะตัว รวมกฎไว้ที่เดียวเพื่อไม่ให้กระจายไปทั่วไฟล์ ----
    ridersLocked = แนบสัญญาเพิ่มเติมชุดปกติของเว็บนี้ไม่ได้
@@ -3423,7 +3423,9 @@ function pensionMainRidersAllowed(){
   const p = pensionPlan(currentPensionMain.pid);
   return p && p.ridersAllowed === true;
 }
-function savingsMainData(plan){ return plan === '15_3' ? RATES.smart_link_15_3 : RATES.smart_link_15_6; }
+function savingsMainData(plan){
+  return (plan === '15_3' || plan === 'smart_link_15_3') ? RATES.smart_link_15_3 : RATES.smart_link_15_6;
+}
 function mainPlanDisplayName(plan, capital){
   if(plan === 'pension' && currentPensionMain){
     const p = pensionPlan(currentPensionMain.pid);
@@ -3710,6 +3712,15 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const idx = product.capitals.indexOf(capital);
     return band && idx >= 0 ? band[idx+2] : null;
   }
+  if(plan === 'flexi_99_20'){
+    // ตารางนี้เก็บเป็น "เบี้ยจริงรายระดับทุน" ไม่ใช่อัตราต่อทุน 1,000
+    // จึงห้ามคูณหารเทียบบัญญัติไตรยางศ์ ต้องเลือกทุนที่มีในตารางเท่านั้น
+    const g = RATES.flexi_99_20;
+    if(!g) return null;
+    const key = capital === 500000 ? '500k' : capital === 1000000 ? '1m' : capital === 5000000 ? '5m' : null;
+    if(!key) return null;   // ทุนนอกตาราง ไม่เดาให้
+    return flexiPremiumAtEntry(key, gender, entryAge, freq);
+  }
   if(plan === 'flexi_99_5'){
     // อัตราต่อทุน 1,000 บาท มีส่วนลดตามระดับทุนที่หัก "จากอัตรารายปี" ก่อน
     // แล้วอัตรางวดอื่นจึงคิดจากอัตรารายปีหลังหักส่วนลด x ตัวคูณที่เอกสารกำหนด
@@ -3825,7 +3836,7 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     const perThousand = rateAtStart(table, entryAge, g.payment_schedules.age_start ?? 0);
     if(perThousand===null) return null;
     return perThousand * capital / 1000;
-  } else {
+  } else if(plan === '99_99'){
     // ทุนตั้งแต่ 10 ล้านบาทขึ้นไป ใช้ตารางของ "สมาร์ท โพรเทคชั่น 99/99 (พรีเมียร์)"
     // เป็นอัตราต่อทุน 1,000 บาท และ PDF ระบุว่า "ไม่มี" ส่วนลดตามจำนวนเงินเอาประกันภัย
     // จึงใช้อัตราเดียวกันทุกระดับทุน ไม่ต้องแบ่งชั้น
@@ -3849,6 +3860,10 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
     if(base===null) return null;
     return base * capital / 1000;
   }
+  // เดิมบล็อกข้างบนเป็น else เปล่า ๆ แผนที่ยังไม่มีสาขาจึงตกมาได้เบี้ยของ 99/99 ไปเงียบ ๆ
+  // ซึ่งอันตรายมาก เพราะหน้าเทียบโชว์ตัวเลขที่ดูสมเหตุสมผลแต่เป็นของแบบอื่น
+  // ตอนนี้ถ้าไม่รู้จักแผน ให้คืน null ไปเลย หน้าเว็บจะขึ้นว่าคำนวณไม่ได้ ดีกว่าโชว์เลขผิด
+  return null;
 }
 
 function healthRiderPremium(cfg, gender, age, occupationClass, freq){
@@ -10534,8 +10549,9 @@ const LIFE_COMPARE_PRODUCTS = {
       cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามหลักเกณฑ์กรมสรรพากร',
       wait:'ไม่มีระยะเวลาที่ไม่คุ้มครองสำหรับความคุ้มครองชีวิต'}},
   smartlink156: {title:'สมาร์ท ลิงค์ 15/6 (Global)', plan:'smart_link_15_6',
-    tiers:[{value:'200000',label:'ทุน 200,000'},{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'}],
-    defaultValue:'200000',
+    // ตารางของ 15/6 มีระดับทุน 100,000 ไม่มี 200,000 แบบ 15/3 จึงต้องใช้คนละชุด
+    tiers:[{value:'100000',label:'ทุน 100,000'},{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'}],
+    defaultValue:'100000',
     rows:{purpose:'สะสมทรัพย์ระยะกลาง ชำระ 6 ปี เงินคืนก้อนใหญ่กว่าแบบ 15/3 ในปีคู่ที่กำหนด',
       entry:'30 วัน – 80 ปี', pay:'6 ปี', cover:'15 ปี',
       ci:'ไม่มี', riders:'<b>แนบสัญญาเพิ่มเติมไม่ได้</b>',
