@@ -12,9 +12,12 @@ test("หน้า FAQ ต้องมีครบ ทั้ง route หน้�
   assert.match(html, /name === 'faq' && typeof renderFaq === 'function'/);
 });
 
-test("ต้องมี 5 หมวด และคำถามครบทุกหมวด ไม่มีหมวดร้าง", () => {
-  const groups = [...html.matchAll(/\{id:'(\w+)',\s*icon:/g)].map((m) => m[1]);
-  assert.deepEqual(groups, ["prep", "exist", "exclude", "copay", "claim", "premium"]);
+test("ต้องมีครบทุกหมวดทั้งสองแท็บ ไม่มีหมวดร้าง", () => {
+  const groups = [...html.matchAll(/\{id:'(\w+)',\s*t:'\w+',\s*icon:/g)].map((m) => m[1]);
+  assert.deepEqual(groups, [
+    "prep", "exist", "exclude", "copay", "claim", "premium",
+    "lwhy", "lsum", "lpick", "lapply", "lright", "lheir",
+  ]);
   for (const g of groups) {
     const n = [...html.matchAll(new RegExp(`\\{g:'${g}'`, "g"))].length;
     assert.ok(n >= 3, `หมวด ${g} มีแค่ ${n} คำถาม น้อยเกินไป`);
@@ -24,7 +27,7 @@ test("ต้องมี 5 หมวด และคำถามครบทุ�
 test("ทุกคำถามต้องมีทั้งคำตอบสั้นและคำตอบเต็ม ห้ามมีแต่หัวข้อ", () => {
   // คำถามที่เคยเป็นลิงก์เก่าจะมีฟิลด์ k คั่นอยู่ ตัวแกะจึงต้องยอมให้มีหรือไม่มีก็ได้
   const items = [...html.matchAll(/\{g:'\w+',(?: k:'[\w-]+',)? q:'([^']+)',\s*\n\s*lead:'([^']+)',\s*\n\s*body:`([^`]+)`/g)];
-  assert.equal(items.length, 36, `แกะได้ ${items.length} คำถาม ควรได้ 36`);
+  assert.equal(items.length, 61, `แกะได้ ${items.length} คำถาม ควรได้ 61`);
   for (const [, q, lead, body] of items) {
     assert.ok(lead.length >= 25, `คำตอบสั้นของ "${q}" สั้นเกินไป`);
     assert.ok(body.length >= 120, `คำตอบเต็มของ "${q}" สั้นเกินไป จะกลายเป็นย่อจนไม่ได้สาระ`);
@@ -81,8 +84,10 @@ test("แบบที่เพิ่งเพิ่มต้องกดเป�
 });
 
 test("ค้นแล้วไม่เจอ ต้องบอกทางออก ไม่ใช่หน้าว่าง", () => {
-  assert.match(html, /if\(!found\) html \+= /);
-  assert.match(html, /ไม่พบคำถามที่ตรงกับคำค้นนี้ ลองใช้คำสั้นลง/);
+  assert.match(html, /if\(!found\)\{/);
+  assert.match(html, /ไม่พบคำถามที่ตรงกับคำค้นนี้ในแท็บนี้ ลองใช้คำสั้นลง/);
+  // ต้องชี้ทางไปอีกแท็บด้วย ไม่ใช่ปล่อยให้คิดว่าเว็บไม่มีคำตอบ
+  assert.match(html, /ดู \$\{other\.length\} คำถามในแท็บ/);
 });
 
 test("ห้ามมีโค้ด escape หลุดไปแสดงเป็นตัวอักษรบนหน้าเว็บ", () => {

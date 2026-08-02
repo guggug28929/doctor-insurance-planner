@@ -64,5 +64,5 @@ test("คำที่ไม่มีจริง ต้องไม่คืน�
   assert.equal(rank("zxqwvbnmkjh").length, 0, "คำมั่วต้องไม่คืนผลลัพธ์");
   assert.equal(m.faqSegment("zxqwvbnmkjh").length, 0, "คำมั่วต้องตัดคำไม่ได้เลย");
   // ช่องค้นหาว่าง แอปจะข้ามการให้คะแนนไปเลย จึงเช็คที่ตัวเงื่อนไขในโค้ดแทน
-  assert.match(html, /const hits = q\s*\n?\s*\? FAQ_ITEMS\.map/);
+  assert.match(html, /const scored = q\s*\n?\s*\? FAQ_ITEMS\.map/);
 });
