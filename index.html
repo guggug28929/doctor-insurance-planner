@@ -1275,6 +1275,11 @@
   .faq-ai .faq-chatbot{background:#fff;border:1.5px solid #eab9cd;border-radius:14px;padding:20px 22px;}
   .faq-ai h3{margin:0 0 8px;color:var(--pink-deep);font-size:1.02rem;}
   .faq-cta{margin-top:16px;text-align:center;}
+  .faq-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+  .faq-cta-btns .btn{text-decoration:none;display:inline-flex;align-items:center;}
+  .faq-cta-line{background:#06c755 !important;border-color:#06c755 !important;color:#fff !important;}
+  .faq-cta-line:hover{background:#05b34c !important;}
+  .faq-cta-note{margin:0 !important;font-size:.84rem;}
   .faq-cta-t{font-weight:800;color:var(--pink-deep);font-size:1.02rem;margin-bottom:6px;}
   .faq-cta p{margin:0 0 14px;font-size:.9rem;color:#6b5560;}
   .faq-empty{text-align:center;color:#6b5560;font-size:.92rem;}
@@ -3050,24 +3055,14 @@
     </div>
     <div id="faqChips" class="faq-chips"></div>
     <div id="faqBody"></div>
-    <div class="faq-ai">
-  <div class="faq-chatbot" aria-label="กล่องถามตอบประกันสุขภาพด้วย AI">
-        <h3>AI Chatbot ถามคำถามเกี่ยวกับประกันสุขภาพ</h3>
-        <p><b>โหมดนี้เป็น AI จริง</b> ไม่ใช่แค่ค้นคำจากหน้าเว็บ: ระบบจะส่งคำถาม + Resource/FAQ ในหน้านี้ไปที่ backend <code>/api/insurance-chat</code> แล้วให้ AI วิเคราะห์และตอบเป็นภาษาไทย หากข้อมูลใน Resource ไม่พอ backend สามารถเปิด web search ให้ AI ค้นแหล่งอ้างอิงเพิ่มเติมได้</p>
-        <div class="faq-chat-row">
-          <textarea id="faqChatInput" placeholder="พิมพ์คำถามของลูกค้าที่นี่ เช่น ระยะรอคอยคืออะไร / ปกปิดประวัติมีผลยังไง / copayment คืออะไร..."></textarea>
-          <div class="faq-chat-actions">
-            <button type="button" onclick="faqChatAsk()">ถาม AI จริง</button>
-            <button type="button" class="secondary" onclick="faqChatClear()">ล้าง</button>
-          </div>
-        </div>
-        <div id="faqChatAnswer">พร้อมเรียก AI ผ่าน backend <code>/api/insurance-chat</code> ครับ — ถ้ายังไม่ได้ deploy backend ระบบจะแจ้งวิธีเชื่อมต่อแทนการตอบมั่ว</div>
-      </div>
-    </div>
     <div class="content-card faq-cta">
-      <div class="faq-cta-t">ไม่เจอคำตอบที่ต้องการ</div>
-      <p>ทักมาถามได้เลยครับ เคสสุขภาพแต่ละคนไม่เหมือนกัน บางเรื่องต้องดูประวัติจริงถึงจะตอบได้ตรง</p>
-      <button class="btn" onclick="showPage('contact')">ปรึกษาหมอกึ๊ก</button>
+      <div class="faq-cta-t">ยังไม่เจอคำตอบที่ต้องการ</div>
+      <p>เคสสุขภาพแต่ละคนไม่เหมือนกัน บางเรื่องต้องดูประวัติจริงถึงจะตอบได้ตรง ทักมาถามได้เลยครับ ตอบเองทุกข้อความ</p>
+      <div class="faq-cta-btns">
+        <a class="btn faq-cta-line" href="https://line.me/R/ti/p/@doctorguginsurance" target="_blank" rel="noopener">ทักไลน์ @doctorguginsurance</a>
+        <a class="btn btn-ghost" href="tel:0852312027">โทร 085-231-2027</a>
+      </div>
+      <p class="faq-cta-note">หรือดูช่องทางอื่น <button type="button" class="faq-inline-link" onclick="showPage('contact')">หน้าติดต่อ →</button></p>
     </div>
   </div>
 </div>
@@ -9698,6 +9693,12 @@ function faqLocalAnswer(q){
         <div class="chat-ai-answer">${faqHighlight(faqPickSnippet(h.r.body, terms), terms)}</div>`).join('')
     + `<div class="chat-meta" style="margin-top:12px;">ถ้ายังไม่ตรงกับที่สงสัย ทักมาถามหมอกึ๊กได้เลยครับ เคสสุขภาพแต่ละคนไม่เหมือนกัน</div>`;
 }
+
+// ปิดกล่องถาม AI ไว้ก่อน เพราะ backend ยังไม่ได้ตั้ง ANTHROPIC_API_KEY บน Vercel
+// ระบบที่โฆษณาว่าเป็น AI จริงแต่ตอบไม่ได้ เสียความน่าเชื่อถือมากกว่าไม่มี
+// วิธีเปิดกลับ: ตั้งค่า ANTHROPIC_API_KEY บน Vercel แล้วเปลี่ยนค่านี้เป็น true
+// จากนั้นใส่ <div class="faq-ai">...</div> กลับเข้าหน้า /faq เหนือกล่อง faq-cta
+const FAQ_AI_ENABLED = false;
 
 async function faqChatAsk(){
   const input = document.getElementById('faqChatInput');
