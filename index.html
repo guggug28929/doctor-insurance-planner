@@ -1276,7 +1276,12 @@
   .faq-ai h3{margin:0 0 8px;color:var(--pink-deep);font-size:1.02rem;}
   .faq-cta{margin-top:16px;text-align:center;}
   .faq-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
-  .faq-cta-btns .btn{text-decoration:none;display:inline-flex;align-items:center;}
+  .faq-cta-btns .btn{width:auto;margin-top:0;padding:12px 22px;text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;}
+  @media(max-width:520px){
+    .faq-cta-btns{flex-direction:column;}
+    .faq-cta-btns .btn{width:100%;}
+  }
   .faq-cta-line{background:#06c755 !important;border-color:#06c755 !important;color:#fff !important;}
   .faq-cta-line:hover{background:#05b34c !important;}
   .faq-cta-note{margin:0 !important;font-size:.84rem;}
