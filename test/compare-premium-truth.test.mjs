@@ -123,3 +123,28 @@ test('จำนวนปีชำระต้องตรงกับข้อ�
   }
   assert.equal(get('flexi_99_20'), 20, 'เฟล็กซี่ 99/20 ชำระ 20 ปี ตามชื่อแบบ');
 });
+
+test('แบบชำระครั้งเดียว ต้องไม่เขียนว่า (1 ปี) ให้เข้าใจผิดว่าคุ้มครองปีเดียว', () => {
+  assert.match(html, /const note = y === 1 \? 'ชำระครั้งเดียว' : y \+ ' ปี';/);
+});
+
+test('การ์ดด้านบนต้องเรียงตรงกับคอลัมน์ในตารางด้านล่าง', () => {
+  // ปุ่มเพิ่มแผนย้ายไปช่องซ้ายสุด ให้ตรงกับคอลัมน์ "หมวดความคุ้มครอง"
+  assert.match(html, /function compareSummaryRow\(cardsHtml, colCount, withAddSlot = true\)/);
+  assert.match(html, /const add = \(withAddSlot \? renderCompareAddSlot\(\) : ''\) \|\| spacer;/);
+  // ปุ่มต้องมาก่อนการ์ด ไม่ใช่ต่อท้าย
+  assert.match(html, /\+ add \+ cardsHtml \+ '<\/div>'/);
+  assert.ok(!html.includes(".join('') + renderCompareAddSlot();"),
+    'ยังมีการต่อปุ่มเพิ่มแผนไว้ท้ายแถวการ์ดอยู่');
+  // กว้างของช่องซ้ายต้องผูกกับคอลัมน์แรกของตาราง ด้วยตัวแปรตัวเดียวกัน
+  assert.match(html, /grid-template-columns:var\(--cmp-label-w,240px\) repeat\(var\(--cmp-cols,3\),minmax\(0,1fr\)\)/);
+  assert.match(html, /\.plan-compare-table \.benefit-table th:first-child,[\s\S]{0,80}width:var\(--cmp-label-w,240px\)/);
+  // จอเล็กต้องไม่บังคับจัดตรง เพราะตารางเลื่อนแนวนอน
+  assert.match(html, /@media\(min-width:900px\)\{[\s\S]{0,400}compare-aligned/);
+  // ช่องไฟต้องอยู่ข้างในช่อง ไม่ใช่ gap ของกริด ไม่งั้นความกว้างเพี้ยนจากคอลัมน์
+  assert.match(html, /\.compare-columns-summary\.compare-aligned > \*\{margin:0 7px;\}/);
+});
+
+test('หน้าบำนาญต้องไม่โผล่ปุ่มเพิ่มแผนของฝั่งชีวิต', () => {
+  assert.match(html, /compareSummaryRow\(heads, cols\.length, false\)/);
+});
