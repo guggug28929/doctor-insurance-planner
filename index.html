@@ -3872,18 +3872,19 @@ function healthRiderPremium(cfg, gender, age, occupationClass, freq){
   if(cfg.type === 'dhl'){
     const occ = occKeyFor(occupationClass);
     if(cfg.mode === 'copay'){
+      // ตารางละเอียดรายอายุเป็นแหล่งหลักเสมอ
+      // ตารางเก่าเป็นแบบช่วงอายุ หยาบกว่า และเคยมีคอลัมน์ที่ถูกปั้นขึ้นมา
+      // จึงใช้เป็นตัวสำรองเฉพาะกรณีที่ไม่มีตารางละเอียดเท่านั้น
+      const sub = occ ? RATES.dhl_payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.sum]?.['copay_'+cfg.copay] : null;
+      if(sub){
+        return {label:'D Health Lite (Copayment)', premium: rateAtStart(sub[gender], age, 0)};
+      }
       if(freq === 'annual' && (!occ || occ === '1_2')){
-        // legacy flat table kept as the exact-match fallback for the default
-        // (กลุ่มอาชีพ 1&2, annual) case so behaviour is unchanged when possible.
         const table = RATES.dhl_copay;
         const key = gender + '_' + cfg.sum + '_' + cfg.copay;
-        const v = bandRateAt(table.band_upper_age, table[key], age);
-        return {label:'D Health Lite (Copayment)', premium:v};
+        return {label:'D Health Lite (Copayment)', premium: bandRateAt(table.band_upper_age, table[key], age)};
       }
-      if(!occ) return {label:'D Health Lite (Copayment)', premium:null};
-      const sub = RATES.dhl_payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.sum]?.['copay_'+cfg.copay];
-      const v = sub ? rateAtStart(sub[gender], age, 0) : null;
-      return {label:'D Health Lite (Copayment)', premium:v};
+      return {label:'D Health Lite (Copayment)', premium:null};
     }
     if(!occ) return {label:'D Health Lite', premium:null};
     const deductKey = cfg.deduct === 'd0' ? 'no_deduct' : 'deduct_' + cfg.deduct.slice(1);
@@ -3946,6 +3947,14 @@ function opdPremium(cfg, gender, age, freq){
   if(cfg.type === 'mao'){
     const table = RATES.opd_เหมา.payment_schedules?.[freq];
     const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, 6) : null; // published age 6-98
+    // OPD เหมาจ่าย: ชื่อแผนคือวงเงินต่อปี เบี้ยจึงต้องน้อยกว่าวงเงินเสมอ
+    // ตารางฝั่งชายตั้งแต่อายุ 81 ขึ้นไปมีเลขที่เบี้ยแพงกว่าวงเงิน ซึ่งเป็นไปไม่ได้
+    // ยังไม่แก้ตัวเลขเพราะต้องยืนยันกับตารางทางการก่อน ระหว่างนี้ไม่เสนอราคาให้
+    // ดีกว่าเสนอเลขที่เห็นแล้วรู้ทันทีว่าผิด
+    const ceiling = parseInt(cfg.plan, 10);
+    if(v != null && freq === 'annual' && ceiling && v >= ceiling){
+      return {label:'OPD เหมาจ่าย', premium:null, needsVerify:true};
+    }
     return {label:'OPD เหมาจ่าย', premium:v};
   }
   return {label:null, premium:null};
@@ -11023,8 +11032,14 @@ function buildLifeCompareColumns(inputs){
   });
 }
 function buildLifeCompareRows(columns){
+  /* จำนวนปีที่ต้องชำระเบี้ยของแต่ละแบบ
+     null = ชำระจนครบสัญญาจริง ๆ (จึงขึ้นกับอายุที่เสียชีวิต)
+     ไม่มีในตาราง = ยังไม่ได้ระบุ ต้องขึ้น "-" ไม่ใช่เดาว่าจ่ายจนตาย
+     เคยพลาด: 4 แบบตกหล่นจากตารางนี้ แล้วไปขึ้นว่าชำระจนครบสัญญา
+     ทั้งที่ตารางแถวบนในหน้าเดียวกันบอกว่าชำระ 20 ปี ขัดกันเองต่อหน้าลูกค้า */
   const payYears = {'99_20':20, '99_99':null, '99_7':7, '80_10':10, 'flexi_99_5':5,
-    'premier_legacy_99_1':1, 'whole_life_99_1_nocash':1,
+    'flexi_99_20':20, 'smart_link_15_3':3, 'smart_link_15_6':6,
+    'premier_legacy_99_1':1, 'whole_life_99_1_nocash':1, 'whole_life_99_1_cashback':1,
     'lifetime_protection':20, 'sabaijai_90_90':null, 'sabaijai_99_10':10, 'easy_protection_15_15':15,
     'happy_return_99_7':7, 'happy_return_99_9':9,
     'premier_legacy_99_5':5, 'premier_legacy_99_10':10, 'legacy_wealth_99_5':5};
@@ -11038,7 +11053,9 @@ function buildLifeCompareRows(columns){
           : fmt(Math.round(col.premium / (col.capital/1000000))) + ' บาท';
       if(def.key === '_totalPaid'){
         if(col.premium == null) return '<span class="compare-na">-</span>';
-        const y = payYears[col.product.plan];
+        const plan = col.product.plan;
+        if(!(plan in payYears)) return '<span class="compare-na">-</span>';   // ไม่รู้ ก็บอกว่าไม่รู้
+        const y = payYears[plan];
         return y ? fmt(Math.round(col.premium * y)) + ' บาท (' + y + ' ปี)'
                  : '<span class="compare-na">ชำระจนครบสัญญา จึงขึ้นกับอายุที่เสียชีวิต</span>';
       }
