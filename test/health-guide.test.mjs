@@ -5,13 +5,13 @@ import test from "node:test";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
-test("หน้าความรู้ต้องมีสองแท็บ และคู่มืออยู่แท็บแรก", () => {
-  assert.match(html, /id="knowTabBtn-guide"/);
-  assert.match(html, /id="knowTabBtn-faq"/);
-  assert.match(html, /id="knowTab-guide"/);
-  assert.match(html, /id="knowTab-faq"/);
-  assert.match(html, /let knowTab = 'guide';/);
-  assert.match(html, /function setKnowTab\(tab\)/);
+test("หน้าความรู้เหลือแท็บเดียว คำถามที่พบบ่อยย้ายไปหน้า /faq แล้ว", () => {
+  // ตั้งใจยุบแท็บ เพื่อไม่ให้เนื้อหาซ้ำสองที่จนลูกค้าสับสนว่าคำตอบอยู่ไหน
+  assert.ok(!html.includes('id="knowTabBtn-faq"'), "ยังมีปุ่มแท็บ FAQ เดิมค้างอยู่");
+  assert.ok(!html.includes('id="knowTab-faq"'), "ยังมีเนื้อหาแท็บ FAQ เดิมค้างอยู่");
+  // ลิงก์เก่าต้องไม่พัง
+  assert.match(html, /if\(tab === 'faq'\)\{ showPage\('faq'\); return; \}/);
+  assert.match(html, /<div id="guideBody"><\/div>/);
 });
 
 test("ชื่อหัวข้อต้องไม่ยัดชื่อบริษัท ให้ขายผ่านเนื้อหาแทน", () => {
@@ -55,7 +55,10 @@ test("อินโฟกราฟิกสามก้อนต้องใช�
   const keys = [...html.matchAll(/key:'(transfer|depend|keep)'/g)].map((m) => m[1]);
   assert.deepEqual(keys, ["transfer", "depend", "keep"]);
   assert.match(html, /id="advBucketBox"/);
-  assert.match(html, /bb\.innerHTML = healthGuideBucketsHtml\(\)/);
+  // หน้าผู้ช่วยจัดแผนเปลี่ยนไปใช้อินโฟกราฟิกที่รวมทั้งสามก้อนและลำดับการตัดไว้ด้วยกัน
+  assert.match(html, /bb\.innerHTML = advPrincipleInfographic\(\)/);
+  // แต่อินโฟกราฟิกต้องดึงข้อมูลจากชุดเดียวกับคู่มือ จะได้ไม่หลุดกัน
+  assert.match(html, /HEALTH_GUIDE_BUCKETS\.map\(\(g, i\)/);
   // กรอบเก่าต้องถูกถอดออกแล้ว
   assert.doesNotMatch(html, /สรณะของระบบ:/);
   assert.doesNotMatch(html, /ลำดับการตัดเมื่อเบี้ยเกินงบ/);
