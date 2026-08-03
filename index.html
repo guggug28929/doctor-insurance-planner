@@ -1315,6 +1315,11 @@
   .tx-pack-alloc{margin-top:9px;padding-top:8px;border-top:1px dashed #ecdae2;}
   .tx-pack-alloc-h{font-size:.78rem;font-weight:700;color:#8b7480;}
   .tx-pack-alloc ul{margin:3px 0 0;padding-left:17px;font-size:.82rem;line-height:1.75;}
+  .tx-pack-alloc li{margin-bottom:7px;}
+  .tx-lock{font-size:.75rem;color:#8b7480;line-height:1.6;}
+  .tx-lock-link{background:none;border:none;padding:2px 0 0;font-family:inherit;font-size:.76rem;
+    color:var(--pink-deep);font-weight:700;cursor:pointer;text-decoration:underline;}
+  .tx-age{width:80px !important;}
   .tx-pack-warn{margin-top:9px;font-size:.8rem;line-height:1.65;color:#8f0d40;
     background:#fdf1f5;border-radius:9px;padding:8px 10px;}
   .tx-exp-fixed{grid-column:1/-1;font-size:.8rem;color:#8b7480;margin-top:-2px;}
@@ -10508,6 +10513,7 @@ function taxPlanOptions(net, RULES, headroom){
 function taxHeadroom(input, result, RULES){
   const D = RULES.deductions;
   const income = result.income.gross;
+  const age = Math.max(0, Number(input.age) || 0);
   const dv = k => Math.max(0, Number((input.deductions || {})[k]) || 0);
   const used = {};
   for(const g of result.deductions.groups) used[g.id] = g.used;
@@ -10518,18 +10524,48 @@ function taxHeadroom(input, result, RULES){
                                        ri.pensionInsurance.cap) - dv('pensionInsurance'));
   const esgCap = Math.min(D.thaiEsg.cap, income * D.thaiEsg.percentOfIncome);
 
+  /* ลำดับของ RMF กับ Thai ESG ตัดสินด้วยระยะล็อกจริง ไม่ใช่ความชอบ
+     Thai ESG ล็อก 5 ปีเสมอ ส่วน RMF ล็อก max(5, 55 - อายุ) เพราะต้องถือครบ 5 ปีและอายุครบ 55
+     เส้นแบ่งจึงอยู่ที่อายุ 50 พอดี ต่ำกว่านั้น ESG ปลดล็อกเร็วกว่ามาก ควรมาก่อน
+     ไม่กรอกอายุ ให้ ESG มาก่อนไว้ เพราะผูกมัดลูกค้าน้อยกว่า */
+  const esgFirst = !(age >= RULES.planner.rmfBeforeEsgFromAge);
+  const rmfLock = age > 0
+    ? Math.max(ri.rmf.minHoldYears, ri.rmf.unlockAge - age)
+    : null;
+  /* ประกันบำนาญกับ RMF ใช้เพดานกลุ่มเกษียณร่วมกัน จึงต้องปันจากโควตาที่เหลือก้อนเดียว
+     ไม่ใช่บวกช่องละก้อนแล้วทะลุเพดาน
+     แยกเป็นสองบรรทัดเพราะเป็นคนละอย่างกัน อันหนึ่งรับประกันเงินรายปีตลอดชีพ อีกอันขึ้นกับตลาด */
+  const groupLeft = Math.max(0, D.retirementGroup.cap - (used.retirement || 0));
+  const penTake = Math.min(penRoom, groupLeft);
+  const pension = {
+    id: 'pensionInsurance', label: 'ประกันบำนาญ',
+    room: penTake, lock: ri.pensionInsurance.lockLabel, lockYears: null,
+    invest: ri.pensionInsurance.investNote, planLink: 'pension-compare',
+  };
+  const retire = {
+    id: 'rmf', label: 'กองทุน RMF',
+    room: Math.max(0, Math.min(groupLeft - penTake, rmfRoom)),
+    lock: ri.rmf.lockLabel + (rmfLock ? ` · จากอายุ ${age} ปี คืออีกราว ${rmfLock} ปี` : ''),
+    lockYears: rmfLock, invest: ri.rmf.investNote,
+  };
+  const esg = {
+    id: 'thaiEsg', label: 'กองทุน Thai ESG',
+    room: Math.max(0, esgCap - (used.thaiEsg || 0)),
+    lock: D.thaiEsg.lockLabel, lockYears: D.thaiEsg.minHoldYears, invest: D.thaiEsg.investNote,
+  };
   const buy = [
-    {label: 'เบี้ยประกันชีวิตหรือประกันสุขภาพของตนเอง',
-     room: Math.max(0, D.insuranceGroup.cap - (used.insurance || 0))},
-    {label: 'RMF หรือประกันบำนาญ',
-     // สองตัวนี้ใช้เพดานกลุ่มเกษียณร่วมกัน จะบวกตรง ๆ ไม่ได้ ต้องตัดด้วยเพดานกลุ่มอีกชั้น
-     room: Math.max(0, Math.min(D.retirementGroup.cap - (used.retirement || 0), rmfRoom + penRoom))},
-    {label: 'กองทุน Thai ESG', room: Math.max(0, esgCap - (used.thaiEsg || 0))},
+    {id: 'insurance', label: 'เบี้ยประกันชีวิตหรือประกันสุขภาพของตนเอง',
+     room: Math.max(0, D.insuranceGroup.cap - (used.insurance || 0)),
+     lock: D.insuranceGroup.lockLabel, lockYears: null, invest: D.insuranceGroup.investNote},
+    // ประกันบำนาญมาก่อน RMF เสมอ เพราะเป็นชั้นเงินที่การันตีไว้ ควรวางฐานก่อนค่อยไปรับความเสี่ยงตลาด
+    ...(esgFirst ? [pension, esg, retire] : [pension, retire, esg]),
   ];
   const cond = [
-    {label: 'เบี้ยประกันสุขภาพบิดามารดา', room: Math.max(0, D.parentHealth.cap - dv('parentHealth'))},
-    {label: 'ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย',
-     room: Math.max(0, D.others.mortgageInterest.cap - dv('mortgageInterest'))},
+    {id: 'parentHealth', label: 'เบี้ยประกันสุขภาพบิดามารดา',
+     room: Math.max(0, D.parentHealth.cap - dv('parentHealth')), lock: 'จ่ายเป็นปี ๆ ไป'},
+    {id: 'mortgage', label: 'ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย',
+     room: Math.max(0, D.others.mortgageInterest.cap - dv('mortgageInterest')),
+     lock: 'ใช้ได้ตามดอกเบี้ยที่จ่ายจริงในปีนั้น'},
   ];
   const sum = a => a.reduce((s, x) => s + x.room, 0);
   const buyable = sum(buy);
@@ -10553,7 +10589,8 @@ function taxAllocate(amount, headroom){
   for(const x of headroom.buy){
     if(left <= 0 || x.room <= 0) continue;
     const take = Math.min(left, x.room);
-    out.push({label: x.label, amount: take});
+    out.push({label: x.label, amount: take, lock: x.lock || '', invest: x.invest || '',
+              planLink: x.planLink || ''});
     left -= take;
   }
   return out;
@@ -10612,6 +10649,7 @@ function taxPackages(r, headroom, RULES, budget){
 const taxState = {
   mode: 'quick',
   budget: 0,
+  age: 0,
   income: { s40_1:{amount:0}, s40_2:{amount:0}, s40_3:{amount:0}, s40_4:{amount:0},
             s40_5:{amount:0, option:'building'}, s40_6:{amount:0, option:'medical'},
             s40_7:{amount:0}, s40_8:{amount:0, option:'rate60'} },
@@ -10668,6 +10706,11 @@ function setTaxDed(key, val, isBool){
 function setTaxMode(m){ taxState.mode = m; renderTaxPage(); }
 // งบที่จ่ายไหวต่อปี ถ้าไม่กรอกจะใช้สมมติฐานจากรายได้ ไม่ใช่เสนอเต็มเพดานให้ทุกคน
 function setTaxBudget(val){ taxState.budget = Math.max(0, parseFloat(val) || 0); taxDebounce(); }
+// อายุใช้ตัดสินว่า RMF หรือ Thai ESG ควรมาก่อน เพราะ RMF ปลดล็อกตอนอายุ 55
+function setTaxAge(val){
+  taxState.age = Math.min(99, Math.max(0, parseInt(val, 10) || 0));
+  taxDebounce();
+}
 function taxDebounce(){ clearTimeout(taxTimer); taxTimer = setTimeout(renderTaxResult, 180); }
 
 function taxMoneyField(label, value, onInput, hint){
@@ -10829,6 +10872,12 @@ function renderTaxResult(){
   const budgetHint = budgetIn > 0
     ? `ใช้งบที่กรอกไว้ ${fmt(budgetIn)} บาทต่อปี`
     : `ยังไม่ได้กรอกงบ จึงตั้งไว้ที่ ${Math.round(TAX_RULES.planner.defaultBudgetPctOfIncome*100)}% ของเงินได้ ปรับได้ตามจริง`;
+  /* อายุใช้จัดลำดับว่าควรใส่ RMF หรือ Thai ESG ก่อน เพราะ RMF ปลดล็อกตอนอายุ 55
+     ไม่กรอกก็ใช้ได้ แต่จะเรียงแบบที่ผูกมัดลูกค้าน้อยกว่าไว้ก่อน */
+  const ageAt = Number(taxState.age) || 0;
+  const ageHint = ageAt > 0
+    ? `จัดลำดับกองทุนจากอายุ ${ageAt} ปี`
+    : 'ยังไม่ได้กรอกอายุ จึงจัดลำดับแบบที่ปลดล็อกเร็วไว้ก่อน';
 
   const packHtml = packs.length ? packs.map(p => `
     <div class="tx-pack tx-pack-${p.id}">
@@ -10843,7 +10892,11 @@ function renderTaxResult(){
       </table>
       <div class="tx-pack-why">${p.why}</div>
       ${p.allocation.length ? `<div class="tx-pack-alloc"><div class="tx-pack-alloc-h">แบ่งเงินลงช่องไหน</div><ul>${
-        p.allocation.map(a => `<li>${a.label} ${fmt(Math.round(a.amount))} บาท</li>`).join('')}</ul></div>` : ''}
+        p.allocation.map(a => `<li>${a.label} <b>${fmt(Math.round(a.amount))}</b> บาท
+          ${a.lock ? `<div class="tx-lock">สภาพคล่อง: ${a.lock}</div>` : ''}
+          ${a.invest ? `<div class="tx-lock">${a.invest}</div>` : ''}
+          ${a.planLink ? `<button type="button" class="tx-lock-link" onclick="showPage('${a.planLink}')">ดูแบบประกันบำนาญและคำนวณเบี้ย →</button>` : ''}
+          </li>`).join('')}</ul></div>` : ''}
       ${p.heavy ? `<div class="tx-pack-warn">ก้อนนี้กินสัดส่วนรายได้สูง ต้องมั่นใจว่าเงินสดหมุนไหวจริงก่อนตัดสินใจ</div>` : ''}
     </div>`).join('')
     : `<div class="tx-pack-none">${taxNoPackReason(r, headroom, TAX_RULES)}</div>`;
@@ -10918,7 +10971,10 @@ function renderTaxResult(){
       <label for="taxBudget">งบที่จ่ายไหวต่อปี</label>
       <input id="taxBudget" type="number" min="0" step="10000" placeholder="เช่น 300000"
         value="${budgetIn || ''}" oninput="setTaxBudget(this.value)">
-      <span class="tx-budget-n">${budgetHint}</span>
+      <label for="taxAge">อายุ</label>
+      <input id="taxAge" class="tx-age" type="number" min="0" max="99" step="1" placeholder="ปี"
+        value="${Number(taxState.age) || ''}" oninput="setTaxAge(this.value)">
+      <span class="tx-budget-n">${budgetHint} · ${ageHint}</span>
     </div>
     <div class="tx-packs">${packHtml}</div>
     <div class="tx-cta">
