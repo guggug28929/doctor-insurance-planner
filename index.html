@@ -588,6 +588,12 @@
     border-bottom:1px solid var(--line);
   }
   .table-export-actions .meta{margin:0;}
+  .export-btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn-export-pdf{
+    width:auto;margin:0;padding:9px 14px;font-size:.82rem;
+    background:linear-gradient(120deg,#a4262c,#c8383f);
+    box-shadow:0 3px 10px rgba(164,38,44,.22);
+  }
   .btn-export-excel{
     width:auto;
     margin:0;
@@ -1409,7 +1415,41 @@
     .print-credit{display:block !important;text-align:center;font-size:.72rem;color:#666;
       padding:10px 0;border-top:1px solid #ccc;margin-top:18px;}
     a[href^="http"]::after{content:" (" attr(href) ")";font-size:.7rem;color:#666;}
+
+    /* ---------- โหมดพิมพ์ตารางเบี้ยเป็น PDF ----------
+       กระดาษแนวนอน ขอบแคบ เพื่อให้คอลัมน์เยอะ ๆ ลงได้ในความกว้างเดียว
+       ความยาวปล่อยให้ขึ้นหน้าใหม่เอง และหัวตารางซ้ำทุกหน้าเพราะใช้ thead */
+    body.dg-printing > *:not(#printArea){display:none !important;}
+    body.dg-printing #printArea{display:block !important;}
+    body.dg-printing .print-doc table{page-break-inside:auto;}
+    body.dg-printing .print-doc thead{display:table-header-group;}
+    body.dg-printing .print-doc tfoot{display:table-footer-group;}
+    body.dg-printing .print-doc tr{page-break-inside:avoid;}
   }
+  @page{size:A4 landscape;margin:9mm 8mm;}
+
+  #printArea{display:none;}
+  .print-doc{font-family:"Prompt",sans-serif;color:#241a1f;}
+  .print-title{font-family:"Kanit",sans-serif;font-weight:800;font-size:14pt;color:#8f0d40;}
+  .print-meta{font-size:9pt;color:#5a4a52;margin:2mm 0 3mm;line-height:1.6;}
+  /* table-layout ต้องเป็น auto และห้ามตัดข้อความด้วย ellipsis
+     เพราะถ้าตัด ตัวเลขเบี้ยจะหายไปบางหลักโดยที่ลูกค้าไม่รู้ตัว
+     ความพอดีหน้ากระดาษใช้วิธีย่อขนาดอักษรจนวัดแล้วพอดีจริงแทน */
+  .print-doc table{width:100%;border-collapse:collapse;font-size:var(--print-font,9pt);
+    table-layout:auto;}
+  .print-doc th, .print-doc td{border:.4pt solid #d9c2cd;padding:1.1mm 1.4mm;
+    text-align:right;white-space:nowrap;}
+  .print-doc th{background:#8f0d40 !important;color:#fff !important;text-align:center;
+    font-weight:700;white-space:normal;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .print-doc td:first-child, .print-doc td:nth-child(2){text-align:center;}
+  .print-doc tbody tr:nth-child(even) td{background:#fdf6f9 !important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .print-doc .total-col{background:#f7efe2 !important;font-weight:700;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .print-foot{font-size:7.5pt;color:#7a6871;margin-top:3mm;line-height:1.6;}
+  .print-sec-next{break-before:page;page-break-before:always;padding-top:2mm;}
+
   .print-credit{display:none;}
   .site-credit{text-align:center;font-size:.76rem;color:#8b7480;padding:26px 16px 34px;line-height:1.9;}
   .site-credit b{color:var(--pink-deep);}
@@ -3573,6 +3613,66 @@ function isSeniorMainPlan(plan){ return plan === 'sabaijai_90_90' || plan === 's
 /* ---------- สัญญาหลักแบบบำนาญ ---------- */
 let currentPensionMain = null;   // {pid, vk}
 function isPensionMainPlan(plan){ return plan === 'pension'; }
+
+/* จำนวนปีที่ต้องชำระเบี้ยสัญญาหลัก และอายุสุดท้ายของตาราง
+   แยกออกมาเป็นฟังก์ชันเพื่อไม่ให้มีบรรทัดเดียวที่ลงท้ายด้วย catch-all อีก
+   ถ้าเจอแผนที่ยังไม่รู้จัก ให้คืน null แล้วหน้าเว็บจะไม่แสดงตาราง
+   ดีกว่าโชว์ตัวเลขที่ดูสมเหตุสมผลแต่เป็นของแบบอื่น */
+/* แบบพื้นฐานที่ไม่ได้อยู่ในทะเบียนแบบเฉพาะทาง ต้องระบุไว้ตรงนี้ให้ครบ
+   payYears คือจำนวนปีชำระ 99 แปลว่าชำระจนครบสัญญา
+   coverToAge คืออายุที่ความคุ้มครองสิ้นสุด ใช้กำหนดว่าตารางจบที่อายุเท่าไร */
+const PLAIN_MAIN_PLANS = {
+  '99_20':      {payYears: 20, coverToAge: 99},
+  '99_99':      {payYears: 99, coverToAge: 99},
+  '99_7':       {payYears: 7,  coverToAge: 99},
+  '80_10':      {payYears: 10, coverToAge: 80},
+  'flexi_99_5': {payYears: 5,  coverToAge: 99},
+  'flexi_99_20':{payYears: 20, coverToAge: 99},
+};
+
+function mainPayYears(inp, entryAge){
+  const plan = inp.mainPlan;
+  if(PLAIN_MAIN_PLANS[plan]) return PLAIN_MAIN_PLANS[plan].payYears;
+  if(isSavingsMainPlan(plan)) return savingsMainData(plan).pay_years;
+  const sp = specialMainPlan(plan);
+  // payYears เป็น null แปลว่าชำระจนครบสัญญา เช่น วัยเก๋า 90/90
+  if(sp) return sp.payYears != null ? sp.payYears : 99;
+  if(isPensionMainPlan(plan)){
+    const cf = pensionMainCashflow(entryAge);
+    return cf ? cf.payYears : null;
+  }
+  return null;
+}
+
+function mainCoverEndAge(inp, entryAge){
+  const plan = inp.mainPlan;
+  if(PLAIN_MAIN_PLANS[plan]) return Math.min(98, PLAIN_MAIN_PLANS[plan].coverToAge);
+  if(isSavingsMainPlan(plan))
+    return Math.min(98, entryAge + savingsMainData(plan).coverage_years - 1);
+  if(isPensionMainPlan(plan)){
+    const cf = pensionMainCashflow(entryAge);
+    // แบบบำนาญจ่ายบำนาญถึงอายุ 90 ตารางเบี้ยจึงไม่ควรลากไปถึง 98
+    return cf ? cf.endAge : 90;
+  }
+  const sp = specialMainPlan(plan);
+  if(sp && sp.coverToAge) return Math.min(98, sp.coverToAge);
+  // แบบชั่วระยะเวลาคุ้มครองเป็นจำนวนปี ไม่ใช่ถึงอายุที่กำหนด
+  if(sp && sp.coverYears) return Math.min(98, entryAge + sp.coverYears - 1);
+  return 98;
+}
+
+/* กระแสเงินสดของแบบบำนาญที่เลือกอยู่ในหน้าคำนวณ ใช้ตัวเดียวกับหน้าเทียบบำนาญ
+   จะได้ไม่มีตรรกะปีชำระสองชุดที่หลุดออกจากกันได้ */
+function pensionMainCashflow(entryAge){
+  if(!currentPensionMain) return null;
+  const inp = typeof readInputs === 'function' ? readInputs() : null;
+  const gender = inp ? (inp.gender === 'm' ? 'male' : 'female') : 'male';
+  const sum = inp ? inp.mainCapital : 0;
+  const freqList = pensionFreqList(currentPensionMain.pid);
+  const freq = (inp && freqList.includes(inp.paymentFrequency))
+    ? inp.paymentFrequency : pensionDefaultFreq(currentPensionMain.pid);
+  return pensionCashflow(currentPensionMain.pid, currentPensionMain.vk, gender, entryAge, sum, freq);
+}
 function pensionMainOptions(){
   const out = [];
   for(const pid of PENSION_IDS){
@@ -4425,15 +4525,20 @@ function renderAll(){
 
   const rows = [];
   let cumulative = 0;
-  const payTermMain = inp.mainPlan === '99_20' ? 20 : inp.mainPlan === '99_99' ? 99 : savingsMainData(inp.mainPlan).pay_years;
-  // แบบวัยเก๋า 90/90 คุ้มครองถึงอายุ 90 ปีเท่านั้น ตารางจึงต้องหยุดตามสัญญาจริง ไม่ลากถึง 98
-  const spEnd = specialMainPlan(inp.mainPlan);
-  const endAge = isSavingsMainPlan(inp.mainPlan)
-    ? Math.min(98, entryAge + savingsMainData(inp.mainPlan).coverage_years - 1)
-    : (spEnd && spEnd.coverToAge ? Math.min(98, spEnd.coverToAge)
-      // แบบชั่วระยะเวลาไม่ได้คุ้มครองถึงอายุที่กำหนด แต่คุ้มครองเป็นจำนวนปี
-      // ตารางจึงต้องจบตามจำนวนปีของสัญญา ไม่ใช่ลากไปถึงอายุ 98
-      : (spEnd && spEnd.coverYears ? Math.min(98, entryAge + spEnd.coverYears - 1) : 98));
+  /* จำนวนปีชำระเบี้ยของสัญญาหลัก
+     เดิมบรรทัดนี้ลงท้ายด้วย savingsMainData(...) แบบ catch-all แผนที่ไม่ใช่ 99/20, 99/99
+     และไม่ใช่สะสมทรัพย์ จึงไปหยิบ pay_years ของสะสมทรัพย์ 15/6 มาใช้ ซึ่งเท่ากับ 6
+     ผลคือแบบบำนาญกับแบบเฉพาะทางทุกตัว โชว์ว่าจ่ายเบี้ยแค่ 6 ปีแล้วเป็นศูนย์
+     ซึ่งผิดมากเพราะลูกค้าเห็นเบี้ยรวมต่ำกว่าความจริงหลายเท่า */
+  const payTermMain = mainPayYears(inp, entryAge);
+  // แบบวัยเก๋า 90/90 คุ้มครองถึงอายุ 90 แบบบำนาญจ่ายบำนาญถึง 90 ตารางต้องหยุดตามสัญญาจริง
+  const endAge = mainCoverEndAge(inp, entryAge);
+  if(payTermMain == null){
+    tableWrap.innerHTML = '<div class="empty-state">ยังคำนวณตารางเบี้ยของแบบนี้ไม่ได้ '
+      + 'เพราะระบบยังไม่รู้จำนวนปีชำระเบี้ยที่แน่นอน ทักมาถามได้เลยครับ จะคำนวณให้จากตารางจริง</div>';
+    summaryEl.innerHTML = '';
+    return;
+  }
   for(let age = entryAge; age <= endAge; age++){
     const policyYear = age - entryAge + 1;
     const row = {age, policyYear, values:{}};
@@ -4529,7 +4634,8 @@ function renderAll(){
     <div class="stat"><div class="k">เพศ / อายุเริ่มทำสัญญา</div><div class="v">${gender==='m'?'ชาย':'หญิง'} • ${entryAge} ปี • อาชีพขั้น ${inp.occupationClass}</div></div>
     <div class="stat"><div class="k">งวดชำระ</div><div class="v">${paymentInfo.label}${warnLabels.length ? ' (บางแผนยังไม่มีอัตรานี้)' : ''}</div></div>
     <div class="stat"><div class="k">${paymentInfo.periods === 1 ? 'เบี้ยปีแรก (รวมทุกสัญญา)' : `เบี้ยต่องวด (รวมทุกสัญญา)`}</div><div class="v">${fmt(paymentInfo.periods === 1 ? firstYearTotal : firstPeriodTotal)} บาท${paymentInfo.periods === 1 ? '' : '/'+paymentInfo.label}</div></div>
-    <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี ${isSavingsMainPlan(inp.mainPlan) ? `(คุ้มครอง 15 ปี)` : '(ถึงอายุ 98)'}</div></div>
+    <div class="stat"><div class="k">จำนวนปีในตาราง</div><div class="v">${rows.length} ปี (ถึงอายุ ${endAge})</div></div>
+    <div class="stat"><div class="k">ชำระเบี้ยสัญญาหลัก</div><div class="v">${payTermMain >= 99 ? 'จนครบสัญญา' : payTermMain + ' ปี'}</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
   `;
 
@@ -4551,7 +4657,7 @@ function renderAll(){
   const frequencyNote = warnLabels.length
     ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ยังไม่มีตารางเบี้ยที่เผยแพร่สำหรับ "${warnLabels.join(', ')}" ที่งวดชำระ/ขั้นอาชีพนี้ ระบบจึงแสดง "-" แทนแทนที่จะเดาตัวเลข กรุณาเลือก "รายปี" และ/หรือขั้นอาชีพ 1-3 สำหรับแผนดังกล่าว หรือตรวจอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
     : '';
-  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเป็นไฟล์ Excel เพื่อส่งให้ลูกค้าได้</p><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
+  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเพื่อส่งให้ลูกค้า ทั้งสองแบบจัดหน้าแนวนอนให้พอดีกระดาษ A4 แล้ว</p><div class="export-btns"><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button><button type="button" class="btn btn-export-pdf" onclick="exportPremiumTablePdf()">ดาวน์โหลด PDF</button></div></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
 }
@@ -4623,35 +4729,404 @@ async function exportPremiumTableExcel(){
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • ขั้นอาชีพ ${inp.occupationClass} • งวดชำระ ${paymentInfo.label} • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
   const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
-  const escXml = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-  const cell = value => `<c t="inlineStr"><is><t>${escXml(value)}</t></is></c>`;
-  const rowsXml = [...table.querySelectorAll('tr')].map(tr => `<row>${[...tr.children].map(td => cell(td.textContent.trim())).join('')}</row>`).join('');
-  const summaryXml = [title, details, `แผนหลัก: ${mainLabel}`, `ทุนประกันสัญญาหลัก: ${fmt(inp.mainCapital)} บาท`, `ขั้นอาชีพ: ${inp.occupationClass}`, `งวดชำระ: ${paymentInfo.label}`, `แผนสุขภาพ: ${healthLabels.join(' • ') || 'ไม่ได้เลือก'}`, `แผน OPD: ${opdLabels.join(' • ') || 'ไม่ได้เลือก'}`, `สัญญาเพิ่มเติม/อุบัติเหตุ: ${riderLabels.join(' • ') || 'ไม่ได้เลือก'}`].map(v => `<row>${cell(v)}</row>`).join('');
-  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${summaryXml}${rowsXml}</sheetData></worksheet>`;
+  const meta = [
+    ['แผนหลัก', mainLabel],
+    ['ทุนประกันสัญญาหลัก', fmt(inp.mainCapital) + ' บาท'],
+    ['ขั้นอาชีพ', String(inp.occupationClass)],
+    ['งวดชำระ', paymentInfo.label],
+    ['แผนสุขภาพ', healthLabels.join(' • ') || 'ไม่ได้เลือก'],
+    ['แผน OPD', opdLabels.join(' • ') || 'ไม่ได้เลือก'],
+    ['สัญญาเพิ่มเติม/อุบัติเหตุ', riderLabels.join(' • ') || 'ไม่ได้เลือก'],
+  ];
+  const head = [...table.querySelectorAll('thead tr')].map(tr => [...tr.children].map(td => td.textContent.trim()));
+  const body = [...table.querySelectorAll('tbody tr')].map(tr => [...tr.children].map(td => td.textContent.trim()));
+  const fileName = `ตารางเบี้ย-${mainLabel.replace(/[\\/:*?"<>|]/g, '-')}-อายุ${inp.entryAge}`;
+  dgDownloadXlsx(fileName, {title, details, meta, head, body});
+}
+
+/* ---------- สร้างไฟล์ .xlsx ----------
+   เขียนเองทั้งหมดเพื่อไม่ต้องโหลดไลบรารีจากภายนอก หน้าเว็บจะได้ยังทำงานตอนเน็ตช้า
+   ของเดิมประกอบ ZIP ผิดมาตรฐาน หัวตารางกลางของ ZIP ขาดฟิลด์วันที่ไป 2 ไบต์
+   ทุกฟิลด์หลังจากนั้นจึงเลื่อน ไฟล์ที่ได้เปิดไม่ออกทั้ง Excel และโปรแกรมอื่น */
+const XLSX_STYLE = {NORMAL:0, TITLE:1, NOTE:2, HEAD:3, NUM:4, TEXT:5, META_KEY:6};
+
+function xlsxEsc(v){
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&apos;')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');   // อักขระควบคุมทำให้ไฟล์เสีย
+}
+
+function xlsxColName(i){
+  let s = '';
+  for(i += 1; i > 0; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s;
+  return s;
+}
+
+/* แปลงข้อความในตารางเป็นเซลล์ ถ้าเป็นตัวเลขต้องเก็บเป็นตัวเลขจริง
+   ไม่ใช่ข้อความ ไม่งั้นลูกค้าเอาไปบวกลบใน Excel ต่อไม่ได้ และจัดชิดผิดด้าน */
+function xlsxCell(ref, value, style, forceText){
+  const raw = String(value ?? '').trim();
+  const numeric = /^-?[\d,]+(\.\d+)?$/.test(raw) && /\d/.test(raw);
+  if(numeric && !forceText){
+    return `<c r="${ref}" s="${XLSX_STYLE.NUM}"><v>${raw.replace(/,/g,'')}</v></c>`;
+  }
+  if(!raw) return `<c r="${ref}" s="${style}"/>`;
+  return `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xlsxEsc(raw)}</t></is></c>`;
+}
+
+function xlsxStylesXml(){
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+  + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+  + '<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0"/></numFmts>'
+  + '<fonts count="5">'
+  +   '<font><sz val="10"/><name val="Tahoma"/></font>'
+  +   '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Tahoma"/></font>'
+  +   '<font><b/><sz val="14"/><color rgb="FF8F0D40"/><name val="Tahoma"/></font>'
+  +   '<font><sz val="9"/><color rgb="FF6B5A62"/><name val="Tahoma"/></font>'
+  +   '<font><b/><sz val="10"/><color rgb="FF8F0D40"/><name val="Tahoma"/></font>'
+  + '</fonts>'
+  + '<fills count="3">'
+  +   '<fill><patternFill patternType="none"/></fill>'
+  +   '<fill><patternFill patternType="gray125"/></fill>'
+  +   '<fill><patternFill patternType="solid"><fgColor rgb="FF8F0D40"/><bgColor indexed="64"/></patternFill></fill>'
+  + '</fills>'
+  + '<borders count="2">'
+  +   '<border><left/><right/><top/><bottom/><diagonal/></border>'
+  +   '<border><left style="thin"><color rgb="FFE8D5DE"/></left><right style="thin"><color rgb="FFE8D5DE"/></right>'
+  +   '<top style="thin"><color rgb="FFE8D5DE"/></top><bottom style="thin"><color rgb="FFE8D5DE"/></bottom><diagonal/></border>'
+  + '</borders>'
+  + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+  + '<cellXfs count="7">'
+  +   '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+  +   '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  +   '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  +   '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">'
+  +     '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
+  +   '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+  +   '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">'
+  +     '<alignment horizontal="center"/></xf>'
+  +   '<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  + '</cellXfs>'
+  + '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
+  + '</styleSheet>';
+}
+
+function dgDownloadXlsx(fileName, data){
+  const {title, details, meta, head, body} = data;
+  const colCount = Math.max(...head.map(r => r.length), ...body.map(r => r.length), 2);
+
+  const rows = [];
+  let r = 0;
+  const push = cells => { rows.push(`<row r="${++r}">${cells}</row>`); };
+  push(xlsxCell('A1', title, XLSX_STYLE.TITLE));
+  push(xlsxCell('A2', details, XLSX_STYLE.NOTE));
+  push('');
+  for(const [k, v] of meta){
+    r++;
+    // ค่าในส่วนหัวเป็นข้อความล้วน เช่น "700,000 บาท" ห้ามให้ Excel แปลงเป็นตัวเลข
+    rows.push(`<row r="${r}">${xlsxCell('A' + r, k, XLSX_STYLE.META_KEY, true)}`
+      + xlsxCell('B' + r, v, XLSX_STYLE.NORMAL, true) + '</row>');
+  }
+  push('');
+  const headRowIndex = r + 1;
+  for(const hr of head){
+    r++;
+    rows.push(`<row r="${r}">` + hr.map((c, i) => xlsxCell(xlsxColName(i) + r, c, XLSX_STYLE.HEAD)).join('') + '</row>');
+  }
+  const headRowEnd = r;
+  for(const br of body){
+    r++;
+    rows.push(`<row r="${r}">` + br.map((c, i) => xlsxCell(xlsxColName(i) + r, c, XLSX_STYLE.TEXT)).join('') + '</row>');
+  }
+
+  /* ความกว้างคอลัมน์คิดจากข้อความที่ยาวที่สุดจริง ๆ ของคอลัมน์นั้น
+     ของเดิมไม่ได้ตั้งเลย Excel จึงใช้ความกว้างมาตรฐาน ตัวเลขล้นเป็น ##### */
+  const widths = [];
+  for(let i = 0; i < colCount; i++){
+    let w = 8;
+    for(const src of [...head, ...body]){
+      const t = String(src[i] ?? '');
+      // ตัวอักษรไทยกว้างกว่าตัวเลขพอสมควร จึงคิดน้ำหนักเพิ่มให้
+      const len = t.length + (/[฀-๿]/.test(t) ? t.length * 0.35 : 0);
+      if(len > w) w = len;
+    }
+    widths.push(Math.min(34, Math.max(9, Math.ceil(w) + 2)));
+  }
+  const colsXml = '<cols>' + widths.map((w, i) =>
+    `<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('') + '</cols>';
+
+  const lastRef = xlsxColName(colCount - 1) + r;
+  const sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    + '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>'
+    + `<dimension ref="A1:${lastRef}"/>`
+    // ตรึงหัวตารางไว้ เลื่อนดูแถวล่าง ๆ แล้วยังรู้ว่าคอลัมน์ไหนคืออะไร
+    + `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${headRowEnd}" topLeftCell="A${headRowEnd+1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`
+    + '<sheetFormatPr defaultRowHeight="15"/>'
+    + colsXml
+    + `<sheetData>${rows.join('')}</sheetData>`
+    + '<printOptions horizontalCentered="1"/>'
+    + '<pageMargins left="0.25" right="0.25" top="0.4" bottom="0.4" header="0.2" footer="0.2"/>'
+    /* แนวนอน และย่อให้พอดีความกว้างหนึ่งหน้าเสมอ ส่วนความยาวปล่อยให้ขึ้นหน้าใหม่ได้
+       fitToHeight เป็น 0 คือไม่จำกัดจำนวนหน้าแนวตั้ง */
+    + '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" horizontalDpi="300" verticalDpi="300"/>'
+    + '</worksheet>';
+
+  const workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+    + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    + '<sheets><sheet name="ตารางเบี้ย" sheetId="1" r:id="rId1"/></sheets>'
+    // พิมพ์ออกมาแล้วหัวตารางต้องซ้ำทุกหน้า ไม่งั้นหน้าที่สองอ่านไม่รู้เรื่อง
+    + `<definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">'ตารางเบี้ย'!$${headRowIndex}:$${headRowEnd}</definedName></definedNames>`
+    + '</workbook>';
+
   const files = {
-    '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
-    '_rels/.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
-    'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="ตารางเบี้ย" sheetId="1" r:id="rId1"/></sheets></workbook>',
-    'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+    '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+      + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+      + '<Default Extension="xml" ContentType="application/xml"/>'
+      + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+      + '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+      + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+      + '</Types>',
+    '_rels/.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+      + '</Relationships>',
+    'xl/workbook.xml': workbookXml,
+    'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+      + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+      + '</Relationships>',
+    'xl/styles.xml': xlsxStylesXml(),
     'xl/worksheets/sheet1.xml': sheetXml,
   };
-  const encoder = new TextEncoder();
-  const crc32 = data => { let c=0xffffffff; for(const b of data){ c^=b; for(let k=0;k<8;k++) c=(c>>>1)^((c&1)?0xedb88320:0); } return (c^0xffffffff)>>>0; };
-  const chunks=[], central=[]; let offset=0;
-  const u16=n=>new Uint8Array([n&255,(n>>>8)&255]), u32=n=>new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);
-  const concat=a=>{const out=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let p=0;for(const x of a){out.set(x,p);p+=x.length;}return out;};
-  for(const [name,text] of Object.entries(files)){ const nb=encoder.encode(name), db=encoder.encode(text), head=concat([new Uint8Array([80,75,3,4,20,0,0,0,0,0,0,0,0,0]),u32(crc32(db)),u32(db.length),u32(db.length),u16(nb.length),u16(0),nb]); chunks.push(head,db); central.push({nb,crc:crc32(db),len:db.length,offset}); offset+=head.length+db.length; }
-  const cdOffset=offset; for(const x of central) { const h=concat([new Uint8Array([80,75,1,2,20,0,20,0,0,0,0,0,0,0]),u32(x.crc),u32(x.len),u32(x.len),u16(x.nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(x.offset),x.nb]); chunks.push(h); offset+=h.length; }
-  chunks.push(concat([new Uint8Array([80,75,5,6,0,0,0,0]),u16(central.length),u16(central.length),u32(offset-cdOffset),u32(cdOffset),u16(0)]));
-  const blob = new Blob([concat(chunks)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+  const blob = new Blob([dgZip(files)],
+    {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  dgSaveBlob(blob, fileName + '.xlsx');
+}
+
+/* ประกอบไฟล์ ZIP แบบไม่บีบอัด ตามข้อกำหนด APPNOTE ของ PKWARE
+   จุดที่เคยพลาดคือหัวตารางกลาง ต้องมี 16 ไบต์ก่อนถึงช่อง CRC ไม่ใช่ 14
+   คือ ลายเซ็น 4 + เวอร์ชันผู้สร้าง 2 + เวอร์ชันที่ต้องใช้ 2 + แฟล็ก 2 + วิธีบีบอัด 2 + เวลา 2 + วันที่ 2 */
+function dgZip(files){
+  const enc = new TextEncoder();
+  const u16 = n => new Uint8Array([n & 255, (n >>> 8) & 255]);
+  const u32 = n => new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]);
+  const cat = list => {
+    const out = new Uint8Array(list.reduce((n, x) => n + x.length, 0));
+    let p = 0;
+    for(const x of list){ out.set(x, p); p += x.length; }
+    return out;
+  };
+  const crcTable = (() => {
+    const t = new Uint32Array(256);
+    for(let n = 0; n < 256; n++){
+      let c = n;
+      for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  const crc32 = bytes => {
+    let c = 0xFFFFFFFF;
+    for(let i = 0; i < bytes.length; i++) c = crcTable[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  };
+
+  const parts = [], central = [];
+  let offset = 0;
+  for(const [name, text] of Object.entries(files)){
+    const nb = enc.encode(name), db = enc.encode(text), crc = crc32(db);
+    const local = cat([
+      new Uint8Array([0x50,0x4B,0x03,0x04]),   // ลายเซ็นหัวไฟล์
+      u16(20), u16(0), u16(0),                 // เวอร์ชันที่ต้องใช้ / แฟล็ก / ไม่บีบอัด
+      u16(0), u16(0),                          // เวลาและวันที่แก้ไข
+      u32(crc), u32(db.length), u32(db.length),
+      u16(nb.length), u16(0), nb,
+    ]);
+    parts.push(local, db);
+    central.push({nb, crc, len: db.length, offset});
+    offset += local.length + db.length;
+  }
+  const cdStart = offset;
+  for(const x of central){
+    const h = cat([
+      new Uint8Array([0x50,0x4B,0x01,0x02]),   // ลายเซ็นหัวตารางกลาง
+      u16(20), u16(20), u16(0), u16(0),        // ผู้สร้าง / ต้องใช้ / แฟล็ก / ไม่บีบอัด
+      u16(0), u16(0),                          // เวลาและวันที่ ตรงนี้เองที่เคยขาดไป
+      u32(x.crc), u32(x.len), u32(x.len),
+      u16(x.nb.length), u16(0), u16(0),        // ชื่อ / ส่วนขยาย / คอมเมนต์
+      u16(0), u16(0), u32(0), u32(x.offset), x.nb,
+    ]);
+    parts.push(h);
+    offset += h.length;
+  }
+  parts.push(cat([
+    new Uint8Array([0x50,0x4B,0x05,0x06]),
+    u16(0), u16(0), u16(central.length), u16(central.length),
+    u32(offset - cdStart), u32(cdStart), u16(0),
+  ]));
+  return cat(parts);
+}
+
+/* ---------- ออกไฟล์ PDF ----------
+   ใช้ระบบพิมพ์ของเบราว์เซอร์ ไม่โหลดไลบรารีสร้าง PDF จากภายนอก เพราะสองเหตุผล
+   หนึ่ง ไลบรารีพวกนั้นต้องฝังฟอนต์ไทยเองซึ่งไฟล์ใหญ่มากและสระวรรณยุกต์มักเพี้ยน
+   สอง ระบบพิมพ์ขึ้นหน้าใหม่ให้เองและซ้ำหัวตารางให้ทุกหน้าอยู่แล้ว
+   ผู้ใช้เลือกปลายทางเป็น "บันทึกเป็น PDF" ในกล่องพิมพ์ได้เลย */
+function exportPremiumTablePdf(){
+  const table = document.querySelector('#tableWrap table');
+  if(!table){
+    alert('กรุณาคำนวณตารางเบี้ยก่อนดาวน์โหลดครับ');
+    return;
+  }
+  const inp = readInputs();
+  const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
+  const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
+  const cols = table.querySelectorAll('thead tr:last-child th').length;
+
+  const host = document.getElementById('printArea') || (() => {
+    const d = document.createElement('div');
+    d.id = 'printArea';
+    document.body.appendChild(d);
+    return d;
+  })();
+
+  const head = [...table.querySelectorAll('thead tr:last-child th')].map(th => ({
+    text: th.textContent.trim(), cls: th.className || ''
+  }));
+  const rows = [...table.querySelectorAll('tbody tr')].map(tr =>
+    [...tr.children].map(td => ({text: td.textContent.trim(), cls: td.className || ''})));
+
+  const metaLine = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} · อายุเริ่มทำสัญญา ${inp.entryAge} ปี`
+    + ` · ขั้นอาชีพ ${inp.occupationClass} · งวดชำระ ${paymentInfo.label}`
+    + ` · ทุนประกันสัญญาหลัก ${fmt(inp.mainCapital)} บาท`;
+
+  const groups = dgSplitPrintColumns(host, head, rows);
+  const many = groups.length > 1;
+  const sections = groups.map((g, i) => {
+    const th = g.map(ci => `<th class="${head[ci].cls}">${plannerEscapeHtml(head[ci].text)}</th>`).join('');
+    const tb = rows.map(r => '<tr>' + g.map(ci =>
+      `<td class="${(r[ci] || {}).cls || ''}">${plannerEscapeHtml((r[ci] || {}).text || '')}</td>`).join('') + '</tr>').join('');
+    return `<section class="print-sec${i ? ' print-sec-next' : ''}">
+      <div class="print-head">
+        <div class="print-title">ตารางเบี้ยประกัน ${plannerEscapeHtml(mainLabel)}${many ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}</div>
+        <div class="print-meta">${plannerEscapeHtml(metaLine)}${many ? ' · คอลัมน์เยอะเกินหน้ากระดาษ จึงแบ่งเป็นชุด โดยมีอายุและปีกรมธรรม์กำกับทุกชุด' : ''}</div>
+      </div>
+      <table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>
+    </section>`;
+  }).join('');
+
+  host.innerHTML = `<div class="print-doc">${sections}
+      <div class="print-foot">${plannerEscapeHtml(CONTENT_CREDIT)} ·
+        สร้างเมื่อ ${new Date().toLocaleString('th-TH')} ·
+        ตัวเลขคำนวณจากตารางอัตราเบี้ยของบริษัท ใช้ประกอบการตัดสินใจเบื้องต้น</div>
+    </div>`;
+
+  dgFitPrintTable(host, cols);
+  document.body.classList.add('dg-printing');
+  const cleanup = () => {
+    document.body.classList.remove('dg-printing');
+    host.innerHTML = '';
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  // กันกรณีเบราว์เซอร์ไม่ยิง afterprint จะได้ไม่ค้างสถานะพิมพ์
+  setTimeout(cleanup, 60000);
+  window.print();
+}
+
+/* ย่อขนาดอักษรจนตารางกว้างพอดีพื้นที่พิมพ์จริง
+   ไม่เดาจากจำนวนคอลัมน์ เพราะความยาวข้อความในหัวตารางต่างกันมาก
+   วัดจริงแล้วลดทีละขั้นจนพอดี จึงพอดีทุกชุดแผนโดยไม่ต้องตัดตัวเลขทิ้ง */
+const PRINT_AREA_MM = 281;          // A4 แนวนอน 297 ลบขอบซ้ายขวาข้างละ 8
+const PRINT_FONT_MAX = 10, PRINT_FONT_MIN = 6.5;
+const PRINT_KEY_COLS = 2;           // อายุ กับ ปีกรมธรรม์ ต้องติดไปทุกชุดที่แบ่ง
+
+/* ถ้าคอลัมน์เยอะจนย่อขนาดอักษรแล้วยังไม่พอดีหน้ากระดาษ
+   ให้แบ่งเป็นชุด แล้วขึ้นหน้าใหม่ ดีกว่าย่อจนอ่านไม่ออกหรือปล่อยให้ตัวเลขล้นหาย
+   ทุกชุดพ่วงคอลัมน์อายุกับปีกรมธรรม์ไปด้วย ไม่งั้นหน้าที่สองอ่านไม่รู้เรื่อง */
+function dgSplitPrintColumns(host, head, rows){
+  const targetPx = PRINT_AREA_MM * (96 / 25.4);
+  const probe = document.createElement('div');
+  probe.className = 'print-doc';
+  probe.style.cssText = 'position:fixed;left:-10000px;top:0;visibility:hidden;';
+  probe.style.setProperty('--print-font', PRINT_FONT_MIN + 'pt');
+  document.body.appendChild(probe);
+
+  const sample = rows.length > 40 ? rows.filter((_, i) => i % Math.ceil(rows.length / 40) === 0) : rows;
+  const widthOf = idx => {
+    probe.innerHTML = '<table style="width:max-content"><thead><tr>'
+      + idx.map(i => `<th>${plannerEscapeHtml(head[i].text)}</th>`).join('')
+      + '</tr></thead><tbody>'
+      + sample.map(r => '<tr>' + idx.map(i => `<td>${plannerEscapeHtml((r[i] || {}).text || '')}</td>`).join('') + '</tr>').join('')
+      + '</tbody></table>';
+    return probe.querySelector('table').getBoundingClientRect().width;
+  };
+
+  const keys = [];
+  for(let i = 0; i < Math.min(PRINT_KEY_COLS, head.length); i++) keys.push(i);
+  const rest = head.map((_, i) => i).filter(i => !keys.includes(i));
+
+  const groups = [];
+  let cur = keys.slice();
+  for(const ci of rest){
+    const next = cur.concat(ci);
+    // เหลือคอลัมน์ข้อมูลตัวเดียวก็ยังต้องใส่ ไม่งั้นวนไม่จบ
+    if(cur.length > keys.length && widthOf(next) > targetPx){
+      groups.push(cur);
+      cur = keys.concat(ci);
+    } else {
+      cur = next;
+    }
+  }
+  if(cur.length > keys.length || !groups.length) groups.push(cur);
+  probe.remove();
+  return groups;
+}
+
+function dgFitPrintTable(host, cols){
+  const doc = host.querySelector('.print-doc');
+  const table = doc && doc.querySelector('table');
+  if(!table) return;
+  const targetPx = PRINT_AREA_MM * (96 / 25.4);
+  // ต้องให้มองเห็นชั่วคราวถึงจะวัดความกว้างได้ ซ่อนไว้นอกจอเพื่อไม่ให้ผู้ใช้เห็นวูบ
+  const prev = host.getAttribute('style') || '';
+  host.setAttribute('style', 'display:block;position:fixed;left:-10000px;top:0;width:'
+    + targetPx + 'px;visibility:hidden;');
+  /* ต้องวัดความกว้างตามธรรมชาติของเนื้อหา ไม่ใช่ความกว้างที่ถูกบังคับไว้
+     ตารางที่ตั้ง width 100% จะไม่มีวันกว้างเกินกรอบ แต่ตัวหนังสือจะล้นออกนอกเซลล์แทน
+     ซึ่งวัดจาก scrollWidth ของตารางไม่เห็น จึงต้องสลับเป็น max-content ตอนวัด */
+  const tables = [...doc.querySelectorAll('table')];
+  tables.forEach(t => { t.style.width = 'max-content'; });
+  let pt = PRINT_FONT_MAX, natural = 0;
+  for(; pt >= PRINT_FONT_MIN; pt -= 0.25){
+    doc.style.setProperty('--print-font', pt + 'pt');
+    // ชุดที่กว้างที่สุดต้องพอดี ชุดอื่นจึงพอดีตามไปด้วย
+    natural = Math.max(...tables.map(t => t.getBoundingClientRect().width));
+    if(natural <= targetPx) break;
+  }
+  tables.forEach(t => { t.style.width = ''; });
+  doc.style.setProperty('--print-font', Math.max(PRINT_FONT_MIN, pt) + 'pt');
+  doc.dataset.fitPt = String(Math.max(PRINT_FONT_MIN, pt));
+  doc.dataset.fitWidth = String(Math.round(natural));
+  doc.dataset.fitTarget = String(Math.round(targetPx));
+  doc.dataset.cols = String(cols);
+  host.setAttribute('style', prev);
+}
+
+function dgSaveBlob(blob, fileName){
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `ตารางเบี้ย-${inp.mainPlan.replace('_','-')}-อายุ${inp.entryAge}.xlsx`;
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ---- pre-table plain-language summary of everything selected ----
