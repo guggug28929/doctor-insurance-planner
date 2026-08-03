@@ -27,8 +27,31 @@ test('สถานะการกางกล่องต้องถูกเ�
   // เก็บกวาดต้องคืนค่าให้ครบทุกอย่างที่ไปแตะไว้
   const fn = html.slice(html.indexOf('function dgFinishDetails('));
   const body = fn.slice(0, fn.indexOf('\n}') + 2);
-  for(const k of ["d.style.overflow = ''", "d.style.height = ''", "d.classList.remove('dg-opening')"])
+  for(const k of ["d.style.overflow = ''", "d.style.height = ''", "d.classList.remove('dg-opening')", 'd.open = false'])
     assert.ok(body.includes(k), `dgFinishDetails ไม่ได้คืนค่า ${k}`);
+});
+
+/* บั๊กที่เห็นด้วยตาเป็นอาการแว้บตอนหุบกล่อง
+   วัดจริงแล้วพบว่า ที่ 99% กล่องหุบเหลือ 56px แต่พอถึง 100% เด้งกลับไป 293px หนึ่งเฟรม
+   เพราะอนิเมชันแบบไม่มี fill จะคืนค่าความสูงทันทีที่จบ ขณะที่ open ยังเป็น true
+   แก้ด้วยการตรึงความสูงปลายทางไว้เป็น inline style ตั้งแต่ต้น จบแล้วไม่มีอะไรให้เด้ง */
+test('ตอนหุบต้องไม่กระพริบกางออกหนึ่งเฟรมก่อนหาย', () => {
+  assert.match(html, /d\.style\.height = to \+ 'px';/,
+    'ต้องตรึงความสูงปลายทางไว้ ไม่งั้นกล่องจะเด้งกลับตอนอนิเมชันจบ');
+  // ต้องตั้งก่อนสร้างอนิเมชัน ไม่ใช่หลัง
+  const i = html.indexOf("d.style.height = to + 'px';");
+  const j = html.indexOf('d.dgAnim = d.animate(');
+  assert.ok(i > 0 && i < j, 'ต้องตรึงความสูงก่อนเริ่มอนิเมชัน');
+});
+
+test('ตอนเก็บกวาด ต้องปิดก่อนแล้วค่อยปล่อยความสูง', () => {
+  // ปล่อยความสูงตอนที่ยังเปิดอยู่ กล่องจะกางเต็มหนึ่งเฟรมแล้วค่อยหุบ เห็นเป็นอาการกระตุก
+  const fn = html.slice(html.indexOf('function dgFinishDetails('));
+  const body = fn.slice(0, fn.indexOf('\n}') + 2);
+  const posClose = body.indexOf('d.open = false;');
+  const posHeight = body.indexOf("d.style.height = '';");
+  assert.ok(posClose > 0 && posHeight > 0);
+  assert.ok(posClose < posHeight, 'ต้องตั้ง open = false ก่อนล้างความสูง');
 });
 
 test('กดรัว ๆ ต้องยกเลิกของเดิมก่อน ไม่ให้อนิเมชันซ้อนกัน', () => {
