@@ -1317,6 +1317,13 @@
   .tx-pack-alloc ul{margin:3px 0 0;padding-left:17px;font-size:.82rem;line-height:1.75;}
   .tx-pack-warn{margin-top:9px;font-size:.8rem;line-height:1.65;color:#8f0d40;
     background:#fdf1f5;border-radius:9px;padding:8px 10px;}
+  .tx-exp-fixed{grid-column:1/-1;font-size:.8rem;color:#8b7480;margin-top:-2px;}
+  .tx-exp-live{grid-column:1/-1;font-size:.82rem;line-height:1.7;color:#6b5a62;
+    background:#fdf6f9;border-radius:9px;padding:7px 11px;margin-top:2px;}
+  .tx-exp-live b{color:var(--pink-deep);}
+  .tx-expbreak{margin-top:10px;}
+  .tx-expbreak summary{cursor:pointer;font-size:.86rem;font-weight:700;color:var(--pink-deep);}
+  .tx-expbreak-n{font-size:.74rem;color:#8b7480;font-weight:400;line-height:1.55;}
   .tx-pack-none{border:1.5px dashed #e0d3d9;border-radius:12px;padding:14px 16px;background:#faf7f8;
     font-size:.9rem;line-height:1.8;color:#6b5a62;}
   .tx-ladder summary{font-weight:800;color:var(--pink-deep);cursor:pointer;font-size:1rem;}
@@ -10616,15 +10623,43 @@ const taxState = {
 };
 /* โหมดเร็วโชว์เฉพาะช่องที่คนส่วนใหญ่มีจริง ที่เหลือซ่อนไว้จนกว่าจะกดกาง
    ถ้าโชว์ 8 ประเภทเงินได้กับ 20 ช่องลดหย่อนตั้งแต่แรก คนกรอกไม่จบแน่ */
-const TAX_QUICK_INCOME = ['s40_1', 's40_6', 's40_8'];
+// 40(2) เจอบ่อยพอ ๆ กับเงินเดือน และแชร์เพดาน 100,000 กับ 40(1) จึงต้องอยู่ในโหมดกรอกเร็วด้วย
+const TAX_QUICK_INCOME = ['s40_1', 's40_2', 's40_6', 's40_8'];
 const TAX_QUICK_DED = ['life', 'healthSelf', 'pensionInsurance', 'rmf', 'thaiEsg',
                        'socialSecurity', 'pvd', 'gpf'];
 
 let taxTimer = null;
 function setTaxIncome(id, field, val){
   taxState.income[id] = taxState.income[id] || {};
-  taxState.income[id][field] = field === 'amount' ? (parseFloat(val)||0) : val;
-  taxDebounce();
+  const numeric = field === 'amount' || field === 'actual';
+  taxState.income[id][field] = numeric ? (parseFloat(val)||0) : val;
+  // ยอดเงินได้เปลี่ยน บรรทัดที่บอกว่าหักได้เท่าไรต้องเปลี่ยนตาม
+  taxDebounce(); taxRefreshExpenseLines();
+}
+
+/* เลือกวิธีหักค่าใช้จ่าย ทั้งอัตราเหมาและหักตามจริงใช้ตัวเดียวกัน
+   ต้องวาดฟอร์มใหม่ เพราะเลือกหักตามจริงแล้วต้องมีช่องกรอกยอดโผล่มาด้วย */
+function setTaxExpenseMode(id, val){
+  const row = taxState.income[id] = taxState.income[id] || {};
+  row.useActual = val === '__actual';
+  if(!row.useActual && val !== '__flat') row.option = val;
+  renderTaxPage();
+}
+
+// อัปเดตเฉพาะบรรทัดสรุปการหัก ไม่วาดฟอร์มใหม่ เพราะจะทำให้เคอร์เซอร์หลุดจากช่องที่พิมพ์อยู่
+function taxRefreshExpenseLines(){
+  if(!TAX_RULES) return;
+  const box = document.getElementById('taxIncomeForm');
+  if(!box) return;
+  const rows = box.querySelectorAll('.tx-income-row');
+  const show = TAX_RULES.incomeTypes.filter(t =>
+    taxState.mode === 'full' || TAX_QUICK_INCOME.includes(t.id));
+  show.forEach((t, i) => {
+    const el = rows[i] && rows[i].querySelector('.tx-exp-live');
+    const html = taxExpensePreview(t);
+    if(el) el.outerHTML = html || '<div class="tx-exp-live" hidden></div>';
+    else if(html && rows[i]) rows[i].insertAdjacentHTML('beforeend', html);
+  });
 }
 function setTaxDed(key, val, isBool){
   taxState.deductions[key] = isBool ? !!val : (parseFloat(val)||0);
@@ -10648,15 +10683,58 @@ function renderTaxIncomeForm(){
     taxState.mode === 'full' || TAX_QUICK_INCOME.includes(t.id));
   return show.map(t => {
     const row = taxState.income[t.id] || {};
-    const opts = t.expense.options
-      ? `<select onchange="setTaxIncome('${t.id}','option',this.value)">
-          ${t.expense.options.map(o => `<option value="${o.id}"${row.option===o.id?' selected':''}>${o.label} · หัก ${Math.round(o.percent*100)}%</option>`).join('')}
-         </select>` : '';
     return `<div class="tx-income-row">
       ${taxMoneyField(t.label, row.amount, `setTaxIncome('${t.id}','amount',this.value)`, t.hint)}
-      ${opts ? `<div class="tx-field tx-field-wide">${opts}</div>` : ''}
+      ${taxExpenseControl(t, row)}
+      ${taxExpensePreview(t)}
     </div>`;
   }).join('');
+}
+
+/* วิธีหักค่าใช้จ่ายของแต่ละประเภทเงินได้ ต้องเลือกได้เอง
+   เดิมมีแต่ dropdown อัตราเหมา ทำให้คนที่หักตามจริงใช้ไม่ได้
+   และประเภทที่หักอัตราเดียว ก็ไม่มีอะไรบอกว่าหักไปกี่เปอร์เซ็นต์ */
+function taxExpenseControl(t, row){
+  const e = t.expense;
+  if(e.kind === 'none')
+    return `<div class="tx-exp-fixed">${t.hint || 'หักค่าใช้จ่ายไม่ได้ตามกฎหมาย'}</div>`;
+
+  const opts = [];
+  if(e.kind === 'choice')
+    for(const o of e.options) opts.push([o.id, `${o.label} · หักเหมา ${Math.round(o.percent*100)}%`]);
+  else if(e.percent != null)
+    opts.push(['__flat', `หักเหมา ${Math.round(e.percent*100)}%`
+      + (e.cap ? ` แต่ไม่เกิน ${e.cap.toLocaleString()} บาท` : '')]);
+  if(e.actualAllowed) opts.push(['__actual', 'หักตามจริง (ต้องมีหลักฐานค่าใช้จ่าย)']);
+
+  // มีทางเลือกเดียว ไม่ต้องมี dropdown ให้กด แต่ยังต้องบอกว่าหักยังไง
+  if(opts.length === 1)
+    return `<div class="tx-exp-fixed">วิธีหักค่าใช้จ่าย: ${opts[0][1]}</div>`;
+
+  const cur = row.useActual ? '__actual'
+    : (e.kind === 'choice' ? (row.option || e.options[0].id) : '__flat');
+  const sel = `<div class="tx-field tx-field-wide"><label>วิธีหักค่าใช้จ่าย</label>
+    <select onchange="setTaxExpenseMode('${t.id}', this.value)">
+      ${opts.map(([v, l]) => `<option value="${v}"${cur === v ? ' selected' : ''}>${l}</option>`).join('')}
+    </select></div>`;
+  const actual = row.useActual
+    ? taxMoneyField('ค่าใช้จ่ายจริงทั้งปี', row.actual,
+        `setTaxIncome('${t.id}','actual',this.value)`,
+        'กรอกยอดที่มีหลักฐานจริง ระบบจะไม่ให้หักเกินเงินได้ของประเภทนี้')
+    : '';
+  return sel + actual;
+}
+
+/* บรรทัดยืนยันว่าหักไปเท่าไรจริง อยู่ติดกับช่องกรอกเลย
+   เพราะเรื่องเพดานรวม 40(1) กับ 40(2) ที่ 100,000 มองจากยอดรวมอย่างเดียวไม่เห็น */
+function taxExpensePreview(t){
+  if(!TAX_RULES) return '';
+  const row = taxState.income[t.id] || {};
+  const amount = Math.max(0, Number(row.amount) || 0);
+  if(!amount) return '';
+  const r = taxExpenseFor(t.id, taxState.income, TAX_RULES);
+  return `<div class="tx-exp-live">หักค่าใช้จ่ายได้ <b>${fmt(Math.round(r.expense))}</b> บาท
+    ${r.note ? `· ${r.note}` : ''} · เหลือเป็นเงินได้ ${fmt(Math.round(amount - r.expense))} บาท</div>`;
 }
 
 function renderTaxDeductionForm(){
@@ -10722,6 +10800,19 @@ function renderTaxResult(){
   const headroom = taxHeadroom(taxState, r, TAX_RULES);
   const opts = taxPlanOptions(r.netIncome, TAX_RULES, headroom);
   const comfort = TAX_RULES.planner.comfortRateMax;
+  /* แจงการหักค่าใช้จ่ายรายประเภท เพราะยอดรวมก้อนเดียวตรวจไม่ได้ว่าถูกหรือผิด
+     โดยเฉพาะเพดานรวม 40(1) กับ 40(2) ที่ 100,000 ซึ่งเครื่องคำนวณหลายเจ้าทำผิด */
+  const expenseBreak = r.income.lines.length ? `<details class="tx-expbreak">
+    <summary>ดูว่าหักค่าใช้จ่ายแต่ละประเภทไปเท่าไร</summary>
+    <table class="tx-table">
+      ${r.income.lines.map(l => `<tr><td>${l.label}<div class="tx-expbreak-n">${l.note || ''}</div></td>
+        <td class="tx-num">${fmt(Math.round(l.amount))}</td>
+        <td class="tx-num">-${fmt(Math.round(l.expense))}</td></tr>`).join('')}
+      <tr><td><b>รวม</b></td><td class="tx-num"><b>${fmt(Math.round(r.income.gross))}</b></td>
+        <td class="tx-num"><b>-${fmt(Math.round(r.income.expense))}</b></td></tr>
+    </table>
+  </details>` : '';
+
   const rows = [
     ['เงินได้พึงประเมินรวม', r.income.gross],
     ['หักค่าใช้จ่ายตามประเภทเงินได้', -r.income.expense],
@@ -10803,6 +10894,7 @@ function renderTaxResult(){
     <h2>ผลการคำนวณ</h2>
     <table class="tx-table">${rows.map(x => `<tr><td>${x[0]}</td>
       <td class="tx-num">${x[1] < 0 ? '-' : ''}${fmt(Math.abs(Math.round(x[1])))}</td></tr>`).join('')}</table>
+    ${expenseBreak}
     <div class="tx-headline">
       <div><div class="tx-headline-k">ภาษีที่ต้องจ่าย</div><div class="tx-headline-v">${fmt(Math.round(r.tax))} บาท</div></div>
       <div><div class="tx-headline-k">ฐานภาษีขั้นสูงสุดที่โดน</div><div class="tx-headline-v">${Math.round(r.topRate*100)}%</div></div>
@@ -10876,8 +10968,9 @@ function renderTaxPage(){
     </div>
     <div class="content-card">
       <h2>รายได้ทั้งปี</h2>
-      <p class="meta">กรอกเป็นยอดทั้งปีก่อนหักอะไร ระบบจะหักค่าใช้จ่ายให้ตามประเภทเงินได้เอง</p>
-      <div class="tx-grid">${renderTaxIncomeForm()}</div>
+      <p class="meta">กรอกเป็นยอดทั้งปีก่อนหักอะไร แต่ละประเภทเลือกวิธีหักค่าใช้จ่ายได้เอง
+        และจะมีบรรทัดบอกทันทีว่าหักได้เท่าไร</p>
+      <div id="taxIncomeForm" class="tx-grid">${renderTaxIncomeForm()}</div>
     </div>
     <div class="content-card">
       <h2>ค่าลดหย่อนที่มีอยู่แล้ว</h2>
