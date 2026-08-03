@@ -114,8 +114,45 @@ test("mainPremiumAtEntry คืนเบี้ยถูกต้องสำห�
 
 test("ตารางในเครื่องคำนวณหยุดตามอายุที่สัญญาคุ้มครองจริง", () => {
   // 90/90 คุ้มครองถึงอายุ 90 ปี ไม่ใช่ 98 เหมือนแบบตลอดชีพอื่น
-  assert.match(html, /spEnd && spEnd\.coverToAge \? Math\.min\(98, spEnd\.coverToAge\)/);
+  // ตรรกะย้ายไปอยู่ใน mainCoverEndAge แล้ว เพื่อไม่ให้มีบรรทัดเดียวที่ลงท้ายด้วย catch-all
+  assert.match(html, /function mainCoverEndAge\(inp, entryAge\)/);
+  assert.match(html, /if\(sp && sp\.coverToAge\) return Math\.min\(98, sp\.coverToAge\);/);
+  assert.match(html, /const endAge = mainCoverEndAge\(inp, entryAge\);/);
   assert.equal(call("specialMainPlan", "sabaijai_90_90").coverToAge, 90);
+});
+
+/* บั๊กที่เจอจริง: บรรทัดคำนวณปีชำระเบี้ยลงท้ายด้วย savingsMainData(...) แบบ catch-all
+   แบบบำนาญกับแบบเฉพาะทางทุกตัวจึงไปหยิบ pay_years ของสะสมทรัพย์ 15/6 ซึ่งเท่ากับ 6
+   ตารางเลยโชว์ว่าจ่ายเบี้ยแค่ 6 ปีแล้วเป็นศูนย์ ลูกค้าเห็นเบี้ยรวมต่ำกว่าจริงหลายเท่า */
+test("ปีชำระเบี้ยสัญญาหลักต้องไม่มี catch-all ที่กลืนแผนแปลกปลอม", () => {
+  assert.match(html, /const payTermMain = mainPayYears\(inp, entryAge\);/);
+  assert.match(html, /function mainPayYears\(inp, entryAge\)/);
+  const fn = html.slice(html.indexOf("function mainPayYears(inp, entryAge)"));
+  const body = fn.slice(0, fn.indexOf("\n}") + 2);
+  assert.ok(!/savingsMainData\(plan\)\.pay_years;\s*\n\s*\}/.test(body),
+    "ห้ามลงท้ายฟังก์ชันด้วย savingsMainData แบบ catch-all");
+  assert.match(body, /return null;\s*\n\}/, "แผนที่ไม่รู้จักต้องคืน null ไม่ใช่เดา");
+  assert.match(body, /if\(isPensionMainPlan\(plan\)\)\{/, "ต้องรองรับแบบบำนาญ");
+  // ไม่รู้จำนวนปีชำระ ต้องไม่แสดงตารางเลย ดีกว่าแสดงตัวเลขผิด
+  assert.match(html, /if\(payTermMain == null\)\{/);
+});
+
+/* กันแบบใหม่หลุด: ทุกตัวเลือกสัญญาหลักในหน้าคำนวณ ต้องรู้จำนวนปีชำระและอายุจบตาราง
+   ถ้าเพิ่มแบบใหม่แล้วลืมลงทะเบียน เทสต์นี้จะฟ้องทันที ไม่ต้องรอลูกค้าเจอ */
+test("ทุกแบบสัญญาหลักในหน้าคำนวณ ต้องมีจำนวนปีชำระและอายุจบตาราง", () => {
+  const plans = [...new Set([...html.matchAll(/name="mainPlan" value="([a-z0-9_]+)"/g)].map(m => m[1]))];
+  assert.ok(plans.length >= 20, `เจอแบบสัญญาหลักแค่ ${plans.length} แบบ น่าจะอ่านไม่ครบ`);
+  const plain = html.slice(html.indexOf("const PLAIN_MAIN_PLANS = {"));
+  const plainBody = plain.slice(0, plain.indexOf("\n};") + 3);
+  const special = html.slice(html.indexOf("const SPECIAL_MAIN_PLANS = {"));
+  const specialBody = special.slice(0, special.indexOf("\n};") + 3);
+  const known = new Set([
+    ...[...plainBody.matchAll(/'([a-z0-9_]+)':/g)].map(m => m[1]),
+    ...[...specialBody.matchAll(/\n  ([a-z0-9_]+): \{/g)].map(m => m[1]),
+    "15_3", "15_6", "smart_link_15_3", "smart_link_15_6", "pension",
+  ]);
+  const missing = plans.filter(p => !known.has(p));
+  assert.deepEqual(missing, [], "แบบเหล่านี้ยังไม่ได้ลงทะเบียนปีชำระ: " + missing.join(", "));
 });
 
 test("ทะเบียนแบบประกันมีแบบใหม่ครบ และแท็กก้อนถูกต้อง", () => {
