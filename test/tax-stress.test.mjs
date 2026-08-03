@@ -60,7 +60,8 @@ for(const sal of SALARIES)
 for(const d of DEDS){
   n++;
   const ctx = {job, sal, d:Object.keys(d).join(',')||'ไม่มี'}; CTX = ctx;
-  const input = {income: mk(sal), deductions: {...d}};
+  // อายุสลับไปมาด้วย เพราะเป็นตัวจัดลำดับ RMF กับ Thai ESG
+  const input = {income: mk(sal), deductions: {...d}, age: [0,25,49,50,70][n % 5]};
   let r; try { r = C('taxCompute', input, RULES); }
   catch(e){ bug('ระเบิด: '+e.message, ctx); continue; }
 
@@ -91,6 +92,13 @@ for(const d of DEDS){
   chk(h.buyable <= h.withConditions, 'ยอดซื้อเพิ่มได้ทันที ต้องไม่เกินยอดรวมของมีเงื่อนไข');
   for(const x of h.buy.concat(h.cond)) chk(Number.isFinite(x.room) && x.room >= 0, `สิทธิเหลือ ${x.label} เพี้ยน`);
   chk(Math.abs(h.buy.reduce((s,x)=>s+x.room,0) - h.buyable) < 0.5, 'ผลรวมสิทธิเหลือไม่ตรงกับยอดรวม');
+  // สองบรรทัดของกลุ่มเกษียณรวมกันห้ามทะลุเพดานกลุ่ม
+  const grp = h.buy.filter(x => x.id === 'pensionInsurance' || x.id === 'rmf')
+                   .reduce((s,x)=>s+x.room, 0);
+  chk(grp <= RULES.deductions.retirementGroup.cap + 0.5, 'กลุ่มเกษียณสองบรรทัดรวมกันทะลุเพดาน');
+  const ids = h.buy.map(x => x.id);
+  chk(ids.indexOf('pensionInsurance') < ids.indexOf('rmf'), 'ประกันบำนาญต้องมาก่อน RMF เสมอ');
+  chk(ids[0] === 'insurance', 'ประกันต้องเป็นช่องแรกเสมอ');
   for(const o of C('taxPlanOptions', r.netIncome, RULES, h)){
     chk(o.reachable === (o.extraDeduction <= h.buyable + 0.5), 'ธง reachable ไม่ตรงกับสิทธิที่เหลือ');
     chk(o.shortfall >= 0 && (o.reachable ? o.shortfall === 0 : o.shortfall > 0), 'ยอดที่ยังขาดเพี้ยน');
@@ -119,7 +127,10 @@ for(const d of DEDS){
       chk(p.perBaht <= 0.351, 'ได้คืนต่อบาทเกินอัตราสูงสุด');
       const alloc = p.allocation.reduce((s,a)=>s+a.amount, 0);
       chk(Math.abs(alloc - p.amount) < 0.5, 'ผลรวมการแบ่งเงินไม่เท่ากับยอดแพ็กเกจ');
-      for(const a of p.allocation) chk(a.amount > 0, 'ช่องที่แบ่งเงินได้ 0 ไม่ควรแสดง');
+      for(const a of p.allocation){
+        chk(a.amount > 0, 'ช่องที่แบ่งเงินได้ 0 ไม่ควรแสดง');
+        chk(!!a.lock && !!a.invest, 'ทุกช่องต้องบอกเงื่อนไขปลดล็อกและขอบเขตการลงทุน');
+      }
     }
     chk(packs.filter(x => x.id === 'balanced').length <= 1, 'ป้ายสมดุลต้องมีได้อันเดียว');
   }

@@ -35,10 +35,12 @@ const CASE = {
 test('สิทธิที่เหลือต้องคิดจากเพดานจริง ไม่ใช่บวกทุกช่องดื้อ ๆ', () => {
   const r = C('taxCompute', CASE, RULES);
   const h = C('taxHeadroom', CASE, r, RULES);
+  const room = id => h.buy.find(x => x.id === id).room;
   // ประกันชีวิตใช้เต็ม 100,000 แล้ว ต้องเหลือ 0 ไม่ใช่ยังนับให้อีก
-  assert.equal(h.buy.find(x => /ประกันชีวิต/.test(x.label)).room, 0);
-  assert.equal(h.buy.find(x => /RMF/.test(x.label)).room, 500000);
-  assert.equal(h.buy.find(x => /Thai ESG/.test(x.label)).room, 300000);
+  assert.equal(room('insurance'), 0);
+  // กลุ่มเกษียณ 500,000 ถูกแบ่งเป็นสองบรรทัด ประกันบำนาญกับ RMF รวมกันต้องพอดีเพดาน
+  assert.equal(room('pensionInsurance') + room('rmf'), 500000);
+  assert.equal(room('thaiEsg'), 300000);
   assert.equal(h.buyable, 800000);
   // ของที่ต้องเข้าเงื่อนไขก่อน ห้ามนับรวมในยอดที่บอกว่าซื้อเพิ่มได้ทันที
   assert.ok(h.withConditions > h.buyable);
@@ -50,7 +52,58 @@ test('RMF กับประกันบำนาญใช้เพดานก�
   const big = { income: { s40_1:{amount:20000000} }, deductions: {} };
   const r = C('taxCompute', big, RULES);
   const h = C('taxHeadroom', big, r, RULES);
-  assert.equal(h.buy.find(x => /RMF/.test(x.label)).room, RULES.deductions.retirementGroup.cap);
+  const room = id => h.buy.find(x => x.id === id).room;
+  assert.equal(room('pensionInsurance') + room('rmf'), RULES.deductions.retirementGroup.cap);
+  // ประกันบำนาญมีเพดานของตัวเองอีกชั้น ห้ามกินโควตากลุ่มทั้งก้อน
+  assert.equal(room('pensionInsurance'), RULES.deductions.retirementGroup.items.pensionInsurance.cap);
+});
+
+/* ลำดับ RMF กับ Thai ESG ตัดสินด้วยระยะล็อกจริง ไม่ใช่ความชอบ
+   Thai ESG ล็อก 5 ปีเสมอ ส่วน RMF ล็อก max(5, 55 - อายุ) เส้นแบ่งจึงอยู่ที่อายุ 50 พอดี */
+test('อายุต่ำกว่า 50 ให้ Thai ESG มาก่อน ตั้งแต่ 50 ขึ้นไปให้ RMF มาก่อน', () => {
+  const order = age => {
+    const inp = { age, income:{ s40_1:{amount:5000000} }, deductions:{} };
+    const r = C('taxCompute', inp, RULES);
+    return C('taxHeadroom', inp, r, RULES).buy.map(x => x.id).join(',');
+  };
+  const cut = RULES.planner.rmfBeforeEsgFromAge;
+  assert.equal(cut, 50);
+  for(const a of [25, 35, 49])
+    assert.equal(order(a), 'insurance,pensionInsurance,thaiEsg,rmf', `อายุ ${a} ควรให้ ESG มาก่อน`);
+  for(const a of [50, 58, 70])
+    assert.equal(order(a), 'insurance,pensionInsurance,rmf,thaiEsg', `อายุ ${a} ควรให้ RMF มาก่อน`);
+  // ไม่กรอกอายุ ต้องเลือกทางที่ผูกมัดลูกค้าน้อยกว่า
+  assert.equal(order(0), 'insurance,pensionInsurance,thaiEsg,rmf');
+  // ประกันบำนาญมาก่อน RMF เสมอ เป็นชั้นเงินที่การันตีไว้
+  for(const a of [0, 25, 50, 70])
+    assert.ok(order(a).indexOf('pensionInsurance') < order(a).indexOf('rmf'));
+});
+
+test('ทุกช่องต้องบอกเงื่อนไขปลดล็อกและขอบเขตการลงทุน', () => {
+  const inp = { age: 35, income:{ s40_1:{amount:5000000} }, deductions:{} };
+  const r = C('taxCompute', inp, RULES);
+  const h = C('taxHeadroom', inp, r, RULES);
+  for(const x of h.buy){
+    assert.ok(x.lock && x.lock.length > 5, `${x.id} ไม่มีเงื่อนไขปลดล็อก`);
+    assert.ok(x.invest && x.invest.length > 5, `${x.id} ไม่มีคำอธิบายขอบเขตการลงทุน`);
+  }
+  // RMF ต้องนับปีที่เหลือจนถึง 55 ให้เห็นจริง
+  assert.match(h.buy.find(x => x.id === 'rmf').lock, /อีกราว 20 ปี/);
+  // ข้อจำกัดที่ต่างกันจริง ต้องพูดถึงทั้งสองฝั่ง ไม่ใช่เชียร์ข้างเดียว
+  assert.match(h.buy.find(x => x.id === 'rmf').invest, /ต่างประเทศ/);
+  assert.match(h.buy.find(x => x.id === 'thaiEsg').invest, /ไทยเท่านั้น/);
+  assert.match(RULES.deductions.retirementGroup.items.rmf.note, /55/,
+    'โน้ต RMF ต้องระบุเงื่อนไขอายุ 55 ซึ่งเป็นข้อจำกัดที่หนักที่สุด');
+});
+
+test('การแบ่งเงินต้องพาไปหน้าประกันบำนาญได้ และหน้านั้นต้องมีอยู่จริง', () => {
+  const inp = { age: 40, income:{ s40_1:{amount:5000000} }, deductions:{} };
+  const r = C('taxCompute', inp, RULES);
+  const h = C('taxHeadroom', inp, r, RULES);
+  const pen = h.buy.find(x => x.id === 'pensionInsurance');
+  assert.equal(pen.planLink, 'pension-compare');
+  assert.match(html, /'pension-compare': '\/plans\/compare-pension'/);
+  assert.match(html, /onclick="showPage\('\$\{a\.planLink\}'\)"/);
 });
 
 test('ขั้นที่สิทธิไปไม่ถึง ต้องติดธงว่าทำไม่ได้ พร้อมบอกว่าขาดอีกเท่าไร', () => {
