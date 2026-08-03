@@ -1281,6 +1281,46 @@
     font-weight:700;vertical-align:middle;}
   .tx-opt-need,.tx-opt-save{font-size:.86rem;line-height:1.7;}
   .tx-opt-eff{font-size:.78rem;color:#8b7480;margin-top:4px;}
+  /* ขั้นที่สิทธิลดหย่อนไปไม่ถึง ต้องดูจาง ๆ ให้รู้ว่าเป็นข้อมูล ไม่ใช่ข้อเสนอ */
+  .tx-opt-blocked{background:#faf7f8;border-style:dashed;border-color:#e0d3d9;}
+  .tx-opt-blocked .tx-opt-h{color:#8b7480;}
+  .tx-tag-off{background:#b9a6ae;}
+  .tx-opt-block{font-size:.82rem;line-height:1.7;color:#8b7480;}
+  .tx-room{margin-top:14px;padding-top:13px;border-top:1px dashed #ecdae2;}
+  .tx-room-k{font-size:.82rem;color:#8b7480;}
+  .tx-room-v{font-size:1.42rem;font-weight:800;color:var(--pink-deep);line-height:1.35;}
+  .tx-room-cond{margin:4px 0 0;padding-left:18px;font-size:.82rem;color:#8b7480;line-height:1.8;}
+  .tx-full{margin-top:12px;padding:13px 15px;border-radius:12px;background:#fdf3f7;
+    border:1.5px solid var(--pink-deep);}
+  .tx-full-h{font-weight:800;color:var(--pink-deep);margin-bottom:4px;}
+  .tx-full-b{font-size:.88rem;line-height:1.75;}
+  .tx-full-n{font-size:.78rem;color:#8b7480;margin-top:4px;}
+  /* แพ็กเกจตามงบ เป็นคำแนะนำหลัก จึงต้องเด่นกว่าบันไดฐานภาษี */
+  .tx-budget{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:12px 0 4px;}
+  .tx-budget label{font-weight:700;font-size:.9rem;}
+  .tx-budget input{width:170px;padding:9px 12px;border:1.5px solid #e8d5de;border-radius:10px;
+    font-family:inherit;font-size:.95rem;}
+  .tx-budget input:focus{outline:none;border-color:var(--pink-deep);}
+  .tx-budget-n{font-size:.8rem;color:#8b7480;}
+  .tx-packs{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:14px;}
+  .tx-pack{border:1.5px solid #f0dde5;border-radius:14px;padding:15px 16px;background:#fff;}
+  .tx-pack-balanced{border-color:var(--pink-deep);box-shadow:0 2px 16px rgba(143,13,64,.09);}
+  .tx-pack-h{font-weight:800;color:var(--pink-deep);font-size:1.02rem;margin-bottom:2px;}
+  .tx-pack-amt{font-size:1.5rem;font-weight:800;line-height:1.3;}
+  .tx-pack-amt span{font-size:.8rem;font-weight:600;color:#8b7480;}
+  .tx-pack-mo{font-size:.8rem;color:#8b7480;margin-bottom:9px;}
+  .tx-pack-t{width:100%;border-collapse:collapse;font-size:.85rem;}
+  .tx-pack-t td{padding:4px 0;border-bottom:1px solid #f7edf1;}
+  .tx-pack-why{font-size:.8rem;color:#8b7480;margin-top:9px;line-height:1.65;}
+  .tx-pack-alloc{margin-top:9px;padding-top:8px;border-top:1px dashed #ecdae2;}
+  .tx-pack-alloc-h{font-size:.78rem;font-weight:700;color:#8b7480;}
+  .tx-pack-alloc ul{margin:3px 0 0;padding-left:17px;font-size:.82rem;line-height:1.75;}
+  .tx-pack-warn{margin-top:9px;font-size:.8rem;line-height:1.65;color:#8f0d40;
+    background:#fdf1f5;border-radius:9px;padding:8px 10px;}
+  .tx-pack-none{border:1.5px dashed #e0d3d9;border-radius:12px;padding:14px 16px;background:#faf7f8;
+    font-size:.9rem;line-height:1.8;color:#6b5a62;}
+  .tx-ladder summary{font-weight:800;color:var(--pink-deep);cursor:pointer;font-size:1rem;}
+  .tx-ladder summary::marker{color:var(--pink-deep);}
   .tx-cta{margin-top:16px;padding-top:14px;border-top:1px solid #f4e6ec;}
   .tx-cta .btn{width:auto;padding:10px 20px;margin-top:10px;margin-right:8px;}
   .tx-note-card{border-left:4px solid var(--pink-deep);}
@@ -10431,9 +10471,10 @@ function taxCompute(input, RULES){
 
 /** ต้องลดหย่อนเพิ่มอีกเท่าไรจึงจะทำให้เงินได้สุทธิลงมาอยู่ที่ขั้นเป้าหมาย
  *  คืนรายการทางเลือกเรียงจากง่ายไปยาก */
-function taxPlanOptions(net, RULES){
+function taxPlanOptions(net, RULES, headroom){
   const opts = [];
   const cur = taxOf(net, RULES);
+  const limit = headroom && headroom.buyable != null ? headroom.buyable : null;
   for(let i = 0; i < RULES.brackets.length; i++){
     const b = RULES.brackets[i];
     if(b.rate >= cur.topRate) continue;          // ต้องเป็นขั้นที่ต่ำกว่าปัจจุบันเท่านั้น
@@ -10446,14 +10487,124 @@ function taxPlanOptions(net, RULES){
       taxNow: cur.tax, taxAfter: after.tax, saved: cur.tax - after.tax,
       // คุ้มแค่ไหน คือประหยัดภาษีได้กี่บาทต่อเงินที่ต้องเอาไปลดหย่อนหนึ่งบาท
       savedPerBaht: need > 0 ? (cur.tax - after.tax) / need : 0,
+      // สิทธิลดหย่อนมีเพดาน บางขั้นจึงลงไม่ถึงต่อให้มีเงิน ต้องบอกตรง ๆ ไม่ใช่เสนอลอย ๆ
+      reachable: limit == null ? true : need <= limit + 0.5,
+      shortfall: limit == null ? 0 : Math.max(0, need - limit),
     });
   }
   return opts.sort((a, b) => a.extraDeduction - b.extraDeduction);
 }
 
+/** สิทธิลดหย่อนที่ยังใส่เพิ่มได้จริง หลังหักของที่กรอกไปแล้วและเพดานทุกชั้น
+ *  ต้องมี ไม่งั้นหน้าเว็บจะเสนอ "หาเพิ่มอีก 1.5 ล้าน" ทั้งที่กฎหมายให้ไม่ถึง
+ *  buyable = ของที่เดินไปซื้อเพิ่มได้เลย  withConditions = รวมของที่ต้องเข้าเงื่อนไขก่อน */
+function taxHeadroom(input, result, RULES){
+  const D = RULES.deductions;
+  const income = result.income.gross;
+  const dv = k => Math.max(0, Number((input.deductions || {})[k]) || 0);
+  const used = {};
+  for(const g of result.deductions.groups) used[g.id] = g.used;
+
+  const ri = D.retirementGroup.items;
+  const rmfRoom = Math.max(0, income * ri.rmf.percentOfIncome - dv('rmf'));
+  const penRoom = Math.max(0, Math.min(income * ri.pensionInsurance.percentOfIncome,
+                                       ri.pensionInsurance.cap) - dv('pensionInsurance'));
+  const esgCap = Math.min(D.thaiEsg.cap, income * D.thaiEsg.percentOfIncome);
+
+  const buy = [
+    {label: 'เบี้ยประกันชีวิตหรือประกันสุขภาพของตนเอง',
+     room: Math.max(0, D.insuranceGroup.cap - (used.insurance || 0))},
+    {label: 'RMF หรือประกันบำนาญ',
+     // สองตัวนี้ใช้เพดานกลุ่มเกษียณร่วมกัน จะบวกตรง ๆ ไม่ได้ ต้องตัดด้วยเพดานกลุ่มอีกชั้น
+     room: Math.max(0, Math.min(D.retirementGroup.cap - (used.retirement || 0), rmfRoom + penRoom))},
+    {label: 'กองทุน Thai ESG', room: Math.max(0, esgCap - (used.thaiEsg || 0))},
+  ];
+  const cond = [
+    {label: 'เบี้ยประกันสุขภาพบิดามารดา', room: Math.max(0, D.parentHealth.cap - dv('parentHealth'))},
+    {label: 'ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย',
+     room: Math.max(0, D.others.mortgageInterest.cap - dv('mortgageInterest'))},
+  ];
+  const sum = a => a.reduce((s, x) => s + x.room, 0);
+  const buyable = sum(buy);
+  return {buy, cond, buyable, withConditions: buyable + sum(cond)};
+}
+
+/** ใส่ลดหย่อนลึกกว่านี้ บาทสุดท้ายจะได้คืนต่ำกว่าเกณฑ์ที่ตั้งไว้
+ *  เงินพวกนี้ต้องล็อก 5 ถึง 10 ปี ได้คืน 5 หรือ 10 สตางค์ต่อบาทถือว่าไม่คุ้มการเสียสภาพคล่อง */
+function taxEfficientCeiling(net, RULES){
+  const floor = RULES.planner.efficiencyFloorRate;
+  let stop = 0;
+  for(const b of RULES.brackets) if(b.rate < floor && b.upTo != null) stop = b.upTo;
+  return Math.max(0, net - stop);
+}
+
+/** แบ่งเงินก้อนหนึ่งลงช่องลดหย่อนตามลำดับที่สมเหตุสมผล
+ *  ประกันมาก่อน เพราะจ่ายแล้วได้ความคุ้มครองติดมาด้วย ไม่ใช่แค่สิทธิลดหย่อน */
+function taxAllocate(amount, headroom){
+  const out = [];
+  let left = amount;
+  for(const x of headroom.buy){
+    if(left <= 0 || x.room <= 0) continue;
+    const take = Math.min(left, x.room);
+    out.push({label: x.label, amount: take});
+    left -= take;
+  }
+  return out;
+}
+
+/** ไม่มีแพ็กเกจให้แนะนำ ต้องบอกเหตุผลที่ตรงกับสถานการณ์ ไม่ใช่ข้อความกลาง ๆ
+ *  โดยเฉพาะเคสฐานภาษีต่ำ ต้องพูดตรง ๆ ว่าซื้อเพื่อลดภาษีไม่คุ้ม */
+function taxNoPackReason(r, headroom, RULES){
+  if(r.tax <= 0)
+    return 'ปีนี้คำนวณแล้วไม่ต้องเสียภาษีอยู่แล้ว จึงไม่จำเป็นต้องซื้ออะไรเพิ่มเพื่อลดหย่อน';
+  if(headroom.buyable <= 0)
+    return 'ใช้สิทธิลดหย่อนเต็มทุกช่องแล้ว ปีนี้ทำเพิ่มไม่ได้';
+  const pct = Math.round(r.topRate * 100);
+  return `ฐานภาษีขั้นสูงสุดของคุณอยู่ที่ ${pct}% การเอาเงินไปล็อกในกองทุนหรือประกันหลายปี
+    เพื่อได้คืนราว ${pct} สตางค์ต่อบาท ยังไม่คุ้มพอจะแนะนำ
+    ถ้าจะซื้อประกันตอนนี้ ควรซื้อเพราะต้องการความคุ้มครอง ไม่ใช่เพราะเรื่องภาษี`;
+}
+
+/** แพ็กเกจลดหย่อนสามระดับตามงบที่จ่ายไหว
+ *  ไล่ตามขั้นภาษีอย่างเดียวไม่พอ เพราะเงินที่เอาไปลดหย่อนคือเงินที่ถูกล็อกหลายปี
+ *  ทุกระดับจึงถูกจำกัดด้วยสามอย่าง คือสิทธิที่เหลือ จุดที่ยังคุ้ม และงบเงินสด */
+function taxPackages(r, headroom, RULES, budget){
+  const P = RULES.planner;
+  const gross = r.income.gross;
+  const byBudget = (budget != null && budget > 0) ? budget : gross * P.defaultBudgetPctOfIncome;
+  const cap = Math.max(0, Math.min(headroom.buyable, taxEfficientCeiling(r.netIncome, RULES), byBudget));
+  if(cap < 1000) return [];
+  const step = v => Math.max(1000, Math.round(v / 1000) * 1000);   // ปัดหลักพัน ให้เป็นตัวเลขที่จ่ายจริงได้
+  const tiers = [
+    ['light', 'เบา', P.tierPct.light, 'เก็บสภาพคล่องไว้ก่อน ลดภาษีเท่าที่ไม่กระทบเงินใช้จ่ายรายเดือน'],
+    ['balanced', 'สมดุล', P.tierPct.balanced, 'จุดที่คนส่วนใหญ่อยู่ได้จริง ลดภาษีได้พอควรและยังมีเงินหมุน'],
+    ['max', 'เต็มที่', P.tierPct.max, 'ใช้สิทธิให้คุ้มที่สุด เท่าที่บาทสุดท้ายยังได้คืนไม่ต่ำกว่าเกณฑ์'],
+  ];
+  const out = [], seen = new Set();
+  for(const [id, label, pct, why] of tiers){
+    const amount = id === 'max' ? Math.round(cap) : Math.min(cap, step(cap * pct));
+    if(amount <= 0 || seen.has(amount)) continue;
+    seen.add(amount);
+    const after = taxOf(Math.max(0, r.netIncome - amount), RULES);
+    const saved = r.tax - after.tax;
+    out.push({
+      id, label, why, amount, saved,
+      netCash: amount - saved,                       // เงินที่หายจากกระเป๋าจริงหลังหักภาษีที่ประหยัดได้
+      perMonth: amount / 12,
+      perBaht: amount > 0 ? saved / amount : 0,
+      topRateAfter: after.topRate,
+      pctOfIncome: gross > 0 ? amount / gross : 0,
+      heavy: gross > 0 && amount / gross > P.cashflowWarnPctOfIncome,
+      allocation: taxAllocate(amount, headroom),
+    });
+  }
+  return out;
+}
+
 /* ---------- หน้าวางแผนภาษี ---------- */
 const taxState = {
   mode: 'quick',
+  budget: 0,
   income: { s40_1:{amount:0}, s40_2:{amount:0}, s40_3:{amount:0}, s40_4:{amount:0},
             s40_5:{amount:0, option:'building'}, s40_6:{amount:0, option:'medical'},
             s40_7:{amount:0}, s40_8:{amount:0, option:'rate60'} },
@@ -10480,6 +10631,8 @@ function setTaxDed(key, val, isBool){
   taxDebounce();
 }
 function setTaxMode(m){ taxState.mode = m; renderTaxPage(); }
+// งบที่จ่ายไหวต่อปี ถ้าไม่กรอกจะใช้สมมติฐานจากรายได้ ไม่ใช่เสนอเต็มเพดานให้ทุกคน
+function setTaxBudget(val){ taxState.budget = Math.max(0, parseFloat(val) || 0); taxDebounce(); }
 function taxDebounce(){ clearTimeout(taxTimer); taxTimer = setTimeout(renderTaxResult, 180); }
 
 function taxMoneyField(label, value, onInput, hint){
@@ -10566,7 +10719,8 @@ function renderTaxResult(){
     box.innerHTML = `<div class="content-card"><p class="meta">กรอกรายได้ด้านบนแล้วผลลัพธ์จะขึ้นตรงนี้ทันที ไม่ต้องกดปุ่ม</p></div>`;
     return;
   }
-  const opts = taxPlanOptions(r.netIncome, TAX_RULES);
+  const headroom = taxHeadroom(taxState, r, TAX_RULES);
+  const opts = taxPlanOptions(r.netIncome, TAX_RULES, headroom);
   const comfort = TAX_RULES.planner.comfortRateMax;
   const rows = [
     ['เงินได้พึงประเมินรวม', r.income.gross],
@@ -10577,17 +10731,72 @@ function renderTaxResult(){
   ];
   /* ป้ายแนะนำต้องขึ้นอันเดียว คือฐานสูงสุดที่ยังไม่เกินเป้า ซึ่งเป็นทางที่ใช้เงินน้อยที่สุด
      ถ้าติดป้ายทุกอันที่ต่ำกว่าเป้า จะกลายเป็นเชียร์ให้ทุ่มเงินเกินจำเป็น */
-  const bestIdx = opts.findIndex(o => o.targetRate <= comfort);
+  /* แพ็กเกจตามงบ เป็นคำแนะนำหลักของหน้านี้
+     เพราะคำถามจริงของลูกค้าไม่ใช่ "ลงฐานไหนได้" แต่คือ "ปีนี้ควรควักเท่าไร" */
+  const budgetIn = Math.max(0, Number(taxState.budget) || 0);
+  const packs = taxPackages(r, headroom, TAX_RULES, budgetIn || null);
+  const budgetHint = budgetIn > 0
+    ? `ใช้งบที่กรอกไว้ ${fmt(budgetIn)} บาทต่อปี`
+    : `ยังไม่ได้กรอกงบ จึงตั้งไว้ที่ ${Math.round(TAX_RULES.planner.defaultBudgetPctOfIncome*100)}% ของเงินได้ ปรับได้ตามจริง`;
+
+  const packHtml = packs.length ? packs.map(p => `
+    <div class="tx-pack tx-pack-${p.id}">
+      <div class="tx-pack-h">${p.label}${p.id==='balanced'?' <span class="tx-tag">คนส่วนใหญ่เลือกแบบนี้</span>':''}</div>
+      <div class="tx-pack-amt">${fmt(Math.round(p.amount))} <span>บาทต่อปี</span></div>
+      <div class="tx-pack-mo">เฉลี่ยเดือนละ ${fmt(Math.round(p.perMonth))} บาท · คิดเป็น ${(p.pctOfIncome*100).toFixed(1)}% ของเงินได้</div>
+      <table class="tx-pack-t">
+        <tr><td>ภาษีที่ประหยัดได้</td><td class="tx-num">${fmt(Math.round(p.saved))}</td></tr>
+        <tr><td>เงินที่หายจากกระเป๋าจริง</td><td class="tx-num"><b>${fmt(Math.round(p.netCash))}</b></td></tr>
+        <tr><td>ได้คืนต่อเงิน 1 บาท</td><td class="tx-num">${(p.perBaht*100).toFixed(1)} สตางค์</td></tr>
+        <tr><td>ฐานภาษีหลังทำ</td><td class="tx-num">${Math.round(p.topRateAfter*100)}%</td></tr>
+      </table>
+      <div class="tx-pack-why">${p.why}</div>
+      ${p.allocation.length ? `<div class="tx-pack-alloc"><div class="tx-pack-alloc-h">แบ่งเงินลงช่องไหน</div><ul>${
+        p.allocation.map(a => `<li>${a.label} ${fmt(Math.round(a.amount))} บาท</li>`).join('')}</ul></div>` : ''}
+      ${p.heavy ? `<div class="tx-pack-warn">ก้อนนี้กินสัดส่วนรายได้สูง ต้องมั่นใจว่าเงินสดหมุนไหวจริงก่อนตัดสินใจ</div>` : ''}
+    </div>`).join('')
+    : `<div class="tx-pack-none">${taxNoPackReason(r, headroom, TAX_RULES)}</div>`;
+
+  /* การ์ดขั้นภาษีตอบได้แค่ "ลงฐานไหม" แต่ค่าลดหย่อนประหยัดภาษีได้เสมอ ถึงจะไม่ข้ามฐาน
+     ถ้าไม่บอกตรงนี้ คนที่สิทธิเหลือไม่พอข้ามฐานจะเห็นแต่กล่องสีเทา แล้วสรุปว่าทำอะไรไม่ได้ */
+  const fullTaxAfter = taxOf(Math.max(0, r.netIncome - headroom.buyable), TAX_RULES).tax;
+  const fullSaved = r.tax - fullTaxAfter;
+  const fullBox = (headroom.buyable > 0 && fullSaved > 0) ? `<div class="tx-full">
+    <div class="tx-full-h">ใช้สิทธิที่เหลือให้เต็ม ${fmt(Math.round(headroom.buyable))} บาท</div>
+    <div class="tx-full-b">ภาษีจะลดจาก ${fmt(Math.round(r.tax))} เหลือ ${fmt(Math.round(fullTaxAfter))} บาท
+      · <b>ประหยัด ${fmt(Math.round(fullSaved))} บาท</b>
+      · คิดเป็นเงินคืน ${(fullSaved / headroom.buyable * 100).toFixed(1)} สตางค์ ต่อทุก 1 บาทที่ใส่</div>
+    <div class="tx-full-n">ค่าลดหย่อนช่วยประหยัดภาษีเสมอ ถึงจะยังไม่ข้ามไปฐานถัดไปก็ตาม
+      แต่ก้อนท้าย ๆ ได้คืนน้อยลงเรื่อย ๆ จึงไม่ได้แปลว่าควรใส่เต็มเสมอไป</div>
+  </div>` : '';
+
+  // ป้ายต้องติดบนขั้นที่ "ทำได้จริง" เท่านั้น แนะนำสิ่งที่สิทธิไม่พอ คือให้ความหวังผิด ๆ
+  const bestIdx = opts.findIndex(o => o.reachable && o.targetRate <= comfort);
   const plan = opts.length ? opts.map((o, i) => {
     const good = i === bestIdx;
-    return `<div class="tx-opt${good?' tx-opt-good':''}">
-      <div class="tx-opt-h">ลงมาอยู่ฐาน ${Math.round(o.targetRate*100)}%${good?' <span class="tx-tag">เป้าหมายที่แนะนำ</span>':''}</div>
+    const blocked = !o.reachable;
+    return `<div class="tx-opt${good?' tx-opt-good':''}${blocked?' tx-opt-blocked':''}">
+      <div class="tx-opt-h">ลงมาอยู่ฐาน ${Math.round(o.targetRate*100)}%${good?' <span class="tx-tag">เป้าหมายที่แนะนำ</span>':''}${blocked?' <span class="tx-tag tx-tag-off">สิทธิลดหย่อนไม่พอ</span>':''}</div>
       <div class="tx-opt-need">ต้องหาค่าลดหย่อนเพิ่มอีก <b>${fmt(Math.round(o.extraDeduction))} บาท</b></div>
-      <div class="tx-opt-save">ภาษีจะลดจาก ${fmt(Math.round(o.taxNow))} เหลือ ${fmt(Math.round(o.taxAfter))} บาท
+      ${blocked ? `<div class="tx-opt-block">ขั้นนี้ทำไม่ได้ในปีภาษีนี้ เพราะสิทธิลดหย่อนที่เหลือมีอีกแค่
+        ${fmt(Math.round(headroom.buyable))} บาท ยังขาดอีก ${fmt(Math.round(o.shortfall))} บาท</div>`
+      : `<div class="tx-opt-save">ภาษีจะลดจาก ${fmt(Math.round(o.taxNow))} เหลือ ${fmt(Math.round(o.taxAfter))} บาท
         · <b>ประหยัด ${fmt(Math.round(o.saved))} บาท</b></div>
-      <div class="tx-opt-eff">คิดเป็นเงินคืนภาษี ${(o.savedPerBaht*100).toFixed(1)} สตางค์ ต่อเงินที่ใส่เพิ่มทุก 1 บาท</div>
+      <div class="tx-opt-eff">คิดเป็นเงินคืนภาษี ${(o.savedPerBaht*100).toFixed(1)} สตางค์ ต่อเงินที่ใส่เพิ่มทุก 1 บาท</div>`}
     </div>`;
   }).join('') : '<p class="meta">ตอนนี้อยู่ฐานต่ำสุดแล้ว ไม่มีขั้นให้ลงต่อ</p>';
+
+  /* แถบสามก้อนด้านบนบอกรายก้อนอยู่แล้ว ตรงนี้จึงเติมเฉพาะสิ่งที่แถบไม่ได้บอก
+     คือยอดรวมที่ซื้อเพิ่มได้ทันที ซึ่งเป็นตัวเลขที่ใช้ตัดสินว่าลงฐานไหนไหว */
+  const condRows = headroom.cond.filter(x => x.room > 0)
+    .map(x => `<li>${x.label} อีก ${fmt(Math.round(x.room))} บาท</li>`).join('');
+  const roomBox = `<div class="tx-room">
+    <div class="tx-room-k">รวมแล้วซื้อเพิ่มได้อีก</div>
+    <div class="tx-room-v">${fmt(Math.round(headroom.buyable))} บาท</div>
+    <p class="meta">นี่คือกำแพงตามกฎหมาย ถึงมีเงินมากกว่านี้ ส่วนที่เกินจะใช้ลดหย่อนไม่ได้
+      ${condRows ? 'ถ้าเข้าเงื่อนไขเพิ่มเติมจะใช้ได้อีก' : ''}</p>
+    ${condRows ? `<ul class="tx-room-cond">${condRows}</ul>` : ''}
+  </div>`;
 
   box.innerHTML = `
   <div class="content-card">
@@ -10607,19 +10816,36 @@ function renderTaxResult(){
     <h2>เพดานที่ใช้ไปแล้ว</h2>
     <p class="meta">สามก้อนนี้แยกเพดานกัน ใส่เต็มก้อนหนึ่งไม่ได้แปลว่าอีกก้อนใส่ไม่ได้</p>
     ${r.deductions.groups.map(taxBarHtml).join('')}
+    ${roomBox}
   </div>
 
   <div class="content-card">
-    <h2>ถ้าอยากลดภาษีลงอีก</h2>
-    <p class="meta">ตัวเลขนี้บอกว่าต้องหาค่าลดหย่อนเพิ่มอีกเท่าไรจึงจะลงมาแต่ละฐาน เรียงจากที่ใช้เงินน้อยที่สุดก่อน</p>
-    <div class="tx-opts">${plan}</div>
+    <h2>ปีนี้ควรลดหย่อนเพิ่มเท่าไร</h2>
+    <p class="meta">เงินที่เอาไปลดหย่อนต้องถูกล็อกหลายปี จึงดูทั้งภาษีที่ประหยัดได้และเงินสดที่ต้องควักจริง</p>
+    <div class="tx-budget">
+      <label for="taxBudget">งบที่จ่ายไหวต่อปี</label>
+      <input id="taxBudget" type="number" min="0" step="10000" placeholder="เช่น 300000"
+        value="${budgetIn || ''}" oninput="setTaxBudget(this.value)">
+      <span class="tx-budget-n">${budgetHint}</span>
+    </div>
+    <div class="tx-packs">${packHtml}</div>
     <div class="tx-cta">
+      <p>ตัวเลขทุกก้อนถูกจำกัดด้วยสามอย่างพร้อมกัน คือสิทธิลดหย่อนที่เหลือ งบที่จ่ายไหว
+        และจุดที่บาทสุดท้ายยังได้คืนไม่ต่ำกว่า ${Math.round(TAX_RULES.planner.efficiencyFloorRate*100)} สตางค์</p>
       <p>ค่าลดหย่อนที่ยังใส่เพิ่มได้และเป็นความคุ้มครองไปในตัว คือประกันชีวิต ประกันสุขภาพ และประกันบำนาญ
         กดไปคำนวณเบี้ยจริงได้เลยว่าเงินก้อนนั้นซื้อทุนได้เท่าไร</p>
       <button class="btn" onclick="showPage('calc')">ไปคำนวณเบี้ยประกัน →</button>
       <button class="btn btn-ghost" onclick="showPage('ai')">ให้ระบบช่วยจัดแผนให้ →</button>
     </div>
   </div>
+
+  <details class="content-card tx-ladder">
+    <summary>ดูแบบละเอียด ว่าต้องลดหย่อนเท่าไรจึงจะลงแต่ละฐานภาษี</summary>
+    <p class="meta">ส่วนนี้เป็นข้อมูลประกอบ การไล่ลงฐานให้ต่ำสุดไม่ได้แปลว่าคุ้มที่สุดเสมอ
+      เพราะเงินก้อนท้าย ๆ ได้คืนน้อยลงแต่ต้องล็อกนานเท่ากัน</p>
+    ${fullBox}
+    <div class="tx-opts">${plan}</div>
+  </details>
 
   <div class="content-card tx-note-card">
     <div class="tx-note-t">ข้อควรทราบ</div>
