@@ -688,6 +688,42 @@
   }
   .page{display:none;}
   .page.active{display:block;}
+
+  /* ---------- จังหวะการเปิดกล่องคำตอบ ----------
+     กล่องสูงขึ้นอย่างเดียวยังดูแข็ง เนื้อหาข้างในจึงไหลลงตามมาอีกชั้น
+     ช้ากว่ากล่องนิดหน่อย ทำให้รู้สึกว่าเนื้อหาถูกกางออกมาจริง ไม่ใช่แค่กรอบขยาย */
+  @keyframes dgSlideDown{
+    from{opacity:0;transform:translateY(-9px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  /* ห้ามใส่ fill-mode both เด็ดขาด ถ้าอนิเมชันไม่ได้เริ่มด้วยเหตุใดก็ตาม
+     เช่นแท็บถูกพักไว้เบื้องหลัง fill จะตรึงเนื้อหาไว้ที่ opacity 0 แล้วอ่านไม่ได้เลย
+     ปล่อยเป็นค่าเริ่มต้น พังแล้วอย่างมากคือไม่มีเอฟเฟกต์ แต่เนื้อหายังอยู่ครบ */
+  details.dg-opening > :not(summary){
+    animation:dgSlideDown var(--dg-open-ms,340ms) cubic-bezier(.22,.61,.36,1);
+  }
+
+  /* ---------- จังหวะการเปลี่ยนหน้า ----------
+     เดิมสลับหน้าแบบตัดภาพทันที ตาจับไม่ทันว่าเปลี่ยนไปหน้าไหนแล้ว
+     ใส่ให้หน้าใหม่ลอยขึ้นมาเล็กน้อยพร้อมจาง ๆ ชัดขึ้น
+     ทำเฉพาะหน้าที่กำลังเข้า ไม่ทำหน้าที่กำลังออก เพราะถ้าค้างหน้าเก่าไว้รอเฟด
+     จะรู้สึกหน่วงตอนกด และเลื่อนขึ้นบนสุดไม่ทัน */
+  @keyframes dgPageIn{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  /* เหตุผลเดียวกัน ไม่ใช้ fill-mode หน้าเว็บทั้งหน้าห้ามมีทางค้างเป็นจอเปล่า */
+  .page.dg-page-in{animation:dgPageIn 300ms cubic-bezier(.22,.61,.36,1);}
+
+  /* ปุ่มที่พาไปหน้าอื่น ต้องมีการตอบสนองตอนกดด้วย ไม่งั้นช่วงรอยต่อจะรู้สึกว่าไม่มีอะไรเกิดขึ้น */
+  .btn:active, .nav-btn:active{transform:translateY(1px);}
+  .btn{transition:transform .12s ease, box-shadow .2s ease, background .2s ease;}
+
+  @media (prefers-reduced-motion: reduce){
+    details.dg-opening > :not(summary),
+    .page.dg-page-in{animation:none;}
+    .faq-arrow{transition:none;}
+  }
   .brand-name{
     font-family:"Kanit",sans-serif;
     font-weight:700;
@@ -1408,7 +1444,9 @@
   .faq-item summary:focus-visible{outline:2px solid var(--pink-deep);outline-offset:-2px;}
   .faq-q{flex:1;font-size:.95rem;}
   .faq-arrow{flex:none;width:9px;height:9px;border-right:2px solid var(--pink-deep);
-    border-bottom:2px solid var(--pink-deep);transform:rotate(45deg);margin-top:-4px;transition:transform .2s;}
+    border-bottom:2px solid var(--pink-deep);transform:rotate(45deg);margin-top:-4px;
+    transition:transform var(--dg-open-ms,340ms) cubic-bezier(.22,.61,.36,1),
+               margin-top var(--dg-open-ms,340ms) cubic-bezier(.22,.61,.36,1);}
   .faq-item[open] .faq-arrow{transform:rotate(-135deg);margin-top:2px;}
   .faq-a{padding:0 17px 18px;max-width:70ch;}
   .faq-a p{margin:0 0 11px;line-height:1.95;font-size:.92rem;color:#4a3841;}
@@ -10246,6 +10284,28 @@ function showPage(name, options = {}){
   }
   window.scrollTo({top:0, behavior:'auto'});
   dgApplyReveal(target);
+  dgPlayPageIn(target);
+}
+
+/* เล่นจังหวะเข้าหน้าใหม่
+   ต้องถอดคลาสออกแล้วบังคับให้เบราว์เซอร์คำนวณใหม่ก่อนใส่กลับ
+   ไม่งั้นกดสลับหน้าเดิมซ้ำ ๆ จะไม่เล่นอีก เพราะคลาสไม่ได้เปลี่ยนค่า */
+const DG_PAGE_IN_MS = 300;
+let dgPageInTimer = null;
+
+function dgPlayPageIn(target){
+  if(dgReducedMotion()) return;
+  if(dgPageInTimer) clearTimeout(dgPageInTimer);
+  document.querySelectorAll('.dg-page-in').forEach(el => el.classList.remove('dg-page-in'));
+  void target.offsetWidth;                 // บังคับคำนวณใหม่ ไม่งั้นกดหน้าเดิมซ้ำจะไม่เล่นอีก
+  target.classList.add('dg-page-in');
+  /* ถอดคลาสออกเสมอเมื่อครบเวลา ไม่ปล่อยให้หน้าค้างอยู่ในสถานะกำลังเคลื่อนไหว
+     ถ้าเครื่องช้าหรือแท็บถูกพักจนอนิเมชันไม่เดิน คลาสที่ค้างจะตรึงหน้าไว้ที่จางหาย
+     จับเวลาถอดเองแล้วอย่างแย่ที่สุดคือไม่มีเอฟเฟกต์ แต่หน้ายังอ่านได้ */
+  dgPageInTimer = setTimeout(() => {
+    target.classList.remove('dg-page-in');
+    dgPageInTimer = null;
+  }, DG_PAGE_IN_MS + 60);
 }
 
 document.getElementById('navbar').addEventListener('click', (e) => {
@@ -10294,6 +10354,77 @@ function openLegacyAnchor(hash){
    วิธีนี้กลับกัน คือปล่อยให้คัดลอกได้ตามปกติ แต่ของที่ถูกลอกไปจะพ่วงที่มาไปด้วย
    ใครเอาไปแปะที่อื่นก็เท่ากับช่วยโฆษณาให้
    ========================================================================= */
+/* ---------- การกางกล่องคำตอบ ----------
+   <details> ของเบราว์เซอร์เปิดแบบกระตุกทันที ไม่มีจังหวะให้ตาไล่ตาม
+   จึงคุมเองด้วยการอนิเมตความสูง จากแถบหัวข้อไปหาความสูงเต็ม
+
+   เรื่องความเร็ว: 0.7 ถึง 1 วินาที เป็นช่วงที่คนเริ่มรู้สึกว่าเว็บหน่วง
+   โดยเฉพาะหน้า FAQ ที่กดเปิดหลายข้อติดกัน จะต้องนั่งรอทีละอัน
+   แนวทางที่ใช้กันคือ 200 ถึง 400 มิลลิวินาทีสำหรับการกางเนื้อหา
+   ตรงนี้ตั้งไว้ 340 แล้วยืดตามความสูง กล่องยาวได้เวลามากขึ้นแต่ไม่เกิน 480
+   อยากได้ช้ากว่านี้ แก้ตัวเลขสองตัวข้างล่างได้เลย */
+const DG_OPEN_BASE_MS = 340;
+const DG_OPEN_MAX_MS = 480;
+const DG_OPEN_EASE = 'cubic-bezier(.22,.61,.36,1)';   // ออกตัวเร็วแล้วค่อย ๆ หยุด เหมือนของมีน้ำหนักจริง
+
+function dgReducedMotion(){
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
+function dgOpenDuration(delta){
+  return Math.min(DG_OPEN_MAX_MS, DG_OPEN_BASE_MS + Math.abs(delta) * 0.18);
+}
+
+function dgToggleDetails(d){
+  const summary = d.querySelector('summary');
+  if(!summary) return false;
+  // ผู้ใช้ที่ตั้งค่าลดการเคลื่อนไหว หรือเบราว์เซอร์เก่า ให้เปิดปิดแบบเดิมไป
+  if(dgReducedMotion() || typeof d.animate !== 'function') return false;
+
+  const opening = !d.open;
+  dgClearDetails(d);                               // กดรัว ๆ ต้องยกเลิกของเดิมก่อน ไม่ให้ซ้อนกัน
+  const from = d.offsetHeight;
+  d.open = true;                                   // ต้องเปิดก่อน ถึงจะวัดความสูงเต็มได้
+  const to = opening ? d.scrollHeight : summary.offsetHeight;
+  const ms = dgOpenDuration(to - from);
+
+  d.style.overflow = 'hidden';
+  d.style.setProperty('--dg-open-ms', ms + 'ms');
+  d.classList.toggle('dg-opening', opening);
+
+  d.dgAnim = d.animate([{height: from + 'px'}, {height: to + 'px'}],
+                       {duration: ms, easing: DG_OPEN_EASE});
+
+  /* เก็บกวาดด้วยตัวจับเวลาของเราเอง ไม่ผูกกับ event finish ของ animation
+     เพราะเจอมาแล้วว่าบางสภาพแวดล้อม event นั้นไม่ยิง แล้วกล่องจะค้างเปิดปิดไม่ได้อีกเลย
+     ระยะเวลารู้แน่นอนอยู่แล้ว จับเวลาเองจึงตรงกว่าและไม่มีทางค้าง */
+  d.dgTimer = setTimeout(() => dgFinishDetails(d, opening), ms + 30);
+  return true;
+}
+
+function dgClearDetails(d){
+  if(d.dgTimer){ clearTimeout(d.dgTimer); d.dgTimer = null; }
+  if(d.dgAnim){ try{ d.dgAnim.cancel(); }catch(err){} d.dgAnim = null; }
+}
+
+function dgFinishDetails(d, opening){
+  dgClearDetails(d);
+  d.style.overflow = '';
+  d.style.height = '';
+  d.classList.remove('dg-opening');
+  if(!opening) d.open = false;
+}
+
+/* ดักที่ summary ทุกอันในเว็บ ไม่ไล่ผูกทีละที่
+   เพราะ FAQ กับหน้าภาษีวาดเนื้อหาใหม่ตลอด ผูกทีละอันแล้วจะหลุด */
+document.addEventListener('click', (e) => {
+  const summary = e.target.closest && e.target.closest('summary');
+  if(!summary) return;
+  const d = summary.parentElement;
+  if(!d || d.tagName !== 'DETAILS') return;
+  if(dgToggleDetails(d)) e.preventDefault();
+});
+
 /* ---------- ปุ่มคำอธิบาย ? และ i ----------
    ทั้งเว็บใช้กลไกเดียวกัน เปิดด้วยการกด ไม่ใช่ hover
    เดิม .info-icon เปิดด้วย CSS hover และ .tx-hint ใช้ title attribute
