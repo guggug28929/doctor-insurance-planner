@@ -10389,6 +10389,12 @@ function dgToggleDetails(d){
   const ms = dgOpenDuration(to - from);
 
   d.style.overflow = 'hidden';
+  /* ตรึงความสูงปลายทางไว้เป็น inline style ตั้งแต่ต้น
+     เพราะอนิเมชันแบบไม่มี fill จะคืนค่าความสูงทันทีที่วิ่งจบ
+     ตอนหุบ ค่าที่คืนกลับมาคือความสูงตอนเปิดเต็ม กล่องจึงกระพริบกางออกหนึ่งเฟรม
+     ก่อนจะหายไปตอน open ถูกตั้งเป็น false ซึ่งคืออาการแว้บที่เห็นด้วยตา
+     ใส่ค่าปลายทางไว้เอง จบแล้วจึงไม่มีอะไรให้เด้งกลับ */
+  d.style.height = to + 'px';
   d.style.setProperty('--dg-open-ms', ms + 'ms');
   d.classList.toggle('dg-opening', opening);
 
@@ -10409,10 +10415,12 @@ function dgClearDetails(d){
 
 function dgFinishDetails(d, opening){
   dgClearDetails(d);
-  d.style.overflow = '';
-  d.style.height = '';
-  d.classList.remove('dg-opening');
+  /* ลำดับสำคัญมาก ต้องปิดก่อนแล้วค่อยปล่อยความสูง
+     ถ้าปล่อยความสูงตอนที่ยังเปิดอยู่ กล่องจะกางเต็มหนึ่งเฟรมแล้วค่อยหุบ เห็นเป็นอาการกระตุก */
   if(!opening) d.open = false;
+  d.style.height = '';
+  d.style.overflow = '';
+  d.classList.remove('dg-opening');
 }
 
 /* ดักที่ summary ทุกอันในเว็บ ไม่ไล่ผูกทีละที่
