@@ -268,3 +268,11 @@ test('ห้ามฝังตัวเลขเพดานลงในโค�
       `พบเลข ${magic} ฝังในโค้ด ต้องย้ายไป data/tax-rules.json ไม่งั้นปีหน้าแก้ไม่ครบ`);
   }
 });
+
+test('ป้ายเป้าหมายที่แนะนำต้องขึ้นอันเดียว ไม่ใช่ทุกฐานที่ต่ำกว่าเป้า', () => {
+  // ถ้าติดป้ายทุกอันที่ต่ำกว่าเป้า จะกลายเป็นเชียร์ให้ทุ่มเงินเกินจำเป็น
+  // และต้องข้ามขั้นที่สิทธิลดหย่อนไปไม่ถึงด้วย ไม่งั้นแนะนำสิ่งที่ทำไม่ได้จริง
+  assert.match(html, /const bestIdx = opts\.findIndex\(o => o\.reachable && o\.targetRate <= comfort\);/);
+  assert.match(html, /const good = i === bestIdx;/);
+  assert.ok(!html.includes('const good = o.targetRate <= comfort;'));
+});
