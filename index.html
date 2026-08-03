@@ -10575,8 +10575,11 @@ function renderTaxResult(){
     ['หักเงินบริจาค', -r.donation.total],
     ['<b>เงินได้สุทธิ</b>', r.netIncome],
   ];
-  const plan = opts.length ? opts.map(o => {
-    const good = o.targetRate <= comfort;
+  /* ป้ายแนะนำต้องขึ้นอันเดียว คือฐานสูงสุดที่ยังไม่เกินเป้า ซึ่งเป็นทางที่ใช้เงินน้อยที่สุด
+     ถ้าติดป้ายทุกอันที่ต่ำกว่าเป้า จะกลายเป็นเชียร์ให้ทุ่มเงินเกินจำเป็น */
+  const bestIdx = opts.findIndex(o => o.targetRate <= comfort);
+  const plan = opts.length ? opts.map((o, i) => {
+    const good = i === bestIdx;
     return `<div class="tx-opt${good?' tx-opt-good':''}">
       <div class="tx-opt-h">ลงมาอยู่ฐาน ${Math.round(o.targetRate*100)}%${good?' <span class="tx-tag">เป้าหมายที่แนะนำ</span>':''}</div>
       <div class="tx-opt-need">ต้องหาค่าลดหย่อนเพิ่มอีก <b>${fmt(Math.round(o.extraDeduction))} บาท</b></div>
