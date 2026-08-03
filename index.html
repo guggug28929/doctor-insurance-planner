@@ -1240,6 +1240,53 @@
   .faq-sec-d{font-size:.83rem;color:#7a6570;margin-top:2px;}
   .faq-item{background:#fff;border:1px solid #f0dde5;border-radius:12px;margin-bottom:9px;overflow:hidden;
     transition:border-color .18s,box-shadow .18s;}
+  .tx-modes{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .tx-mode{flex:1 1 200px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;background:#fff;
+    border:1.5px solid #f0dde5;border-radius:14px;padding:11px 16px;cursor:pointer;font-family:inherit;text-align:left;}
+  .tx-mode b{font-size:.95rem;color:var(--pink-deep);}
+  .tx-mode span{font-size:.76rem;color:#8b7480;}
+  .tx-mode.on{background:var(--pink-deep);border-color:var(--pink-deep);}
+  .tx-mode.on b,.tx-mode.on span{color:#fff;}
+  .tx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px;}
+  .tx-field{display:flex;flex-direction:column;gap:5px;}
+  .tx-field label{font-size:.84rem;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px;}
+  .tx-field input,.tx-field select{border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+    font-size:.9rem;font-family:inherit;width:100%;}
+  .tx-field input:focus,.tx-field select:focus{outline:2px solid var(--pink);outline-offset:-1px;}
+  .tx-check label{font-weight:600;}
+  .tx-check input{width:auto;}
+  .tx-hint{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+    border-radius:50%;background:var(--pink-soft,#fff0f5);color:var(--pink-deep);font-size:.68rem;
+    font-weight:800;cursor:help;flex:none;}
+  .tx-income-row{display:contents;}
+  .tx-sec{margin-top:18px;padding-top:14px;border-top:1px solid #f4e6ec;}
+  .tx-sec:first-child{border-top:none;padding-top:0;margin-top:0;}
+  .tx-sec-t{font-weight:800;color:var(--pink-deep);font-size:.92rem;}
+  .tx-table{width:100%;border-collapse:collapse;margin-top:10px;}
+  .tx-table td{padding:8px 4px;border-bottom:1px solid #f4e6ec;font-size:.9rem;}
+  .tx-num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  .tx-headline{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px;}
+  .tx-headline-k{font-size:.8rem;color:#8b7480;}
+  .tx-headline-v{font-family:"Kanit",sans-serif;font-size:1.5rem;font-weight:800;color:var(--pink-deep);}
+  .tx-bar-row{margin-top:14px;}
+  .tx-bar-top{display:flex;justify-content:space-between;font-size:.85rem;gap:10px;}
+  .tx-bar{height:9px;border-radius:99px;background:#f4e6ec;overflow:hidden;margin:6px 0 4px;}
+  .tx-bar span{display:block;height:100%;background:var(--pink-deep);border-radius:99px;}
+  .tx-bar-note{font-size:.78rem;color:#8b7480;}
+  .tx-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px;}
+  .tx-opt{border:1.5px solid #f0dde5;border-radius:12px;padding:13px 15px;background:#fff;}
+  .tx-opt-good{border-color:var(--pink-deep);box-shadow:0 2px 14px rgba(143,13,64,.08);}
+  .tx-opt-h{font-weight:800;color:var(--pink-deep);margin-bottom:5px;}
+  .tx-tag{background:var(--pink-deep);color:#fff;font-size:.66rem;padding:2px 7px;border-radius:99px;
+    font-weight:700;vertical-align:middle;}
+  .tx-opt-need,.tx-opt-save{font-size:.86rem;line-height:1.7;}
+  .tx-opt-eff{font-size:.78rem;color:#8b7480;margin-top:4px;}
+  .tx-cta{margin-top:16px;padding-top:14px;border-top:1px solid #f4e6ec;}
+  .tx-cta .btn{width:auto;padding:10px 20px;margin-top:10px;margin-right:8px;}
+  .tx-note-card{border-left:4px solid var(--pink-deep);}
+  .tx-note-t{font-weight:800;color:var(--pink-deep);margin-bottom:6px;}
+  .tx-note-card p{font-size:.85rem;line-height:1.8;margin-bottom:8px;}
+  .tx-removed{background:#fff7fa;border-radius:9px;padding:10px 12px;font-size:.8rem !important;}
   .uw-card.uw-ok{border-left:4px solid var(--ok,#1f9d55);}
   .uw-card.uw-over{border-left:4px solid var(--danger,#c0392b);}
   .uw-grid{display:grid;gap:10px;margin-top:14px;}
@@ -1793,6 +1840,7 @@
       <button data-page="plans">แผนประกันทั้งหมด</button>
       <button data-page="hnw" class="nav-hnw">แผน HNW</button>
       <button data-page="knowledge">ความรู้ประกันสุขภาพ</button>
+      <button data-page="tax">วางแผนภาษี</button>
       <button data-page="faq">คำถามที่พบบ่อย</button>
       <button data-page="contact">ติดต่อหมอกึ๊ก</button>
     </div>
@@ -3105,6 +3153,10 @@
 </div>
 
 <!-- ============ PAGE: KNOWLEDGE / FAQ ============ -->
+<div id="page-tax" class="page">
+  <div class="wrap"><div id="taxContent"></div></div>
+</div>
+
 <div id="page-faq" class="page">
   <div class="wrap">
     <div class="faq-hero">
@@ -6563,6 +6615,7 @@ const PAGE_ROUTES = {
   hnw: '/hnw',
   knowledge: '/health-knowledge',
   faq: '/faq',
+  tax: '/tax-planner',
   contact: '/contact',
 };
 
@@ -10121,6 +10174,7 @@ function showPage(name, options = {}){
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   if(name === 'knowledge' && typeof setKnowTab === 'function') setKnowTab(knowTab);
   if(name === 'faq' && typeof renderFaq === 'function') renderFaq();
+  if(name === 'tax' && typeof renderTaxPage === 'function') renderTaxPage();
   if(name === 'ai'){
     const bb = document.getElementById('advBucketBox');
     if(bb && !bb.dataset.done){ bb.innerHTML = advPrincipleInfographic(); bb.dataset.done = '1'; }
@@ -10186,6 +10240,424 @@ document.addEventListener('copy', (e) => {
   e.clipboardData.setData('text/plain', sel + '\n\n— ' + CONTENT_CREDIT);
   e.preventDefault();
 });
+
+/* กฎภาษีอ่านจากไฟล์เดียว แก้ปีหน้าที่ไฟล์นั้นที่เดียว ไม่ต้องไล่แก้ในโค้ด */
+let TAX_RULES = null;
+try {
+  const req = new XMLHttpRequest();
+  req.open('GET', '/data/tax-rules.json', false);
+  req.send(null);
+  if(req.status >= 200 && req.status < 400) TAX_RULES = JSON.parse(req.responseText);
+} catch(e){ console.error('โหลด กฎภาษี ไม่สำเร็จ', e); }
+
+/* =========================================================================
+   เครื่องคำนวณภาษีเงินได้บุคคลธรรมดา
+   กฎทั้งหมดอ่านจาก data/tax-rules.json ห้ามฝังตัวเลขในฟังก์ชันเหล่านี้
+   เพราะกฎเปลี่ยนทุกปี ถ้าฝังไว้จะตามแก้ไม่ครบแล้วเงียบ ๆ ผิด
+   ========================================================================= */
+
+/** หักค่าใช้จ่ายของเงินได้ประเภทเดียว
+ *  คืน {expense, note} · rows คือรายการเงินได้ทั้งหมด ใช้ตอนที่ต้องแชร์เพดาน */
+function taxExpenseFor(typeId, rows, RULES){
+  const def = RULES.incomeTypes.find(t => t.id === typeId);
+  if(!def) return {expense: 0, note: 'ไม่รู้จักประเภทเงินได้'};
+  const row = rows[typeId] || {};
+  const amount = Math.max(0, Number(row.amount) || 0);
+  const e = def.expense;
+  if(!amount) return {expense: 0, note: ''};
+
+  if(e.kind === 'none') return {expense: 0, note: 'หักค่าใช้จ่ายไม่ได้ตามกฎหมาย'};
+
+  // ผู้เสียภาษีเลือกหักตามจริงได้ ถ้าพิสูจน์ได้และคุ้มกว่า
+  if(e.actualAllowed && row.useActual){
+    return {expense: Math.min(amount, Math.max(0, Number(row.actual) || 0)), note: 'หักตามจริง'};
+  }
+
+  let percent = e.percent;
+  if(e.kind === 'choice'){
+    const opt = (e.options || []).find(o => o.id === row.option) || (e.options || [])[0];
+    percent = opt ? opt.percent : 0;
+  }
+  let expense = amount * percent;
+
+  /* 40(1) กับ 40(2) แชร์เพดาน 100,000 ร่วมกัน ไม่ใช่แยกกัน
+     จุดนี้เครื่องคำนวณหลายเจ้าทำผิด แล้วหักเกินไปได้ถึงแสนหนึ่ง */
+  if(e.sharedCapWith){
+    const partner = rows[e.sharedCapWith] || {};
+    const partnerAmount = Math.max(0, Number(partner.amount) || 0);
+    const partnerDef = RULES.incomeTypes.find(t => t.id === e.sharedCapWith);
+    const totalRaw = amount * e.percent + partnerAmount * partnerDef.expense.percent;
+    const totalCapped = Math.min(totalRaw, e.cap);
+    // ปันเพดานตามสัดส่วนของแต่ละประเภท เพื่อให้ผลรวมไม่เกินเพดานเดียว
+    expense = totalRaw > 0 ? totalCapped * (amount * e.percent / totalRaw) : 0;
+    return {expense, note: `หัก 50% เพดานรวม 40(1) และ 40(2) ที่ ${e.cap.toLocaleString()} บาท`};
+  }
+  if(e.cap != null) expense = Math.min(expense, e.cap);
+  return {expense, note: `หักเหมา ${Math.round(percent*100)}%` + (e.cap ? ` ไม่เกิน ${e.cap.toLocaleString()} บาท` : '')};
+}
+
+/** รวมเงินได้และค่าใช้จ่ายทุกประเภท */
+function taxIncomeSummary(rows, RULES){
+  let gross = 0, expense = 0;
+  const lines = [];
+  for(const def of RULES.incomeTypes){
+    const amount = Math.max(0, Number((rows[def.id]||{}).amount) || 0);
+    if(!amount) continue;
+    const r = taxExpenseFor(def.id, rows, RULES);
+    gross += amount; expense += r.expense;
+    lines.push({id: def.id, label: def.label, amount, expense: r.expense, note: r.note});
+  }
+  return {gross, expense, afterExpense: gross - expense, lines};
+}
+
+/** ค่าลดหย่อนทั้งหมด คืนรายบรรทัดพร้อมเพดานที่ใช้ไป
+ *  income = เงินได้พึงประเมินรวม ใช้คิดเพดานแบบร้อยละ
+ *  salary = เงินได้ 40(1) ใช้คิดเพดาน PVD */
+function taxDeductions(input, RULES){
+  const D = RULES.deductions;
+  const v = k => Math.max(0, Number(input[k]) || 0);
+  const income = Math.max(0, Number(input.assessableIncome) || 0);
+  const salary = Math.max(0, Number(input.salaryIncome) || 0);
+  const lines = [], groups = [];
+  const push = (label, amount, note) => { if(amount > 0) lines.push({label, amount, note: note || ''}); };
+
+  /* ---------- ส่วนตัวและครอบครัว ---------- */
+  push(D.personal.self.label, D.personal.self.fixed);
+  if(input.hasSpouseNoIncome) push(D.personal.spouse.label, D.personal.spouse.fixed);
+  const c1 = Math.max(0, Number(input.childFirst) || 0);
+  const c2 = Math.max(0, Number(input.childSecondFrom2561) || 0);
+  push(D.personal.childFirst.label, c1 * D.personal.childFirst.per);
+  push(D.personal.childSecondFrom2561.label, c2 * D.personal.childSecondFrom2561.per);
+  push(D.personal.maternity.label, Math.min(v('maternity'), D.personal.maternity.cap));
+  const parents = Math.min(Math.max(0, Number(input.parentCount) || 0), D.personal.parent.maxCount);
+  push(D.personal.parent.label, parents * D.personal.parent.per);
+  push(D.personal.disabled.label, Math.max(0, Number(input.disabledCount) || 0) * D.personal.disabled.per);
+
+  /* ---------- ประกันชีวิตและสุขภาพ เพดานรวม 100,000 ----------
+     สุขภาพตนเองมีเพดานย่อย 25,000 อยู่ข้างในอีกชั้น */
+  const G = D.insuranceGroup;
+  const healthSelf = Math.min(v('healthSelf'), G.items.healthSelf.cap);
+  const lifeRaw = Math.min(v('life'), G.items.life.cap);
+  const insUsed = Math.min(lifeRaw + healthSelf, G.cap);
+  const life = Math.max(0, insUsed - healthSelf);
+  push(G.items.healthSelf.label, healthSelf, `เพดาน ${G.items.healthSelf.cap.toLocaleString()} และนับรวมในเพดาน ${G.cap.toLocaleString()}`);
+  push(G.items.life.label, life, lifeRaw > life ? `ถูกตัดจาก ${lifeRaw.toLocaleString()} เพราะชนเพดานรวม ${G.cap.toLocaleString()}` : '');
+  push(G.items.spouseLife.label, Math.min(v('spouseLife'), G.items.spouseLife.cap));
+  groups.push({id:'insurance', label:G.label, cap:G.cap, used:insUsed, note:G.note});
+
+  push(D.parentHealth.label, Math.min(v('parentHealth'), D.parentHealth.cap), D.parentHealth.note);
+
+  /* ---------- กลุ่มเกษียณ เพดานรวม 500,000 ----------
+     แต่ละตัวมีเพดานของตัวเองก่อน แล้วผลรวมค่อยชนเพดานกลุ่มอีกที
+     ลำดับการตัดสำคัญ: ตัดตัวที่ยืดหยุ่นน้อยก่อน (เงินสะสมภาคบังคับ)
+     แล้วค่อยตัดตัวที่ผู้เสียภาษีเลือกซื้อเองได้ (RMF, บำนาญ) */
+  const R = D.retirementGroup, ri = R.items;
+  const each = [
+    ['pvd', Math.min(v('pvd'), salary * ri.pvd.percentOfSalary), ri.pvd.label,
+      `ไม่เกิน ${Math.round(ri.pvd.percentOfSalary*100)}% ของค่าจ้าง`],
+    ['gpf', Math.min(v('gpf'), ri.gpf.cap), ri.gpf.label, ''],
+    ['privateTeacher', Math.min(v('privateTeacher'), ri.privateTeacher.cap), ri.privateTeacher.label, ''],
+    ['nsf', Math.min(v('nsf'), ri.nsf.cap), ri.nsf.label, `เพดาน ${ri.nsf.cap.toLocaleString()}`],
+    ['rmf', Math.min(v('rmf'), income * ri.rmf.percentOfIncome), ri.rmf.label,
+      `ไม่เกิน ${Math.round(ri.rmf.percentOfIncome*100)}% ของเงินได้`],
+    ['pensionInsurance', Math.min(v('pensionInsurance'), income * ri.pensionInsurance.percentOfIncome, ri.pensionInsurance.cap),
+      ri.pensionInsurance.label, `ไม่เกิน ${Math.round(ri.pensionInsurance.percentOfIncome*100)}% ของเงินได้ และไม่เกิน ${ri.pensionInsurance.cap.toLocaleString()}`],
+  ];
+  let room = R.cap, retireUsed = 0;
+  for(const [, amt, label, note] of each){
+    const take = Math.min(amt, room);
+    room -= take; retireUsed += take;
+    push(label, take, take < amt ? `${note} · ถูกตัดเพราะชนเพดานกลุ่ม ${R.cap.toLocaleString()}` : note);
+  }
+  groups.push({id:'retirement', label:R.label, cap:R.cap, used:retireUsed, note:R.note});
+
+  /* ---------- Thai ESG แยกจากเพดานเกษียณ ---------- */
+  const E = D.thaiEsg;
+  const esg = Math.min(v('thaiEsg'), income * E.percentOfIncome, E.cap);
+  push(E.label, esg, `ไม่เกิน ${Math.round(E.percentOfIncome*100)}% ของเงินได้ และไม่เกิน ${E.cap.toLocaleString()}`);
+  groups.push({id:'thaiEsg', label:E.label, cap:E.cap, used:esg, note:E.note});
+
+  /* ---------- อื่น ๆ ---------- */
+  for(const [key, def] of Object.entries(D.others)){
+    push(def.label, Math.min(v(key), def.cap), def.note || `เพดาน ${def.cap.toLocaleString()}`);
+  }
+
+  const total = lines.reduce((s, l) => s + l.amount, 0);
+  return {lines, groups, total};
+}
+
+/** เงินบริจาค ต้องคิดหลังสุด เพราะเพดาน 10% อิงยอดหลังหักทุกอย่างแล้ว */
+function taxDonation(input, baseAfterOtherDeductions, RULES){
+  const D = RULES.deductions.donations;
+  const cap = Math.max(0, baseAfterOtherDeductions) * D.capPercentOfNetBeforeDonation;
+  const eRaw = Math.max(0, Number(input.eDonation) || 0) * D.items.eDonation.multiplier;
+  const gRaw = Math.max(0, Number(input.generalDonation) || 0) * D.items.general.multiplier;
+  // ใช้สิทธิ e-Donation ก่อน เพราะคูณสองแล้วได้ผลมากกว่าต่อเงินหนึ่งบาท
+  const e = Math.min(eRaw, cap);
+  const g = Math.min(gRaw, cap - e);
+  return {cap, eDonation: e, general: g, total: e + g};
+}
+
+/** ภาษีตามขั้นบันได คืนยอดภาษีและอัตราของขั้นสูงสุดที่โดน */
+function taxOf(netIncome, RULES){
+  let remain = Math.max(0, netIncome), prev = 0, tax = 0, topRate = 0;
+  for(const b of RULES.brackets){
+    const upper = b.upTo == null ? Infinity : b.upTo;
+    const slice = Math.min(remain, upper - prev);
+    if(slice <= 0) break;
+    tax += slice * b.rate;
+    if(slice > 0 && b.rate > 0) topRate = b.rate;
+    remain -= slice; prev = upper;
+    if(remain <= 0) break;
+  }
+  return {tax: Math.round(tax * 100) / 100, topRate};
+}
+
+/** คำนวณทั้งกระบวน */
+function taxCompute(input, RULES){
+  const inc = taxIncomeSummary(input.income || {}, RULES);
+  const salary = Math.max(0, Number((input.income||{}).s40_1?.amount) || 0);
+  const ded = taxDeductions(Object.assign({}, input.deductions, {
+    assessableIncome: inc.gross, salaryIncome: salary,
+  }), RULES);
+  const baseBeforeDonation = inc.afterExpense - ded.total;
+  const don = taxDonation(input.deductions || {}, baseBeforeDonation, RULES);
+  const net = Math.max(0, baseBeforeDonation - don.total);
+  const t = taxOf(net, RULES);
+  return {income: inc, deductions: ded, donation: don, netIncome: net,
+          tax: t.tax, topRate: t.topRate,
+          effectiveRate: inc.gross > 0 ? t.tax / inc.gross : 0};
+}
+
+/** ต้องลดหย่อนเพิ่มอีกเท่าไรจึงจะทำให้เงินได้สุทธิลงมาอยู่ที่ขั้นเป้าหมาย
+ *  คืนรายการทางเลือกเรียงจากง่ายไปยาก */
+function taxPlanOptions(net, RULES){
+  const opts = [];
+  const cur = taxOf(net, RULES);
+  for(let i = 0; i < RULES.brackets.length; i++){
+    const b = RULES.brackets[i];
+    if(b.rate >= cur.topRate) continue;          // ต้องเป็นขั้นที่ต่ำกว่าปัจจุบันเท่านั้น
+    const ceiling = b.upTo;                      // เพดานของขั้นนั้น
+    if(ceiling == null || net <= ceiling) continue;
+    const need = net - ceiling;                  // ลดหย่อนเพิ่มเท่านี้จะพอดีขอบขั้น
+    const after = taxOf(ceiling, RULES);
+    opts.push({
+      targetRate: b.rate, targetCeiling: ceiling, extraDeduction: need,
+      taxNow: cur.tax, taxAfter: after.tax, saved: cur.tax - after.tax,
+      // คุ้มแค่ไหน คือประหยัดภาษีได้กี่บาทต่อเงินที่ต้องเอาไปลดหย่อนหนึ่งบาท
+      savedPerBaht: need > 0 ? (cur.tax - after.tax) / need : 0,
+    });
+  }
+  return opts.sort((a, b) => a.extraDeduction - b.extraDeduction);
+}
+
+/* ---------- หน้าวางแผนภาษี ---------- */
+const taxState = {
+  mode: 'quick',
+  income: { s40_1:{amount:0}, s40_2:{amount:0}, s40_3:{amount:0}, s40_4:{amount:0},
+            s40_5:{amount:0, option:'building'}, s40_6:{amount:0, option:'medical'},
+            s40_7:{amount:0}, s40_8:{amount:0, option:'rate60'} },
+  deductions: { hasSpouseNoIncome:false, childFirst:0, childSecondFrom2561:0, maternity:0,
+    parentCount:0, disabledCount:0, life:0, healthSelf:0, spouseLife:0, parentHealth:0,
+    pvd:0, gpf:0, privateTeacher:0, nsf:0, rmf:0, pensionInsurance:0, thaiEsg:0,
+    mortgageInterest:0, socialSecurity:0, socialEnterprise:0, politicalParty:0,
+    eDonation:0, generalDonation:0 },
+};
+/* โหมดเร็วโชว์เฉพาะช่องที่คนส่วนใหญ่มีจริง ที่เหลือซ่อนไว้จนกว่าจะกดกาง
+   ถ้าโชว์ 8 ประเภทเงินได้กับ 20 ช่องลดหย่อนตั้งแต่แรก คนกรอกไม่จบแน่ */
+const TAX_QUICK_INCOME = ['s40_1', 's40_6', 's40_8'];
+const TAX_QUICK_DED = ['life', 'healthSelf', 'pensionInsurance', 'rmf', 'thaiEsg',
+                       'socialSecurity', 'pvd', 'gpf'];
+
+let taxTimer = null;
+function setTaxIncome(id, field, val){
+  taxState.income[id] = taxState.income[id] || {};
+  taxState.income[id][field] = field === 'amount' ? (parseFloat(val)||0) : val;
+  taxDebounce();
+}
+function setTaxDed(key, val, isBool){
+  taxState.deductions[key] = isBool ? !!val : (parseFloat(val)||0);
+  taxDebounce();
+}
+function setTaxMode(m){ taxState.mode = m; renderTaxPage(); }
+function taxDebounce(){ clearTimeout(taxTimer); taxTimer = setTimeout(renderTaxResult, 180); }
+
+function taxMoneyField(label, value, onInput, hint){
+  return `<div class="tx-field">
+    <label>${label}${hint ? `<span class="tx-hint" title="${plannerEscapeHtml(hint)}">?</span>` : ''}</label>
+    <input type="number" min="0" step="1000" value="${value||''}" placeholder="0" oninput="${onInput}">
+  </div>`;
+}
+
+function renderTaxIncomeForm(){
+  if(!TAX_RULES) return '<div class="validation-box bad">โหลดไฟล์กฎภาษีไม่สำเร็จ</div>';
+  const show = TAX_RULES.incomeTypes.filter(t =>
+    taxState.mode === 'full' || TAX_QUICK_INCOME.includes(t.id));
+  return show.map(t => {
+    const row = taxState.income[t.id] || {};
+    const opts = t.expense.options
+      ? `<select onchange="setTaxIncome('${t.id}','option',this.value)">
+          ${t.expense.options.map(o => `<option value="${o.id}"${row.option===o.id?' selected':''}>${o.label} · หัก ${Math.round(o.percent*100)}%</option>`).join('')}
+         </select>` : '';
+    return `<div class="tx-income-row">
+      ${taxMoneyField(t.label, row.amount, `setTaxIncome('${t.id}','amount',this.value)`, t.hint)}
+      ${opts ? `<div class="tx-field tx-field-wide">${opts}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderTaxDeductionForm(){
+  if(!TAX_RULES) return '';
+  const D = TAX_RULES.deductions, d = taxState.deductions, full = taxState.mode === 'full';
+  const F = (key, label, hint) => (full || TAX_QUICK_DED.includes(key))
+    ? taxMoneyField(label, d[key], `setTaxDed('${key}',this.value)`, hint) : '';
+  const sec = (title, body) => body.trim() ? `<div class="tx-sec"><div class="tx-sec-t">${title}</div><div class="tx-grid">${body}</div></div>` : '';
+
+  const family = full ? `
+    <div class="tx-field tx-check"><label><input type="checkbox" ${d.hasSpouseNoIncome?'checked':''}
+      onchange="setTaxDed('hasSpouseNoIncome',this.checked,true)"> มีคู่สมรสที่ไม่มีเงินได้</label></div>
+    ${taxMoneyField('จำนวนบุตรคนแรก หรือเกิดก่อนปี 2561', d.childFirst, "setTaxDed('childFirst',this.value)", 'คนละ 30,000 บาท')}
+    ${taxMoneyField('จำนวนบุตรคนที่ 2 ขึ้นไป ที่เกิดตั้งแต่ปี 2561', d.childSecondFrom2561, "setTaxDed('childSecondFrom2561',this.value)", 'คนละ 60,000 บาท')}
+    ${taxMoneyField('จำนวนบิดามารดาที่อุปการะ (อายุ 60 ปีขึ้นไป)', d.parentCount, "setTaxDed('parentCount',this.value)", 'คนละ 30,000 บาท สูงสุด 4 คน รวมของคู่สมรสที่ไม่มีเงินได้')}
+    ${taxMoneyField('จำนวนคนพิการหรือทุพพลภาพที่อุปการะ', d.disabledCount, "setTaxDed('disabledCount',this.value)", 'คนละ 60,000 บาท')}
+    ${taxMoneyField('ค่าฝากครรภ์และคลอดบุตร', d.maternity, "setTaxDed('maternity',this.value)", 'ตามจริงไม่เกิน 60,000 บาทต่อคราว')}` : '';
+
+  return sec('ครอบครัว', family)
+    + sec('ประกัน',
+        F('life', D.insuranceGroup.items.life.label, D.insuranceGroup.items.life.note)
+        + F('healthSelf', D.insuranceGroup.items.healthSelf.label, 'เพดาน 25,000 และรวมกับเบี้ยประกันชีวิตต้องไม่เกิน 100,000')
+        + (full ? F('spouseLife', D.insuranceGroup.items.spouseLife.label, 'เพดาน 10,000') : '')
+        + (full ? F('parentHealth', D.parentHealth.label, D.parentHealth.note) : ''))
+    + sec('การออมเพื่อเกษียณ เพดานรวม 500,000',
+        F('pvd', D.retirementGroup.items.pvd.label, D.retirementGroup.items.pvd.note)
+        + F('gpf', D.retirementGroup.items.gpf.label, 'เพดาน 500,000 และอยู่ในเพดานกลุ่ม')
+        + F('rmf', D.retirementGroup.items.rmf.label, D.retirementGroup.items.rmf.note)
+        + F('pensionInsurance', D.retirementGroup.items.pensionInsurance.label, D.retirementGroup.items.pensionInsurance.note)
+        + (full ? F('nsf', D.retirementGroup.items.nsf.label, 'เพดาน 30,000') : '')
+        + (full ? F('privateTeacher', D.retirementGroup.items.privateTeacher.label, '') : ''))
+    + sec('ลงทุนยั่งยืน', F('thaiEsg', D.thaiEsg.label, D.thaiEsg.note))
+    + sec('อื่น ๆ',
+        F('socialSecurity', D.others.socialSecurity.label, D.others.socialSecurity.note)
+        + (full ? F('mortgageInterest', D.others.mortgageInterest.label, 'เพดาน 100,000') : '')
+        + (full ? F('socialEnterprise', D.others.socialEnterprise.label, 'เพดาน 100,000') : '')
+        + (full ? F('politicalParty', D.others.politicalParty.label, 'เพดาน 10,000') : ''))
+    + sec('เงินบริจาค', full
+        ? taxMoneyField('บริจาคผ่าน e-Donation (การศึกษา กีฬา โรงพยาบาลรัฐ)', d.eDonation, "setTaxDed('eDonation',this.value)", 'หักได้ 2 เท่าของที่จ่ายจริง แต่เพดานรวมยังคิดที่ 10% ของเงินได้หลังหักทุกอย่าง')
+          + taxMoneyField('เงินบริจาคทั่วไป', d.generalDonation, "setTaxDed('generalDonation',this.value)", 'หักตามจริง เพดานรวม 10%')
+        : '');
+}
+
+function taxBarHtml(g){
+  const pct = g.cap ? Math.min(100, g.used / g.cap * 100) : 0;
+  const left = Math.max(0, g.cap - g.used);
+  return `<div class="tx-bar-row">
+    <div class="tx-bar-top"><span>${g.label}</span>
+      <span><b>${fmt(Math.round(g.used))}</b> / ${fmt(g.cap)}</span></div>
+    <div class="tx-bar"><span style="width:${pct}%"></span></div>
+    <div class="tx-bar-note">${left > 0 ? `ยังใส่เพิ่มได้อีก ${fmt(Math.round(left))} บาท` : 'เต็มเพดานแล้ว'}</div>
+  </div>`;
+}
+
+function renderTaxResult(){
+  const box = document.getElementById('taxResult');
+  if(!box || !TAX_RULES) return;
+  const r = taxCompute(taxState, TAX_RULES);
+  if(r.income.gross <= 0){
+    box.innerHTML = `<div class="content-card"><p class="meta">กรอกรายได้ด้านบนแล้วผลลัพธ์จะขึ้นตรงนี้ทันที ไม่ต้องกดปุ่ม</p></div>`;
+    return;
+  }
+  const opts = taxPlanOptions(r.netIncome, TAX_RULES);
+  const comfort = TAX_RULES.planner.comfortRateMax;
+  const rows = [
+    ['เงินได้พึงประเมินรวม', r.income.gross],
+    ['หักค่าใช้จ่ายตามประเภทเงินได้', -r.income.expense],
+    ['หักค่าลดหย่อน', -r.deductions.total],
+    ['หักเงินบริจาค', -r.donation.total],
+    ['<b>เงินได้สุทธิ</b>', r.netIncome],
+  ];
+  const plan = opts.length ? opts.map(o => {
+    const good = o.targetRate <= comfort;
+    return `<div class="tx-opt${good?' tx-opt-good':''}">
+      <div class="tx-opt-h">ลงมาอยู่ฐาน ${Math.round(o.targetRate*100)}%${good?' <span class="tx-tag">เป้าหมายที่แนะนำ</span>':''}</div>
+      <div class="tx-opt-need">ต้องหาค่าลดหย่อนเพิ่มอีก <b>${fmt(Math.round(o.extraDeduction))} บาท</b></div>
+      <div class="tx-opt-save">ภาษีจะลดจาก ${fmt(Math.round(o.taxNow))} เหลือ ${fmt(Math.round(o.taxAfter))} บาท
+        · <b>ประหยัด ${fmt(Math.round(o.saved))} บาท</b></div>
+      <div class="tx-opt-eff">คิดเป็นเงินคืนภาษี ${(o.savedPerBaht*100).toFixed(1)} สตางค์ ต่อเงินที่ใส่เพิ่มทุก 1 บาท</div>
+    </div>`;
+  }).join('') : '<p class="meta">ตอนนี้อยู่ฐานต่ำสุดแล้ว ไม่มีขั้นให้ลงต่อ</p>';
+
+  box.innerHTML = `
+  <div class="content-card">
+    <h2>ผลการคำนวณ</h2>
+    <table class="tx-table">${rows.map(x => `<tr><td>${x[0]}</td>
+      <td class="tx-num">${x[1] < 0 ? '-' : ''}${fmt(Math.abs(Math.round(x[1])))}</td></tr>`).join('')}</table>
+    <div class="tx-headline">
+      <div><div class="tx-headline-k">ภาษีที่ต้องจ่าย</div><div class="tx-headline-v">${fmt(Math.round(r.tax))} บาท</div></div>
+      <div><div class="tx-headline-k">ฐานภาษีขั้นสูงสุดที่โดน</div><div class="tx-headline-v">${Math.round(r.topRate*100)}%</div></div>
+      <div><div class="tx-headline-k">คิดเป็นภาระภาษีจริง</div><div class="tx-headline-v">${(r.effectiveRate*100).toFixed(2)}%</div></div>
+    </div>
+    <p class="meta" style="margin-top:10px;">ฐานภาษีขั้นสูงสุดคืออัตราที่คิดกับเงินก้อนสุดท้าย ไม่ใช่อัตราที่คิดกับรายได้ทั้งก้อน
+      ภาระภาษีจริงจึงต่ำกว่าเสมอ</p>
+  </div>
+
+  <div class="content-card">
+    <h2>เพดานที่ใช้ไปแล้ว</h2>
+    <p class="meta">สามก้อนนี้แยกเพดานกัน ใส่เต็มก้อนหนึ่งไม่ได้แปลว่าอีกก้อนใส่ไม่ได้</p>
+    ${r.deductions.groups.map(taxBarHtml).join('')}
+  </div>
+
+  <div class="content-card">
+    <h2>ถ้าอยากลดภาษีลงอีก</h2>
+    <p class="meta">ตัวเลขนี้บอกว่าต้องหาค่าลดหย่อนเพิ่มอีกเท่าไรจึงจะลงมาแต่ละฐาน เรียงจากที่ใช้เงินน้อยที่สุดก่อน</p>
+    <div class="tx-opts">${plan}</div>
+    <div class="tx-cta">
+      <p>ค่าลดหย่อนที่ยังใส่เพิ่มได้และเป็นความคุ้มครองไปในตัว คือประกันชีวิต ประกันสุขภาพ และประกันบำนาญ
+        กดไปคำนวณเบี้ยจริงได้เลยว่าเงินก้อนนั้นซื้อทุนได้เท่าไร</p>
+      <button class="btn" onclick="showPage('calc')">ไปคำนวณเบี้ยประกัน →</button>
+      <button class="btn btn-ghost" onclick="showPage('ai')">ให้ระบบช่วยจัดแผนให้ →</button>
+    </div>
+  </div>
+
+  <div class="content-card tx-note-card">
+    <div class="tx-note-t">ข้อควรทราบ</div>
+    <p>เครื่องมือนี้คำนวณตามกฎของ<b>ปีภาษี ${TAX_RULES.taxYear}</b> ตรวจสอบกับประกาศกรมสรรพากรเมื่อ ${TAX_RULES.verifiedAt}
+      ใช้ประกอบการวางแผนเบื้องต้นเท่านั้น ไม่ใช่คำแนะนำทางภาษี การยื่นจริงให้ยึดตามกรมสรรพากรและผู้ทำบัญชีของท่าน</p>
+    <p>ผมเป็นแพทย์และตัวแทนประกันชีวิต ไม่ใช่ผู้สอบบัญชีหรือที่ปรึกษาภาษี
+      กรณีที่มีรายได้หลายทางหรือมูลค่าสูง ควรปรึกษาผู้เชี่ยวชาญด้านภาษีควบคู่ไปด้วย</p>
+    <p class="tx-removed"><b>รายการที่ไม่มีแล้วในปีภาษีนี้</b><br>
+      ${TAX_RULES.removedThisYear.map(x => `${x.label} — ${x.reason}`).join('<br>')}</p>
+  </div>`;
+}
+
+function renderTaxPage(){
+  const el = document.getElementById('taxContent');
+  if(!el) return;
+  if(!TAX_RULES){ el.innerHTML = '<div class="content-card"><div class="validation-box bad">โหลดไฟล์กฎภาษีไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้ง</div></div>'; return; }
+  el.innerHTML = `
+    <div class="content-card">
+      <h2>วางแผนภาษี ปีภาษี ${TAX_RULES.taxYear}</h2>
+      <p class="meta">กรอกรายได้และค่าลดหย่อนที่มีอยู่ ระบบจะบอกว่าตอนนี้เสียภาษีเท่าไร อยู่ฐานอะไร
+        และต้องหาค่าลดหย่อนเพิ่มอีกเท่าไรจึงจะลงมาแต่ละฐาน</p>
+      <div class="tx-modes">
+        <button class="tx-mode${taxState.mode==='quick'?' on':''}" onclick="setTaxMode('quick')">
+          <b>กรอกเร็ว</b><span>เฉพาะช่องที่คนส่วนใหญ่มี</span></button>
+        <button class="tx-mode${taxState.mode==='full'?' on':''}" onclick="setTaxMode('full')">
+          <b>กรอกละเอียด</b><span>ครบทุกประเภทเงินได้และทุกค่าลดหย่อน</span></button>
+      </div>
+    </div>
+    <div class="content-card">
+      <h2>รายได้ทั้งปี</h2>
+      <p class="meta">กรอกเป็นยอดทั้งปีก่อนหักอะไร ระบบจะหักค่าใช้จ่ายให้ตามประเภทเงินได้เอง</p>
+      <div class="tx-grid">${renderTaxIncomeForm()}</div>
+    </div>
+    <div class="content-card">
+      <h2>ค่าลดหย่อนที่มีอยู่แล้ว</h2>
+      <p class="meta">กรอกเฉพาะที่จ่ายจริงในปีภาษีนี้ ระบบจะตัดให้เองถ้าเกินเพดาน พร้อมบอกว่าถูกตัดเพราะอะไร</p>
+      ${renderTaxDeductionForm()}
+    </div>
+    <div id="taxResult"></div>`;
+  renderTaxResult();
+}
 
 function routeFromLocation(){
   if(openLegacyAnchor(location.hash)) return;

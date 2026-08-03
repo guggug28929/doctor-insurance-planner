@@ -29,6 +29,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/tax-planner",
+      "destination": "/index.html"
+    },
+    {
       "source": "/calculator",
       "destination": "/index.html"
     },
