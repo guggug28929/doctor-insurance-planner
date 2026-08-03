@@ -480,7 +480,8 @@
     flex:none;
     vertical-align:middle;
   }
-  .info-icon .tooltip{
+  /* กล่องคำอธิบายใช้หน้าตาเดียวกันทั้ง i ของหน้าคำนวณ และ ? ของหน้าภาษี */
+  .info-icon .tooltip, .tx-hint .tooltip{
     visibility:hidden;
     opacity:0;
     position:absolute;
@@ -502,12 +503,22 @@
     transition:opacity .12s;
     text-align:left;
   }
-  .info-icon:hover .tooltip, .info-icon:focus .tooltip{visibility:visible;opacity:1;}
+  /* เดิมเปิดคำอธิบายด้วย hover อย่างเดียว บนมือถือจึงไม่มีทางเปิดได้เลยเพราะไม่มีเมาส์
+     ตอนนี้เปิดด้วยการกดเป็นหลัก ส่วน hover ให้เฉพาะเครื่องที่มีเมาส์จริง
+     ถ้าไม่กั้นด้วย hover:hover ทัชสกรีนจะค้างสถานะ hover ไว้หลังกด แล้วปิดไม่ลง */
+  @media (hover:hover){
+    .info-icon:hover .tooltip, .tx-hint:hover .tooltip{visibility:visible;opacity:1;}
+  }
+  .info-icon:focus-visible .tooltip, .tx-hint:focus-visible .tooltip,
+  .hint-open .tooltip{visibility:visible;opacity:1;}
+  .info-icon:focus-visible, .tx-hint:focus-visible{outline:2px solid var(--pink-deep);outline-offset:2px;}
+  .info-icon.hint-open{background:var(--pink-deep);}
+  .tx-hint.hint-open{background:var(--pink-deep);color:#fff;}
   @media (max-width:600px){
     /* บนมือถือ ตรึงกล่องคำอธิบายไว้ที่ขอบล่างของจอเสมอ แทนการวางลอยข้างไอคอน
        เพราะไอคอนที่อยู่ท้ายบรรทัดจะดันกล่องล้นออกนอกจอ จนอ่านข้อความด้านขวาไม่ครบ
        ตรึงล่างจอทำให้ตำแหน่งคาดเดาได้เสมอไม่ว่าไอคอนจะอยู่ตรงไหนของหน้า */
-    .info-icon .tooltip{
+    .info-icon .tooltip, .tx-hint .tooltip{
       position:fixed;
       left:12px;
       right:12px;
@@ -1255,9 +1266,11 @@
   .tx-field input:focus,.tx-field select:focus{outline:2px solid var(--pink);outline-offset:-1px;}
   .tx-check label{font-weight:600;}
   .tx-check input{width:auto;}
-  .tx-hint{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+  /* ใช้กลไกเดียวกับ .info-icon เป๊ะ ๆ จะได้ไม่มีของสองแบบให้ดูแล
+     เดิมใช้ title attribute ซึ่งเป็น tooltip ของเมาส์ล้วน มือถือแตะยังไงก็ไม่ขึ้น */
+  .tx-hint{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
     border-radius:50%;background:var(--pink-soft,#fff0f5);color:var(--pink-deep);font-size:.68rem;
-    font-weight:800;cursor:help;flex:none;}
+    font-weight:800;cursor:pointer;flex:none;position:relative;margin-left:5px;vertical-align:middle;}
   .tx-income-row{display:contents;}
   .tx-sec{margin-top:18px;padding-top:14px;border-top:1px solid #f4e6ec;}
   .tx-sec:first-child{border-top:none;padding-top:0;margin-top:0;}
@@ -10281,6 +10294,88 @@ function openLegacyAnchor(hash){
    วิธีนี้กลับกัน คือปล่อยให้คัดลอกได้ตามปกติ แต่ของที่ถูกลอกไปจะพ่วงที่มาไปด้วย
    ใครเอาไปแปะที่อื่นก็เท่ากับช่วยโฆษณาให้
    ========================================================================= */
+/* ---------- ปุ่มคำอธิบาย ? และ i ----------
+   ทั้งเว็บใช้กลไกเดียวกัน เปิดด้วยการกด ไม่ใช่ hover
+   เดิม .info-icon เปิดด้วย CSS hover และ .tx-hint ใช้ title attribute
+   ทั้งสองแบบเป็นของเมาส์ล้วน คนที่เปิดจากมือถือจึงไม่มีทางอ่านคำอธิบายได้เลย */
+const HINT_SELECTOR = '.info-icon, .tx-hint';
+
+function hintIcon(text, cls = 'info-icon', glyph = 'i'){
+  return `<span class="${cls}" role="button" tabindex="0" aria-expanded="false"
+    aria-label="ดูคำอธิบาย">${glyph}<span class="tooltip" role="tooltip">${plannerEscapeHtml(text)}</span></span>`;
+}
+
+function closeAllHints(except){
+  document.querySelectorAll('.hint-open').forEach(el => {
+    if(el === except) return;
+    el.classList.remove('hint-open');
+    el.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleHint(el){
+  const open = !el.classList.contains('hint-open');
+  closeAllHints(el);
+  el.classList.toggle('hint-open', open);
+  el.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+/* ดักที่ระดับ capture เพราะไอคอนหลายอันอยู่ใน <label> ของ radio
+   ถ้าปล่อยให้ event ไหลต่อ การกดดูคำอธิบายจะไปเลือกแผนให้ด้วย ซึ่งไม่ใช่สิ่งที่ตั้งใจ */
+document.addEventListener('click', (e) => {
+  const icon = e.target.closest && e.target.closest(HINT_SELECTOR);
+  if(icon){
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHint(icon);
+    return;
+  }
+  closeAllHints();
+}, true);
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){ closeAllHints(); return; }
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const icon = e.target.closest && e.target.closest(HINT_SELECTOR);
+  if(!icon) return;
+  e.preventDefault();
+  toggleHint(icon);
+});
+
+// เลื่อนหน้าแล้วปิด เพราะกล่องถูกตรึงตำแหน่งไว้กับไอคอน
+window.addEventListener('scroll', () => closeAllHints(), {passive: true});
+
+/* ไอคอนที่มีอยู่ในหน้าและที่ถูกวาดใหม่ทีหลัง ต้องกดได้และใช้คีย์บอร์ดได้เหมือนกัน
+   ใช้ observer เพราะหน้าเว็บวาดเนื้อหาใหม่หลายจุด จะไปไล่เติมทีละที่ไม่ไหวและหลุดง่าย */
+function enhanceHints(root){
+  (root || document).querySelectorAll(HINT_SELECTOR).forEach(el => {
+    if(el.dataset.hintReady) return;
+    el.dataset.hintReady = '1';
+    el.style.touchAction = 'manipulation';   // กันดีเลย์ 300ms ของทัชสกรีนบางรุ่น
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-expanded', 'false');
+    if(!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'ดูคำอธิบาย');
+    // title เป็น tooltip ของเมาส์ ย้ายมาเป็นกล่องที่กดเปิดได้แทน
+    const t = el.getAttribute('title');
+    if(t){
+      el.removeAttribute('title');
+      if(!el.querySelector('.tooltip')){
+        const box = document.createElement('span');
+        box.className = 'tooltip';
+        box.setAttribute('role', 'tooltip');
+        box.textContent = t;
+        el.appendChild(box);
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  enhanceHints();
+  new MutationObserver(() => enhanceHints()).observe(document.body, {childList: true, subtree: true});
+});
+
 const CONTENT_CREDIT = 'ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance';
 /* ก๊อปสั้น ๆ เช่น เบอร์โทรหรือตัวเลขเบี้ย ไม่ต้องพ่วงเครดิต จะได้ไม่กวนลูกค้า
    พ่วงเฉพาะตอนที่ยกเนื้อหาเป็นย่อหน้าไป ซึ่งคือกรณีที่เราห่วงจริง */
@@ -10715,7 +10810,7 @@ function taxDebounce(){ clearTimeout(taxTimer); taxTimer = setTimeout(renderTaxR
 
 function taxMoneyField(label, value, onInput, hint){
   return `<div class="tx-field">
-    <label>${label}${hint ? `<span class="tx-hint" title="${plannerEscapeHtml(hint)}">?</span>` : ''}</label>
+    <label>${label}${hint ? hintIcon(hint, 'tx-hint', '?') : ''}</label>
     <input type="number" min="0" step="1000" value="${value||''}" placeholder="0" oninput="${onInput}">
   </div>`;
 }
@@ -11897,7 +11992,9 @@ function initCompareToggle(){
       g.type = 'button';
       // อ่านก่อนเทียบ จึงให้น้ำหนักเบากว่าปุ่มเปรียบเทียบ แต่สูงเท่ากัน
       g.innerHTML = '<span class="bgl-ico" aria-hidden="true">\u{1F4D6}</span>วิธีเลือกประกันสุขภาพ<span class="bgl-arrow" aria-hidden="true">→</span>';
-      g.title = 'อ่านหลักการเลือกแผน ก่อนเทียบตัวเลข';
+      // ใช้ aria-label ไม่ใช่ title เพราะ title เป็น tooltip ของเมาส์ มือถือไม่มีทางเห็น
+      // ข้อความบนปุ่มบอกอยู่แล้วว่าไปไหน ตรงนี้จึงมีไว้ให้โปรแกรมอ่านหน้าจอเท่านั้น
+      g.setAttribute('aria-label', 'วิธีเลือกประกันสุขภาพ อ่านหลักการเลือกแผนก่อนเทียบตัวเลข');
       g.onclick = () => { showPage('knowledge'); setKnowTab('guide'); };
       actions.appendChild(g);
     }
