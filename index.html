@@ -4217,7 +4217,7 @@ function careplusPremium(sum, plan, gender, age, occupationClass, freq){
   return null;
 }
 
-function opdPremium(cfg, gender, age, freq){
+function opdPremium(cfg, gender, age, freq, occupationClass){
   freq = freq || 'annual';
   if(cfg.type === 'none') return {label:null, premium:null};
   if(cfg.type === 'krang'){
@@ -4228,19 +4228,33 @@ function opdPremium(cfg, gender, age, freq){
     return {label:'OPD รายครั้ง', premium:v};
   }
   if(cfg.type === 'mao'){
-    const table = RATES.opd_เหมา.payment_schedules?.[freq];
-    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, 6) : null; // published age 6-98
-    // OPD เหมาจ่าย: ชื่อแผนคือวงเงินต่อปี เบี้ยจึงต้องน้อยกว่าวงเงินเสมอ
-    // ตารางฝั่งชายตั้งแต่อายุ 81 ขึ้นไปมีเลขที่เบี้ยแพงกว่าวงเงิน ซึ่งเป็นไปไม่ได้
-    // ยังไม่แก้ตัวเลขเพราะต้องยืนยันกับตารางทางการก่อน ระหว่างนี้ไม่เสนอราคาให้
-    // ดีกว่าเสนอเลขที่เห็นแล้วรู้ทันทีว่าผิด
-    const ceiling = parseInt(cfg.plan, 10);
-    if(v != null && freq === 'annual' && ceiling && v >= ceiling){
-      return {label:'OPD เหมาจ่าย', premium:null, needsVerify:true};
-    }
-    return {label:'OPD เหมาจ่าย', premium:v};
+    return {label:'OPD เหมาจ่าย', premium: opdMaoPremium(cfg.plan, gender, age, occupationClass, freq)};
   }
   return {label:null, premium:null};
+}
+
+/* เบี้ย OPD เหมาจ่าย อ่านจากตารางช่วงอายุตามหน้าต้นฉบับโดยตรง
+   ไม่กางเป็นอาร์เรย์รายอายุ เพราะการกางเคยทำให้คอลัมน์เลื่อน
+   แล้วได้เบี้ยของแผนอื่นมาแสดง เช่น แผน 15,000 ไปได้เบี้ยของแผน 20,000
+   อัตราแยกตามชั้นอาชีพจริง ชั้น 3 แพงกว่าชั้น 1-2 อย่างมีนัยสำคัญ */
+function opdMaoPremium(plan, gender, age, occupationClass, freq){
+  const g = RATES.opd_เหมา;
+  if(!g || !g.occupations) return null;
+  const occ = String(occupationClass) === '3' ? '3'
+    : (String(occupationClass) === '4' ? null : '1_2');
+  if(!occ) return null;                       // ชั้นอาชีพ 4 ไม่มีอัตราเผยแพร่
+  const table = g.occupations[occ];
+  if(!table || age < table.age_min || age > table.age_max) return null;
+  const idx = g.plans.indexOf(parseInt(plan, 10));
+  if(idx < 0) return null;
+  const band = table.bands.find(b => age >= b.from && age <= b.to);
+  if(!band) return null;
+  const annual = (gender === 'm' ? band.m : band.f)[idx];
+  if(annual == null) return null;
+  const factor = g.freq_factor[freq || 'annual'];
+  if(factor == null) return null;
+  // ปัดที่ทศนิยมตำแหน่งแรก ตั้งแต่ 5 ขึ้นไปปัดขึ้น ตามที่บริษัทกำหนด
+  return Math.round(annual * factor);
 }
 
 function cipcPremium(capital, gender, age, freq){
@@ -4509,7 +4523,7 @@ function renderAll(){
   // using the insured's attained age that year (rates increase with age).
   // Main whole-life and HB are level premiums fixed at entry age; HB does not step up each year.
   const healthLabels = inp.healthList.map(cfg => healthRiderPremium(cfg, gender, entryAge, occupationClass, freq).label);
-  const opdLabels = inp.opdList.map(cfg => opdPremium(cfg, gender, entryAge, freq).label);
+  const opdLabels = inp.opdList.map(cfg => opdPremium(cfg, gender, entryAge, freq, occupationClass).label);
   const careplusPlanNames = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
 
   const cols = [];
@@ -4556,7 +4570,7 @@ function renderAll(){
     // selected งวดชำระ (freq) directly from that product's own payment_schedules —
     // never a division/multiplication of the annual rate.
     inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) row.values['health_'+i] = healthRiderPremium(cfg, gender, age, occupationClass, freq).premium; });
-    inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age, freq).premium; });
+    inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age, freq, occupationClass).premium; });
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
@@ -4586,7 +4600,7 @@ function renderAll(){
   // must not fluctuate just because a non-annual งวดชำระ was selected for display.
   let riderTotalYear1 = 0;
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]){ const v = healthRiderPremium(cfg, gender, entryAge, occupationClass, 'annual').premium; if(typeof v === 'number') riderTotalYear1 += v; } });
-  inp.opdList.forEach((cfg, i) => { if(opdLabels[i]){ const v = opdPremium(cfg, gender, entryAge, 'annual').premium; if(typeof v === 'number') riderTotalYear1 += v; } });
+  inp.opdList.forEach((cfg, i) => { if(opdLabels[i]){ const v = opdPremium(cfg, gender, entryAge, 'annual', occupationClass).premium; if(typeof v === 'number') riderTotalYear1 += v; } });
   if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -6987,8 +7001,8 @@ const PLAN_DETAILS = {
       {label:`ชาย ${fmt(plan)}`, arr: ageSeriesFromFn(6,80, age=>opdPremium({type:'krang',plan}, 'm', age, freq).premium)},
       {label:`หญิง ${fmt(plan)}`, arr: ageSeriesFromFn(6,80, age=>opdPremium({type:'krang',plan}, 'f', age, freq).premium)},
     ])) + '<h3 style="margin-top:16px;">OPD เหมาจ่ายรายปี</h3>' + renderAgeTable(6, 90, [15000,20000,25000,30000,50000,100000].flatMap(plan => [
-      {label:`ชาย ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'm', age, freq).premium)},
-      {label:`หญิง ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'f', age, freq).premium)},
+      {label:`ชาย ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'm', age, freq, '1').premium)},
+      {label:`หญิง ${fmt(plan)}`, arr: ageSeriesFromFn(6,90, age=>opdPremium({type:'mao',plan}, 'f', age, freq, '1').premium)},
     ])),
   },
 
@@ -7400,7 +7414,7 @@ function premiumOfItem(item, gender, age){
   if(item.kind==='ehp') return healthRiderPremium({type:'ehp', plan:item.plan}, gender, age).premium;
   if(item.kind==='maochai') return healthRiderPremium({type:'maochai', plan:item.plan}, gender, age).premium;
   if(item.kind==='ecp') return healthRiderPremium({type:'ecp', plan:item.plan}, gender, age).premium;
-  if(item.kind==='opd_mao') return opdPremium({type:'mao', plan:String(item.plan)}, gender, age).premium;
+  if(item.kind==='opd_mao') return opdPremium({type:'mao', plan:String(item.plan)}, gender, age, 'annual', '1').premium;
   if(item.kind==='opd_krang') return opdPremium({type:'krang', plan:String(item.plan)}, gender, age).premium;
   if(item.kind==='careplus') return careplusPremium('5m', item.plan === 'ca' ? 'ca' : 'cackd', gender, age);
   if(item.kind==='cipc') return cipcPremium(item.capital, gender, age);
