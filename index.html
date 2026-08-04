@@ -588,6 +588,12 @@
     border-bottom:1px solid var(--line);
   }
   .table-export-actions .meta{margin:0;}
+  /* คอลัมน์ผลประโยชน์ของแบบบำนาญ ใช้สีเขียวเพื่อแยกจากคอลัมน์เบี้ยที่เป็นเงินจ่ายออก
+     ลูกค้าจะได้เห็นทันทีว่าอันไหนคือเงินที่ต้องจ่าย อันไหนคือเงินที่จะได้รับ */
+  .benefit-col{background:#f2f9f4 !important;color:#1d5b33;font-weight:600;}
+  th.benefit-col{background:#217346 !important;color:#fff !important;}
+  .benefit-col.dash{color:#8aa294;font-weight:400;}
+  .benefit-note{padding:8px 12px;margin:0;background:#f7fbf8;line-height:1.85;}
   .export-btns{display:flex;gap:8px;flex-wrap:wrap;}
   .btn-export-pdf{
     width:auto;margin:0;padding:9px 14px;font-size:.82rem;
@@ -3345,8 +3351,9 @@
 
 
 <script>
+const DATA_VERSION = '2026-08-04';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
-ratesRequest.open("GET", "/data/premium-rates.json", false);
+ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
 if (ratesRequest.status < 200 || ratesRequest.status >= 300) {
   throw new Error("โหลดตารางเบี้ย data/premium-rates.json ไม่สำเร็จ");
@@ -4656,22 +4663,48 @@ function renderAll(){
   const totalHeaders = paymentInfo.periods === 1
     ? '<th class="total-col">เบี้ยรวม/ปี</th><th class="total-col">เบี้ยรวมสะสม</th>'
     : `<th class="total-col">เบี้ยชำระต่องวด (${paymentInfo.label})</th><th class="total-col">เบี้ยรวมทั้งปี</th><th class="total-col">เบี้ยรวมสะสม</th>`;
-  let thead = '<tr><th>อายุ</th><th>ปี กธ.</th>' + cols.map(c=>`<th>${c.label}</th>`).join('') + totalHeaders + '</tr>';
-  let tbody = rows.map(r => {
+  /* แบบบำนาญ ลูกค้าอยากเห็นสองอย่างนี้มากกว่าเบี้ย คือได้บำนาญปีละเท่าไร
+     และถ้าเสียชีวิตผู้รับประโยชน์ได้เท่าไร จึงเติมสองคอลัมน์นี้เฉพาะแบบบำนาญ */
+  const pen = isPensionMainPlan(inp.mainPlan) ? pensionBenefitColumns(inp, entryAge, gender, rows) : null;
+  const benefitHeaders = pen ? pen.headers : '';
+  let thead = '<tr><th>อายุ</th><th>ปี กธ.</th>' + cols.map(c=>`<th>${c.label}</th>`).join('')
+    + benefitHeaders + totalHeaders + '</tr>';
+  let tbody = rows.map((r, i) => {
     const cells = cols.map(c => {
       const v = r.values[c.key];
       return (v===null || v===undefined) ? '<td class="dash">-</td>' : `<td>${fmt(v)}</td>`;
     }).join('');
+    const benefitCells = pen ? pen.cells[i] : '';
     const totalCells = paymentInfo.periods === 1
       ? `<td class="total-col">${fmt(r.annualPayable)}</td><td class="total-col">${fmt(r.cumulative)}</td>`
       : `<td class="total-col">${fmt(r.installmentTotal)}</td><td class="total-col">${fmt(r.annualPayable)}</td><td class="total-col">${fmt(r.cumulative)}</td>`;
-    return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}${totalCells}</tr>`;
+    return `<tr><td>${r.age}</td><td>${r.policyYear}</td>${cells}${benefitCells}${totalCells}</tr>`;
   }).join('');
+
+  /* ต้องบอกลูกค้าเสมอว่าตัวเลขคุ้มครองชีวิตมาจากกติกาข้อไหน
+     และแบบไหนที่เรายังไม่แสดงตัวเลข เพราะอะไร ไม่ใช่ปล่อยขีดกลางเปล่า ๆ */
+  const benefitNote = pen ? (() => {
+    const r = pen.rule;
+    const start = pen.cf.startAge;
+    const head = `<b>เงินบำนาญ</b> เริ่มรับเมื่ออายุ ${start} ปี ถึงอายุ ${pen.cf.endAge} ปี `
+      + `รวมทั้งสัญญา ${fmt(pen.cf.totalPension)} บาท (เบี้ยรวม ${fmt(pen.cf.totalPremium)} บาท)`;
+    if(!r.computable){
+      return `<p class="meta benefit-note">${head}</p>`
+        + `<p class="meta benefit-note"><b>คุ้มครองชีวิต</b> แบบนี้ยังไม่แสดงเป็นตัวเลข `
+        + `เพราะ${r.blockedReason} จึงขึ้นว่า "ตามกรมธรรม์" ไว้ก่อน `
+        + `ตัวเลขที่แสดงจะต้องตรงกับใบเสนอขายของบริษัทเท่านั้น</p>`;
+    }
+    const before = r.beforePension && r.beforePension.note ? `ก่อนรับบำนาญ ${r.beforePension.note}` : '';
+    const during = r.duringPension && r.duringPension.note ? `ระหว่างรับบำนาญ ${r.duringPension.note}` : '';
+    return `<p class="meta benefit-note">${head}</p>`
+      + `<p class="meta benefit-note"><b>คุ้มครองชีวิต</b> ${[before, during].filter(Boolean).join(' · ')}`
+      + (r.verifiedAgainst ? ` · ตรวจตรงกับ${r.verifiedAgainst}` : '') + '</p>';
+  })() : '';
 
   const frequencyNote = warnLabels.length
     ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ยังไม่มีตารางเบี้ยที่เผยแพร่สำหรับ "${warnLabels.join(', ')}" ที่งวดชำระ/ขั้นอาชีพนี้ ระบบจึงแสดง "-" แทนแทนที่จะเดาตัวเลข กรุณาเลือก "รายปี" และ/หรือขั้นอาชีพ 1-3 สำหรับแผนดังกล่าว หรือตรวจอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
     : '';
-  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเพื่อส่งให้ลูกค้า ทั้งสองแบบจัดหน้าแนวนอนให้พอดีกระดาษ A4 แล้ว</p><div class="export-btns"><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button><button type="button" class="btn btn-export-pdf" onclick="exportPremiumTablePdf()">ดาวน์โหลด PDF</button></div></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
+  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเพื่อส่งให้ลูกค้า ทั้งสองแบบจัดหน้าแนวนอนให้พอดีกระดาษ A4 แล้ว</p><div class="export-btns"><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button><button type="button" class="btn btn-export-pdf" onclick="exportPremiumTablePdf()">ดาวน์โหลด PDF</button></div></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${benefitNote}${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
 }
@@ -11020,7 +11053,7 @@ document.addEventListener('copy', (e) => {
 let TAX_RULES = null;
 try {
   const req = new XMLHttpRequest();
-  req.open('GET', '/data/tax-rules.json', false);
+  req.open('GET', '/data/tax-rules.json?v=' + DATA_VERSION, false);
   req.send(null);
   if(req.status >= 200 && req.status < 400) TAX_RULES = JSON.parse(req.responseText);
 } catch(e){ console.error('โหลด กฎภาษี ไม่สำเร็จ', e); }
@@ -13018,13 +13051,13 @@ initCompareToggle();
 var PENSION = (function(){
   try{
     const req = new XMLHttpRequest();
-    req.open('GET', '/data/pension-plans.json', false);
+    req.open('GET', '/data/pension-plans.json?v=' + DATA_VERSION, false);
     req.send(null);
     if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
   }catch(e){}
   try{
     const req2 = new XMLHttpRequest();
-    req2.open('GET', './data/pension-plans.json', false);
+    req2.open('GET', './data/pension-plans.json?v=' + DATA_VERSION, false);
     req2.send(null);
     if(req2.status >= 200 && req2.status < 300) return JSON.parse(req2.responseText);
   }catch(e){}
@@ -13238,6 +13271,71 @@ function pensionCashflow(planId, variant, gender, entryAge, sum, freq){
   return {rows, totalPremium: cumPrem, totalPension: cumPension, maturity,
           payYears: p.premiumTermType === 'single' ? 1 : (lastPayAge - entryAge + 1),
           startAge, endAge: finalAge, freq, perPay, perYear};
+}
+
+/* สร้างสองคอลัมน์ผลประโยชน์สำหรับตารางเบี้ยในหน้าคำนวณ
+   เงินบำนาญคำนวณได้ทุกแบบ ส่วนคุ้มครองชีวิตแสดงเฉพาะแบบที่กติกาชัดเจนพอ
+   แบบที่ยังยืนยันตัวเลขไม่ได้จะขึ้นขีดกลางพร้อมหมายเหตุ ไม่ใส่ตัวเลขมั่ว */
+function pensionBenefitColumns(inp, entryAge, gender, rows){
+  const cf = pensionMainCashflow(entryAge);
+  if(!cf || !currentPensionMain) return null;
+  const planId = currentPensionMain.pid;
+  const rule = (pensionPlan(planId) || {}).deathBenefitRule || {};
+  const sum = inp.mainCapital;
+  const byAge = new Map(cf.rows.map(r => [r.age, r]));
+
+  const headers = '<th class="benefit-col">เงินบำนาญ/ปี</th>'
+    + '<th class="benefit-col">คุ้มครองชีวิต</th>';
+
+  const cells = rows.map(r => {
+    const cr = byAge.get(r.age);
+    const pensionCell = cr && cr.pension > 0
+      ? `<td class="benefit-col">${fmt(cr.pension)}</td>`
+      : '<td class="benefit-col dash">-</td>';
+    if(!cr) return pensionCell + '<td class="benefit-col dash">-</td>';
+    const db = pensionDeathBenefit(planId, sum, r.age, cf.startAge, cr.cumPrem, cr.cumPension);
+    const deathCell = db.value != null
+      ? `<td class="benefit-col">${fmt(db.value)}</td>`
+      : `<td class="benefit-col dash" title="">${db.blocked ? 'ตามกรมธรรม์' : '-'}</td>`;
+    return pensionCell + deathCell;
+  });
+
+  return {headers, cells, rule, cf};
+}
+
+/* ---------- ผลประโยชน์กรณีเสียชีวิตของแบบบำนาญ ----------
+   แต่ละแบบใช้กติกาไม่เหมือนกันเลย ไม่ใช่ "เบี้ยลบบำนาญ" เหมือนกันหมด
+   เฟล็กซี่ใช้ 105% ของเบี้ยสะสม 9901 ใช้ 110% ของเบี้ยครั้งเดียว
+   แฮปปี้ รีไทร์ ใช้ร้อยละของทุนแบบขั้นบันไดตามอายุ
+   ส่วนจี15 กับ จี20 ใช้มูลค่าปัจจุบันของบำนาญที่เหลือ ซึ่งต้องใช้อัตราคิดลด
+   ที่ยังไม่มีข้อมูล จึงตั้ง computable เป็น false ไว้ และห้ามแสดงตัวเลขเด็ดขาด */
+function pensionDeathBenefit(planId, sum, age, startAge, cumPremium, cumPension){
+  const p = pensionPlan(planId);
+  const rule = p && p.deathBenefitRule;
+  if(!rule) return {value: null, note: 'ยังไม่มีข้อมูลเงื่อนไข'};
+  if(!rule.computable){
+    return {value: null, blocked: true, note: rule.blockedReason || 'ยังยืนยันตัวเลขไม่ได้'};
+  }
+  const inPension = startAge == null || age >= startAge;
+  const leg = inPension ? rule.duringPension : rule.beforePension;
+  if(!leg) return {value: null, note: ''};
+
+  let v = null;
+  if(leg.type === 'pctOfCumulativePremium'){
+    v = Math.round(cumPremium * leg.pct / 100);
+  } else if(leg.type === 'cumulativePremiumMinusPension'){
+    // รับบำนาญไปเกินเบี้ยที่จ่ายแล้ว ส่วนนี้เป็นศูนย์ ไม่ใช่ติดลบ
+    v = Math.max(0, cumPremium - cumPension);
+  } else if(leg.type === 'pctOfSumByAge'){
+    const band = (leg.bands || []).find(b => age >= b.from && age <= b.to);
+    let pct = band ? band.pct : null;
+    if(pct == null) return {value: null, note: 'อยู่นอกช่วงอายุที่ตารางระบุ'};
+    if(leg.minPctOfSum != null) pct = Math.max(pct, leg.minPctOfSum);
+    v = Math.round(sum * pct / 100);
+  } else {
+    return {value: null, note: 'ยังไม่รองรับกติกาแบบนี้'};
+  }
+  return {value: v, note: leg.note || '', alsoGreaterOf: leg.alsoGreaterOf || ''};
 }
 
 /* ---------- IRR (bisection บนกระแสเงินสดรายปี) ---------- */
