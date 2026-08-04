@@ -594,6 +594,15 @@
   th.benefit-col{background:#217346 !important;color:#fff !important;}
   .benefit-col.dash{color:#8aa294;font-weight:400;}
   .benefit-note{padding:8px 12px;margin:0;background:#f7fbf8;line-height:1.85;}
+  .pension-balance{margin:0;padding:14px 12px;background:#f2f9f4;border-top:2px solid #217346;}
+  .pension-balance h4{margin:0 0 10px;font-size:15px;color:#1d5b33;}
+  .pension-balance table{width:100%;border-collapse:collapse;background:transparent;}
+  .pension-balance td{padding:6px 8px;border:0;border-bottom:1px solid #dcebe1;font-size:14px;}
+  .pension-balance td:last-child{text-align:right;font-weight:600;color:#1d5b33;white-space:nowrap;}
+  .pension-balance tr.pb-total td{border-bottom:0;border-top:2px solid #217346;font-size:16px;font-weight:700;padding-top:10px;}
+  .pension-balance tr.pb-total td:last-child{color:#146c43;}
+  .pension-balance tr.pb-loss td:last-child{color:var(--danger);}
+  .pension-balance .pb-sub{font-size:12.5px;color:#5a7365;font-weight:400;display:block;}
   .export-btns{display:flex;gap:8px;flex-wrap:wrap;}
   .btn-export-pdf{
     width:auto;margin:0;padding:9px 14px;font-size:.82rem;
@@ -4686,17 +4695,16 @@ function renderAll(){
   const benefitNote = pen ? (() => {
     const r = pen.rule;
     const start = pen.cf.startAge;
-    const head = `<b>เงินบำนาญ</b> เริ่มรับเมื่ออายุ ${start} ปี ถึงอายุ ${pen.cf.endAge} ปี `
-      + `รวมทั้งสัญญา ${fmt(pen.cf.totalPension)} บาท (เบี้ยรวม ${fmt(pen.cf.totalPremium)} บาท)`;
+    const head = pensionBalanceBox(pen.cf, inp.mainCapital);
     if(!r.computable){
-      return `<p class="meta benefit-note">${head}</p>`
+      return head
         + `<p class="meta benefit-note"><b>คุ้มครองชีวิต</b> แบบนี้ยังไม่แสดงเป็นตัวเลข `
         + `เพราะ${r.blockedReason} จึงขึ้นว่า "ตามกรมธรรม์" ไว้ก่อน `
         + `ตัวเลขที่แสดงจะต้องตรงกับใบเสนอขายของบริษัทเท่านั้น</p>`;
     }
     const before = r.beforePension && r.beforePension.note ? `ก่อนรับบำนาญ ${r.beforePension.note}` : '';
     const during = r.duringPension && r.duringPension.note ? `ระหว่างรับบำนาญ ${r.duringPension.note}` : '';
-    return `<p class="meta benefit-note">${head}</p>`
+    return head
       + `<p class="meta benefit-note"><b>คุ้มครองชีวิต</b> ${[before, during].filter(Boolean).join(' · ')}`
       + (r.verifiedAgainst ? ` · ตรวจตรงกับ${r.verifiedAgainst}` : '') + '</p>';
   })() : '';
@@ -13271,6 +13279,39 @@ function pensionCashflow(planId, variant, gender, entryAge, sum, freq){
   return {rows, totalPremium: cumPrem, totalPension: cumPension, maturity,
           payYears: p.premiumTermType === 'single' ? 1 : (lastPayAge - entryAge + 1),
           startAge, endAge: finalAge, freq, perPay, perYear};
+}
+
+/* กล่องสรุปท้ายตารางแบบบำนาญ จ่ายไปเท่าไร ได้คืนเท่าไร ส่วนต่างเท่าไร
+   ตั้งใจให้เป็นตัวเลขดิบที่ตรวจกับใบเสนอขายได้ ไม่ใช่ตัวเลขโฆษณา
+   จึงไม่คิดมูลค่าเงินตามเวลาให้ และบอกไว้ตรง ๆ ว่าไม่ได้คิด */
+function pensionBalanceBox(cf, sum){
+  if(!cf) return '';
+  const paid = cf.totalPremium;
+  const pension = cf.totalPension;
+  const maturity = cf.maturity || 0;   // แยกจากบำนาญ ไม่ได้รวมอยู่ใน totalPension แล้ว
+  const got = pension + maturity;
+  const diff = got - paid;
+  const times = paid > 0 ? got / paid : null;
+  const pctOfSum = sum > 0 ? Math.round(got / sum * 100) : null;
+  const payLabel = cf.payYears === 1 ? 'ชำระครั้งเดียว' : `ชำระ ${cf.payYears} ปี`;
+  const rangeLabel = cf.startAge != null ? `อายุ ${cf.startAge}-${cf.endAge} ปี` : `ถึงอายุ ${cf.endAge} ปี`;
+  const rows = [
+    [`เบี้ยที่ชำระทั้งหมด<span class="pb-sub">${payLabel}</span>`, fmt(paid) + ' บาท'],
+    [`เงินบำนาญที่ได้รับทั้งหมด<span class="pb-sub">${rangeLabel}</span>`, fmt(pension) + ' บาท'],
+  ];
+  if(maturity > 0) rows.push(['ผลประโยชน์ครบกำหนดสัญญา', fmt(maturity) + ' บาท']);
+  if(maturity > 0) rows.push(['<b>รวมเงินที่ได้รับทั้งหมด</b>', '<b>' + fmt(got) + ' บาท</b>']);
+  const diffLabel = diff >= 0
+    ? `ได้รับมากกว่าเบี้ยที่จ่าย<span class="pb-sub">คิดเป็น ${times.toFixed(2)} เท่าของเบี้ยที่ชำระ`
+      + (pctOfSum != null ? ` · ${pctOfSum}% ของทุนประกัน ${fmt(sum)} บาท` : '') + `</span>`
+    : `ได้รับน้อยกว่าเบี้ยที่จ่าย<span class="pb-sub">คิดเป็น ${times.toFixed(2)} เท่าของเบี้ยที่ชำระ</span>`;
+  const body = rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')
+    + `<tr class="pb-total${diff < 0 ? ' pb-loss' : ''}"><td>${diffLabel}</td>`
+    + `<td>${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))} บาท</td></tr>`;
+  return `<div class="pension-balance"><h4>สรุปตลอดสัญญา — จ่ายเท่าไร ได้คืนเท่าไร</h4>`
+    + `<table><tbody>${body}</tbody></table>`
+    + `<p class="meta" style="margin:10px 0 0;padding:0;background:none;">ตัวเลขนี้เป็นการรวมเงินตามหน้ากรมธรรม์ ยังไม่ได้คิดมูลค่าเงินตามเวลา `
+    + `และยังไม่รวมสิทธิลดหย่อนภาษี · ถ้าเสียชีวิตก่อนครบสัญญา จะได้รับตามคอลัมน์คุ้มครองชีวิตแทน ไม่ใช่ยอดนี้</p></div>`;
 }
 
 /* สร้างสองคอลัมน์ผลประโยชน์สำหรับตารางเบี้ยในหน้าคำนวณ
