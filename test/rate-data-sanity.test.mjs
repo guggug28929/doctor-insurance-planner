@@ -48,29 +48,21 @@ test('อัตราส่วนหญิงต่อชายต้องแ�
   }
 });
 
-test('OPD เหมาจ่าย เบี้ยต้องไม่แพงกว่าวงเงินที่ได้', () => {
-  // ชื่อแผนคือวงเงินต่อปี ถ้าเบี้ยแพงกว่าวงเงินแปลว่าตารางผิดแน่นอน
+/* เดิมตารางนี้ถูกกางเป็นอาร์เรย์รายอายุแล้วคอลัมน์เลื่อน
+   ตอนนี้ได้ตารางทางการมาแล้ว จึงเก็บเป็นช่วงอายุตามต้นฉบับและไม่มีข้อผิดพลาดค้างอีก
+   รายละเอียดการตรวจอยู่ใน test/opd-mao.test.mjs */
+test('OPD เหมาจ่าย ต้องไม่เหลือข้อมูลที่รอยืนยัน', () => {
   const g = R['opd_เหมา'];
-  const bad = [];
-  for (const key of Object.keys(g)) {
-    const m = key.match(/^([mf])_(\d+)$/);
-    if (!m || !Array.isArray(g[key])) continue;
-    const ceiling = Number(m[2]);
-    g[key].forEach((v, i) => {
-      if (v != null && v >= ceiling) bad.push(`${key} อายุ ${g.age_start + i}: เบี้ย ${v} ≥ วงเงิน ${ceiling}`);
-    });
-  }
-  // ยังแก้ตัวเลขไม่ได้จนกว่าจะยืนยันกับตารางทางการ จึงบันทึกไว้เป็นหนี้ที่ค้างอยู่
-  assert.ok(g.data_issue && g.data_issue.status === 'needs_verification',
-    'ตารางนี้ยังมีเลขที่ต้องยืนยัน ต้องคง data_issue ไว้จนกว่าจะแก้จริง');
-  assert.ok(bad.length > 0 ? g.data_issue.scope.includes('81') : true,
-    'ถ้ายังมีเลขผิดอยู่ ขอบเขตใน data_issue ต้องระบุช่วงที่ถูกต้อง');
+  assert.ok(!g.data_issue, 'แก้ข้อมูลจริงแล้ว ต้องไม่เหลือธงรอยืนยัน');
+  assert.ok(!g.m_15000, 'อาร์เรย์รายอายุแบบเก่าต้องถูกลบออก');
+  assert.ok(g.occupations && g.occupations['1_2'] && g.occupations['3']);
 });
 
-test('แอปต้องไม่เสนอราคา OPD เหมาจ่าย ในช่วงที่เบี้ยแพงกว่าวงเงิน', () => {
-  assert.match(html, /const ceiling = parseInt\(cfg\.plan, 10\);/);
-  assert.match(html, /if\(v != null && freq === 'annual' && ceiling && v >= ceiling\)\{/);
-  assert.match(html, /return \{label:'OPD เหมาจ่าย', premium:null, needsVerify:true\};/);
+test('แอปต้องอ่าน OPD เหมาจ่าย จากช่วงอายุ ไม่ใช่อาร์เรย์รายอายุ', () => {
+  assert.match(html, /function opdMaoPremium\(plan, gender, age, occupationClass, freq\)/);
+  assert.match(html, /table\.bands\.find\(b => age >= b\.from && age <= b\.to\)/);
+  assert.ok(!html.includes("RATES.opd_เหมา.payment_schedules"),
+    'ต้องไม่อ่านจากโครงเก่าอีก');
 });
 
 test('D Health Lite Copayment ต้องใช้ตารางละเอียดเป็นหลัก', () => {

@@ -90,9 +90,15 @@ test("stores published SmartWeb instalment tables without deriving them from ann
   assert.equal(maternity.occupations["3"].rates.monthly.p1[5], 6881);
 
   // OPD lump-sum is the sole product with an expressly-approved instalment formula.
-  const opdLump = rates["opd_เหมา"].payment_schedules;
-  assert.equal(opdLump.formula.monthly, "annual × 0.087");
-  assert.equal(opdLump.monthly.m_30000[25], 1445);
+  // ตารางย้ายไปเก็บเป็นช่วงอายุแยกตามชั้นอาชีพแล้ว จึงไม่มี payment_schedules อีก
+  const opdLump = rates["opd_เหมา"];
+  assert.equal(opdLump.freq_factor.monthly, 0.087);
+  assert.equal(opdLump.freq_factor.semiannual, 0.52);
+  assert.ok(!opdLump.payment_schedules, "อาร์เรย์รายอายุแบบเก่าต้องถูกลบออกแล้ว");
+  // ชาย อายุ 31 แผน 30,000 ชั้นอาชีพ 1-2 รายปี 16,613 → รายเดือน 1,445
+  const band = opdLump.occupations["1_2"].bands.find((b) => b.from === 31);
+  assert.equal(band.m[opdLump.plans.indexOf(30000)], 16613);
+  assert.equal(Math.round(16613 * opdLump.freq_factor.monthly), 1445);
 
   const hb = rates.hb.payment_schedules;
   assert.equal(hb.annual[16], 1600);
