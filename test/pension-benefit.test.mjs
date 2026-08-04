@@ -111,6 +111,55 @@ test('หน้าเว็บต้องใส่คอลัมน์เฉ�
 
 /* ไฟล์ข้อมูลถูกโหลดแยกจาก index.html ถ้าเบราว์เซอร์แคชไฟล์เก่าไว้
    ลูกค้าจะเห็นเบี้ยเก่าปนกับโค้ดใหม่ ซึ่งเป็นความผิดพลาดที่มองไม่เห็น */
+/* กล่องสรุปท้ายตาราง จ่ายเท่าไร ได้คืนเท่าไร
+   จุดที่พลาดง่ายคือผลประโยชน์ครบสัญญาของแฮปปี้ รีไทร์ 60 (400% ที่อายุ 90)
+   ซึ่งอยู่นอกช่วงรับบำนาญ (สิ้นสุดอายุ 89) จึงต้องบวกเพิ่ม ไม่ใช่นับซ้ำ */
+const box = (() => {
+  const c = vm.createContext({Math, fmt: n => Number(n).toLocaleString('en-US')});
+  vm.runInContext(grab('function pensionBalanceBox('), c);
+  return vm.runInContext('pensionBalanceBox', c);
+})();
+
+test('สรุปท้ายตารางต้องเทียบเบี้ยที่จ่ายกับเงินที่ได้รับ', () => {
+  const h = box({totalPremium: 1476076, totalPension: 3234000, maturity: 0,
+                 payYears: 28, startAge: 65, endAge: 90}, 700000);
+  assert.match(h, /1,476,076/, 'ต้องมีเบี้ยรวมที่จ่าย');
+  assert.match(h, /3,234,000/, 'ต้องมีบำนาญรวมที่ได้รับ');
+  assert.match(h, /\+1,757,924/, 'ส่วนต่างต้องตรงกับใบเสนอขาย');
+  assert.match(h, /2\.19 เท่า/, 'ต้องบอกเป็นกี่เท่าของเบี้ย');
+  assert.match(h, /462% ของทุนประกัน/, 'ต้องบอกเป็นร้อยละของทุน ตรงกับใบเสนอขาย');
+  assert.match(h, /ยังไม่ได้คิดมูลค่าเงินตามเวลา/, 'ต้องบอกตรง ๆ ว่าไม่ได้คิดมูลค่าเงินตามเวลา');
+  assert.match(h, /คอลัมน์คุ้มครองชีวิต/, 'ต้องเตือนว่าถ้าเสียชีวิตก่อนไม่ได้ยอดนี้');
+});
+
+test('แบบที่มีเงินครบสัญญา ต้องบวกเพิ่ม ไม่ใช่นับซ้ำหรือลืม', () => {
+  const h = box({totalPremium: 1000000, totalPension: 2000000, maturity: 4000000,
+                 payYears: 40, startAge: 60, endAge: 89}, 1000000);
+  assert.match(h, /ผลประโยชน์ครบกำหนดสัญญา/);
+  assert.match(h, /4,000,000/);
+  assert.match(h, /6,000,000/, 'ยอดรวมต้องเป็นบำนาญบวกเงินครบสัญญา');
+  assert.match(h, /\+5,000,000/);
+});
+
+test('ถ้าได้คืนน้อยกว่าเบี้ยที่จ่าย ต้องบอกตรง ๆ ไม่ใช่ซ่อน', () => {
+  const h = box({totalPremium: 2000000, totalPension: 1500000, maturity: 0,
+                 payYears: 20, startAge: 60, endAge: 90}, 1000000);
+  assert.match(h, /pb-loss/, 'ต้องทำเครื่องหมายว่าติดลบ');
+  assert.match(h, /ได้รับน้อยกว่าเบี้ยที่จ่าย/);
+  assert.match(h, /−500,000/);
+});
+
+test('ชำระครั้งเดียวต้องไม่เขียนว่าชำระ 1 ปี', () => {
+  const h = box({totalPremium: 500000, totalPension: 900000, maturity: 0,
+                 payYears: 1, startAge: 61, endAge: 90}, 300000);
+  assert.match(h, /ชำระครั้งเดียว/);
+  assert.ok(!h.includes('ชำระ 1 ปี'));
+});
+
+test('กล่องสรุปต้องถูกต่อเข้ากับตารางจริง ไม่ใช่เขียนทิ้งไว้', () => {
+  assert.match(html, /const head = pensionBalanceBox\(pen\.cf, inp\.mainCapital\);/);
+});
+
 test('ไฟล์ข้อมูลต้องมีตัวกันแคช ไม่งั้นลูกค้าอาจได้ตารางเบี้ยเก่า', () => {
   assert.match(html, /const DATA_VERSION = '\d{4}-\d{2}-\d{2}';/);
   for(const f of ['premium-rates.json', 'tax-rules.json', 'pension-plans.json'])
