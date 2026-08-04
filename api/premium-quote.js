@@ -105,7 +105,7 @@ function mainMeta(id) {
   if (id === "99_99_100k") {
     return { label: "Smart Protection 99/99", capital: 100000, payYears: 99 };
   }
-  return { label: "สัญญาหลัก 99/99", capital: 50000, payYears: 99 };
+  return { label: "คุ้มครองตลอดชีพ 99/99", capital: 50000, payYears: 99 };
 }
 
 function dhlPremium(rates, gender, age, deductible) {
@@ -124,12 +124,25 @@ function ecpPremium(rates, gender, age, plan = "p3") {
   return rateAtPublishedAge(rates.ecp?.[`${gender}_${plan}`], age);
 }
 
-function opdMaoPremium(rates, gender, age, plan = 20000) {
-  return rateAtStart(
-    rates.opd_เหมา?.[`${gender}_${plan}`],
-    age,
-    rates.opd_เหมา?.age_start || 6
-  );
+/* OPD เหมาจ่าย เก็บเป็นช่วงอายุตามหน้าตารางของบริษัท แยกตามชั้นอาชีพ
+   ของเดิมเป็นอาร์เรย์รายอายุที่คอลัมน์เลื่อน ทำให้แผน 15,000 ที่อายุ 81 ขึ้นไป
+   ได้เบี้ย 19,000 ซึ่งแพงกว่าวงเงินที่ลูกค้าจะได้ ตอนนี้อ่านจากช่วงอายุตรง ๆ
+   ชั้นอาชีพไม่ระบุให้ถือเป็น 1-2 ซึ่งเป็นกลุ่มลูกค้าส่วนใหญ่ของช่องทางนี้ */
+function opdMaoPremium(rates, gender, age, plan = 20000, occupationClass = "1") {
+  const g = rates.opd_เหมา;
+  if (!g || !g.occupations) return null;
+  const occ = String(occupationClass) === "3" ? "3"
+    : String(occupationClass) === "4" ? null : "1_2";
+  if (!occ) return null;                        // ชั้นอาชีพ 4 ไม่มีอัตราเผยแพร่
+  const table = g.occupations[occ];
+  const a = Number(age);
+  if (!table || !Number.isInteger(a) || a < table.age_min || a > table.age_max) return null;
+  const idx = (g.plans || []).indexOf(Number(plan));
+  if (idx < 0) return null;
+  const band = table.bands.find((b) => a >= b.from && a <= b.to);
+  if (!band) return null;
+  const value = (gender === "m" ? band.m : band.f)[idx];
+  return value === null || value === undefined ? null : Number(value);
 }
 
 function opdPerVisitPremium(rates, gender, age, plan = 1000) {
@@ -286,7 +299,11 @@ function buildPackageCandidates({ rates, profile, ridersTotal, budget }) {
 
     // 99/99 ไม่บังคับ PA; Smart 99/20 ต้องแนบ PA หรือสัญญาโรคร้ายแรงเสมอ
     if (mainId === "99_20_200k" && !includePa) return;
-    if (mainId === "99_99_100k" && main < 200000 && ridersTotal <= Math.min(main * 2, 20000)) return;
+    if (
+      mainId === "99_99_100k" &&
+      main < 200000 &&
+      (ridersTotal < 5000 || ridersTotal <= Math.min(main * 2, 20000))
+    ) return;
 
     const paCost = includePa ? pa : 0;
     candidates.push({
@@ -1010,7 +1027,7 @@ function savingsChoice(table, age, budget) {
 
 function buildSavingsQuote(rates, profile) {
   if (profile.age < 0 || profile.age > 80) {
-    return { ok: false, noEligiblePlan: true, question: "แผน Smart Link 15/3 และ 15/6 รับอายุ 0-80 ปีครับ" };
+    return { ok: false, noEligiblePlan: true, question: "เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท ลิงค์ 15/6 (Global) รับอายุ 0-80 ปีครับ" };
   }
   const keys = profile.requestedProduct === "smart_link_15_3"
     ? ["smart_link_15_3"]
@@ -1020,7 +1037,9 @@ function buildSavingsQuote(rates, profile) {
   const options = keys.map((key) => ({ key, choice: savingsChoice(rates[key], profile.age, profile.annualBudget), table: rates[key] }));
   const lines = ["แผนออมทรัพย์ลดหย่อนภาษี เน้นเงินคืนมากกว่าทุนชีวิต"];
   for (const option of options) {
-    const label = option.key === "smart_link_15_3" ? "Smart Link 15/3" : "Smart Link 15/6";
+    const label = option.key === "smart_link_15_3"
+      ? "เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)"
+      : "เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)";
     lines.push(`- ${label} ทุน ${money(option.choice.capital)} บาท เบี้ย ${money(option.choice.premium)} บาท/ปี ชำระ ${option.table.pay_years} ปี คุ้มครอง 15 ปี`);
   }
   return {
