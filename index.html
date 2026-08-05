@@ -656,6 +656,12 @@
   .not-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
     background:#a03149;color:#fff;font-size:.74rem;font-weight:700;vertical-align:2px;}
   .def-not{background:#fdf1f3;border-left:3px solid #c0455f;}
+  .def-must-early{background:#fff8ec;border-left:3px solid #d99b3f;}
+  .def-must-early b{color:#96601a;}
+  .def-once{background:#f2f5fb;border-left:3px solid #6b83b8;}
+  .def-once b{color:#33477a;}
+  .once-tag{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;
+    background:#3f558a;color:#fff;font-size:12px;font-weight:700;vertical-align:middle;}
   .def-shift{background:#fff8ec;border-left:3px solid #d99b3f;}
   .def-shift b{color:#96601a;}
   .shift-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
@@ -3502,7 +3508,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-05b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-05c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -13575,8 +13581,15 @@ function cipcStageHtml(s){
   h += `<p class="def-body">${s.body}</p>`;
   if(s.criteria) h += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
   if(s.extra) h += `<p class="def-body def-extra">${s.extra}</p>`;
+  /* แผนนี้จ่ายทุกระยะของโรคเดียวกันอยู่แล้ว รายการที่ถูกตัดออกจากระยะหนึ่งจึงมักไปโผล่อีกระยะหนึ่ง
+     ถ้าทาแดงว่าไม่คุ้มครอง ลูกค้าจะเข้าใจผิดทั้งที่เงินยังออกอยู่ แค่ออกคนละระยะ */
+  if(s.elsewhere) h += `<div class="def-block def-shift">`
+    + `<b>${s.elsewhereTitle || 'ไม่เข้าระยะนี้ แต่ไปเข้าอีกระยะของโรคเดียวกัน'} `
+    + `<span class="shift-tag">ยังเคลมได้ แต่คนละระยะ</span></b>${li(s.elsewhere)}</div>`;
+  if(s.once) h += `<div class="def-block def-once">`
+    + `<b>${s.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(s.once)}</div>`;
   if(s.exclusions) h += `<div class="def-block def-not">`
-    + `<b>${s.exclusionsTitle} <span class="not-tag">ไม่เข้าระยะนี้</span></b>${li(s.exclusions)}</div>`;
+    + `<b>${s.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(s.exclusions)}</div>`;
   return h + '</div>';
 }
 
@@ -13634,20 +13647,29 @@ const DCARE_STAGE_BADGE = {
 function dcareDefDiseaseHtml(d){
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
   const badge = DCARE_STAGE_BADGE[d.stage || 'severe'];
+  const early = d.stage === 'early';
   let h = `<article class="def-item"><h4>${d.th}<span class="def-en">${d.en}</span></h4>`;
   h += `<span class="stage-badge ${badge.cls}">${badge.label}</span>`;
   h += `<p class="def-body">${d.body}</p>`;
-  if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  /* กล่องเกณฑ์ของโรคระยะเริ่มต้น ต้องเป็นสีเหลืองให้ตรงกับป้ายหัวข้อ
+     ถ้าใช้สีเขียวเหมือนโรคที่เคลมได้ทั้งสองแบบ ลูกค้าจะเข้าใจว่าซื้อแบบเฉพาะระยะรุนแรงก็เคลมได้ */
+  if(d.criteria) h += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
   if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
-  /* ข้อยกเว้นมีสองชั้นที่ต้องแยกสีให้ขาด
-     ชั้นแรก ไม่เข้าระยะนี้ แต่ไปเข้าอีกระยะได้ ต้องเป็นสีเหลือง ไม่ใช่แดง
-     ชั้นสอง ไม่คุ้มครองเลยทั้งสองแบบ ถึงจะเป็นสีแดง
-     เคยเหมารวมเป็นแดงหมด ทำให้ลูกค้าเข้าใจว่า carcinoma in situ เคลมไม่ได้ ซึ่งผิด */
+  /* ข้อความ "ทั้งนี้ไม่รวมถึง" ในกรมธรรม์มีสามความหมายที่ต่างกันคนละเรื่อง
+     หนึ่ง ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกันซึ่งคุ้มครองอยู่ ต้องเป็นสีเหลือง
+     สอง จ่ายได้ครั้งเดียว ไม่ให้เคลมซ้ำสองข้อ ไม่ใช่ไม่คุ้มครอง ต้องเป็นกล่องกลาง
+     สาม ไม่คุ้มครองเลยทั้งสองแบบ ถึงจะเป็นสีแดง
+     เคยทาแดงหมด ทำให้ลูกค้าอ่านแล้วเข้าใจว่าบอลลูนกับขดลวดเคลมไม่ได้ ซึ่งผิด */
+  if(d.elsewhere) h += `<div class="def-block def-shift">`
+    + `<b>${d.elsewhereTitle || 'ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกัน'} `
+    + `<span class="shift-tag">คุ้มครองอยู่ในข้ออื่น</span></b>${li(d.elsewhere)}</div>`;
+  if(d.once) h += `<div class="def-block def-once">`
+    + `<b>${d.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(d.once)}</div>`;
   if(d.exclusions){
-    const early = d.exclusionsTone === 'early';
-    h += `<div class="def-block ${early ? 'def-shift' : 'def-not'}">`
-      + `<b>${d.exclusionsTitle} <span class="${early ? 'shift-tag' : 'not-tag'}">`
-      + `${early ? 'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'}</span></b>`
+    const shift = d.exclusionsTone === 'early';
+    h += `<div class="def-block ${shift ? 'def-shift' : 'def-not'}">`
+      + `<b>${d.exclusionsTitle} <span class="${shift ? 'shift-tag' : 'not-tag'}">`
+      + `${shift ? 'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'}</span></b>`
       + li(d.exclusions) + `</div>`;
   }
   if(d.never) h += `<div class="def-block def-not">`
