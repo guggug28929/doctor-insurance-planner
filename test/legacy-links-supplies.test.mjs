@@ -59,13 +59,27 @@ test('ตัวสะกดในตารางต้องเป็นแบ�
   assert.ok(keys.some(k => k.includes('รวมคำถามยอดฮต')), 'ต้องคงคำที่สระตกไว้');
 });
 
-test('เว็บต้องส่ง path ที่ไม่รู้จักเข้าหน้าเว็บ ไม่ใช่ 404', () => {
+/* ตัวรับทุก path ต้องไม่กลืนไฟล์จริง
+   เคยพลาดมาแล้ว คือใส่ /:path* ไว้ท้ายสุด แล้วโบรชัวร์ทุกไฟล์กลายเป็นหน้าเว็บแทน PDF
+   ลูกค้ากดดาวน์โหลดแล้วเด้งกลับหน้าแรก โดยไม่มีอะไรฟ้องว่าพัง */
+test('ตัวรับทุก path ต้องไม่กลืนโบรชัวร์และไฟล์ข้อมูล', () => {
   const last = vercel.rewrites[vercel.rewrites.length - 1];
-  assert.equal(last.source, '/:path*', 'ต้องมีตัวรับทุก path ไว้ท้ายสุด');
   assert.equal(last.destination, '/index.html');
-  // ต้องอยู่ท้ายสุดจริง ไม่งั้นจะกลืนเส้นทางโบรชัวร์ที่ประกาศไว้ก่อนหน้า
-  assert.ok(vercel.rewrites.some(r => r.source.startsWith('/brochures/')));
-  assert.ok(vercel.rewrites.findIndex(r => r.source === '/:path*') === vercel.rewrites.length - 1);
+  const rx = new RegExp('^' + last.source + '$');
+  const goIn  = ['/faq', '/calculator', '/plans/d-care', '/ประกนสขภาพ/รวมคำถามยอดฮต/ระยะรอคอย'];
+  const stay  = ['/brochures/d-care.pdf', '/brochures/elite-health-plus.pdf', '/brochures/ci-perfect-care.pdf',
+                 '/data/premium-rates.json', '/api/brochure', '/favicon.ico', '/plan-covers/d-care.jpg'];
+  for(const p of goIn) assert.ok(rx.test(p), `${p} ควรเข้าหน้าเว็บ`);
+  for(const p of stay) assert.ok(!rx.test(p), `${p} เป็นไฟล์จริง ห้ามถูกเปลี่ยนเป็นหน้าเว็บ`);
+});
+
+test('ทุกโบรชัวร์ที่หน้าเว็บลิงก์ถึง ต้องมีไฟล์อยู่จริง', async () => {
+  const { readdirSync } = await import('node:fs');
+  const have = new Set(readdirSync(new URL('../public/brochures', import.meta.url)));
+  const linked = [...html.matchAll(/\{file:'([^']+\.pdf)'/g)].map(m => m[1]);
+  assert.ok(linked.length >= 10, `เจอลิงก์โบรชัวร์แค่ ${linked.length} ไฟล์`);
+  const missing = [...new Set(linked)].filter(f => !have.has(f));
+  assert.deepEqual(missing, [], 'ลิงก์ชี้ไปไฟล์ที่ไม่มีอยู่จริง');
 });
 
 test('ต้องถอดเปอร์เซ็นต์เอนโค้ดก่อนเทียบ ไม่งั้นภาษาไทยไม่มีวันตรง', () => {

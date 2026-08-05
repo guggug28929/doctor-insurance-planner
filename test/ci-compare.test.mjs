@@ -46,6 +46,8 @@ vm.runInContext(
     extract("function lifetimeProtectionPremium("),
     extract("function cipcPremium("),
     extract("function cancerPremium("),
+    extract("function dcareRateArray("),
+    extract("function dcareRate("),
     extract("function dcarePremium("),
     extract("function careplusPremium("),
     extract("function occKeyFor("),
