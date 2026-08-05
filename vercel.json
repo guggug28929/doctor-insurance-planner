@@ -1,14 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/brochures/d-health-lite.pdf",
-      "destination": "/api/brochure?file=d-health-lite.pdf"
-    },
-    {
-      "source": "/brochures/cancer.pdf",
-      "destination": "/api/brochure?file=cancer.pdf"
-    },
-    {
       "source": "/brochures/:file",
       "destination": "/public/brochures/:file"
     },
