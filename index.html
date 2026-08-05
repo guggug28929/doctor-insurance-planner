@@ -602,6 +602,28 @@
     border-radius:0 8px 8px 0;line-height:1.8;}
   @media (max-width:520px){ .dcare-controls{flex-direction:column;align-items:stretch;}
     .dcare-controls input,.dcare-controls select{min-width:0;width:100%;} }
+  .def-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 16px;}
+  .def-tab{padding:8px 16px;border:1.5px solid #eab9cd;background:#fff;border-radius:999px;cursor:pointer;
+    font-family:inherit;font-size:.9rem;font-weight:600;color:#8a5c72;transition:background .15s,color .15s;}
+  .def-tab:hover{background:#fdf3f7;}
+  .def-tab.active{background:var(--pink-deep);border-color:var(--pink-deep);color:#fff;}
+  .def-warn{margin:0 0 4px;padding:10px 12px;background:#fffaf3;border-left:3px solid #d99b3f;
+    border-radius:0 8px 8px 0;line-height:1.8;}
+  .def-intro{margin:0 0 16px;color:#5f4a53;line-height:1.85;}
+  .def-item{padding:16px 0;border-top:1px solid #f0dde5;}
+  .def-item:first-of-type{border-top:0;padding-top:4px;}
+  .def-item h4{margin:0 0 8px;font-size:1.02rem;color:var(--pink-deep);line-height:1.5;}
+  .def-en{display:block;font-size:.82rem;font-weight:400;color:#95808b;margin-top:2px;}
+  .def-body{margin:0 0 10px;line-height:1.95;}
+  .def-extra{color:#5f4a53;}
+  .def-block{margin:0 0 10px;padding:10px 14px;border-radius:9px;}
+  .def-block b{display:block;margin-bottom:4px;}
+  .def-block ul{margin:0;padding-left:20px;line-height:1.9;}
+  .def-must{background:#f2f9f4;border-left:3px solid #217346;}
+  .def-not{background:#fdf1f3;border-left:3px solid #c0455f;}
+  .def-doc{margin:10px 0 0;padding:10px 14px;background:#f6f4fb;border-left:3px solid #7a6bb0;
+    border-radius:0 8px 8px 0;line-height:1.9;color:#4a4160;}
+  .def-pending{margin:16px 0 0;padding:10px 12px;background:#fafafa;border-radius:8px;line-height:1.8;}
   .plan-fit{margin:18px 0 0;padding:14px 16px;background:#fdf3f7;border-radius:12px;border:1px solid #f3d3e0;}
   .plan-fit h3{margin:0 0 8px;font-size:1rem;color:var(--pink-deep);}
   .plan-fit ul{margin:0;padding-left:20px;line-height:1.9;}
@@ -3372,7 +3394,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-04';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-05';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -7331,6 +7353,7 @@ const PLAN_DETAILS = {
       'กลุ่ม "โรคยอดฮิต" ต้องซื้อเดี่ยว ห้ามซื้อรวมกับกลุ่มอื่น',
       'ระยะเวลารอคอยเฉพาะโรคร้ายแรง 90 วันหลังกรมธรรม์อนุมัติ',
     ],
+    detailSections: () => dcareDefinitionsSection(),
     freqSupported: true,
     rateTable: (freq='annual') => dcareRateTableBlock(freq),
     rateNote: 'ตารางแสดงเบี้ยจริงตามทุนที่กรอก ไม่ใช่อัตราต่อทุน 1,000 บาท · อัตราต้นฉบับเป็นทศนิยม 2 ตำแหน่ง เบี้ยที่แสดงจึงเป็นผลคูณแล้วปัดเป็นบาท',
@@ -13323,6 +13346,67 @@ var PENSION = (function(){
   console.error('โหลด data/pension-plans.json ไม่สำเร็จ');
   return {plans:{}};
 })();
+
+/* คำนิยามโรคร้ายแรงของ ดี แคร์ คัดจากถ้อยคำในกรมธรรม์
+   แยกเป็นไฟล์ต่างหากเพราะยาวมากและต้องแก้ตามฉบับแก้ไขคำนิยามที่บริษัทออกใหม่เป็นระยะ
+   ถ้าโหลดไม่ได้ ให้หน้าแผนไม่แสดงส่วนนี้ไปเลย ดีกว่าแสดงนิยามที่ไม่ครบ */
+var DCARE_DEF = (function(){
+  for(const base of ['/data/', './data/']){
+    try{
+      const req = new XMLHttpRequest();
+      req.open('GET', base + 'dcare-definitions.json?v=' + DATA_VERSION, false);
+      req.send(null);
+      if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+    }catch(e){}
+  }
+  console.error('โหลด data/dcare-definitions.json ไม่สำเร็จ');
+  return null;
+})();
+
+let dcareDefTab = 'cancer';
+function setDcareDefTab(key){
+  dcareDefTab = key;
+  const host = document.getElementById('dcareDefBody');
+  if(host) host.innerHTML = dcareDefGroupHtml(key);
+  document.querySelectorAll('#dcareDefTabs .def-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.key === key));
+}
+
+function dcareDefDiseaseHtml(d){
+  const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  let h = `<article class="def-item"><h4>${d.th}<span class="def-en">${d.en}</span></h4>`;
+  h += `<p class="def-body">${d.body}</p>`;
+  if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.exclusions) h += `<div class="def-block def-not"><b>${d.exclusionsTitle}</b>${li(d.exclusions)}</div>`;
+  if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
+  return h + '</article>';
+}
+
+function dcareDefGroupHtml(key){
+  const g = (DCARE_DEF.groups || []).find(x => x.key === key);
+  if(!g) return '';
+  return `<p class="def-intro">${g.intro}</p>`
+    + g.diseases.map(dcareDefDiseaseHtml).join('');
+}
+
+function dcareDefinitionsSection(){
+  if(!DCARE_DEF || !DCARE_DEF.groups || !DCARE_DEF.groups.length) return '';
+  const m = DCARE_DEF._meta || {};
+  const tabs = DCARE_DEF.groups.map(g =>
+    `<button type="button" class="def-tab${g.key === dcareDefTab ? ' active' : ''}" data-key="${g.key}" onclick="setDcareDefTab('${g.key}')">${g.label}</button>`).join('');
+  /* กลุ่มที่ยังไม่ได้คัดลอกต้องบอกตรง ๆ ว่ายังไม่มี ไม่ใช่ปล่อยให้เข้าใจว่ามีครบแล้ว */
+  const pending = (m.groups_pending || []).length
+    ? `<p class="meta def-pending">อีก ${m.groups_pending.length} กลุ่มโรค (เปลี่ยนอวัยวะสำคัญ · ระบบประสาทและกล้ามเนื้อ · อื่น ๆ) กำลังทยอยคัดลอกจากเล่มกรมธรรม์ ระหว่างนี้ขอนิยามฉบับเต็มจากผมได้เลย</p>` : '';
+  return `<div class="content-card">
+      <h2>นิยามโรคร้ายแรงและเกณฑ์การวินิจฉัย</h2>
+      <p class="meta" style="margin:0 0 4px;">คัดจากถ้อยคำในกรมธรรม์ ${m.source || ''} · ${m.stage || ''}</p>
+      <p class="meta def-warn">ตัวหนาคือจุดที่ตัดสินว่าเคลมได้หรือไม่ได้ · เกณฑ์พวกนี้เข้มกว่าเกณฑ์ที่ใช้วินิจฉัยในโรงพยาบาลจริงในหลายข้อ ควรอ่านก่อนตัดสินใจซื้อ ไม่ใช่ตอนเคลม</p>
+      <div class="def-tabs" id="dcareDefTabs">${tabs}</div>
+      <div id="dcareDefBody">${dcareDefGroupHtml(dcareDefTab)}</div>
+      ${pending}
+    </div>`;
+}
 
 const PENSION_IDS = ['flexi_retire_90xx','flexi_retire_90_1','flexi_retire_90_5','mt_8560_g15','mt_8555_g20','mt_9901_d65','mt_8501','mt_happy_retire_60'];
 
