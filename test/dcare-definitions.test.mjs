@@ -20,7 +20,16 @@ test('ทุกโรคต้องมีชื่อไทย ชื่ออ�
     assert.ok(g.diseases.length, `กลุ่ม ${g.label} ไม่มีโรคเลย`);
     for(const d of g.diseases){
       assert.ok(d.th && d.en, `โรคในกลุ่ม ${g.label} ขาดชื่อ`);
-      assert.ok(d.body && d.body.length > 60, `${d.en} เนื้อความสั้นเกินไป น่าจะถูกย่อ`);
+      // โรคที่ชี้ไปนิยามเดียวกันในกลุ่มอื่น ไม่ต้องเขียนซ้ำทั้งก้อน แต่ต้องบอกว่าไปดูที่ไหน
+      if(d.sameAs){
+        assert.match(d.body, /ดูรายละเอียดเต็มได้ที่แท็บ|นิยามเหมือนกับกลุ่ม/,
+          `${d.en} ชี้ไปกลุ่มอื่นแต่ไม่ได้บอกว่าไปดูที่ไหน`);
+        continue;
+      }
+      // บางโรคเนื้อความหลักสั้นเพราะสาระอยู่ในเกณฑ์ที่แตกเป็นข้อ จึงนับรวมกัน
+      const full = (d.body || '') + (d.criteria || []).join('') + (d.extra || '')
+        + (d.exclusions || []).join('') + (d.carveBack || []).join('');
+      assert.ok(full.length > 150, `${d.en} เนื้อความสั้นเกินไป น่าจะถูกย่อ`);
       if(d.exclusions) assert.ok(d.exclusionsTitle, `${d.en} มีข้อยกเว้นแต่ไม่มีหัวข้อ`);
       if(d.criteria) assert.ok(d.criteriaTitle, `${d.en} มีเกณฑ์แต่ไม่มีหัวข้อ`);
     }
@@ -113,7 +122,56 @@ test('กลุ่มที่ยังคัดไม่เสร็จ ต้�
   for(const k of ['cancer','cardio','organ','neuro','other','popular'])
     assert.ok(done.includes(k) || pending.includes(k), `กลุ่ม ${k} หายไปทั้งจากที่ทำแล้วและที่ค้าง`);
   assert.equal(done.filter(k => pending.includes(k)).length, 0, 'กลุ่มเดียวกันอยู่ทั้งสองฝั่งไม่ได้');
-  assert.match(html, /const pending = \(m\.groups_pending \|\| \[\]\)\.length/);
+  // ช่องว่างแบบที่สอง กลุ่มที่ลงแล้วแต่ยังมีแต่ระยะรุนแรง ต้องประกาศแยกอีกชุด
+  const earlyPending = m.early_pending || [];
+  for(const g of DEF.groups){
+    const hasEarly = g.diseases.some(d => d.stage === 'early' || d.stage === 'both');
+    if(!hasEarly && g.key !== 'popular')
+      assert.ok(earlyPending.includes(g.key), `กลุ่ม ${g.label} ยังไม่มีโรคระยะเริ่มต้น ต้องประกาศไว้ว่าค้าง`);
+  }
+  assert.ok(html.includes('ยังไม่ได้ลงเลย') && html.includes('ลงแล้วเฉพาะระยะรุนแรง'),
+    'ต้องบอกช่องว่างทั้งสองแบบ');
+});
+
+/* ทุกโรคต้องติดป้ายว่าอยู่ในโหมดไหน ไม่งั้นลูกค้าจะเข้าใจว่าซื้อโหมดไหนก็ได้โรคเดียวกัน */
+test('ทุกโรคต้องติดป้ายระยะความคุ้มครอง', () => {
+  const ok = new Set(['early','severe','both']);
+  for(const g of DEF.groups)
+    for(const d of g.diseases)
+      assert.ok(ok.has(d.stage), `${d.en} ติดป้ายระยะไม่ถูกต้อง (${d.stage})`);
+  assert.match(html, /const DCARE_STAGE_BADGE = \{/);
+  assert.match(html, /class="stage-badge \$\{badge\.cls\}"/);
+  assert.match(html, /ได้เฉพาะคนที่ซื้อโหมดสองระยะเท่านั้น/);
+});
+
+/* ปฏิเสธซ้อนปฏิเสธอ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม
+   ต้องดึงกรณีที่กลับมาคุ้มครองออกมาเป็นกล่องแยก */
+test('ข้อยกเว้นของข้อยกเว้น ต้องแยกเป็นกล่องต่างหาก', () => {
+  const inv = DEF.groups.find(g => g.key === 'cancer').diseases.find(d => d.en === 'Invasive Cancer');
+  assert.ok(inv.carveBack && inv.carveBack.length >= 2, 'มะเร็งระยะลุกลามต้องมีกล่องกรณีที่กลับมาคุ้มครอง');
+  assert.match(inv.carveBack.join(' '), /Malignant Melanoma/);
+  assert.match(html, /if\(d\.carveBack\) h \+= `<div class="def-block def-back">/);
+  assert.match(html, /แต่กรณีเหล่านี้กลับมาคุ้มครอง/);
+});
+
+/* ตัวหนากลางประโยคใน <li> ต้องไม่ถูกดันขึ้นบรรทัดใหม่
+   เคยพลาดจนวงเล็บกับข้อความในวงเล็บแยกคนละบรรทัด */
+test('ตัวหนากลางประโยคต้องไม่ขึ้นบรรทัดใหม่', () => {
+  assert.match(html, /\.def-block > b\{display:block/);
+  assert.ok(!/\.def-block b\{display:block/.test(html),
+    'ถ้าไม่จำกัดเป็นลูกโดยตรง ตัวหนาใน <li> จะขึ้นบรรทัดใหม่ทั้งหมด');
+});
+
+/* มะเร็งระยะไม่ลุกลามคือคำตอบของคำถามที่ลูกค้าถามบ่อยที่สุด
+   ต้องอยู่ในโหมดสองระยะ และต้องบอกให้ชัดว่าโหมดรุนแรงอย่างเดียวไม่ได้ */
+test('มะเร็งระยะไม่ลุกลาม ต้องมีและติดป้ายว่าเฉพาะระยะเริ่มต้น', () => {
+  const d = DEF.groups.find(g => g.key === 'cancer').diseases
+    .find(x => /Carcinoma in Situ/.test(x.en));
+  assert.ok(d, 'ต้องมีนิยามมะเร็งระยะไม่ลุกลาม');
+  assert.equal(d.stage, 'early');
+  assert.equal(d.criteria.length, 4, 'รายการที่นับเป็นระยะเริ่มต้นต้องครบ 4 ข้อ');
+  assert.match(d.criteria.join(' '), /Borderline Tumor \(Low malignant potential\) <b>ของรังไข่/);
+  assert.match(d.doc, /ถ้าซื้อโหมดเฉพาะระยะรุนแรงจะไม่ได้เลย/);
 });
 
 test('หน้าแผน D Care ต้องแสดงส่วนนิยามจริง พร้อมแท็บแยกกลุ่มโรค', () => {
