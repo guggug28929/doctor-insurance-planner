@@ -14659,6 +14659,25 @@ let SS_INDEX = null;
 let ssPick = 0;
 let ssHits = [];
 
+/* ชื่อแบบประกันสุขภาพหลายตัวเก็บไว้เป็นภาษาอังกฤษ แต่ลูกค้าพิมพ์ไทยกันหมด
+   ถ้าไม่มีตารางนี้ พิมพ์ ดีเฮลท์ แล้วจะไม่เจออะไรเลย
+   ใส่ทั้งแบบมีเว้นวรรคและไม่มี เพราะคนพิมพ์กันคนละแบบ */
+const SS_ALIAS = {
+  dhl:        'ดีเฮลท์ ดี เฮลท์ ดีเฮลท์ไลท์ ดี เฮลท์ ไลท์ dhealth',
+  ehp:        'อีลิท อีลิทเฮลท์ อีลิท เฮลท์ พลัส elite',
+  maternity:  'มาเทอร์นิตี้ ประกันคลอด คลอดบุตร',
+  wellbeing:  'เวลบีอิ้ง เวลบีอิง ตรวจสุขภาพ วัคซีน',
+  ecp:        'เอ็กซ์ตร้าแคร์ เอ็กซ์ตร้า แคร์ พลัส',
+  careplus:   'แคร์พลัส แคร์ พลัส',
+  cipc:       'ซีไอ ซีไอเพอร์เฟค ซีไอ เพอร์เฟค แคร์ ci perfect',
+  multipleci: 'มัลติเพิลซีไอ มัลติเพิล ซีไอ',
+  dcare:      'ดีแคร์ ดี แคร์ dcare',
+  hb:         'เอชบี ชดเชยรายวัน ค่าห้อง',
+  pa:         'พีเอ อุบัติเหตุ พีเอ อีซี่ แพลน',
+  opd:        'โอพีดี ผู้ป่วยนอก',
+  maochai:    'เหมาจ่าย เอ็กซ์ตร้า',
+};
+
 function ssStrip(x){
   /* แท็กตกแต่งข้อความอย่าง <b> อยู่กลางคำได้ ถ้าแทนด้วยช่องว่างคำจะถูกผ่าครึ่ง
      แล้วค้น "เกินชั้นผิว" จะไม่เจอ จึงตัดทิ้งเฉย ๆ
@@ -14675,34 +14694,43 @@ function ssEsc(x){
 function ssBuildIndex(){
   if(SS_INDEX) return SS_INDEX;
   const out = [];
-  const add = (kind, title, sub, body, go) => {
+  const seen = new Set();
+  /* alt คือข้อความน้ำหนักกลาง ไม่ได้แสดงบนจอ แต่สำคัญกว่าเนื้อหาทั้งก้อน
+     เช่น ประโยคนำของคำถาม หรือชื่อไทยของแบบประกันที่ตั้งชื่อเป็นอังกฤษ */
+  const add = (kind, title, sub, alt, body, go) => {
     const t = ssStrip(title);
     if(!t) return;
-    out.push({kind, title: t, sub: ssStrip(sub), go,
-              hay: (t + ' ' + ssStrip(sub) + ' ' + ssStrip(body)).toLowerCase()});
+    // โรคเดียวกันโผล่ได้หลายกลุ่ม เช่น อยู่ทั้งกลุ่มมะเร็งและกลุ่มโรคยอดฮิต ต้องไม่ขึ้นซ้ำ
+    const id = kind + '|' + t;
+    if(seen.has(id)) return;
+    seen.add(id);
+    const S = ssStrip(sub), A = ssStrip(alt);
+    out.push({kind, title: t, sub: S, go, alt: A.toLowerCase(),
+              hay: (t + ' ' + S + ' ' + A + ' ' + ssStrip(body)).toLowerCase()});
   };
 
   // หน้าหลักทุกหน้า อ่านชื่อจากแถบเมนูจริง จะได้ไม่ต้องมาแก้สองที่เวลาเปลี่ยนชื่อเมนู
   document.querySelectorAll('#navbar button[data-page]').forEach(b => {
     const name = b.dataset.page;
-    add('หน้า', b.textContent, PAGE_ROUTES[name] || '', '', () => showPage(name));
+    add('หน้า', b.textContent, PAGE_ROUTES[name] || '', '', '', () => showPage(name));
   });
 
   // แบบประกันทุกแบบ ค้นได้ทั้งจากชื่อ จุดเด่น เงื่อนไข และข้อความว่าเหมาะกับใคร
   Object.keys(PLAN_DETAILS).forEach(id => {
     const p = PLAN_DETAILS[id];
     if(!p || !p.title) return;
-    const body = [p.overview, (p.fit || []).join(' '), p.notFit,
+    const body = [(p.fit || []).join(' '), p.notFit,
                   (p.coverage || []).join(' '), (p.conditions || []).join(' ')]
                  .filter(Boolean).join(' ');
-    add('แบบประกัน', p.title, p.category, body, () => showPlanDetail(id));
+    add('แบบประกัน', p.title, p.category, [SS_ALIAS[id], p.overview].filter(Boolean).join(' '),
+        body, () => showPlanDetail(id));
   });
 
   // คำถามที่พบบ่อย ทั้งฝั่งสุขภาพและฝั่งประกันชีวิต
   FAQ_ITEMS.forEach(it => {
     const topic = (typeof faqTopicOf === 'function' ? faqTopicOf(it) : 'health');
     add('คำถามที่พบบ่อย', it.q, topic === 'life' ? 'ประกันชีวิต' : 'ประกันสุขภาพ',
-        [it.lead, it.body, it.doc].filter(Boolean).join(' '), () => ssOpenFaq(it, topic));
+        it.lead, [it.body, it.doc].filter(Boolean).join(' '), () => ssOpenFaq(it, topic));
   });
 
   // นิยามโรคร้ายแรงของ ดี แคร์ แยกตามกลุ่มโรค
@@ -14711,7 +14739,7 @@ function ssBuildIndex(){
       const body = [d.body, (d.criteria || []).join(' '), d.extra,
                     (d.exclusions || []).join(' '), (d.never || []).join(' '),
                     (d.carveBack || []).join(' '), d.doc].filter(Boolean).join(' ');
-      add('นิยามโรค ดี แคร์', d.th, [d.en, g.label].filter(Boolean).join(' · '), body,
+      add('นิยามโรค ดี แคร์', d.th, [d.en, g.label].filter(Boolean).join(' · '), d.en, body,
           () => ssOpenDefinition('dcare', 'dcareDefTabs', setDcareDefTab, g.key, d.th));
     });
   });
@@ -14722,7 +14750,7 @@ function ssBuildIndex(){
     const body = (d.stages || []).map(st => [st.th, st.body, (st.criteria || []).join(' '),
                   st.extra, (st.exclusions || []).join(' ')].filter(Boolean).join(' '))
                  .concat(d.doc || '').join(' ');
-    add('นิยามโรค ซีไอ เพอร์เฟค แคร์', d.th, [d.en, cg[d.group]].filter(Boolean).join(' · '), body,
+    add('นิยามโรค ซีไอ เพอร์เฟค แคร์', d.th, [d.en, cg[d.group]].filter(Boolean).join(' · '), d.en, body,
         () => ssOpenDefinition('cipc', 'cipcDefTabs', setCipcDefTab, d.group, d.th));
   });
 
@@ -14731,16 +14759,20 @@ function ssBuildIndex(){
 }
 
 /* ภาษาไทยไม่เว้นวรรค การตัดคำจึงเชื่อถือไม่ได้เท่าการหาข้อความตรง ๆ
-   ให้น้ำหนักคำค้นทั้งก้อนมากที่สุด แล้วค่อยไล่ให้คะแนนทีละคำที่ผู้ใช้เว้นวรรคมาเอง */
+   ให้น้ำหนักคำค้นทั้งก้อนมากที่สุด แล้วค่อยไล่ให้คะแนนทีละคำที่ผู้ใช้เว้นวรรคมาเอง
+   ลำดับชั้นคือ ชื่อเรื่อง ก่อน คำโปรยหรือชื่อไทย ก่อน เนื้อหาทั้งก้อน
+   ถ้าไม่แยกชั้นนี้ คำถามที่ตอบเรื่องนั้นตรง ๆ จะถูกแผนประกันที่บังเอิญเอ่ยถึงคำนั้นแซง */
 function ssScore(item, whole, words){
   let sc = 0;
-  const t = item.title.toLowerCase(), s = item.sub.toLowerCase();
+  const t = item.title.toLowerCase(), s = item.sub.toLowerCase(), a = item.alt || '';
   if(t.includes(whole)) sc += t.startsWith(whole) ? 140 : 100;
+  else if(a.includes(whole)) sc += 55;
   else if(s.includes(whole)) sc += 45;
-  else if(item.hay.includes(whole)) sc += 25;
+  else if(item.hay.includes(whole)) sc += 20;
   for(const w of words){
     if(w === whole) continue;
     if(t.includes(w)) sc += 22;
+    else if(a.includes(w)) sc += 12;
     else if(item.hay.includes(w)) sc += 7;
   }
   // ชื่อสั้นที่ตรงคำค้น มักเป็นสิ่งที่ตั้งใจหาจริง มากกว่าย่อหน้ายาวที่บังเอิญมีคำนั้น
