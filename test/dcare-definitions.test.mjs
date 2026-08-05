@@ -63,8 +63,12 @@ test('กล้ามเนื้อหัวใจตายเฉียบพ�
   const d = DEF.groups.find(x => x.key === 'cardio').diseases.find(x => x.en === 'Acute Heart Attack');
   assert.equal(d.criteria.length, 3);
   assert.match(d.criteria[0], /เจ็บหน้าอก/);
-  assert.match(d.criteria[1], /Cardiac Troponin \(T or I\) อย่างน้อย 3 เท่าของค่าบนของค่าช่วงปกติ/);
-  assert.match(d.criteria[1], /CKMB อย่างน้อย 2 เท่าของค่าบนของค่าช่วงปกติ/);
+  // มีคำอธิบายไทยแทรกกลาง จึงตรวจเป็นชิ้น ๆ แทนการจับทั้งประโยค
+  assert.match(d.criteria[1], /Cardiac Troponin \(T or I\)/);
+  assert.match(d.criteria[1], /เอนไซม์ที่รั่วออกมาเมื่อกล้ามเนื้อหัวใจตาย/);
+  assert.match(d.criteria[1], /อย่างน้อย 3 เท่าของค่าบนของค่าช่วงปกติ/);
+  assert.match(d.criteria[1], /CKMB/);
+  assert.match(d.criteria[1], /อย่างน้อย 2 เท่าของค่าบนของค่าช่วงปกติ/);
   assert.match(d.criteria[2], /คลื่นไฟฟ้าหัวใจที่เกิดขึ้นใหม่/);
 });
 
@@ -141,7 +145,11 @@ test('ทุกโรคต้องติดป้ายระยะควา�
       assert.ok(ok.has(d.stage), `${d.en} ติดป้ายระยะไม่ถูกต้อง (${d.stage})`);
   assert.match(html, /const DCARE_STAGE_BADGE = \{/);
   assert.match(html, /class="stage-badge \$\{badge\.cls\}"/);
-  assert.match(html, /ได้เฉพาะคนที่ซื้อโหมดสองระยะเท่านั้น/);
+  // ใช้คำว่า "แบบ" ไม่ใช่ "โหมด" เพราะเป็นคำที่ลูกค้ากับตัวแทนใช้จริง
+  assert.match(html, /ถ้าซื้อแบบเฉพาะระยะรุนแรงจะไม่ได้/);
+  assert.match(html, /ดี แคร์ มีให้เลือก 2 แบบ/);
+  assert.ok(!html.includes('sb-sev'), 'สีแดงไม่ควรผูกกับตัวโรค เพราะทุกโรคในรายการเคลมได้');
+  assert.match(html, /ไม่คุ้มครองทั้ง 2 แบบ/);
 });
 
 /* ปฏิเสธซ้อนปฏิเสธอ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม
@@ -171,7 +179,7 @@ test('มะเร็งระยะไม่ลุกลาม ต้องม�
   assert.equal(d.stage, 'early');
   assert.equal(d.criteria.length, 4, 'รายการที่นับเป็นระยะเริ่มต้นต้องครบ 4 ข้อ');
   assert.match(d.criteria.join(' '), /Borderline Tumor \(Low malignant potential\) <b>ของรังไข่/);
-  assert.match(d.doc, /ถ้าซื้อโหมดเฉพาะระยะรุนแรงจะไม่ได้เลย/);
+  assert.match(d.doc, /ถ้าซื้อแบบเฉพาะระยะรุนแรงจะไม่ได้เลย/);
 });
 
 test('หน้าแผน D Care ต้องแสดงส่วนนิยามจริง พร้อมแท็บแยกกลุ่มโรค', () => {
@@ -186,4 +194,34 @@ test('หน้าแผน D Care ต้องแสดงส่วนนิย
 
 test('ต้องเตือนว่าเกณฑ์ในกรมธรรม์เข้มกว่าเกณฑ์ที่ใช้ในโรงพยาบาล', () => {
   assert.match(html, /เข้มกว่าเกณฑ์ที่ใช้วินิจฉัยในโรงพยาบาลจริงในหลายข้อ/);
+});
+
+/* ศัพท์เทคนิคต้องมีคำอธิบายไทยกำกับ ไม่งั้นลูกค้าอ่านแล้วข้ามไปเลย
+   ซึ่งแปลว่าเงื่อนไขที่สำคัญที่สุดกลายเป็นส่วนที่ไม่มีใครอ่าน */
+test('ศัพท์เทคนิคต้องมีคำอธิบายภาษาไทยกำกับ', () => {
+  const j = JSON.stringify(DEF);
+  const pairs = [
+    ['Cardiac Troponin', 'เอนไซม์ที่รั่วออกมาเมื่อกล้ามเนื้อหัวใจตาย'],
+    ['CKMB', 'เอนไซม์หัวใจอีกตัวหนึ่ง'],
+    ['Basement Membrane', 'แผ่นเยื่อบาง ๆ ที่กั้นใต้เซลล์ผิว'],
+    ['Angioplasty', 'ใช้บอลลูนถ่างหลอดเลือดที่ตีบ'],
+    ['Stent Insertion', 'ใส่ขดลวดค้ำหลอดเลือด'],
+    ['CT Scan', 'เอกซเรย์คอมพิวเตอร์'],
+    ['MRI', 'คลื่นแม่เหล็กไฟฟ้า'],
+    ['Craniotomy', 'เปิดกะโหลกออกเป็นแผ่นแล้วปิดกลับ'],
+    ['Burr hole', 'เจาะกะโหลกเป็นรูเล็ก'],
+    ['Ascites', 'น้ำในช่องท้อง'],
+    ['FEV 1', 'ปริมาตรลมที่เป่าออกได้ในวินาทีแรก'],
+    ['Recipient', 'ผู้รับอวัยวะ ไม่ใช่ผู้บริจาค'],
+  ];
+  for(const [term, thai] of pairs)
+    assert.ok(j.includes(thai), `ศัพท์ ${term} ยังไม่มีคำอธิบายไทยกำกับ`);
+});
+
+test('ต้องคัดครบทั้ง 6 กลุ่มโรคของหมวดระยะรุนแรง', () => {
+  const keys = DEF.groups.map(g => g.key).sort().join(',');
+  assert.equal(keys, 'cancer,cardio,neuro,organ,other,popular');
+  assert.deepEqual(DEF._meta.groups_pending, [], 'ไม่ควรเหลือกลุ่มที่ยังไม่ได้คัดแล้ว');
+  const total = DEF.groups.reduce((n, g) => n + g.diseases.length, 0);
+  assert.ok(total >= 55, `คัดมาแค่ ${total} โรค น่าจะยังไม่ครบ`);
 });
