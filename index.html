@@ -2256,6 +2256,13 @@
           <option value="75m">75 ล้านบาท</option>
           <option value="100m">100 ล้านบาท</option>
         </select>
+        <label>พื้นที่ความคุ้มครอง<span class="info-icon">i<span class="tooltip">เลือกกว้างขึ้นแล้วเบี้ยขึ้นตาม แต่ได้สิทธิรักษาในต่างประเทศตามพื้นที่ที่เลือก ถ้าไม่ได้เดินทางบ่อย เฉพาะประเทศไทยก็พอ</span></span></label>
+        <select id="ehp_region">
+          <option value="thailand">เฉพาะประเทศไทย</option>
+          <option value="asia">ทวีปเอเชีย</option>
+          <option value="world_ex_us">ทั่วโลก ยกเว้นสหรัฐอเมริกา</option>
+          <option value="world">ทั่วโลก</option>
+        </select>
       </div>
       <div class="field-err" id="ehpErr"></div>
 
@@ -4313,6 +4320,18 @@ function mainPremiumAtEntry(plan, capital, gender, entryAge, freq){
   return null;
 }
 
+/* พื้นที่ความคุ้มครองของ อีลิท เฮลท์ พลัส
+   คีย์ตรงกับชั้นในตารางเบี้ย ห้ามเปลี่ยนคำสะกด ไม่งั้นหาเบี้ยไม่เจอแล้วหน้าจอจะว่าง
+   เรียงจากแคบไปกว้าง เพราะเบี้ยเรียงตามลำดับนี้พอดี */
+const EHP_REGIONS = {
+  thailand:    {label:'เฉพาะประเทศไทย',                short:'ไทย'},
+  asia:        {label:'ทวีปเอเชีย',                    short:'เอเชีย'},
+  world_ex_us: {label:'ทั่วโลก ยกเว้นสหรัฐอเมริกา',      short:'ทั่วโลก ยกเว้นสหรัฐฯ'},
+  world:       {label:'ทั่วโลก',                       short:'ทั่วโลก'},
+};
+const EHP_REGION_DEFAULT = 'thailand';
+function ehpRegionKey(v){ return EHP_REGIONS[v] ? v : EHP_REGION_DEFAULT; }
+
 function healthRiderPremium(cfg, gender, age, occupationClass, freq){
   freq = freq || 'annual';
   if(cfg.type === 'none') return {label:null, premium:null};
@@ -4340,15 +4359,15 @@ function healthRiderPremium(cfg, gender, age, occupationClass, freq){
     return {label:'D Health Lite', premium:v};
   }
   if(cfg.type === 'ehp'){
-    if(freq === 'annual'){
-      const v = rateAt(RATES.ehp[cfg.plan], age); // published age 11-90, กลุ่มอาชีพ 1&2/3 unified in this legacy table
-      return {label:'Elite Health Plus', premium:v};
-    }
+    /* ตารางจริงแยกตามขั้นอาชีพ งวดชำระ แผน และพื้นที่ความคุ้มครอง ครบทั้งสี่ชั้น
+       เดิมโค้ดอ่านเฉพาะชั้นไทยชั้นเดียว ลูกค้าที่ซื้อความคุ้มครองทั่วโลกจึงเห็นเบี้ยต่ำกว่าจริงมาก
+       แผน 100 ล้านทั่วโลก แพงกว่าเฉพาะไทยกว่าสองเท่า จะบอกผิดไม่ได้ */
     const occ = occKeyFor(occupationClass);
     if(!occ) return {label:'Elite Health Plus', premium:null};
-    const table = RATES.ehp.payment_schedules?.occupations?.[occ]?.[freq]?.[cfg.plan]?.thailand;
+    const ps = RATES.ehp.payment_schedules;
+    const table = ps?.occupations?.[occ]?.[freq]?.[cfg.plan]?.[ehpRegionKey(cfg.region)];
     const clampedAge = age > 98 ? 98 : age;
-    const v = table ? rateAtStart(table, clampedAge, RATES.ehp.payment_schedules.age_start ?? 11) : null;
+    const v = table ? rateAtStart(table, clampedAge, ps.age_start ?? 11) : null;
     return {label:'Elite Health Plus', premium:v};
   }
   if(cfg.type === 'maochai'){
@@ -4556,7 +4575,8 @@ function readInputs(){
     healthList.push(cfg);
   }
   if(document.getElementById('use_ehp').checked){
-    healthList.push({type:'ehp', plan: document.getElementById('ehp_plan').value});
+    healthList.push({type:'ehp', plan: document.getElementById('ehp_plan').value,
+                     region: document.getElementById('ehp_region').value});
   }
   if(document.getElementById('use_maochai').checked){
     healthList.push({type:'maochai', plan: document.getElementById('maochai_plan').value});
@@ -4932,7 +4952,7 @@ async function exportPremiumTableExcel(){
   const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
   const healthLabels = inp.healthList.map(cfg => {
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
-    if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan}`;
+    if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan} (${EHP_REGIONS[ehpRegionKey(cfg.region)].short})`;
     if(cfg.type === 'maochai') return `เหมาจ่าย Extra — แผน ${cfg.plan}`;
     return `Extra Care Plus — แผน ${cfg.plan}`;
   });
@@ -5399,6 +5419,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       return [`แผน ${label}`,
               `วงเงินค่ารักษา ${EHP_SUM[cfg.plan]} บาท/ปีกรมธรรม์`,
               `ค่าห้อง ${EHP_ROOM[cfg.plan]} บาท/วัน หรือห้องเดี่ยวมาตรฐาน`,
+              `พื้นที่ความคุ้มครอง ${EHP_REGIONS[ehpRegionKey(cfg.region)].label}`,
               'ไม่มีความรับผิดส่วนแรกและไม่มีส่วนร่วมจ่าย'].join(' • ');
     }
     if(cfg.type === 'maochai'){
@@ -5806,6 +5827,100 @@ function cipcRateTableBlock(freq='annual'){
         {label:'หญิง', arr: ageSeriesFromFn(0,84, age=>cipcPremium(sum,'f',age,freq))},
       ]);
 }
+/* ตารางเบี้ย อีลิท เฮลท์ พลัส
+   เบี้ยขึ้นกับสามอย่างพร้อมกัน คือ งวดชำระ พื้นที่ความคุ้มครอง และขั้นอาชีพ
+   เดิมหน้านี้แสดงเฉพาะไทยกลุ่มอาชีพ 1-2 อย่างเดียว ลูกค้าที่จะซื้อทั่วโลกจึงเห็นตัวเลขต่ำกว่าจริงมาก */
+let ehpTableRegion = 'thailand';
+let ehpTableOcc = '1';
+
+function ehpRateTableBlock(freq='annual'){
+  const region = ehpRegionKey(ehpTableRegion), occ = ehpTableOcc;
+  const rows = [['20m','20 ล้าน'],['40m','40 ล้าน'],['75m','75 ล้าน'],['100m','100 ล้าน']].map(([plan,label]) => ({
+    label: `${label} (unisex)`,
+    arr: ageSeriesFromFn(11, 90, age =>
+      healthRiderPremium({type:'ehp', plan, region}, 'm', age, occ, freq).premium),
+  }));
+  const base = healthRiderPremium({type:'ehp', plan:'100m', region:'thailand'}, 'm', 40, occ, 'annual').premium;
+  const now  = healthRiderPremium({type:'ehp', plan:'100m', region}, 'm', 40, occ, 'annual').premium;
+  const diff = (base && now && region !== 'thailand')
+    ? `<p class="meta" style="margin:8px 0 0;">ตัวอย่างส่วนต่าง แผน 100 ล้าน อายุ 40 ปี รายปี · เฉพาะไทย ${fmt(base)} บาท เทียบกับ${EHP_REGIONS[region].label} ${fmt(now)} บาท คิดเป็น ${(now/base).toFixed(2)} เท่า</p>`
+    : '';
+  return `<div class="dcare-controls">
+      <label>พื้นที่ความคุ้มครอง
+        <select id="ehpTableRegion" onchange="ehpTableRegion = this.value; ehpRefreshTable();">
+          ${Object.entries(EHP_REGIONS).map(([k,v])=>`<option value="${k}"${k===region?' selected':''}>${v.label}</option>`).join('')}
+        </select></label>
+      <label>ขั้นอาชีพ
+        <select id="ehpTableOcc" onchange="ehpTableOcc = this.value; ehpRefreshTable();">
+          <option value="1"${occ==='1'?' selected':''}>ขั้นอาชีพ 1 และ 2</option>
+          <option value="3"${occ==='3'?' selected':''}>ขั้นอาชีพ 3</option>
+        </select></label>
+    </div>${diff}${renderAgeTable(11, 90, rows)}`;
+}
+
+/* ส่วนอธิบายพื้นที่ความคุ้มครอง
+   ตัวเลขทุกตัวคำนวณจากตารางเบี้ยจริงตอนเรนเดอร์ ไม่ได้พิมพ์ค้างไว้
+   ถ้าบริษัทปรับอัตราเบี้ยแล้วอัปเดตไฟล์ข้อมูล ข้อความนี้จะขยับตามเอง */
+function ehpRegionSection(){
+  const at = (plan, region, age) =>
+    healthRiderPremium({type:'ehp', plan, region}, 'm', age, '1', 'annual').premium;
+  const AGE = 40, PLAN = '100m';
+  const th = at(PLAN, 'thailand', AGE);
+  if(!th) return '';
+  const pct = r => Math.round((at(PLAN, r, AGE) / th - 1) * 100);
+  const row = (r, when) => `<tr><td><b>${EHP_REGIONS[r].label}</b></td>`
+    + `<td class="num">${fmt(at(PLAN, r, AGE))}</td>`
+    + `<td class="num">${r === 'thailand' ? 'ฐาน' : '+' + pct(r) + '%'}</td>`
+    + `<td>${when}</td></tr>`;
+
+  return `<div class="content-card">
+    <h2>เลือกพื้นที่ความคุ้มครองอย่างไรให้คุ้ม</h2>
+    <p>พื้นที่ความคุ้มครองคือสิ่งที่ทำให้เบี้ยของแบบนี้ต่างกันได้เกินเท่าตัว ทั้งที่วงเงินเท่ากัน
+       ตารางนี้เทียบด้วยแผน 100 ล้าน อายุ ${AGE} ปี ชำระรายปี ขั้นอาชีพ 1-2 เพื่อให้เห็นสัดส่วนชัด</p>
+    <div class="table-wrap"><table class="cmp">
+      <thead><tr><th>พื้นที่</th><th class="num">เบี้ยต่อปี</th><th class="num">ส่วนต่าง</th><th>เหมาะกับใคร</th></tr></thead>
+      <tbody>
+        ${row('thailand', 'อยู่ไทยเป็นหลัก รักษาโรงพยาบาลเอกชนในไทย ไปเที่ยวต่างประเทศบ้างแต่ไม่ได้ตั้งใจไปรักษา')}
+        ${row('asia', 'ทำงานหรือเรียนในเอเชีย หรือวางแผนไปรักษาที่สิงคโปร์ ญี่ปุ่น เกาหลี')}
+        ${row('world_ex_us', 'เดินทางทั่วโลกเป็นประจำ หรืออาจไปรักษาที่ยุโรป แต่ไม่คิดจะไปสหรัฐฯ')}
+        ${row('world', 'ต้องการเปิดทางไปรักษาที่สหรัฐอเมริกาได้จริง หรือมีบ้านหรือครอบครัวอยู่ที่นั่น')}
+      </tbody>
+    </table></div>
+
+    <h3 style="margin-top:18px;">ข้อดีที่ได้จริงเมื่อขยายพื้นที่ความคุ้มครอง</h3>
+    <ul>
+      <li><b>เลือกรักษาโรคที่ไทยยังทำได้จำกัด</b> โรคบางกลุ่ม เช่น มะเร็งที่ต้องใช้การรักษาเฉพาะทางบางชนิด
+          การผ่าตัดที่ต้องใช้ทีมเฉพาะ หรือการรักษาที่ยายังไม่ขึ้นทะเบียนในไทย
+          การมีพื้นที่คุ้มครองกว้างทำให้ตัดสินใจได้โดยไม่ต้องเอาเงินตัวเองไปเสี่ยง</li>
+      <li><b>ล้มป่วยระหว่างอยู่ต่างประเทศแล้วเบิกได้เต็ม</b> ประกันเดินทางส่วนใหญ่มีวงเงินหลักล้านต้น ๆ และคุ้มครองเฉพาะช่วงที่เดินทาง
+          ส่วนแบบนี้เป็นความคุ้มครองต่อเนื่องทั้งปี วงเงินเท่ากับที่ใช้ในไทย</li>
+      <li><b>ค่ารักษาต่างประเทศต่างกันคนละสเกลกับไทย</b> การนอนโรงพยาบาลด้วยโรคหนักในสหรัฐฯ ขึ้นหลักสิบล้านบาทได้ไม่ยาก
+          ซึ่งเป็นเหตุผลตรง ๆ ที่เบี้ยชั้นทั่วโลกกระโดดขึ้นมากกว่าชั้นอื่น</li>
+      <li><b>ไม่ต้องเปลี่ยนสัญญาเมื่อชีวิตเปลี่ยน</b> คนที่ย้ายไปทำงานต่างประเทศแล้วค่อยมาซื้อใหม่ ต้องแถลงสุขภาพใหม่ทั้งหมด
+          ถ้าระหว่างนั้นตรวจเจอโรค อาจซื้อไม่ได้อีกเลย</li>
+    </ul>
+
+    <h3 style="margin-top:18px;">ข้อควรคิดก่อนจ่ายเพิ่ม</h3>
+    <ul>
+      <li>ส่วนต่างที่แพงที่สุดคือชั้นทั่วโลก เพราะรวมสหรัฐอเมริกาเข้ามา
+          ถ้าไม่ได้มีแผนจะไปรักษาที่นั่นจริง ชั้นทั่วโลกยกเว้นสหรัฐฯ มักคุ้มกว่ามาก</li>
+      <li>พื้นที่คุ้มครองไม่ได้ทำให้วงเงินเพิ่ม วงเงินยังเท่าเดิมตามแผนที่เลือก แค่ขยายว่าใช้ที่ไหนได้บ้าง</li>
+      <li>เบี้ยของแบบนี้ปรับขึ้นตามอายุทุกปี ส่วนต่างที่จ่ายเพิ่มวันนี้จะทบขึ้นทุกปีไปตลอด
+          ควรคิดจากงบระยะยาว ไม่ใช่จากเบี้ยปีแรกอย่างเดียว</li>
+    </ul>
+
+    <p class="def-doc" style="margin-top:16px;"><b>มุมมองจากห้องตรวจ</b>
+      คนไข้ที่ได้ประโยชน์จากพื้นที่คุ้มครองกว้างจริง ๆ คือคนที่มีเหตุให้ต้องอยู่ต่างประเทศเป็นเดือน ๆ
+      ไม่ใช่คนที่ไปเที่ยวปีละครั้งสองครั้ง · สำหรับคนกลุ่มหลัง เอาส่วนต่างไปเพิ่มวงเงินในไทย
+      หรือไปทำสัญญาโรคร้ายแรงเพิ่ม มักได้ประโยชน์ต่อบาทมากกว่า</p>
+  </div>`;
+}
+
+function ehpRefreshTable(){
+  const host = document.getElementById('planDetailRateBody');
+  if(host) host.innerHTML = ehpRateTableBlock(planDetailFreq);
+}
+
 function ciRefreshTable(builder, inputId){
   const host = document.getElementById('planDetailRateBody');
   if(!host) return;
@@ -7197,14 +7312,10 @@ const PLAN_DETAILS = {
       'หมวด 7 อุบัติเหตุ OPD คุ้มครองเฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ให้ใช้สิทธิ PA หรือ OPD',
       'หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กตามหมวด 13 ไม่สามารถใช้ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD',
     ],
+    detailSections: () => ehpRegionSection(),
     freqSupported: true,
-    rateTable: (freq='annual') => renderAgeTable(11, 90, [
-      {label:'20 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'20m'}, 'm', age, '1', freq).premium)},
-      {label:'40 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'40m'}, 'm', age, '1', freq).premium)},
-      {label:'75 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'75m'}, 'm', age, '1', freq).premium)},
-      {label:'100 ล้าน (unisex)', arr: ageSeriesFromFn(11,90, age=>healthRiderPremium({type:'ehp',plan:'100m'}, 'm', age, '1', freq).premium)},
-    ]),
-    rateNote: 'เบี้ย Elite Health Plus เท่ากันทั้งชายและหญิงในทุกอายุ (unisex) — ตัวเลขที่แสดงเป็นเบี้ยเฉพาะพื้นที่คุ้มครอง "เฉพาะประเทศไทย" กลุ่มอาชีพ 1-2 หากเลือกพื้นที่คุ้มครองกว้างขึ้นหรือกลุ่มอาชีพ 3 เบี้ยจะสูงขึ้นตามลำดับ (เอเชีย / ทั่วโลกยกเว้นสหรัฐฯ / ทั่วโลก); ตารางงวดชำระอื่นนอกจากรายปีอ้างอิงกลุ่มอาชีพ 1-2 เช่นกัน',
+    rateTable: (freq='annual') => ehpRateTableBlock(freq),
+    rateNote: 'เบี้ย Elite Health Plus เท่ากันทั้งชายและหญิงในทุกอายุ (unisex) เลือกพื้นที่ความคุ้มครองและขั้นอาชีพได้จากช่องด้านบนตาราง ตัวเลขจะเปลี่ยนตามทันทีทุกงวดชำระ ทุกตัวมาจากตารางอัตราเบี้ยของบริษัท ไม่ได้คำนวณต่อยอดเอง (ขั้นอาชีพ 4 บริษัทไม่ได้ประกาศอัตราเบี้ยของสัญญานี้)',
     faq: [
       {q:'เข้ารักษาในห้องเดี่ยวราคาเริ่มต้นของโรงพยาบาล มีค่าใช้จ่ายส่วนเกินหรือไม่', a:'ไม่มี หากพักห้องเดี่ยวราคาเริ่มต้นของโรงพยาบาลในไทย และค่าอาหาร/ค่าบริการเป็นไปตามมาตรฐานที่โรงพยาบาลจัดให้ ไม่เกินวงเงินสูงสุดต่อปีหรือพักไม่เกิน 365 วัน (ไม่รวมค่าอาหารพิเศษที่สั่งเพิ่มเอง)'},
       {q:'ถ้าเข้าห้องพิเศษ VIP ที่แพงกว่าแผนที่ซื้อไว้ เบิกได้เท่าไหร่', a:'โรงพยาบาลในไทย เบิกได้ไม่เกินวงเงินตามแผน หรือไม่เกินราคาห้องเดี่ยวมาตรฐานของโรงพยาบาลนั้น แล้วแต่จำนวนใดสูงกว่า'},
@@ -7792,7 +7903,7 @@ function packageLabelItem(item){
 function premiumOfItem(item, gender, age){
   if(item.kind==='main') return mainPremiumAtEntry(item.plan, item.capital, gender, age);
   if(item.kind==='dhl') return healthRiderPremium({type:'dhl', sum:item.sum, mode:item.mode, deduct:item.deduct, copay:item.copay}, gender, age).premium;
-  if(item.kind==='ehp') return healthRiderPremium({type:'ehp', plan:item.plan}, gender, age).premium;
+  if(item.kind==='ehp') return healthRiderPremium({type:'ehp', plan:item.plan, region:item.region}, gender, age).premium;
   if(item.kind==='maochai') return healthRiderPremium({type:'maochai', plan:item.plan}, gender, age).premium;
   if(item.kind==='ecp') return healthRiderPremium({type:'ecp', plan:item.plan}, gender, age).premium;
   if(item.kind==='opd_mao') return opdPremium({type:'mao', plan:String(item.plan)}, gender, age, 'annual', '1').premium;
@@ -9960,7 +10071,7 @@ function applyAiPackage(idx){
       setChecked('use_dhl', true); setValue('dhl_sum', it.sum);
       setValue('dhl_option', it.mode==='copay' ? 'copay_'+it.copay : 'deduct_'+it.deduct);
     }
-    if(it.kind==='ehp'){ setChecked('use_ehp', true); setValue('ehp_plan', it.plan); }
+    if(it.kind==='ehp'){ setChecked('use_ehp', true); setValue('ehp_plan', it.plan); setValue('ehp_region', ehpRegionKey(it.region)); }
     if(it.kind==='maochai'){ setChecked('use_maochai', true); setValue('maochai_plan', it.plan); }
     if(it.kind==='ecp'){ setChecked('use_ecp', true); setValue('ecp_plan', it.plan); }
     if(it.kind==='opd_mao'){ setChecked('use_opd_mao', true); setValue('opd_mao_plan', it.plan); }
