@@ -45,7 +45,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/:path*",
+      "source": "/((?!api/|brochures/|data/|plan-covers/|favicon|robots|sitemap).*[^.][^/]*)",
       "destination": "/index.html"
     }
   ],
