@@ -641,6 +641,13 @@
   .sb-both{background:#e7f5ec;color:#146c43;border:1px solid #a9d9bd;}
   .sb-early{background:#fff5e6;color:#96601a;border:1px solid #f0d5ab;}
   .sb-none{background:#fdeef1;color:#a03149;border:1px solid #f0c2cd;}
+  .sb-mid{background:#eef2fb;color:#33509b;border:1px solid #bcc9e8;}
+  .ci-stage{margin:12px 0 0;padding:12px 14px;background:#fcfcfd;border:1px solid #eeeef2;border-radius:10px;}
+  .ci-stage-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px;}
+  .ci-stage-head .stage-badge{margin:0;}
+  .ci-stage-name{font-weight:600;color:#5f4a53;line-height:1.6;}
+  .ci-stage .def-en{display:inline;margin-left:6px;}
+  .ci-stage .def-body{margin-bottom:8px;}
   .def-plan-key{margin:0 0 4px;padding:14px 16px;background:#fbfbfc;border-radius:10px;
     border:1px solid #ececf0;line-height:1.9;}
   .def-plan-key p{margin:0 0 6px;}
@@ -649,6 +656,10 @@
   .not-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
     background:#a03149;color:#fff;font-size:.74rem;font-weight:700;vertical-align:2px;}
   .def-not{background:#fdf1f3;border-left:3px solid #c0455f;}
+  .def-shift{background:#fff8ec;border-left:3px solid #d99b3f;}
+  .def-shift b{color:#96601a;}
+  .shift-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
+    background:#96601a;color:#fff;font-size:.74rem;font-weight:700;vertical-align:2px;}
   .def-doc{margin:10px 0 0;padding:10px 14px;background:#f6f4fb;border-left:3px solid #7a6bb0;
     border-radius:0 8px 8px 0;line-height:1.9;color:#4a4160;}
   .def-pending{margin:16px 0 0;padding:10px 12px;background:#fafafa;border-radius:8px;line-height:2.1;}
@@ -2046,9 +2057,65 @@
   body:not(.hnw) .plan-card:nth-of-type(5n+3) .cat{color:var(--a3);}
   body:not(.hnw) .plan-card:nth-of-type(5n+4) .cat{color:var(--a4);}
   body:not(.hnw) .plan-card:nth-of-type(5n+5) .cat{color:var(--a5);}
+  /* ค้นหาทั้งเว็บ
+     ปุ่มลอยมุมบนขวาให้เห็นได้จากทุกหน้า ไม่ผูกกับแถบเมนู เพราะแถบเมนูเลื่อนหายไปตอนอ่านเนื้อหายาว */
+  .ss-btn{position:fixed;top:14px;right:14px;z-index:1200;display:flex;align-items:center;gap:7px;
+    padding:9px 15px 9px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;
+    background:rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    box-shadow:0 4px 16px rgba(0,0,0,.18);transition:background .16s,transform .16s;}
+  .ss-btn:hover{background:rgba(255,255,255,.3);transform:translateY(-1px);}
+  .ss-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;}
+  /* เลื่อนพ้นหัวเว็บแล้วพื้นหลังเป็นสีอ่อน ปุ่มโปร่งสีขาวจะอ่านไม่ออก จึงสลับเป็นทึบ */
+  body.ss-solid .ss-btn{background:var(--pink-deep,#8f0d40);border-color:rgba(255,255,255,.25);}
+  body.ss-solid .ss-btn:hover{background:#a81250;}
+  body.hnw.ss-solid .ss-btn{background:#1d1d20;border-color:var(--gold,#c9a227);color:var(--gold-hi,#f0dcb0);}
+  @media(max-width:640px){ .ss-btn{padding:9px;top:10px;right:10px;} .ss-btn-t{display:none;} }
+
+  .ss-overlay{position:fixed;inset:0;z-index:1300;background:rgba(20,6,14,.5);
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px 16px;}
+  .ss-overlay[hidden]{display:none;}
+  .ss-panel{width:min(680px,100%);max-height:80vh;display:flex;flex-direction:column;
+    background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+  .ss-head{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;border-bottom:1px solid #eadfe4;}
+  .ss-ico{width:20px;height:20px;flex:none;fill:none;stroke:#8f0d40;stroke-width:2.1;stroke-linecap:round;}
+  #ssInput{flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:17px;color:#2a1620;background:transparent;}
+  #ssInput::placeholder{color:#a9909c;}
+  .ss-close{flex:none;border:0;background:#f4eaee;color:#7a5c68;width:30px;height:30px;border-radius:50%;
+    font-size:20px;line-height:1;cursor:pointer;}
+  .ss-close:hover{background:#e8d6de;}
+  .ss-body{overflow-y:auto;padding:6px 0 10px;-webkit-overflow-scrolling:touch;}
+  .ss-hit{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;cursor:pointer;
+    padding:10px 16px;border-left:3px solid transparent;}
+  .ss-hit:hover,.ss-hit.on{background:#fdf3f7;border-left-color:var(--pink-deep,#8f0d40);}
+  .ss-kind{display:inline-block;font-size:11px;font-weight:700;color:#8f0d40;background:#fbe8f0;
+    border-radius:999px;padding:2px 8px;margin-bottom:3px;}
+  .ss-t{display:block;font-weight:600;color:#2a1620;line-height:1.45;}
+  .ss-s{display:block;font-size:13px;color:#7a5c68;line-height:1.5;margin-top:2px;}
+  .ss-hit mark{background:#ffe6a8;color:inherit;border-radius:3px;padding:0 1px;}
+  .ss-note{padding:18px 16px;color:#7a5c68;font-size:14px;line-height:1.6;}
+  .ss-more{padding:8px 16px 4px;color:#a9909c;font-size:12px;}
 </style>
 </head>
 <body>
+
+<button type="button" class="ss-btn" onclick="openSiteSearch()" aria-label="ค้นหาทั้งเว็บ">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.4" y1="16.4" x2="21.5" y2="21.5"></line></svg>
+  <span class="ss-btn-t">ค้นหา</span>
+</button>
+
+<div id="siteSearch" class="ss-overlay" hidden onclick="if(event.target===this) closeSiteSearch();">
+  <div class="ss-panel" role="dialog" aria-modal="true" aria-label="ค้นหาทั้งเว็บ">
+    <div class="ss-head">
+      <svg class="ss-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.4" y1="16.4" x2="21.5" y2="21.5"></line></svg>
+      <input id="ssInput" type="text" autocomplete="off" spellcheck="false"
+             placeholder="พิมพ์คำที่อยากรู้ เช่น มะเร็ง ระยะรอคอย ดีเฮลท์">
+      <button type="button" class="ss-close" onclick="closeSiteSearch()" aria-label="ปิดการค้นหา">&times;</button>
+    </div>
+    <div id="ssBody" class="ss-body"></div>
+  </div>
+</div>
 
 <div class="hero">
   <div class="hero-inner">
@@ -3435,7 +3502,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-05';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-05b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -7346,6 +7413,7 @@ const PLAN_DETAILS = {
     benefitTitle: 'วิธีจ่ายผลประโยชน์ และเงินคงเหลือ',
     detailSections: () => ciPerfectCareDetailSections(),
     freqSupported: true,
+    detailSections: () => cipcDefinitionsSection(),
     rateTable: (freq='annual') => cipcRateTableBlock(freq),
     rateNote: 'ตารางแสดงเบี้ยจริงตามทุนที่กรอก ปรับทุนแล้วตัวเลขทั้งตารางจะเปลี่ยนตามทันที',
   },
@@ -10359,7 +10427,7 @@ const FAQ_ITEMS = [
 
   {g:'copay', q:'ต้องเคลมแบบไหนถึงจะโดน Copayment',
    lead:'ต้องเข้าทั้งสองเงื่อนไขพร้อมกันในปีเดียว คือทั้งจำนวนครั้งและอัตราการเคลม เข้าอย่างเดียวไม่โดน',
-   body:`<b>กรณีที่ 1 กลุ่มโรคเล็กน้อย</b> ที่ปกติไม่จำเป็นต้องนอนโรงพยาบาล นอนตั้งแต่ 3 ครั้งขึ้นไป และเคลมรวมตั้งแต่ 200% ของเบี้ยสุขภาพที่จ่ายในปีนั้น จะถูกร่วมจ่าย 30%
+   body:`<b>กรณีที่ 1 กลุ่มการป่วยเล็กน้อยทั่วไป (Simple Diseases)</b> ที่ปกติไม่จำเป็นต้องนอนโรงพยาบาล นอนตั้งแต่ 3 ครั้งขึ้นไป และเคลมรวมตั้งแต่ 200% ของเบี้ยสุขภาพที่จ่ายในปีนั้น จะถูกร่วมจ่าย 30% · กลุ่มนี้มีทั้งรายชื่อโรคและเกณฑ์สัญญาณชีพกำกับไว้ชัดเจน ดูรายละเอียดได้ที่หัวข้อ Simple Diseases ในหมวดนี้
 <b>กรณีที่ 2 โรคทั่วไป</b> ที่ไม่ใช่ผ่าตัดใหญ่ ไม่ใช่โรคร้ายแรง และไม่ใช่กลุ่มโรคเล็กน้อย นอนตั้งแต่ 3 ครั้งขึ้นไป และเคลมรวมตั้งแต่ 400% ของเบี้ย จะถูกร่วมจ่าย 30%
 <b>เข้าทั้งสองกรณีในปีเดียวกัน</b> ร่วมจ่าย 50%
 คำว่าครั้งในเกณฑ์นี้นับทุกครั้งที่แอดมิต ต่างจากนิยามครั้งการรักษาปกติที่นับการแอดมิตด้วยโรคเดิมภายใน 90 วันเป็นครั้งเดียวกัน`},
@@ -10387,12 +10455,34 @@ const FAQ_ITEMS = [
 โควตาที่มีจริงคือ กลุ่มโรคทั่วไป 2 ครั้ง และกลุ่มโรคเล็กน้อยอีก 2 ครั้งต่อปี`,
    doc:'ในฐานะหมอ ผมไม่อยากให้ใครปฏิเสธการแอดมิตที่จำเป็นเพราะกลัวติด Copayment ถ้ามีข้อบ่งชี้ให้นอนก็ต้องนอน เกณฑ์นี้เขาออกแบบมาเผื่อความเสี่ยงสูงสุดของผู้สูงอายุไว้แล้ว คนที่ดูแลตัวเองตามปกติแทบไม่มีทางแตะเพดาน'},
 
-  {g:'copay', q:'กลุ่มโรคเล็กน้อยที่ว่า มีอะไรบ้าง',
-   lead:'เป็นกลุ่มที่โดยทั่วไปรักษาแบบผู้ป่วยนอกได้ ถ้าไม่มีภาวะแทรกซ้อนหรือเข้าเกณฑ์ทางการแพทย์ข้อใดข้อหนึ่งที่ต้องแอดมิต',
-   body:`สำหรับอายุ 6 ปีขึ้นไป ติดเชื้อทางเดินหายใจส่วนบน · ไข้หวัดใหญ่ · ท้องเสีย · เวียนศีรษะ · ไข้ไม่ระบุสาเหตุ · ปวดหัว · กล้ามเนื้ออักเสบ · ภูมิแพ้ · กระเพาะอาหารอักเสบและกรดไหลย้อน
-สำหรับอายุ 3 ถึง 5 ปี ติดเชื้อทางเดินหายใจส่วนบน · ไข้หวัดใหญ่ · ท้องเสีย · ไข้ไม่ระบุสาเหตุ · ภูมิแพ้ · กระเพาะอาหารอักเสบ
-<b>ข้อสำคัญคือ ถ้ามีภาวะแทรกซ้อนหรือเข้าเกณฑ์ทางการแพทย์ที่ต้องแอดมิต จะไม่ถูกจัดเป็นกลุ่มนี้</b>`,
-   doc:'เกณฑ์แอดมิตพวกนี้เป็นเรื่องที่หมอตัดสินจากอาการหน้างาน ไม่ใช่จากชื่อโรค คนไข้ไข้หวัดใหญ่ที่ขาดน้ำจนความดันตกหรือออกซิเจนต่ำ ก็ต้องนอนและไม่ถูกนับเป็นกลุ่มนี้'},
+  {g:'copay', k:'simple-diseases', q:'Simple Diseases หรือกลุ่มการป่วยเล็กน้อยทั่วไป คืออะไร มีโรคอะไรบ้าง',
+   lead:'คือกลุ่มโรคที่สัญญาสุขภาพแบบ New Health Standard กำหนดว่าโดยทั่วไปรักษาแบบผู้ป่วยนอกได้ และเป็นกลุ่มที่ใช้เกณฑ์ Copayment เข้มที่สุด คือ 200% ของเบี้ย ไม่ใช่ 400%',
+   body:`คำนี้เป็นคำในประกาศมาตรฐานประกันสุขภาพแบบใหม่ของ คปภ. ลงวันที่ 8 พฤศจิกายน 2564 ที่ทุกบริษัทใช้ร่วมกัน ไม่ใช่กติกาเฉพาะบริษัทใดบริษัทหนึ่ง
+<b>การจะถูกจัดเป็น Simple Diseases ต้องเข้าครบทั้ง 2 ชั้น ไม่ใช่ดูแค่ชื่อโรค</b>
+<b>ชั้นที่ 1 ต้องได้รับการวินิจฉัยว่าเป็นโรคใดโรคหนึ่งใน 9 โรคนี้ และต้องไม่มีภาวะแทรกซ้อน</b>
+· ติดเชื้อทางเดินหายใจส่วนบน
+· ไข้หวัดใหญ่
+· ท้องเสีย
+· เวียนศีรษะ
+· ไข้ไม่ระบุสาเหตุ
+· ปวดหัว
+· กล้ามเนื้ออักเสบ
+· ภูมิแพ้
+· โรคกระเพาะอาหารอักเสบและกรดไหลย้อน
+สำหรับเด็กอายุ 3 ถึง 5 ปี รายการสั้นกว่า คือ ติดเชื้อทางเดินหายใจส่วนบน · ไข้หวัดใหญ่ · ท้องเสีย · ไข้ไม่ระบุสาเหตุ · ภูมิแพ้ · กระเพาะอาหารอักเสบ
+<b>ชั้นที่ 2 ข้อมูลทางคลินิกต้องเข้าเกณฑ์ต่อไปนี้ทุกข้อ</b> ถ้าหลุดแม้ข้อเดียว จะไม่ถือเป็นกลุ่มนี้
+· <b>อุณหภูมิ 36 ถึง 38.5 องศาเซลเซียส</b>
+· <b>ชีพจร 50 ถึง 120 ครั้งต่อนาที</b>
+· <b>อัตราการหายใจ 9 ถึง 22 ครั้งต่อนาที</b>
+· <b>ความดันตัวบน 90 ถึง 180 มิลลิเมตรปรอท</b>
+· <b>ความดันตัวล่าง 60 ถึง 110 มิลลิเมตรปรอท</b>
+· <b>ระดับออกซิเจนปลายนิ้วเกินกว่า 95%</b>
+· <b>คะแนนความปวดน้อยกว่า 7</b> จากเต็ม 10
+· <b>ไม่ขาดน้ำ หรือขาดน้ำเพียงเล็กน้อย</b>
+· <b>กรณีเด็ก ต้องไม่มี</b> หายใจเร็วหรือหายใจลำบาก · ซึมลง · ดื่มนมหรือทานอาหารน้อยลง
+<b>อ่านอีกทางหนึ่งคือ</b> ถ้าคนไข้ไข้หวัดใหญ่มีออกซิเจน 93% หรือความดันตัวบน 85 หรือขาดน้ำจนต้องให้น้ำเกลือ เคสนั้นไม่ใช่ Simple Diseases แล้ว ทั้งที่ชื่อโรคยังเป็นไข้หวัดใหญ่เหมือนเดิม
+<b>ทำไมต้องรู้เรื่องนี้</b> เพราะเกณฑ์ Copayment แยกกลุ่มนี้ออกมาเข้มกว่ากลุ่มอื่น คือนอนโรงพยาบาลตั้งแต่ 3 ครั้งขึ้นไปและเคลมรวมตั้งแต่ 200% ของเบี้ยสุขภาพในปีนั้น ก็เข้าเกณฑ์แล้ว ในขณะที่โรคทั่วไปต้องถึง 400%`,
+   doc:'ตัวเลขชุดนี้คือสัญญาณชีพที่หมอฉุกเฉินดูอยู่แล้วทุกเคส และมันคือเหตุผลที่ผมบอกเสมอว่าอย่ากลัวจนไม่ยอมนอนโรงพยาบาล เพราะเคสที่มีข้อบ่งชี้ให้นอนจริง สัญญาณชีพจะหลุดเกณฑ์เหล่านี้ไปเองโดยอัตโนมัติ แล้วจะไม่ถูกนับเป็นกลุ่มนี้ตั้งแต่ต้น · สิ่งที่ควรทำคือขอให้แพทย์บันทึกสัญญาณชีพและเหตุผลที่ต้องแอดมิตไว้ในเวชระเบียนให้ชัด ไม่ใช่ปฏิเสธการรักษาที่จำเป็น'},
 
   /* ===== ตอนเคลม ===== */
   {g:'claim', q:'ทำยังไงให้ตอนเคลมไม่มีปัญหา',
@@ -13445,6 +13535,83 @@ var DCARE_DEF = (function(){
   return null;
 })();
 
+/* CI Perfect Care จัดโครงต่างจาก ดี แคร์ ตรงที่แบ่งเป็น 3 ระยะต่อโรค
+   ระยะเริ่มต้น ระยะกลาง ระยะรุนแรง และจ่ายเป็นสัดส่วนของทุนต่างกันตามระยะ
+   จึงต้องมีไฟล์และตัวแสดงผลของตัวเอง ใช้ร่วมกับ ดี แคร์ ไม่ได้ */
+var CIPC_DEF = (function(){
+  for(const base of ['/data/', './data/']){
+    try{
+      const req = new XMLHttpRequest();
+      req.open('GET', base + 'cipc-definitions.json?v=' + DATA_VERSION, false);
+      req.send(null);
+      if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+    }catch(e){}
+  }
+  console.error('โหลด data/cipc-definitions.json ไม่สำเร็จ');
+  return null;
+})();
+
+const CIPC_STAGE = {
+  early:  {cls:'sb-early', label:'ระยะเริ่มต้น'},
+  mid:    {cls:'sb-mid',   label:'ระยะกลาง'},
+  severe: {cls:'sb-both',  label:'ระยะรุนแรง'},
+};
+
+let cipcDefTab = 'cancer';
+function setCipcDefTab(key){
+  cipcDefTab = key;
+  const host = document.getElementById('cipcDefBody');
+  if(host) host.innerHTML = cipcDefGroupHtml(key);
+  document.querySelectorAll('#cipcDefTabs .def-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.key === key));
+}
+
+function cipcStageHtml(s){
+  const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  const b = CIPC_STAGE[s.stage];
+  let h = `<div class="ci-stage"><div class="ci-stage-head">`
+    + `<span class="stage-badge ${b.cls}">${b.label}</span>`
+    + `<span class="ci-stage-name">${s.th}<span class="def-en">${s.en}</span></span></div>`;
+  h += `<p class="def-body">${s.body}</p>`;
+  if(s.criteria) h += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
+  if(s.extra) h += `<p class="def-body def-extra">${s.extra}</p>`;
+  if(s.exclusions) h += `<div class="def-block def-not">`
+    + `<b>${s.exclusionsTitle} <span class="not-tag">ไม่เข้าระยะนี้</span></b>${li(s.exclusions)}</div>`;
+  return h + '</div>';
+}
+
+function cipcDefGroupHtml(key){
+  const list = (CIPC_DEF.diseases || []).filter(d => d.group === key);
+  return list.map(d => `<article class="def-item">`
+    + `<h4>${d.n}. ${d.th}<span class="def-en">${d.en}</span></h4>`
+    + d.stages.map(cipcStageHtml).join('')
+    + (d.doc ? `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>` : '')
+    + `</article>`).join('');
+}
+
+function cipcDefinitionsSection(){
+  if(!CIPC_DEF || !CIPC_DEF.diseases || !CIPC_DEF.diseases.length) return '';
+  const m = CIPC_DEF._meta || {};
+  const tabs = Object.entries(CIPC_DEF.groups).map(([k, label]) => {
+    const n = CIPC_DEF.diseases.filter(d => d.group === k).length;
+    return `<button type="button" class="def-tab${k === cipcDefTab ? ' active' : ''}" data-key="${k}" onclick="setCipcDefTab('${k}')">${label} (${n})</button>`;
+  }).join('');
+  return `<div class="content-card">
+      <h2>นิยามโรคร้ายแรงทั้ง ${m.total_diseases} โรค และเกณฑ์การวินิจฉัย</h2>
+      <p class="meta" style="margin:0 0 4px;">คัดจากถ้อยคำใน${m.source || ''}</p>
+      <p class="meta def-warn">ตัวหนาคือจุดที่ตัดสินว่าเคลมได้หรือไม่ได้ · เกณฑ์พวกนี้เข้มกว่าเกณฑ์ที่ใช้วินิจฉัยในโรงพยาบาลจริงในหลายข้อ ควรอ่านก่อนตัดสินใจซื้อ ไม่ใช่ตอนเคลม</p>
+      <div class="def-plan-key">
+        <p><b>แผนนี้แบ่งความรุนแรงเป็น 3 ระยะ</b> และจ่ายเป็นสัดส่วนของทุนต่างกันตามระยะที่ตรวจพบ ไม่ใช่จ่ายเต็มทุกกรณี</p>
+        <p class="def-key-legend">
+          <span class="stage-badge sb-early">ระยะเริ่มต้น</span> จับได้เร็วที่สุด หลายข้อจ่ายตั้งแต่ยังช่วยตัวเองได้<br>
+          <span class="stage-badge sb-mid">ระยะกลาง</span> หนักขึ้น แต่ยังไม่ถึงเกณฑ์ระยะรุนแรง<br>
+          <span class="stage-badge sb-both">ระยะรุนแรง</span> เกณฑ์เข้มที่สุด · <b>ผลประโยชน์แต่ละระยะดูจากตารางความคุ้มครองในกรมธรรม์</b></p>
+      </div>
+      <div class="def-tabs" id="cipcDefTabs">${tabs}</div>
+      <div id="cipcDefBody">${cipcDefGroupHtml(cipcDefTab)}</div>
+    </div>`;
+}
+
 let dcareDefTab = 'cancer';
 function setDcareDefTab(key){
   dcareDefTab = key;
@@ -13472,8 +13639,19 @@ function dcareDefDiseaseHtml(d){
   h += `<p class="def-body">${d.body}</p>`;
   if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
   if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
-  if(d.exclusions) h += `<div class="def-block def-not">`
-    + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครองทั้ง 2 แบบ</span></b>${li(d.exclusions)}</div>`;
+  /* ข้อยกเว้นมีสองชั้นที่ต้องแยกสีให้ขาด
+     ชั้นแรก ไม่เข้าระยะนี้ แต่ไปเข้าอีกระยะได้ ต้องเป็นสีเหลือง ไม่ใช่แดง
+     ชั้นสอง ไม่คุ้มครองเลยทั้งสองแบบ ถึงจะเป็นสีแดง
+     เคยเหมารวมเป็นแดงหมด ทำให้ลูกค้าเข้าใจว่า carcinoma in situ เคลมไม่ได้ ซึ่งผิด */
+  if(d.exclusions){
+    const early = d.exclusionsTone === 'early';
+    h += `<div class="def-block ${early ? 'def-shift' : 'def-not'}">`
+      + `<b>${d.exclusionsTitle} <span class="${early ? 'shift-tag' : 'not-tag'}">`
+      + `${early ? 'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'}</span></b>`
+      + li(d.exclusions) + `</div>`;
+  }
+  if(d.never) h += `<div class="def-block def-not">`
+    + `<b>${d.neverTitle} <span class="not-tag">ไม่คุ้มครองทั้ง 2 แบบ</span></b>${li(d.never)}</div>`;
   /* ข้อยกเว้นของข้อยกเว้น ต้องแยกออกมาเป็นกล่องเขียวต่างหาก
      เพราะถ้าปล่อยไว้ในบรรทัดเดียวกันจะกลายเป็นปฏิเสธซ้อนปฏิเสธ อ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม */
   if(d.carveBack) h += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
@@ -14469,6 +14647,249 @@ initPensionMainSelect();
 updateMainCapitalHint();
 
 routeFromLocation();
+/* =========================================================================
+   ค้นหาทั้งเว็บ
+   เนื้อหาถูกกระจายอยู่หลายที่ ทั้งหน้าแบบประกัน คำถามที่พบบ่อย และนิยามโรคร้ายแรง
+   ลูกค้าที่ถือคำเดียวในหัว เช่น carcinoma in situ ไม่มีทางเดาถูกว่าอยู่หน้าไหน
+   จึงทำดัชนีรวมจากทะเบียนข้อมูลที่มีอยู่แล้ว ไม่คัดลอกเนื้อหาซ้ำ
+   เวลาแก้เนื้อหาที่ต้นทาง ผลค้นหาจะเปลี่ยนตามเอง
+   ========================================================================= */
+
+let SS_INDEX = null;
+let ssPick = 0;
+let ssHits = [];
+
+function ssStrip(x){
+  /* แท็กตกแต่งข้อความอย่าง <b> อยู่กลางคำได้ ถ้าแทนด้วยช่องว่างคำจะถูกผ่าครึ่ง
+     แล้วค้น "เกินชั้นผิว" จะไม่เจอ จึงตัดทิ้งเฉย ๆ
+     ส่วนแท็กที่คั่นบล็อกต้องแทนด้วยช่องว่าง ไม่งั้นคำท้ายบรรทัดจะติดกับคำต้นบรรทัดถัดไป */
+  return String(x == null ? '' : x)
+    .replace(/<\/?(?:b|i|u|em|strong|span|mark|small|sub|sup)\b[^>]*>/gi, '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+function ssEsc(x){
+  return ssStrip(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function ssBuildIndex(){
+  if(SS_INDEX) return SS_INDEX;
+  const out = [];
+  const add = (kind, title, sub, body, go) => {
+    const t = ssStrip(title);
+    if(!t) return;
+    out.push({kind, title: t, sub: ssStrip(sub), go,
+              hay: (t + ' ' + ssStrip(sub) + ' ' + ssStrip(body)).toLowerCase()});
+  };
+
+  // หน้าหลักทุกหน้า อ่านชื่อจากแถบเมนูจริง จะได้ไม่ต้องมาแก้สองที่เวลาเปลี่ยนชื่อเมนู
+  document.querySelectorAll('#navbar button[data-page]').forEach(b => {
+    const name = b.dataset.page;
+    add('หน้า', b.textContent, PAGE_ROUTES[name] || '', '', () => showPage(name));
+  });
+
+  // แบบประกันทุกแบบ ค้นได้ทั้งจากชื่อ จุดเด่น เงื่อนไข และข้อความว่าเหมาะกับใคร
+  Object.keys(PLAN_DETAILS).forEach(id => {
+    const p = PLAN_DETAILS[id];
+    if(!p || !p.title) return;
+    const body = [p.overview, (p.fit || []).join(' '), p.notFit,
+                  (p.coverage || []).join(' '), (p.conditions || []).join(' ')]
+                 .filter(Boolean).join(' ');
+    add('แบบประกัน', p.title, p.category, body, () => showPlanDetail(id));
+  });
+
+  // คำถามที่พบบ่อย ทั้งฝั่งสุขภาพและฝั่งประกันชีวิต
+  FAQ_ITEMS.forEach(it => {
+    const topic = (typeof faqTopicOf === 'function' ? faqTopicOf(it) : 'health');
+    add('คำถามที่พบบ่อย', it.q, topic === 'life' ? 'ประกันชีวิต' : 'ประกันสุขภาพ',
+        [it.lead, it.body, it.doc].filter(Boolean).join(' '), () => ssOpenFaq(it, topic));
+  });
+
+  // นิยามโรคร้ายแรงของ ดี แคร์ แยกตามกลุ่มโรค
+  ((typeof DCARE_DEF === 'object' && DCARE_DEF && DCARE_DEF.groups) || []).forEach(g => {
+    (g.diseases || []).forEach(d => {
+      const body = [d.body, (d.criteria || []).join(' '), d.extra,
+                    (d.exclusions || []).join(' '), (d.never || []).join(' '),
+                    (d.carveBack || []).join(' '), d.doc].filter(Boolean).join(' ');
+      add('นิยามโรค ดี แคร์', d.th, [d.en, g.label].filter(Boolean).join(' · '), body,
+          () => ssOpenDefinition('dcare', 'dcareDefTabs', setDcareDefTab, g.key, d.th));
+    });
+  });
+
+  // นิยามโรคร้ายแรงของ ซีไอ เพอร์เฟค แคร์ แบ่งเป็น 3 ระยะต่อโรค
+  const cg = (typeof CIPC_DEF === 'object' && CIPC_DEF && CIPC_DEF.groups) || {};
+  ((typeof CIPC_DEF === 'object' && CIPC_DEF && CIPC_DEF.diseases) || []).forEach(d => {
+    const body = (d.stages || []).map(st => [st.th, st.body, (st.criteria || []).join(' '),
+                  st.extra, (st.exclusions || []).join(' ')].filter(Boolean).join(' '))
+                 .concat(d.doc || '').join(' ');
+    add('นิยามโรค ซีไอ เพอร์เฟค แคร์', d.th, [d.en, cg[d.group]].filter(Boolean).join(' · '), body,
+        () => ssOpenDefinition('cipc', 'cipcDefTabs', setCipcDefTab, d.group, d.th));
+  });
+
+  SS_INDEX = out;
+  return out;
+}
+
+/* ภาษาไทยไม่เว้นวรรค การตัดคำจึงเชื่อถือไม่ได้เท่าการหาข้อความตรง ๆ
+   ให้น้ำหนักคำค้นทั้งก้อนมากที่สุด แล้วค่อยไล่ให้คะแนนทีละคำที่ผู้ใช้เว้นวรรคมาเอง */
+function ssScore(item, whole, words){
+  let sc = 0;
+  const t = item.title.toLowerCase(), s = item.sub.toLowerCase();
+  if(t.includes(whole)) sc += t.startsWith(whole) ? 140 : 100;
+  else if(s.includes(whole)) sc += 45;
+  else if(item.hay.includes(whole)) sc += 25;
+  for(const w of words){
+    if(w === whole) continue;
+    if(t.includes(w)) sc += 22;
+    else if(item.hay.includes(w)) sc += 7;
+  }
+  // ชื่อสั้นที่ตรงคำค้น มักเป็นสิ่งที่ตั้งใจหาจริง มากกว่าย่อหน้ายาวที่บังเอิญมีคำนั้น
+  if(sc && t.includes(whole)) sc += Math.max(0, 30 - item.title.length / 2);
+  return sc;
+}
+
+function ssMark(text, whole){
+  const safe = ssEsc(text);
+  if(!whole) return safe;
+  const i = safe.toLowerCase().indexOf(whole);
+  if(i < 0) return safe;
+  return safe.slice(0, i) + '<mark>' + safe.slice(i, i + whole.length) + '</mark>' + safe.slice(i + whole.length);
+}
+
+const SS_MAX = 40;
+
+function ssRender(){
+  const box = document.getElementById('ssBody');
+  const inp = document.getElementById('ssInput');
+  if(!box || !inp) return;
+  const raw = inp.value.trim();
+  const whole = raw.toLowerCase();
+  if(raw.length < 2){
+    ssHits = [];
+    box.innerHTML = '<p class="ss-note">พิมพ์อย่างน้อย 2 ตัวอักษร ค้นได้ทั้งชื่อแบบประกัน คำถามที่พบบ่อย และนิยามโรคร้ายแรงทุกโรค</p>';
+    return;
+  }
+  const words = whole.split(/\s+/).filter(w => w.length >= 2);
+  const scored = ssBuildIndex()
+    .map(it => ({it, sc: ssScore(it, whole, words)}))
+    .filter(x => x.sc > 0)
+    .sort((a, b) => b.sc - a.sc);
+  ssHits = scored.slice(0, SS_MAX).map(x => x.it);
+  ssPick = 0;
+  if(!ssHits.length){
+    box.innerHTML = '<p class="ss-note">ไม่พบคำนี้ในเว็บ ลองใช้คำสั้นลง หรือคำที่อยู่ในชื่อโรค เช่น มะเร็ง หัวใจ ไต</p>';
+    return;
+  }
+  box.innerHTML = ssHits.map((it, i) =>
+    `<button type="button" class="ss-hit${i === 0 ? ' on' : ''}" data-i="${i}" onclick="ssGo(${i})">`
+    + `<span class="ss-kind">${ssEsc(it.kind)}</span>`
+    + `<span class="ss-t">${ssMark(it.title, whole)}</span>`
+    + (it.sub ? `<span class="ss-s">${ssMark(it.sub, whole)}</span>` : '')
+    + `</button>`).join('')
+    + (scored.length > SS_MAX ? `<div class="ss-more">แสดง ${SS_MAX} จาก ${scored.length} รายการ พิมพ์เพิ่มเพื่อให้แคบลง</div>` : '');
+}
+
+function ssGo(i){
+  const hit = ssHits[i];
+  if(!hit) return;
+  closeSiteSearch();
+  hit.go();
+}
+
+function ssMove(step){
+  if(!ssHits.length) return;
+  ssPick = (ssPick + step + ssHits.length) % ssHits.length;
+  const box = document.getElementById('ssBody');
+  if(!box) return;
+  box.querySelectorAll('.ss-hit').forEach(b => b.classList.toggle('on', +b.dataset.i === ssPick));
+  const el = box.querySelector(`.ss-hit[data-i="${ssPick}"]`);
+  if(el) el.scrollIntoView({block:'nearest'});
+}
+
+function openSiteSearch(){
+  const ov = document.getElementById('siteSearch');
+  const inp = document.getElementById('ssInput');
+  if(!ov || !inp) return;
+  ov.hidden = false;
+  document.body.style.overflow = 'hidden';
+  inp.select();
+  inp.focus();
+  ssRender();
+}
+
+function closeSiteSearch(){
+  const ov = document.getElementById('siteSearch');
+  if(!ov || ov.hidden) return;
+  ov.hidden = true;
+  document.body.style.overflow = '';
+}
+
+/* เปิดคำถามที่พบบ่อยให้ตรงข้อ
+   บางข้อไม่มีคีย์ประจำตัวจึงหาไม่ได้ด้วย id ต้องเทียบจากข้อความหัวข้อที่แสดงจริง */
+function ssOpenFaq(item, topic){
+  showPage('faq', {updateUrl:false});
+  faqTopic = topic;
+  faqActiveGroup = item.g;
+  const sbox = document.getElementById('faqSearch');
+  if(sbox) sbox.value = '';
+  renderFaq();
+  requestAnimationFrame(() => {
+    const el = [...document.querySelectorAll('#faqBody .faq-item')].find(d => {
+      const q = d.querySelector('.faq-q');
+      return q && q.textContent.trim() === ssStrip(item.q);
+    });
+    if(!el) return;
+    el.open = true;
+    ssFlash(el, 'faq-flash');
+  });
+}
+
+/* เปิดหน้าแบบประกันแล้วสลับไปแท็บกลุ่มโรคที่ถูกต้อง ก่อนเลื่อนหาโรคที่ค้น
+   ต้องรอให้หน้าเรนเดอร์เสร็จก่อน ไม่งั้นยังไม่มีปุ่มแท็บให้กด */
+function ssOpenDefinition(planId, tabsId, setTab, groupKey, name){
+  showPlanDetail(planId);
+  requestAnimationFrame(() => {
+    if(document.getElementById(tabsId) && typeof setTab === 'function') setTab(groupKey);
+    requestAnimationFrame(() => {
+      const want = ssStrip(name);
+      const el = [...document.querySelectorAll('.def-item')].find(a => {
+        const h = a.querySelector('h4');
+        return h && ssStrip(h.textContent).includes(want);
+      });
+      if(el) ssFlash(el, 'faq-flash');
+    });
+  });
+}
+
+function ssFlash(el, cls){
+  el.scrollIntoView({behavior: (typeof dgReducedMotion === 'function' && dgReducedMotion()) ? 'auto' : 'smooth',
+                     block:'center'});
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), 2400);
+}
+
+document.getElementById('ssInput').addEventListener('input', ssRender);
+document.getElementById('ssInput').addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowDown'){ e.preventDefault(); ssMove(1); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); ssMove(-1); }
+  else if(e.key === 'Enter'){ e.preventDefault(); ssGo(ssPick); }
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){ closeSiteSearch(); return; }
+  // ปุ่มลัดต้องไม่ไปแย่งการพิมพ์ในช่องกรอกอื่นของเว็บ เช่น ช่องทุนประกัน
+  const t = e.target;
+  const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+  if(typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(e.key === '/'){ e.preventDefault(); openSiteSearch(); }
+});
+
+/* ปุ่มค้นหาลอยทับหัวเว็บซึ่งเป็นสีเข้ม แต่พอเลื่อนลงมาพื้นหลังเป็นสีอ่อน
+   ถ้าไม่สลับสีปุ่มจะกลืนไปกับพื้นจนมองไม่เห็น */
+function ssSyncBtnSkin(){
+  document.body.classList.toggle('ss-solid', window.scrollY > 60);
+}
+window.addEventListener('scroll', ssSyncBtnSkin, {passive:true});
+ssSyncBtnSkin();
 </script>
 <div class="print-credit">ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance</div>
 <div class="site-credit">
