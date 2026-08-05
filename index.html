@@ -639,8 +639,15 @@
   .stage-badge{display:inline-block;margin:0 0 10px;padding:4px 12px;border-radius:999px;
     font-size:.8rem;font-weight:600;line-height:1.5;}
   .sb-both{background:#e7f5ec;color:#146c43;border:1px solid #a9d9bd;}
-  .sb-sev{background:#fdeef1;color:#a03149;border:1px solid #f0c2cd;}
   .sb-early{background:#fff5e6;color:#96601a;border:1px solid #f0d5ab;}
+  .sb-none{background:#fdeef1;color:#a03149;border:1px solid #f0c2cd;}
+  .def-plan-key{margin:0 0 4px;padding:14px 16px;background:#fbfbfc;border-radius:10px;
+    border:1px solid #ececf0;line-height:1.9;}
+  .def-plan-key p{margin:0 0 6px;}
+  .def-plan-key ol{margin:0 0 10px;padding-left:22px;line-height:1.95;}
+  .def-key-legend{margin:10px 0 0 !important;padding-top:10px;border-top:1px dashed #dcdce4;line-height:2.5;}
+  .not-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
+    background:#a03149;color:#fff;font-size:.74rem;font-weight:700;vertical-align:2px;}
   .def-not{background:#fdf1f3;border-left:3px solid #c0455f;}
   .def-doc{margin:10px 0 0;padding:10px 14px;background:#f6f4fb;border-left:3px solid #7a6bb0;
     border-radius:0 8px 8px 0;line-height:1.9;color:#4a4160;}
@@ -13447,13 +13454,14 @@ function setDcareDefTab(key){
     b.classList.toggle('active', b.dataset.key === key));
 }
 
-/* ป้ายบอกว่าโรคนี้อยู่ในความคุ้มครองระยะไหน
-   เพราะโหมดเฉพาะระยะรุนแรงกับโหมดสองระยะคุ้มครองคนละรายการโรคกัน
-   ถ้าไม่ติดป้ายไว้ ลูกค้าจะเข้าใจว่าซื้อโหมดไหนก็ได้โรคเดียวกัน */
+/* ป้ายตอบคำถามเดียวคือ ถ้าเป็นโรคนี้ เคลมได้ไหม
+   ไม่ใช่บอกว่าโรคนี้อยู่ระยะไหน เพราะลูกค้าไม่ได้ซื้อ "ระยะ" แต่ซื้อ "แบบ"
+   โรคที่อยู่ในหมวดระยะรุนแรง เคลมได้ทั้งสองแบบ จึงเป็นสีเขียวเหมือนกันหมด
+   ส่วนสีแดงไม่ผูกกับตัวโรค แต่ไปอยู่ที่กล่องข้อยกเว้น เพราะทุกโรคในรายการนี้เคลมได้ */
 const DCARE_STAGE_BADGE = {
-  both:   {cls:'sb-both',  label:'คุ้มครองทั้งระยะเริ่มต้นและระยะรุนแรง'},
-  severe: {cls:'sb-sev',   label:'คุ้มครองเฉพาะระยะรุนแรง'},
-  early:  {cls:'sb-early', label:'คุ้มครองเฉพาะระยะเริ่มต้น'},
+  both:   {cls:'sb-both',  label:'เคลมได้ทั้ง 2 แบบ'},
+  severe: {cls:'sb-both',  label:'เคลมได้ทั้ง 2 แบบ'},
+  early:  {cls:'sb-early', label:'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง'},
 };
 
 function dcareDefDiseaseHtml(d){
@@ -13464,7 +13472,8 @@ function dcareDefDiseaseHtml(d){
   h += `<p class="def-body">${d.body}</p>`;
   if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
   if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
-  if(d.exclusions) h += `<div class="def-block def-not"><b>${d.exclusionsTitle}</b>${li(d.exclusions)}</div>`;
+  if(d.exclusions) h += `<div class="def-block def-not">`
+    + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครองทั้ง 2 แบบ</span></b>${li(d.exclusions)}</div>`;
   /* ข้อยกเว้นของข้อยกเว้น ต้องแยกออกมาเป็นกล่องเขียวต่างหาก
      เพราะถ้าปล่อยไว้ในบรรทัดเดียวกันจะกลายเป็นปฏิเสธซ้อนปฏิเสธ อ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม */
   if(d.carveBack) h += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
@@ -13500,10 +13509,17 @@ function dcareDefinitionsSection(){
       <h2>นิยามโรคร้ายแรงและเกณฑ์การวินิจฉัย</h2>
       <p class="meta" style="margin:0 0 4px;">คัดจากถ้อยคำในกรมธรรม์ ${m.source || ''}</p>
       <p class="meta def-warn">ตัวหนาคือจุดที่ตัดสินว่าเคลมได้หรือไม่ได้ · เกณฑ์พวกนี้เข้มกว่าเกณฑ์ที่ใช้วินิจฉัยในโรงพยาบาลจริงในหลายข้อ ควรอ่านก่อนตัดสินใจซื้อ ไม่ใช่ตอนเคลม</p>
-      <p class="meta def-stage-key">ป้ายสีบอกว่าโรคนั้นอยู่ในโหมดไหน
-        <span class="stage-badge sb-both">ทั้งสองระยะ</span> ซื้อโหมดไหนก็ได้
-        <span class="stage-badge sb-sev">เฉพาะระยะรุนแรง</span> ได้ทั้งสองโหมด แต่ต้องถึงระยะรุนแรงก่อน
-        <span class="stage-badge sb-early">เฉพาะระยะเริ่มต้น</span> <b>ได้เฉพาะคนที่ซื้อโหมดสองระยะเท่านั้น</b></p>
+      <div class="def-plan-key">
+        <p><b>ดี แคร์ มีให้เลือก 2 แบบ</b> เบี้ยต่างกันเกือบเท่าตัว และคุ้มครองรายการโรคไม่เท่ากัน</p>
+        <ol>
+          <li><b>แบบเฉพาะระยะรุนแรง</b> — จ่ายเมื่อเป็นโรคร้ายแรงถึงระยะรุนแรง 100% ของทุน แล้วสัญญาจบ</li>
+          <li><b>แบบระยะเริ่มต้นและระยะรุนแรง</b> — จ่ายตั้งแต่ระยะเริ่มต้น 100% ของทุน แล้วถ้าลุกลามถึงระยะรุนแรงรับเพิ่มอีก 100% รวมทั้งสัญญา 200% ของทุน</li>
+        </ol>
+        <p class="def-key-legend">ป้ายท้ายชื่อโรคตอบคำถามเดียว คือ <b>ถ้าเป็นโรคนี้ เคลมได้ไหม</b><br>
+          <span class="stage-badge sb-both">เคลมได้ทั้ง 2 แบบ</span> ซื้อแบบไหนก็เคลมได้<br>
+          <span class="stage-badge sb-early">เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง</span> ถ้าซื้อแบบเฉพาะระยะรุนแรงจะไม่ได้<br>
+          <span class="stage-badge sb-none">ไม่คุ้มครองทั้ง 2 แบบ</span> รายการที่อยู่ในกล่องสีแดง คือไม่ได้ทั้งคู่</p>
+      </div>
       <div class="def-tabs" id="dcareDefTabs">${tabs}</div>
       <div id="dcareDefBody">${dcareDefGroupHtml(dcareDefTab)}</div>
       ${pending}
