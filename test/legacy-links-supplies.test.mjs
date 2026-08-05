@@ -73,6 +73,20 @@ test('ตัวรับทุก path ต้องไม่กลืนโบ�
   for(const p of stay) assert.ok(!rx.test(p), `${p} เป็นไฟล์จริง ห้ามถูกเปลี่ยนเป็นหน้าเว็บ`);
 });
 
+/* ไฟล์จริงอยู่ที่ public/brochures แต่ปุ่มดาวน์โหลดชี้ไป /brochures
+   ถ้าไม่มีทางเชื่อมสองเส้นนี้ ลูกค้าจะกดแล้วไม่ได้ไฟล์ ซึ่งเคยเป็นแบบนั้นอยู่นาน */
+test('เส้นทางโบรชัวร์ที่ลูกค้ากด ต้องเชื่อมไปยังที่เก็บไฟล์จริง', () => {
+  const r = vercel.rewrites.find(x => x.source === '/brochures/:file');
+  assert.ok(r, 'ต้องมีตัวเชื่อม /brochures ไปยัง public/brochures');
+  assert.equal(r.destination, '/public/brochures/:file');
+  // สองไฟล์ที่ใหญ่เกินไปใช้ทางเลี่ยงของตัวเอง ต้องถูกประกาศไว้ก่อนตัวเชื่อมนี้
+  const i = vercel.rewrites.findIndex(x => x.source === '/brochures/:file');
+  const big = vercel.rewrites.filter(x => /^\/brochures\/.+\.pdf$/.test(x.source));
+  assert.ok(big.length >= 2, 'ไฟล์ใหญ่ต้องยังมีทางเลี่ยงของตัวเอง');
+  for(const b of big)
+    assert.ok(vercel.rewrites.indexOf(b) < i, `${b.source} ต้องอยู่ก่อนตัวเชื่อมทั่วไป ไม่งั้นจะถูกกลืน`);
+});
+
 test('ทุกโบรชัวร์ที่หน้าเว็บลิงก์ถึง ต้องมีไฟล์อยู่จริง', async () => {
   const { readdirSync } = await import('node:fs');
   const have = new Set(readdirSync(new URL('../public/brochures', import.meta.url)));
