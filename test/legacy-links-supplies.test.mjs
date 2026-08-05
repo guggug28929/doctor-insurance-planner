@@ -79,12 +79,11 @@ test('เส้นทางโบรชัวร์ที่ลูกค้า�
   const r = vercel.rewrites.find(x => x.source === '/brochures/:file');
   assert.ok(r, 'ต้องมีตัวเชื่อม /brochures ไปยัง public/brochures');
   assert.equal(r.destination, '/public/brochures/:file');
-  // สองไฟล์ที่ใหญ่เกินไปใช้ทางเลี่ยงของตัวเอง ต้องถูกประกาศไว้ก่อนตัวเชื่อมนี้
-  const i = vercel.rewrites.findIndex(x => x.source === '/brochures/:file');
-  const big = vercel.rewrites.filter(x => /^\/brochures\/.+\.pdf$/.test(x.source));
-  assert.ok(big.length >= 2, 'ไฟล์ใหญ่ต้องยังมีทางเลี่ยงของตัวเอง');
-  for(const b of big)
-    assert.ok(vercel.rewrites.indexOf(b) < i, `${b.source} ต้องอยู่ก่อนตัวเชื่อมทั่วไป ไม่งั้นจะถูกกลืน`);
+  /* เคยมีทางเลี่ยงพิเศษของสองไฟล์ใหญ่ที่ส่งไปดึงจากที่อื่น
+     ตรวจแล้วพบว่าไฟล์ 5 เมกะไบต์เสิร์ฟตรงได้ ทางเลี่ยงนั้นจึงกลายเป็นตัวที่ทำให้พัง
+     ถ้าวันหลังมีใครใส่กลับมา เทสต์นี้จะฟ้อง */
+  assert.ok(!vercel.rewrites.some(x => /^\/brochures\/.+\.pdf$/.test(x.source)),
+    'ไม่ต้องมีทางเลี่ยงรายไฟล์แล้ว ทุกไฟล์ใช้เส้นทางเดียวกัน');
 });
 
 test('ทุกโบรชัวร์ที่หน้าเว็บลิงก์ถึง ต้องมีไฟล์อยู่จริง', async () => {

@@ -44,8 +44,12 @@ test('มะเร็งระยะลุกลาม ต้องมีเก�
   assert.match(d.body, /ลุกลามลึกเกินกว่าชั้นรองรับเนื้อเยื่อชั้นผิว/);
   assert.match(d.body, /Basement Membrane/);
   assert.match(d.body, /มะเร็งเม็ดเลือดขาว มะเร็งต่อมน้ำเหลือง มะเร็งของไขกระดูก และมะเร็งเนื้อรก/);
-  assert.equal(d.exclusions.length, 8, 'ข้อยกเว้นต้องครบ 8 ข้อตามกรมธรรม์');
-  const j = d.exclusions.join(' ');
+  // ข้อยกเว้น 8 ข้อถูกแยกเป็นสองชั้น ที่ไปเข้าระยะเริ่มต้นได้ กับที่ไม่ได้เลย
+  assert.equal(d.exclusions.length + d.never.length, 8, 'ข้อยกเว้นรวมต้องครบ 8 ข้อตามกรมธรรม์');
+  assert.equal(d.exclusionsTone, 'early', 'ชั้นที่ไปเข้าระยะเริ่มต้นได้ ต้องไม่ถูกทำเป็นสีแดง');
+  assert.equal(d.exclusions.length, 4);
+  assert.equal(d.never.length, 4);
+  const j = d.exclusions.concat(d.never).join(' ');
   for(const k of ['T1N0M0', 'Chronic Lymphocytic Leukemia', 'Carcinoma in Situ', 'Malignant Melanoma',
                   'Stage II', 'Borderline', 'Pre-Malignant', 'CIN I', 'เอชไอวี', '90 วัน'])
     assert.ok(j.includes(k), `ข้อยกเว้นขาดคำว่า ${k}`);
@@ -156,7 +160,8 @@ test('ทุกโรคต้องติดป้ายระยะควา�
    ต้องดึงกรณีที่กลับมาคุ้มครองออกมาเป็นกล่องแยก */
 test('ข้อยกเว้นของข้อยกเว้น ต้องแยกเป็นกล่องต่างหาก', () => {
   const inv = DEF.groups.find(g => g.key === 'cancer').diseases.find(d => d.en === 'Invasive Cancer');
-  assert.ok(inv.carveBack && inv.carveBack.length >= 2, 'มะเร็งระยะลุกลามต้องมีกล่องกรณีที่กลับมาคุ้มครอง');
+  // เหลือกรณีเดียวคือเมลาโนมาตั้งแต่ระยะ 2 ส่วนกรณีอื่นย้ายไปกล่องเหลืองที่บอกว่าไปเข้าระยะเริ่มต้นแทน
+  assert.ok(inv.carveBack && inv.carveBack.length >= 1, 'มะเร็งระยะลุกลามต้องมีกล่องกรณีที่กลับมาคุ้มครอง');
   assert.match(inv.carveBack.join(' '), /Malignant Melanoma/);
   assert.match(html, /if\(d\.carveBack\) h \+= `<div class="def-block def-back">/);
   assert.match(html, /แต่กรณีเหล่านี้กลับมาคุ้มครอง/);
@@ -224,4 +229,21 @@ test('ต้องคัดครบทั้ง 6 กลุ่มโรคข�
   assert.deepEqual(DEF._meta.groups_pending, [], 'ไม่ควรเหลือกลุ่มที่ยังไม่ได้คัดแล้ว');
   const total = DEF.groups.reduce((n, g) => n + g.diseases.length, 0);
   assert.ok(total >= 55, `คัดมาแค่ ${total} โรค น่าจะยังไม่ครบ`);
+});
+
+/* สีแดงต้องหมายถึงไม่ได้เลยเท่านั้น
+   รายการที่แค่ไม่เข้าระยะนี้แต่ไปเข้าอีกระยะได้ ต้องเป็นสีเหลือง ไม่งั้นลูกค้าเข้าใจผิดว่าเคลมไม่ได้ */
+test('ข้อยกเว้นที่ไปเข้าระยะเริ่มต้นได้ ต้องไม่ถูกทำเป็นสีแดง', () => {
+  const inv = all.find(x => x.en === 'Invasive Cancer' && x.never);
+  assert.match(inv.exclusionsTitle, /ไปเข้าเป็นระยะเริ่มต้นแทน/);
+  assert.match(inv.exclusions.join(' '), /T1N0M0/);
+  assert.match(inv.exclusions.join(' '), /Carcinoma in Situ/);
+  assert.match(inv.never.join(' '), /Pre-Malignant/);
+  assert.match(inv.never.join(' '), /เอชไอวี/);
+  assert.match(html, /const early = d\.exclusionsTone === 'early';/);
+  // ชื่อคลาสถูกเลือกด้วยเงื่อนไขในโค้ด จึงตรวจที่จุดตัดสินใจแทนตัวอักษรตรง ๆ
+  assert.match(html, /early \? 'shift-tag' : 'not-tag'/);
+  assert.match(html, /early \? 'def-shift' : 'def-not'/);
+  assert.match(html, /เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'/);
+  assert.match(html, /\.def-shift\{background:#fff8ec/);
 });

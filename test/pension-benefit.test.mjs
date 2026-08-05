@@ -161,7 +161,8 @@ test('กล่องสรุปต้องถูกต่อเข้าก�
 });
 
 test('ไฟล์ข้อมูลต้องมีตัวกันแคช ไม่งั้นลูกค้าอาจได้ตารางเบี้ยเก่า', () => {
-  assert.match(html, /const DATA_VERSION = '\d{4}-\d{2}-\d{2}';/);
+  // ต่อท้ายด้วยตัวอักษรได้ เผื่อแก้ไฟล์ข้อมูลมากกว่าหนึ่งรอบในวันเดียวกัน
+  assert.match(html, /const DATA_VERSION = '\d{4}-\d{2}-\d{2}[a-z]?';/);
   for(const f of ['premium-rates.json', 'tax-rules.json', 'pension-plans.json'])
     assert.ok(html.includes(f + '?v=" + DATA_VERSION') || html.includes(f + "?v=' + DATA_VERSION"),
       `${f} ยังโหลดโดยไม่มีตัวกันแคช`);
