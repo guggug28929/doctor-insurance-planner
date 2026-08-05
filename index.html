@@ -656,6 +656,7 @@
   .not-tag{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;
     background:#a03149;color:#fff;font-size:.74rem;font-weight:700;vertical-align:2px;}
   .def-not{background:#fdf1f3;border-left:3px solid #c0455f;}
+  .dcare-cap-warn{color:var(--danger);margin:8px 0 0;font-weight:600;}
   .def-must-early{background:#fff8ec;border-left:3px solid #d99b3f;}
   .def-must-early b{color:#96601a;}
   .def-once{background:#f2f5fb;border-left:3px solid #6b83b8;}
@@ -2378,8 +2379,13 @@
       <div class="divider"></div>
 
       <label class="first">D Care <span style="color:var(--muted);font-weight:400;">(เลือกได้หลายกลุ่มโรค ยกเว้น "โรคยอดฮิต" ที่ต้องซื้อเดี่ยว)</span><span class="info-icon">i<span class="tooltip">เลือกทำเฉพาะกลุ่มโรคที่กังวลจริง ประหยัดกว่าซื้อความคุ้มครองกว้างที่ไม่จำเป็น เหมาะกับคนมีประวัติครอบครัวเป็นโรคเฉพาะกลุ่ม</span></span></label>
+      <label>แบบความคุ้มครอง<span class="info-icon">i<span class="tooltip">เฉพาะระยะรุนแรง จ่าย 100% ของทุนเมื่อถึงระยะรุนแรง ทุนรวมสูงสุด 10 ล้านบาท · ระยะเริ่มต้นและรุนแรง จ่ายทั้งสองระยะรวม 200% ของทุน แต่ทุนรวมสูงสุด 2.5 ล้านบาท และเบี้ยแพงกว่าเกือบเท่าตัว</span></span></label>
+      <select id="dcare_stage">
+        <option value="early_and_severe">ระยะเริ่มต้น + ระยะรุนแรง (ทุนรวมสูงสุด 2.5 ล้าน)</option>
+        <option value="severe">เฉพาะระยะรุนแรง (ทุนรวมสูงสุด 10 ล้าน)</option>
+      </select>
       <div class="check-list" id="dcare_list"></div>
-      <div class="hint">ทุนประกันรวมทุกกลุ่มโรคของ D Care ต้องไม่เกิน 2,500,000 บาท</div>
+      <div class="hint" id="dcareCapHint">ทุนประกันรวมทุกกลุ่มโรคของ D Care ต้องไม่เกิน 2,500,000 บาท</div>
       <div class="field-err" id="dcareErr"></div>
 
       <div class="divider"></div>
@@ -3515,7 +3521,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-05c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-05d';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4603,6 +4609,7 @@ function readInputs(){
   const useCancer = document.getElementById('use_cancer').checked;
   const cancerPlan = document.getElementById('cancer_plan').value;
 
+  const dcareStage = DCARE_STAGES[document.getElementById('dcare_stage').value] ? document.getElementById('dcare_stage').value : 'early_and_severe';
   const dcareSelections = DCARE_CATS
     .filter(c => document.getElementById('dcare_'+c.key).checked)
     .map(c => ({key:c.key, label:c.label, capital: parseFloat(document.getElementById('dcare_'+c.key+'_cap').value)||0}));
@@ -4615,7 +4622,7 @@ function readInputs(){
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
-          dcareSelections, paPlan, useHb, hbIncome, hbAmount};
+          dcareSelections, dcareStage, paPlan, useHb, hbIncome, hbAmount};
 }
 
 // ---- validation ----
@@ -4658,10 +4665,12 @@ function validateInputs(inp){
     issues.push(`ทุนประกัน CI Perfect Care (${fmt(inp.cipcCapital)}) เกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)})`);
   }
 
-  // D Care total capital <= 2.5M
+  /* เพดานทุน D Care ขึ้นกับแบบที่เลือก และเป็นเพดานรวมทุกกลุ่มโรค
+     เฉพาะระยะรุนแรง 10 ล้าน · ระยะเริ่มต้นและรุนแรง 2.5 ล้าน */
+  const dcareStageDef = DCARE_STAGES[inp.dcareStage] || DCARE_STAGES.early_and_severe;
   const dcareTotal = inp.dcareSelections.reduce((s,d)=>s+d.capital,0);
-  if(dcareTotal > 2500000){
-    issues.push(`ทุนประกัน D Care รวม (${fmt(dcareTotal)}) เกิน 2,500,000 บาท`);
+  if(dcareTotal > dcareStageDef.maxSum){
+    issues.push(`ทุนประกัน D Care รวมทุกกลุ่มโรค (${fmt(dcareTotal)}) เกินเพดานของแบบ${dcareStageDef.label} ซึ่งอยู่ที่ ${fmt(dcareStageDef.maxSum)} บาท`);
   }
   const hasPopular = inp.dcareSelections.some(d=>d.key==='popular');
   if(hasPopular && inp.dcareSelections.length>1){
@@ -4773,7 +4782,7 @@ function renderAll(){
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
-    inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age, freq); });
+    inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age, freq, inp.dcareStage); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
 
@@ -4803,7 +4812,7 @@ function renderAll(){
   if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
-  inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge); if(typeof v === 'number') riderTotalYear1 += v; });
+  inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge, 'annual', inp.dcareStage); if(typeof v === 'number') riderTotalYear1 += v; });
   if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
   const issues = validateInputs(inp);
@@ -4920,7 +4929,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey.startsWith('dcare_')){
     const key = colKey.slice(6);
     const d = inp.dcareSelections.find(x => x.key === key);
-    return d ? dcarePremium(d.key, d.capital, gender, age, 'annual') : null;
+    return d ? dcarePremium(d.key, d.capital, gender, age, 'annual', inp.dcareStage) : null;
   }
   if(colKey === 'hb') return inp.useHb ? hbPremium(inp.hbAmount, age, 'annual') : null;
   return null; // main has no occupation dependency here (handled separately above)
@@ -5706,15 +5715,18 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   // D Care: total capital cap + availability + issue-age max (70; renewal data extends to 81)
   const dcareTotal = inp.dcareSelections.reduce((s,d)=>s+d.capital,0);
   const dcareOverIssueAge = entryAge > 70;
-  const dcareUnavailable = inp.dcareSelections.some(d => dcarePremium(d.key, d.capital, gender, entryAge) === null);
-  const dcareOverCap = dcareTotal > 2500000;
+  const dcareUnavailable = inp.dcareSelections.some(d => dcarePremium(d.key, d.capital, gender, entryAge, 'annual', inp.dcareStage) === null);
+  const dcareStageLive = DCARE_STAGES[inp.dcareStage] || DCARE_STAGES.early_and_severe;
+  const dcareOverCap = dcareTotal > dcareStageLive.maxSum;
+  const hintEl = document.getElementById('dcareCapHint');
+  if(hintEl) hintEl.textContent = `แบบ${dcareStageLive.label} ทุนประกันรวมทุกกลุ่มโรคต้องไม่เกิน ${fmt(dcareStageLive.maxSum)} บาท`;
   document.querySelectorAll('.dcare-chk').forEach(chk => {
     const capInput = document.getElementById(chk.id+'_cap');
     const isChecked = chk.checked;
-    capInput.classList.toggle('field-error', isChecked && (dcareOverCap || dcareOverIssueAge || dcarePremium(chk.dataset.key, parseFloat(capInput.value)||0, gender, entryAge)===null));
+    capInput.classList.toggle('field-error', isChecked && (dcareOverCap || dcareOverIssueAge || dcarePremium(chk.dataset.key, parseFloat(capInput.value)||0, gender, entryAge, 'annual', inp.dcareStage)===null));
   });
   const dcareErrEl = document.getElementById('dcareErr');
-  dcareErrEl.textContent = dcareOverCap ? `ทุนประกัน D Care รวม (${fmt(dcareTotal)} บาท) เกิน 2,500,000 บาท`
+  dcareErrEl.textContent = dcareOverCap ? `ทุนประกัน D Care รวมทุกกลุ่มโรค (${fmt(dcareTotal)} บาท) เกินเพดานของแบบ${dcareStageLive.label} ซึ่งอยู่ที่ ${fmt(dcareStageLive.maxSum)} บาท`
     : dcareOverIssueAge ? 'D Care รับทำประกันใหม่ถึงอายุ 70 ปีเท่านั้น'
     : dcareUnavailable ? 'มีบางกลุ่มโรคที่ไม่สามารถแนบได้ที่อายุปัจจุบัน' : '';
 
@@ -5790,8 +5802,14 @@ function dcareBenefitLine(){
 
 function dcareRateTableBlock(freq='annual'){
   const sum = dcareTableSum, stage = dcareTableStage, st = DCARE_STAGES[stage];
-  const warn = sum < st.minSum
-    ? `<p class="meta" style="color:var(--danger);margin:8px 0 0;">โหมดนี้ทุนขั้นต่ำ ${fmt(st.minSum)} บาท ตัวเลขด้านล่างจึงเป็นเพียงการประมาณ ไม่ใช่ทุนที่ซื้อได้จริง</p>` : '';
+  /* เพดานทุนของสองแบบไม่เท่ากัน และเป็นเพดานรวมทุกกลุ่มโรค ไม่ใช่ต่อกลุ่ม
+     ถ้าไม่เตือน ลูกค้าจะเห็นเบี้ยของทุนที่ซื้อจริงไม่ได้ แล้วไปคุยกับบริษัทด้วยตัวเลขที่ไม่มีอยู่ */
+  const warn = sum > st.maxSum
+    ? `<p class="meta dcare-cap-warn">แบบ${st.label} ทุนรวมทุกกลุ่มโรคสูงสุด ${fmt(st.maxSum)} บาท `
+      + `ตัวเลขที่กรอก (${fmt(sum)} บาท) เกินเพดาน จึงไม่ใช่ทุนที่ซื้อได้จริง</p>`
+    : sum < st.minSum
+    ? `<p class="meta dcare-cap-warn">แบบ${st.label} ทุนขั้นต่ำ ${fmt(st.minSum)} บาท ตัวเลขด้านล่างจึงเป็นเพียงการประมาณ ไม่ใช่ทุนที่ซื้อได้จริง</p>`
+    : '';
   const table = renderAgeTable(0, 70, Object.keys(DCARE_LABELS).flatMap(cat => [
     {label:`ชาย ${DCARE_LABELS[cat]}`, arr: ageSeriesFromFn(0,70, age=>{
       const v = dcarePremium(cat, sum, 'm', age, freq, stage); return v===null?null:Math.round(v); })},
@@ -5800,9 +5818,10 @@ function dcareRateTableBlock(freq='annual'){
   ]));
   return `<div class="dcare-controls">
       <label>ทุนประกันต่อกลุ่มโรค (บาท)
-        <input type="number" id="dcareTableSum" value="${sum}" step="50000" min="0"
+        <input type="number" id="dcareTableSum" value="${sum}" step="50000" min="0" max="${st.maxSum}"
+               class="${sum > st.maxSum || sum < st.minSum ? 'field-error' : ''}"
                oninput="dcareTableSum = Math.max(0, parseInt(this.value,10)||0); dcareRefreshTable();"></label>
-      <label>โหมดความคุ้มครอง
+      <label>แบบความคุ้มครอง
         <select id="dcareTableStage" onchange="dcareTableStage = this.value; dcareRefreshTable();">
           ${Object.entries(DCARE_STAGES).map(([k,v])=>`<option value="${k}"${k===stage?' selected':''}>${v.label}</option>`).join('')}
         </select></label>
@@ -5861,6 +5880,74 @@ function ehpRateTableBlock(freq='annual'){
 /* ส่วนอธิบายพื้นที่ความคุ้มครอง
    ตัวเลขทุกตัวคำนวณจากตารางเบี้ยจริงตอนเรนเดอร์ ไม่ได้พิมพ์ค้างไว้
    ถ้าบริษัทปรับอัตราเบี้ยแล้วอัปเดตไฟล์ข้อมูล ข้อความนี้จะขยับตามเอง */
+/* จุดที่นิยามในกรมธรรม์ชนกับเวชปฏิบัติจริง
+   แคร์ พลัส ผูกความคุ้มครองไว้กับผลตรวจทางจุลพยาธิวิทยา แต่มะเร็งตับในคนกลุ่มเสี่ยง
+   แนวทางสากลวินิจฉัยจากภาพถ่ายได้โดยไม่ต้องเจาะชิ้นเนื้อ คนไข้กลุ่มนี้จึงอาจไม่มีผลพยาธิเลยทั้งการรักษา
+   ต้องเขียนไว้ให้ตัวแทนรู้ก่อนขาย ไม่ใช่ให้ไปเจอตอนเคลม */
+function careplusPathoSection(){
+  return `<div class="content-card">
+    <h2>จุดที่ต้องรู้ก่อนเคลม นิยามมะเร็งของแบบนี้ผูกกับผลตรวจชิ้นเนื้อ</h2>
+    <p>กรมธรรม์นิยามคำว่าโรคมะเร็งไว้ว่า
+      <b>เนื้องอกร้ายที่ได้รับการตรวจยืนยันทางจุลพยาธิวิทยาว่าเป็นมะเร็ง</b>
+      มีลักษณะการเจริญเติบโตอย่างควบคุมไม่ได้และรุกล้ำไปยังเนื้อเยื่อส่วนอื่น
+      รวมถึงมะเร็งเม็ดเลือดขาว มะเร็งต่อมน้ำเหลือง และมะเร็งเนื้อเยื่อเกี่ยวพัน</p>
+    <p><b>คำสำคัญคือจุลพยาธิวิทยา</b> แปลว่าโดยหลักแล้วต้องมีชิ้นเนื้อส่งตรวจและมีผลพยาธิยืนยัน
+      ไม่ใช่แค่ผลภาพถ่ายหรือคำวินิจฉัยของแพทย์อย่างเดียว</p>
+
+    <div class="def-block def-shift">
+      <b>ปัญหาที่เกิดขึ้นจริง มะเร็งตับหลายเคสไม่ต้องเจาะชิ้นเนื้อ
+        <span class="shift-tag">ต้องเตรียมเอกสารเพิ่ม</span></b>
+      <ul>
+        <li>แนวทางสากล ทั้ง <b>AASLD</b> และระบบ <b>LI-RADS</b> ระบุว่าในผู้ป่วยกลุ่มเสี่ยง คือ
+          <b>ตับแข็ง หรือไวรัสตับอักเสบบีเรื้อรัง</b> สามารถวินิจฉัยมะเร็งตับ (Hepatocellular Carcinoma)
+          ได้จาก<b>ภาพถ่ายอย่างเดียว</b> ด้วย CT หลายเฟส หรือ MRI ฉีดสารทึบรังสี
+          ถ้าก้อนเข้าเกณฑ์ <b>LR-5</b> ถือเป็นมะเร็งตับแน่นอน โดยไม่ต้องเจาะชิ้นเนื้อ</li>
+        <li>เหตุผลทางการแพทย์คือการเจาะตับมีความเสี่ยง ทั้ง<b>เลือดออก</b>และ<b>การหลุดของเซลล์มะเร็งไปตามรอยเข็ม</b>
+          ในเมื่อภาพถ่ายแม่นพอแล้ว การเจาะจึงไม่คุ้มความเสี่ยง</li>
+        <li>ผลคือคนไข้ที่รักษาด้วย<b>การให้ยาเคมีทางสายสวนหลอดเลือดตับ (TACE)</b>
+          <b>การจี้ก้อนด้วยคลื่นความถี่วิทยุ (RFA)</b> หรือ<b>ยามุ่งเป้า</b>
+          อาจไม่มีผลพยาธิเลยตลอดการรักษา เพราะไม่เคยมีชิ้นเนื้อออกมา</li>
+        <li>ข้อยกเว้นที่ต้องรู้คู่กัน ถ้า<b>ไม่มีตับแข็งและไม่มีไวรัสตับอักเสบบีเรื้อรัง</b>
+          แนวทางเดียวกันนี้กำหนดให้<b>ต้องยืนยันด้วยผลพยาธิ</b> เพราะภาพถ่ายอย่างเดียวแม่นไม่พอ</li>
+      </ul>
+    </div>
+
+    <div class="def-block def-once">
+      <b>สิ่งที่บริษัทแจ้ง <span class="once-tag">เป็นดุลพินิจรายกรณี ไม่ใช่สิทธิตามสัญญา</span></b>
+      <ul>
+        <li>จากการสอบถามทีม <b>Health Expert</b> ของบริษัท ได้รับแจ้งว่ากรณีที่ไม่มีผลพยาธิด้วยเหตุผลทางการแพทย์แบบนี้
+          <b>อาจขออนุโลมให้พิจารณาความคุ้มครองได้</b></li>
+        <li>เงื่อนไขที่แจ้งไว้คือ <b>แพทย์ต้องระบุชัดว่าเป็นมะเร็งจริง</b>
+          <b>ต้องมีการรักษาด้วยวิธีใดวิธีหนึ่งใน 10 วิธีที่กรมธรรม์กำหนด</b>
+          และ<b>ต้องเป็นไปตามความจำเป็นทางการแพทย์</b></li>
+        <li><b>ย้ำว่านี่เป็นการพิจารณาเป็นรายกรณี ไม่ใช่สิทธิที่เขียนไว้ในกรมธรรม์</b>
+          ผลจึงขึ้นกับเอกสารที่ยื่นและดุลพินิจของบริษัท ไม่ควรบอกลูกค้าว่าได้แน่นอน</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:18px;">ควรขอให้แพทย์เขียนอะไรเพิ่มในเอกสาร</h3>
+    <ul>
+      <li><b>คำวินิจฉัยที่ระบุชนิดและตำแหน่งชัดเจน</b> เช่น Hepatocellular Carcinoma ของตับกลีบขวา
+        ไม่ใช่เขียนแค่ก้อนที่ตับหรือ liver mass</li>
+      <li><b>เหตุผลที่ไม่ได้เจาะชิ้นเนื้อ</b> ให้ระบุว่าเข้าเกณฑ์วินิจฉัยจากภาพถ่ายตามแนวทางมาตรฐาน
+        และการเจาะมีความเสี่ยงเกินความจำเป็น</li>
+      <li><b>หลักฐานภาพถ่ายที่ใช้ตัดสิน</b> ระบุว่าเป็น CT หลายเฟสหรือ MRI ฉีดสารทึบรังสี
+        พร้อมลักษณะที่พบ และระดับ LI-RADS ถ้ารายงานมีให้</li>
+      <li><b>ปัจจัยเสี่ยงพื้นฐานของคนไข้</b> เช่น ตับแข็ง หรือไวรัสตับอักเสบบีเรื้อรัง
+        เพราะเป็นเงื่อนไขที่ทำให้วินิจฉัยจากภาพถ่ายได้</li>
+      <li><b>วิธีรักษาที่ทำจริง</b> ให้ตรงกับชื่อวิธีในกรมธรรม์ และระบุความจำเป็นทางการแพทย์ของวิธีนั้น</li>
+    </ul>
+
+    <p class="def-doc" style="margin-top:16px;"><b>มุมมองจากห้องตรวจ</b>
+      เรื่องนี้ไม่ใช่ช่องโหว่ของบริษัทฝ่ายเดียว แต่เป็นจุดที่ถ้อยคำในกรมธรรม์ตามเวชปฏิบัติไม่ทัน
+      เพราะตอนเขียนนิยาม การวินิจฉัยมะเร็งยังยึดผลชิ้นเนื้อเป็นหลัก ·
+      สิ่งที่ทำได้คือรู้ล่วงหน้าแล้วเตรียมเอกสารให้ครบตั้งแต่วันแรกที่วินิจฉัย
+      ไม่ใช่ไปตามเก็บย้อนหลังตอนเคลมถูกตีกลับ ·
+      และถ้าคนไข้ไม่มีตับแข็งหรือไวรัสตับอักเสบบีมาก่อน แนวทางก็บอกเองว่าควรมีผลพยาธิอยู่ดี
+      กรณีนั้นการยืนยันชิ้นเนื้อจึงเป็นประโยชน์ทั้งต่อการรักษาและต่อการเคลม</p>
+  </div>`;
+}
+
 function ehpRegionSection(){
   const at = (plan, region, age) =>
     healthRiderPremium({type:'ehp', plan, region}, 'm', age, '1', 'annual').premium;
@@ -7489,6 +7576,7 @@ const PLAN_DETAILS = {
       'ซื้อได้มากกว่า 1 สัญญา แต่ผลประโยชน์สูงสุดต่อการรักษามะเร็ง รวมทุกสัญญาและทุกช่องทางต้องไม่เกิน 5,000,000 บาทต่อคน และผลประโยชน์สูงสุดต่อการรักษาไตวายเรื้อรังก็ไม่เกิน 5,000,000 บาทต่อคนเช่นกัน (แยกกันคนละ 5 ล้าน)',
       'ค่าห้อง/ค่าอาหารไม่รวมอยู่ในความคุ้มครองนี้ ยกเว้นกรณีนอนรักษาแผนกจิตเวชตามส่วนเสริมด้านบน',
     ],
+    detailSections: () => careplusPathoSection(),
     freqSupported: true,
     rateTable: (freq='annual') => renderAgeTable(0, 98, [
       {label:'ชาย มะเร็ง', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','ca','m',age,'1',freq))},
@@ -7500,6 +7588,7 @@ const PLAN_DETAILS = {
     faq: [
       {q:'คุ้มครองมะเร็งระยะไหนบ้าง', a:'คุ้มครองมะเร็งทุกชนิดทุกระยะ (ยกเว้นมะเร็งที่สัมพันธ์กับเอดส์) ตราบใดที่รักษาด้วยวิธีการที่กำหนด (รังสีรักษา เคมีบำบัด ภูมิคุ้มกันบำบัด ฯลฯ)'},
       {q:'คุ้มครองไตวายเรื้อรังระยะไหนบ้าง', a:'คุ้มครองไตวายเรื้อรังทุกระยะ แต่ไม่รวมภาวะไตวายเฉียบพลันหรือไตล้มเหลวเฉียบพลัน'},
+      {q:'เป็นมะเร็งตับที่หมอวินิจฉัยจากภาพถ่าย ไม่ได้เจาะชิ้นเนื้อ เคลมได้ไหม', a:'นิยามในกรมธรรม์เขียนว่าต้องยืนยันทางจุลพยาธิวิทยา ซึ่งกรณีนี้ไม่มี · แต่ทีม Health Expert ของบริษัทแจ้งว่าอาจขออนุโลมพิจารณาเป็นรายกรณีได้ ถ้าแพทย์ระบุชัดว่าเป็นมะเร็งจริง มีการรักษาด้วยวิธีใดใน 10 วิธีที่กำหนด และเป็นไปตามความจำเป็นทางการแพทย์ · ย้ำว่าเป็นดุลพินิจ ไม่ใช่สิทธิตามสัญญา ดูรายละเอียดและเอกสารที่ควรเตรียมได้ในหัวข้อด้านบนของหน้านี้'},
       {q:'ตรวจ MRI/CT Scan แล้วผลไม่ได้เป็นมะเร็งหรือไตวาย เบิกได้ไหม', a:'ไม่ได้ เพราะต้องเป็นการตรวจที่เกี่ยวข้องโดยตรงกับวิธีรักษาที่บริษัทกำหนดไว้ ถ้าตรวจแล้วไม่พบว่าเป็นโรคดังกล่าว ไม่เข้าเงื่อนไขความคุ้มครอง'},
       {q:'รักษาที่คลินิกแทนโรงพยาบาลได้ไหม (กรณี OPD)', a:'ไม่ได้ ต้องรับการรักษาในแผนกผู้ป่วยนอกหรือแผนกฉุกเฉินของโรงพยาบาลเท่านั้น'},
       {q:'ต้องซื้อทั้งมะเร็งและไตวายพร้อมกันไหม', a:'ไม่จำเป็น เลือกซื้อมะเร็งอย่างเดียว ไตวายอย่างเดียว หรือทั้งสองแผนก็ได้ตามต้องการ'},
