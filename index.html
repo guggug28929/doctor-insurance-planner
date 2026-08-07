@@ -627,6 +627,10 @@
   .def-warn{margin:0 0 4px;padding:10px 12px;background:#fffaf3;border-left:3px solid #d99b3f;
     border-radius:0 8px 8px 0;line-height:1.8;}
   .def-intro{margin:0 0 16px;color:#5f4a53;line-height:1.85;}
+  /* หัวกลุ่มย่อยตอนอยู่ในแท็บ "ทั้งหมด" กันไม่ให้โรคทุกกลุ่มไหลรวมเป็นก้อนเดียวจนแยกไม่ออก */
+  .def-group-head{margin:22px 0 4px;padding-top:14px;border-top:2px solid #f0dde5;
+    font-family:"Kanit",sans-serif;font-weight:700;font-size:.9rem;color:var(--pink-deep);}
+  .def-group-head:first-child{margin-top:0;padding-top:0;border-top:0;}
   /* หุบทั้งหัวข้อเป็นหน่วยเดียว บรรทัดหัว (summary) เท่านั้นที่เห็นตลอด กดถึงกางเนื้อหาทั้งก้อนออกมาทีเดียว
      ใช้สองระดับ: def-fold เปล่า ๆ สำหรับหุบหัวข้อใหญ่ระดับบล็อก, def-fold-item สำหรับหุบทีละโรคในลิสต์ */
   details.def-fold{margin:10px 0;border:1px solid #f0dde5;border-radius:9px;background:#fffdfd;}
@@ -14310,7 +14314,7 @@ const MCI_BADGE = {
   organ:  {cls:'mb-organ',  label:'กลุ่ม 3 เปลี่ยนอวัยวะและระยะสุดท้าย · จ่าย 100% แล้วปิดกลุ่มนี้'},
   other:  {cls:'mb-other',  label:'กลุ่ม 4 โรคร้ายแรงอื่น ๆ · จ่าย 100% แล้วปิดกลุ่มนี้'},
 };
-let mciDefTab = 'cardio';
+let mciDefTab = 'all';
 
 /* พับทั้งการ์ดของแต่ละโรคเป็นหน่วยเดียว บรรทัดหัวเห็นแค่ชื่อโรคกับป้ายกลุ่ม
    กดถึงกางเนื้อหาทั้งก้อนออกมาทีเดียว ไม่ใช่หุบซ้อนหุบเป็นกล่องย่อยข้างในอีกที
@@ -14337,7 +14341,9 @@ function mciDefDiseaseHtml(d){
   return defFoldItem(summary, body);
 }
 function mciDefGroupHtml(key){
-  return (MCI_DEF.diseases || []).filter(d => d.group === key).map(mciDefDiseaseHtml).join('');
+  const list = key === 'all' ? (MCI_DEF.diseases || [])
+    : (MCI_DEF.diseases || []).filter(d => d.group === key);
+  return list.map(mciDefDiseaseHtml).join('');
 }
 function setMciDefTab(key){
   mciDefTab = key;
@@ -14351,7 +14357,8 @@ function mciDefinitionsSection(){
   if(!MCI_DEF || !MCI_DEF.diseases || !MCI_DEF.diseases.length) return '';
   const m = MCI_DEF._meta || {};
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
-  const tabs = Object.entries(m.groups || {}).map(([k, label]) => {
+  const allTab = `<button type="button" class="def-tab${mciDefTab === 'all' ? ' active' : ''}" data-key="all" onclick="setMciDefTab('all')">ทั้งหมด (${MCI_DEF.diseases.length})</button>`;
+  const tabs = allTab + Object.entries(m.groups || {}).map(([k, label]) => {
     const n = MCI_DEF.diseases.filter(d => d.group === k).length;
     return `<button type="button" class="def-tab${k === mciDefTab ? ' active' : ''}" data-key="${k}" onclick="setMciDefTab('${k}')">${label} (${n})</button>`;
   }).join('');
@@ -14660,7 +14667,7 @@ const CIPC_STAGE = {
   severe: {cls:'sb-both',  label:'ระยะรุนแรง'},
 };
 
-let cipcDefTab = 'cancer';
+let cipcDefTab = 'all';
 function setCipcDefTab(key){
   cipcDefTab = key;
   const host = document.getElementById('cipcDefBody');
@@ -14693,7 +14700,8 @@ function cipcStageHtml(s){
 /* พับทั้งโรค (ทุกระยะรวมกัน) เป็นหน่วยเดียว บรรทัดหัวเห็นชื่อโรคกับป้ายระยะที่มีทั้งหมด
    กันซ้อนหุบสองชั้น ที่เคยทำให้กดแล้วยังเจอกล่องย่อยให้กดอีกที */
 function cipcDefGroupHtml(key){
-  const list = (CIPC_DEF.diseases || []).filter(d => d.group === key);
+  const list = key === 'all' ? (CIPC_DEF.diseases || [])
+    : (CIPC_DEF.diseases || []).filter(d => d.group === key);
   return list.map(d => {
     const badges = d.stages.map(s => `<span class="stage-badge ${CIPC_STAGE[s.stage].cls}">${CIPC_STAGE[s.stage].label}</span>`).join('');
     const summary = `<span class="def-fold-title">${d.n}. ${d.th}<span class="def-en">${d.en}</span></span>${badges}`;
@@ -14741,7 +14749,8 @@ function cipcDeathBenefitSection(){
 function cipcDefinitionsSection(){
   if(!CIPC_DEF || !CIPC_DEF.diseases || !CIPC_DEF.diseases.length) return '';
   const m = CIPC_DEF._meta || {};
-  const tabs = Object.entries(CIPC_DEF.groups).map(([k, label]) => {
+  const allTab = `<button type="button" class="def-tab${cipcDefTab === 'all' ? ' active' : ''}" data-key="all" onclick="setCipcDefTab('all')">ทั้งหมด (${CIPC_DEF.diseases.length})</button>`;
+  const tabs = allTab + Object.entries(CIPC_DEF.groups).map(([k, label]) => {
     const n = CIPC_DEF.diseases.filter(d => d.group === k).length;
     return `<button type="button" class="def-tab${k === cipcDefTab ? ' active' : ''}" data-key="${k}" onclick="setCipcDefTab('${k}')">${label} (${n})</button>`;
   }).join('');
@@ -14761,7 +14770,7 @@ function cipcDefinitionsSection(){
     </div>`;
 }
 
-let dcareDefTab = 'cancer';
+let dcareDefTab = 'all';
 function setDcareDefTab(key){
   dcareDefTab = key;
   const host = document.getElementById('dcareDefBody');
@@ -14818,6 +14827,12 @@ function dcareDefDiseaseHtml(d){
 }
 
 function dcareDefGroupHtml(key){
+  if(key === 'all'){
+    // แต่ละกลุ่มมีคำเตือนเฉพาะกลุ่มอยู่ใน intro (เช่นกลุ่มยอดฮิตต้องซื้อเดี่ยว) เห็นทั้งหมดแล้วห้ามตัดทิ้ง
+    return (DCARE_DEF.groups || []).map(g => `<div class="def-group-head">${g.label}</div>`
+      + `<p class="def-intro">${g.intro}</p>`
+      + g.diseases.map(dcareDefDiseaseHtml).join('')).join('');
+  }
   const g = (DCARE_DEF.groups || []).find(x => x.key === key);
   if(!g) return '';
   return `<p class="def-intro">${g.intro}</p>`
@@ -14827,7 +14842,9 @@ function dcareDefGroupHtml(key){
 function dcareDefinitionsSection(){
   if(!DCARE_DEF || !DCARE_DEF.groups || !DCARE_DEF.groups.length) return '';
   const m = DCARE_DEF._meta || {};
-  const tabs = DCARE_DEF.groups.map(g =>
+  const totalDiseases = DCARE_DEF.groups.reduce((n, g) => n + g.diseases.length, 0);
+  const allTab = `<button type="button" class="def-tab${dcareDefTab === 'all' ? ' active' : ''}" data-key="all" onclick="setDcareDefTab('all')">ทั้งหมด (${totalDiseases})</button>`;
+  const tabs = allTab + DCARE_DEF.groups.map(g =>
     `<button type="button" class="def-tab${g.key === dcareDefTab ? ' active' : ''}" data-key="${g.key}" onclick="setDcareDefTab('${g.key}')">${g.label}</button>`).join('');
   /* ช่องว่างมีสองแบบ กลุ่มที่ยังไม่ได้คัดเลย กับกลุ่มที่คัดมาเฉพาะระยะรุนแรง
      ต้องบอกทั้งสองแบบ ไม่ใช่ปล่อยให้เข้าใจว่าที่เห็นคือทั้งหมดของสัญญา */
