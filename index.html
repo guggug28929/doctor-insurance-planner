@@ -2254,6 +2254,52 @@
   .ss-hit mark{background:#ffe6a8;color:inherit;border-radius:3px;padding:0 1px;}
   .ss-note{padding:18px 16px;color:#7a5c68;font-size:14px;line-height:1.6;}
   .ss-more{padding:8px 16px 4px;color:#a9909c;font-size:12px;}
+
+  /* ---- ป๊อปอัพตารางเทียบนิยามรายโรค (หน้าเทียบโรคร้ายแรง) ----
+     แยกจาก .ss-panel เพราะตารางกว้างกว่ากล่องค้นหามาก และต้องตรึงหัวตารางกับคอลัมน์ชื่อโรคไว้
+     ไม่งั้นเลื่อนไปไม่กี่แถวก็ลืมแล้วว่าคอลัมน์ไหนคือแบบไหน */
+  .xw-panel{width:min(1040px,100%);max-height:86vh;display:flex;flex-direction:column;
+    background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+  .xw-head{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid #eadfe4;}
+  .xw-head h3{margin:0;font-size:1.02rem;color:var(--ink);}
+  .xw-head p{margin:3px 0 0;font-size:.78rem;color:var(--muted);line-height:1.55;}
+  .xw-tabs{display:flex;gap:6px;overflow-x:auto;padding:9px 16px;border-bottom:1px solid #f0e4ea;
+    -webkit-overflow-scrolling:touch;}
+  .xw-tabs .def-tab{flex:none;}
+  #ciXwBody{overflow:auto;-webkit-overflow-scrolling:touch;}
+  .xw-table{border-collapse:separate;border-spacing:0;width:100%;font-size:.8rem;}
+  .xw-table thead th{position:sticky;top:0;z-index:3;background:#fdf3f7;color:var(--pink-deep);
+    font-family:"Kanit",sans-serif;font-weight:600;font-size:.78rem;text-align:center;
+    padding:9px 8px;border-bottom:1.5px solid #efd8e3;white-space:nowrap;}
+  .xw-table thead th.xw-corner{left:0;z-index:4;text-align:left;min-width:180px;}
+  .xw-table tbody th{position:sticky;left:0;z-index:2;background:#fff;text-align:left;font-weight:600;
+    color:var(--ink);padding:9px 10px 9px 14px;border-bottom:1px solid #f3e8ee;
+    border-right:1px solid #f3e8ee;min-width:180px;max-width:280px;line-height:1.45;}
+  .xw-table td{padding:8px 8px;border-bottom:1px solid #f3e8ee;text-align:center;vertical-align:middle;
+    min-width:132px;}
+  .xw-table tbody tr:hover th,.xw-table tbody tr:hover td{background:#fffafc;}
+  .xw-tag{display:inline-block;margin:1px 2px;padding:2px 8px;border-radius:999px;
+    font-size:.68rem;font-weight:600;white-space:nowrap;}
+  .xw-severe,.xw-p150,.xw-p100{background:#e7f5ec;color:#146c43;border:1px solid #a9d9bd;}
+  .xw-early,.xw-p25{background:#fff5e6;color:#96601a;border:1px solid #f0d5ab;}
+  .xw-mid,.xw-p50{background:#eef2ff;color:#3b4a9e;border:1px solid #c3ccf3;}
+  .xw-note{display:block;margin-top:3px;font-size:.66rem;color:var(--muted);line-height:1.4;}
+  .xw-no{color:#c4aab6;}
+  .xw-no span{font-size:.7rem;}
+  .xw-cnt{display:block;font-size:.66rem;font-weight:400;color:var(--muted);margin-top:2px;}
+  .xw-hot{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.62rem;
+    font-weight:600;background:#fbe8f0;color:var(--pink-deep);border:1px solid #f0c8da;}
+  .xw-sep td{background:#faeef4;font-family:"Kanit",sans-serif;font-weight:700;font-size:.76rem;
+    color:var(--pink-deep);text-align:left;padding:7px 14px;position:sticky;left:0;}
+  .xw-foot{padding:10px 16px;border-top:1px solid #f0e4ea;font-size:.72rem;color:var(--muted);line-height:1.6;}
+  .xw-open{margin-top:18px;padding-top:16px;border-top:1px dashed #eedbe4;}
+  .xw-open h4{margin:0 0 4px;font-size:.94rem;color:var(--pink-deep);}
+  .xw-open p{margin:0 0 10px;font-size:.82rem;color:var(--muted);line-height:1.7;}
+  @media(max-width:640px){
+    .xw-table thead th.xw-corner,.xw-table tbody th{min-width:132px;max-width:150px;}
+    .xw-table td{min-width:104px;}
+    .xw-table{font-size:.74rem;}
+  }
 </style>
 </head>
 <body>
@@ -2278,6 +2324,25 @@
       <button type="button" class="ss-close" onclick="closeSiteSearch()" aria-label="ปิดการค้นหา">&times;</button>
     </div>
     <div id="ssBody" class="ss-body"></div>
+  </div>
+</div>
+
+<div id="ciXw" class="ss-overlay" hidden onclick="if(event.target===this) closeCiXw();">
+  <div class="xw-panel" role="dialog" aria-modal="true" aria-label="ตารางเทียบนิยามโรคร้ายแรงรายโรค">
+    <div class="xw-head">
+      <div style="flex:1;min-width:0;">
+        <h3>เทียบรายโรค ว่าแต่ละแบบจ่ายให้ตอนไหน</h3>
+        <p>ช่องว่างแปลว่าโรคนั้นไม่มีอยู่ในตารางของแบบนั้น ไม่ใช่ข้อมูลยังไม่ครบ · ป้ายในช่องคือจังหวะที่ได้เงิน ซึ่งเป็นจุดที่ต่างกันจริง มากกว่าจำนวนโรค</p>
+      </div>
+      <button type="button" class="ss-close" onclick="closeCiXw()" aria-label="ปิดตาราง">&times;</button>
+    </div>
+    <div class="xw-tabs def-tabs" id="ciXwTabs"></div>
+    <div id="ciXwBody"></div>
+    <div class="xw-foot">
+      D Care ขายแยกเป็นกลุ่ม โรคที่เขียนว่า <b>ต้องซื้อกลุ่ม…</b> จะได้ก็ต่อเมื่อลูกค้าซื้อกลุ่มนั้นจริง ไม่ใช่ซื้อ D Care แล้วได้ทุกโรค ·
+      Multiple CI จ่าย 100% ต่อกลุ่ม กลุ่มละครั้งเดียว โรคสองโรคที่อยู่กลุ่มเดียวกันจึงเคลมได้ครั้งเดียว ·
+      แบบคุ้มครองโรคมะเร็งและ Care Plus ไม่อยู่ในตารางนี้ เพราะยังไม่ได้ทำไฟล์นิยาม และ Care Plus จ่ายค่ารักษาตามจริงไม่ใช่เงินก้อน เทียบรายโรคตรง ๆ ไม่ได้
+    </div>
   </div>
 </div>
 
@@ -3600,6 +3665,12 @@
     <h2>1. เกณฑ์การจ่ายของแต่ละแบบ</h2>
     <p style="color:var(--muted);margin-bottom:12px;">ข้อที่ทำให้ลูกค้าเข้าใจผิดบ่อยที่สุดคือ <b>"จ่ายกี่ครั้ง"</b> และ <b>"จ่ายแล้วสัญญาจบไหม"</b> จึงวางไว้เป็นสองแถวแรก</p>
     <div id="ciCompareTable"></div>
+
+    <div class="xw-open">
+      <h4>อยากรู้ลึกกว่านั้น ว่าโรคที่ลูกค้ากลัว แต่ละแบบจ่ายให้ตอนไหน</h4>
+      <p>ตารางข้างบนบอกภาพรวม แต่คำถามที่ปิดการขายจริงคือ <b>"โรคนี้แบบไหนจ่ายบ้าง และจ่ายตอนไหน"</b> กดกลุ่มโรคที่ลูกค้าถาม จะเปิดตารางเทียบรายโรคของทั้งสี่แบบขึ้นมา</p>
+      <div id="ciXwOpen" class="tap-group"></div>
+    </div>
   </div>
 
   <div class="content-card">
@@ -3714,7 +3785,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-07b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-07c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6569,9 +6640,23 @@ function renderCiReduceGuide(){
   return items.map(([h,b]) => `<div class="ci-pick"><h4>${h}</h4><p>${b}</p></div>`).join('');
 }
 
+/* ปุ่มเปิดตารางเทียบนิยาม สร้างจากไฟล์แมปโดยตรง จะได้ไม่ต้องมาไล่แก้ปุ่มเวลาเพิ่มโรค */
+function renderCiXwOpeners(){
+  const box = document.getElementById('ciXwOpen');
+  if(!box || !CI_XW) return;
+  const gl = (CI_XW._meta && CI_XW._meta.groups) || {};
+  const cs = CI_XW.concepts || [];
+  const items = [['all', 'ดูทั้งหมด', cs.length]]
+    .concat(Object.keys(gl).map(k => [k, gl[k], cs.filter(c => c.group === k).length]));
+  box.innerHTML = items.map(([k, lb, n]) =>
+    `<button type="button" class="tap-card" onclick="openCiXw('${k}')"><b>${lb}</b><small>${n} โรค</small></button>`
+  ).join('');
+}
+
 function renderCiComparePage(){
   const t = document.getElementById('ciCompareTable');
   if(t) t.innerHTML = renderCiCompareTable();
+  renderCiXwOpeners();
   const g = document.getElementById('ciAgeGuide');
   if(g) g.innerHTML = renderCiAgeGuide();
   const r = document.getElementById('ciReduceGuide');
@@ -14304,6 +14389,132 @@ var MCI_DEF = (function(){
   console.error('โหลด data/mci-definitions.json ไม่สำเร็จ');
   return null;
 })();
+var CI_XW = (function(){
+  for(const base of ['/data/', './data/']){
+    try{
+      const req = new XMLHttpRequest();
+      req.open('GET', base + 'ci-crosswalk.json?v=' + DATA_VERSION, false);
+      req.send(null);
+      if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+    }catch(e){}
+  }
+  console.error('โหลด data/ci-crosswalk.json ไม่สำเร็จ');
+  return null;
+})();
+
+/* =========================================================================
+   ตารางเทียบนิยามรายโรคข้ามแบบประกัน (ป๊อปอัพในหน้า /plans/compare-ci)
+
+   หลักการที่ห้ามเปลี่ยน: ci-crosswalk.json เก็บแค่ "โรคนี้ของแบบ A คือโรคเดียวกับโรคไหนของแบบ B"
+   ส่วนระยะที่จ่าย เปอร์เซ็นต์ และกลุ่ม ต้องอ่านสดจากไฟล์นิยามของแต่ละแบบทุกครั้ง
+   ถ้าคัดลอกมาเก็บซ้ำในไฟล์แมป วันหนึ่งแก้ไฟล์นิยามแล้วลืมแก้ที่นี่ ลูกค้าจะได้ข้อมูลผิด
+   ช่องว่างแปลว่า "ไม่มีโรคนี้ในตารางของแบบนั้น" ไม่ใช่ "ยังไม่ได้กรอก"
+   ทุกโรคในทั้งสี่ไฟล์นิยามถูกอ้างครบแล้ว มีเทสต์คุมไว้ ========================= */
+
+const CI_XW_PLANS = ['ltp', 'cipc', 'dcare', 'mci'];
+
+function ciXwFind(plan, th){
+  if(plan === 'ltp')  return (LTP_DEF  && LTP_DEF.diseases  || []).find(d => d.th === th);
+  if(plan === 'cipc') return (CIPC_DEF && CIPC_DEF.diseases || []).find(d => d.th === th);
+  if(plan === 'mci')  return (MCI_DEF  && MCI_DEF.diseases  || []).find(d => d.th === th);
+  for(const g of (DCARE_DEF && DCARE_DEF.groups || [])){
+    if(g.key === 'popular') continue;
+    const d = g.diseases.find(x => x.th === th);
+    if(d) return Object.assign({}, d, {_group: g.key, _groupLabel: g.label});
+  }
+  return null;
+}
+
+/* ช่องในตาราง ตอบคำถามเดียวคือ "แบบนี้จ่ายให้ตอนไหน" ไม่ใช่แค่ติ๊กถูก
+   เพราะคุ้มครองเหมือนกันแต่จ่ายคนละจังหวะ คือจุดที่ลูกค้าตัดสินใจจริง */
+function ciXwCell(plan, names){
+  if(!names || !names.length)
+    return `<td class="xw-no"><span>ไม่มีในตาราง</span></td>`;
+  const ds = names.map(n => ciXwFind(plan, n)).filter(Boolean);
+  if(!ds.length) return `<td class="xw-no"><span>ไม่มีในตาราง</span></td>`;
+  let tag = '', note = '';
+  if(plan === 'ltp'){
+    // เรียงจากเปอร์เซ็นต์สูงลงต่ำ ลูกค้าจะได้เห็นเพดานของโรคนี้ก่อน
+    const pcts = ds.map(d => d.pct).sort((a, b) => b - a);
+    tag = pcts.map(p => `<span class="xw-tag xw-p${p}">${p}%</span>`).join('');
+    note = ds.some(d => d.table === 'b') ? 'จ่ายแล้วสัญญายังอยู่ต่อ' : 'จ่ายแล้วสัญญาจบ';
+  } else if(plan === 'cipc'){
+    const st = ds[0].stages.map(s => s.stage);
+    tag = st.map(s => `<span class="xw-tag xw-${s}">${CIPC_STAGE[s].label}</span>`).join('');
+    note = st.length > 1 ? 'ไล่จ่ายเป็นระยะ' : '';
+  } else if(plan === 'dcare'){
+    const early = ds.some(d => (d.stage || 'severe') === 'early');
+    const sev   = ds.some(d => (d.stage || 'severe') !== 'early');
+    if(sev)   tag += `<span class="xw-tag xw-severe">ระยะรุนแรง</span>`;
+    if(early) tag += `<span class="xw-tag xw-early">ระยะเริ่มต้น</span>`;
+    // D Care ขายเป็นกลุ่ม ถ้าไม่บอกว่าโรคนี้อยู่กลุ่มไหน ลูกค้าจะนึกว่าซื้อแบบไหนก็ได้โรคนี้
+    const gs = [...new Set(ds.map(d => d._groupLabel).filter(Boolean))];
+    note = gs.length ? 'ต้องซื้อกลุ่ม' + gs.join(' หรือ ') : '';
+  } else {
+    const g = ds[0].group;
+    const lb = ((MCI_DEF && MCI_DEF._meta && MCI_DEF._meta.groups) || {})[g] || '';
+    tag = `<span class="xw-tag xw-severe">จ่าย 100%</span>`;
+    note = lb ? lb.replace(/^กลุ่มที่ /, 'อยู่กลุ่มที่ ') : '';
+  }
+  return `<td class="xw-yes">${tag}${note ? `<span class="xw-note">${note}</span>` : ''}</td>`;
+}
+
+let ciXwTab = 'all';
+
+function ciXwRows(group){
+  const cs = (CI_XW && CI_XW.concepts || []).filter(c => group === 'all' || c.group === group);
+  const gl = (CI_XW && CI_XW._meta && CI_XW._meta.groups) || {};
+  let out = '', lastG = null;
+  for(const c of cs){
+    if(group === 'all' && c.group !== lastG){
+      lastG = c.group;
+      out += `<tr class="xw-sep"><td colspan="5">${gl[c.group] || c.group}</td></tr>`;
+    }
+    const n = CI_XW_PLANS.filter(p => c.plans[p] && c.plans[p].length).length;
+    out += `<tr><th scope="row">${c.th}`
+      + (c.popular ? `<span class="xw-hot">อยู่ในแผนยอดฮิตของ D Care</span>` : '')
+      + `<span class="xw-cnt">${n} จาก 4 แบบ</span></th>`
+      + CI_XW_PLANS.map(p => ciXwCell(p, c.plans[p])).join('') + `</tr>`;
+  }
+  return out;
+}
+
+function ciXwTableHtml(group){
+  const plans = (CI_XW && CI_XW._meta && CI_XW._meta.plans) || [];
+  const head = `<tr><th class="xw-corner">โรค</th>`
+    + plans.map(p => `<th>${p.short}</th>`).join('') + `</tr>`;
+  return `<table class="xw-table"><thead>${head}</thead><tbody>${ciXwRows(group)}</tbody></table>`;
+}
+
+function setCiXwTab(key){
+  ciXwTab = key;
+  const body = document.getElementById('ciXwBody');
+  if(body){ body.innerHTML = ciXwTableHtml(key); body.scrollTop = 0; }
+  document.querySelectorAll('#ciXwTabs .def-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.key === key));
+}
+
+function openCiXw(group){
+  if(!CI_XW){ alert('ยังโหลดตารางเทียบนิยามไม่สำเร็จ กรุณารีเฟรชหน้าอีกครั้ง'); return; }
+  const box = document.getElementById('ciXw');
+  if(!box) return;
+  const gl = (CI_XW._meta && CI_XW._meta.groups) || {};
+  const cs = CI_XW.concepts || [];
+  const tabs = [['all', 'ทั้งหมด', cs.length]]
+    .concat(Object.keys(gl).map(k => [k, gl[k], cs.filter(c => c.group === k).length]));
+  const host = document.getElementById('ciXwTabs');
+  if(host) host.innerHTML = tabs.map(([k, lb, n]) =>
+    `<button type="button" class="def-tab" data-key="${k}" onclick="setCiXwTab('${k}')">${lb} (${n})</button>`).join('');
+  box.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setCiXwTab(group || 'all');
+}
+
+function closeCiXw(){
+  const box = document.getElementById('ciXw');
+  if(box) box.hidden = true;
+  document.body.style.overflow = '';
+}
 
 /* ป้ายของ มัลติเพิล ซีไอ ตอบคำถามเดียวคือ เป็นโรคนี้แล้วปิดกลุ่มไหน
    ทุกโรคจ่าย 100% ของทุนเท่ากันหมด สิ่งที่ต่างคือ<b>กลุ่ม</b> เพราะจ่ายกลุ่มละครั้งเดียว
@@ -14414,7 +14625,7 @@ const LTP_BADGE = {
   25:  {cls:'lb-25',  label:'รับ 25% สูงสุด 500,000 บาท · สัญญายังอยู่ต่อ'},
 };
 
-let ltpDefTab = 'cancer';
+let ltpDefTab = 'all';
 
 function ltpDefDiseaseHtml(d){
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
@@ -14432,7 +14643,9 @@ function ltpDefDiseaseHtml(d){
 }
 
 function ltpDefGroupHtml(key){
-  return (LTP_DEF.diseases || []).filter(d => d.group === key).map(ltpDefDiseaseHtml).join('');
+  const list = key === 'all' ? (LTP_DEF.diseases || [])
+    : (LTP_DEF.diseases || []).filter(d => d.group === key);
+  return list.map(ltpDefDiseaseHtml).join('');
 }
 
 function setLtpDefTab(key){
@@ -14638,7 +14851,8 @@ function multipleCiReclaimSection(){
 function ltpDefinitionsSection(){
   if(!LTP_DEF || !LTP_DEF.diseases || !LTP_DEF.diseases.length) return '';
   const m = LTP_DEF._meta || {};
-  const tabs = Object.entries(m.groups || {}).map(([k, label]) => {
+  const allTab = `<button type="button" class="def-tab${ltpDefTab === 'all' ? ' active' : ''}" data-key="all" onclick="setLtpDefTab('all')">ทั้งหมด (${LTP_DEF.diseases.length})</button>`;
+  const tabs = allTab + Object.entries(m.groups || {}).map(([k, label]) => {
     const n = LTP_DEF.diseases.filter(d => d.group === k).length;
     return `<button type="button" class="def-tab${k === ltpDefTab ? ' active' : ''}" data-key="${k}" onclick="setLtpDefTab('${k}')">${label} (${n})</button>`;
   }).join('');
@@ -16102,7 +16316,7 @@ document.getElementById('ssInput').addEventListener('keydown', (e) => {
   else if(e.key === 'Enter'){ e.preventDefault(); ssGo(ssPick); }
 });
 document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape'){ closeSiteSearch(); return; }
+  if(e.key === 'Escape'){ closeSiteSearch(); closeCiXw(); return; }
   // ปุ่มลัดต้องไม่ไปแย่งการพิมพ์ในช่องกรอกอื่นของเว็บ เช่น ช่องทุนประกัน
   const t = e.target;
   const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
