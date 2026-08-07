@@ -841,8 +841,11 @@
      ปุ่มที่ย้ายลงมาอยู่ในเมนูย่อยยังต้องเป็น button[data-page] และอยู่ใน #navbar เหมือนเดิม
      เพราะทั้งการสลับหน้า สถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ที่เดียว */
   .nav-more{position:relative;display:inline-flex;}
+  /* ต้องเป็น fixed ไม่ใช่ absolute เพราะกล่องหัวเว็บครอบอยู่และตัดขอบทิ้ง
+     ถ้าใช้ absolute แผงจะโผล่มาครึ่งเดียวแล้วกดเมนูข้างในไม่ได้เลย
+     ตำแหน่งจริงคำนวณตอนเปิดใน navMoreSetOpen */
   .nav-more-panel{
-    position:absolute;top:calc(100% + 8px);left:0;z-index:60;
+    position:fixed;z-index:2147483000;
     display:flex;flex-direction:column;gap:4px;min-width:210px;
     padding:8px;border-radius:14px;
     background:var(--pink-deep,#8f0d40);
@@ -861,7 +864,8 @@
   @media (max-width:640px){
     .nav-more{display:block;width:100%;}
     .nav-more-btn{width:100%;}
-    .nav-more-panel{position:static;width:100%;min-width:0;box-shadow:none;margin-top:6px;}
+    .nav-more-panel{position:static;width:100%;min-width:0;box-shadow:none;margin-top:6px;
+      inset:auto !important;}
   }
 
   /* ---------- ทางเข้าแผน HNW ในหน้าแผนทั้งหมด ---------- */
@@ -11595,13 +11599,26 @@ function dgPlayPageIn(target){
 /* เมนูย่อย "ความรู้"
    ปุ่มข้างในยังเป็น button[data-page] ใน #navbar เหมือนเดิม ตัวสลับหน้าจึงไม่ต้องรู้ว่ามีเมนูย่อย
    ที่ต้องเพิ่มมีแค่ เปิด/ปิดแผง และทำให้ปุ่มแม่ดูเป็น active เมื่อหน้าลูกกำลังเปิดอยู่ */
+const NAV_MORE_FIXED_MIN_W = 641;   // ต่ำกว่านี้แผงกางในสายเนื้อหาปกติ ไม่ต้องคำนวณตำแหน่ง
 function navMoreSetOpen(open){
   const btn = document.getElementById('navMoreBtn');
   const panel = document.getElementById('navMorePanel');
   if(!btn || !panel) return;
   panel.hidden = !open;
   btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if(!open || window.innerWidth < NAV_MORE_FIXED_MIN_W) return;
+  /* แผงเป็น position:fixed เพราะกล่องหัวเว็บครอบแล้วตัดขอบทิ้ง
+     จึงต้องวางตำแหน่งเองจากพิกัดจริงของปุ่ม และกันไม่ให้ล้นขอบขวาจอ */
+  const r = btn.getBoundingClientRect();
+  panel.style.top = Math.round(r.bottom + 8) + 'px';
+  panel.style.left = '0px';
+  const w = panel.getBoundingClientRect().width;
+  const left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - w - 8));
+  panel.style.left = left + 'px';
 }
+/* ย่อจอหรือเลื่อนหน้าแล้วแผงจะค้างผิดที่ ปิดทิ้งง่ายกว่าไล่คำนวณใหม่ */
+addEventListener('resize', () => navMoreSetOpen(false));
+addEventListener('scroll', () => { if(navMoreIsOpen()) navMoreSetOpen(false); }, {passive:true});
 function navMoreIsOpen(){
   const panel = document.getElementById('navMorePanel');
   return !!panel && !panel.hidden;
