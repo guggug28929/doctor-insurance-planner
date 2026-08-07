@@ -836,6 +836,46 @@
     color:var(--pink-deep);
     border-color:#fff;
   }
+
+  /* ---------- เมนูย่อย "ความรู้" ----------
+     ปุ่มที่ย้ายลงมาอยู่ในเมนูย่อยยังต้องเป็น button[data-page] และอยู่ใน #navbar เหมือนเดิม
+     เพราะทั้งการสลับหน้า สถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ที่เดียว */
+  .nav-more{position:relative;display:inline-flex;}
+  .nav-more-panel{
+    position:absolute;top:calc(100% + 8px);left:0;z-index:60;
+    display:flex;flex-direction:column;gap:4px;min-width:210px;
+    padding:8px;border-radius:14px;
+    background:var(--pink-deep,#8f0d40);
+    border:1px solid rgba(255,255,255,.35);
+    box-shadow:0 14px 34px rgba(0,0,0,.28);
+  }
+  .nav-more-panel[hidden]{display:none;}
+  .nav-more-panel button{width:100%;text-align:left;border-radius:10px;}
+  .nav-more-btn::after{content:" ▾";font-size:.75em;}
+  .nav-more-btn[aria-expanded="true"]{background:rgba(255,255,255,.18);}
+
+  /* ปุ่มที่ยังต้องอยู่ใน DOM เพื่อให้ระบบเดิมทำงาน แต่ไม่แสดงบนแถบเมนู */
+  .navbar button.nav-off{display:none !important;}
+
+  /* จอแคบ เมนูย่อยกางเต็มความกว้างจะกดง่ายกว่าลอยทับเนื้อหา */
+  @media (max-width:640px){
+    .nav-more{display:block;width:100%;}
+    .nav-more-btn{width:100%;}
+    .nav-more-panel{position:static;width:100%;min-width:0;box-shadow:none;margin-top:6px;}
+  }
+
+  /* ---------- ทางเข้าแผน HNW ในหน้าแผนทั้งหมด ---------- */
+  .hnw-entry{
+    border:1px solid rgba(212,175,106,.55);
+    background:linear-gradient(100deg,rgba(240,220,176,.16),rgba(255,255,255,.92));
+  }
+  .hnw-entry h2{margin-top:0;}
+  .btn-hnw{
+    margin-top:10px;padding:9px 18px;font-size:.85rem;
+    background:linear-gradient(100deg,#3a2b1c,#241722);
+    border-color:#d4af6a;color:#f0dcb0;
+  }
+
   .page{display:none;}
   .page.active{display:block;}
 
@@ -2184,14 +2224,21 @@
     <div class="sub">คำนวณเบี้ยจากตารางจริงของบริษัท เทียบทุกแผนให้เห็นทั้งข้อดีและข้อจำกัด และช่วยดูประวัติสุขภาพให้ก่อนยื่น โดยแพทย์ที่เป็นตัวแทนเอง</div>
     <div class="navbar" id="navbar">
       <button data-page="home" class="active">หน้าแรก</button>
-      <button data-page="ai">ผู้ช่วยออกแบบแผนประกัน</button>
-      <button data-page="calc">คำนวณเบี้ยประกัน</button>
-      <button data-page="plans">แผนประกันทั้งหมด</button>
-      <button data-page="hnw" class="nav-hnw">แผน HNW</button>
-      <button data-page="knowledge">ความรู้ประกันสุขภาพ</button>
+      <button data-page="ai">จัดแผนให้</button>
+      <button data-page="calc">คำนวณเบี้ย</button>
+      <button data-page="plans">แผนทั้งหมด</button>
+      <div class="nav-more" id="navMore">
+        <button type="button" class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-controls="navMorePanel">ความรู้</button>
+        <div class="nav-more-panel" id="navMorePanel" hidden>
+          <button data-page="knowledge">ความรู้ประกันสุขภาพ</button>
+          <button data-page="faq">คำถามที่พบบ่อย</button>
+        </div>
+      </div>
       <button data-page="tax">วางแผนภาษี</button>
-      <button data-page="faq">คำถามที่พบบ่อย</button>
       <button data-page="contact">ติดต่อหมอกึ๊ก</button>
+      <!-- แผน HNW ย้ายไปเป็นทางเข้าในหน้าแผนทั้งหมด แต่ยังต้องอยู่ใน #navbar
+           เพราะสถานะ active และการค้นหาทั้งเว็บอ่านปุ่มจากตรงนี้ -->
+      <button data-page="hnw" class="nav-hnw nav-off">แผน HNW</button>
     </div>
   </div>
 </div>
@@ -2797,16 +2844,10 @@
 
 
 
-  <div class="content-card qa-card">
-    <h2>บันทึก Recheck ข้อมูลและตารางเบี้ย</h2>
-    <ul>
-      <li>ตารางเบี้ยในไฟล์นี้ยึดตามเว็บที่ส่งให้เป็นหลัก และคำนวณแบบรายปีตามอายุที่เพิ่มขึ้นของผู้เอาประกัน โดยตัดแถวอายุ 99 ออกจากตารางสะสมแล้ว เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</li>
-      <li>จุดที่ดูแปลกและควรตรวจใบเสนอราคาจริงซ้ำ: OPD เหมาจ่ายเพศชายวงเงิน 30,000 บาท ช่วงอายุ 81–90 ในเว็บต่ำกว่าช่วง 76–80 มากผิดปกติ จึงไม่ควรใช้ตัวเลขนี้ปิดการขายโดยไม่เช็ก NST/ใบเสนอจริง</li>
-      <li>Elite Health Plus เว็บสาธารณะแสดงตารางเบี้ยถึงอายุรับทำใหม่ 90 ปี แต่ผลิตภัณฑ์ต่ออายุได้ถึง 99 ปี ดังนั้นเบี้ยช่วงหลังอายุ 90 ควรตรวจจากใบเสนอจริงก่อนใช้ประกอบการตัดสินใจ</li>
-      <li>D Care ในเว็บมี 2 แนวทางคือ ระยะเริ่มต้น+รุนแรง และเฉพาะระยะรุนแรง; เครื่องมือนี้ใช้โหมดระยะเริ่มต้น+รุนแรงเป็นหลัก เพราะเหมาะกับการวางแผนโรคร้ายแรงทั่วไปมากกว่า</li>
-      <li>HB (ชดเชยรายวัน) แก้ logic เป็นเบี้ยคงที่ตลอดสัญญา โดยยึดอายุแรกที่สมัคร ไม่ได้ปรับเพิ่มทุกปีตามอายุเหมือนสุขภาพเหมาจ่าย</li>
-      <li>PA Easy Plan ระบุอายุรับ/ต่ออายุถึง 85 ปี และแสดงตารางตามช่วงอายุของแผน</li>
-    </ul>
+  <div class="content-card hnw-entry">
+    <h2>มองหาแผนสำหรับความคุ้มครองระดับสูง</h2>
+    <p class="meta">วงเงินค่ารักษาหลักสิบล้านขึ้นไป คุ้มครองต่างประเทศ และการวางแผนส่งต่อทรัพย์สิน</p>
+    <button class="btn btn-hnw" onclick="showPage('hnw')">ดูแผน HNW &rarr;</button>
   </div>
 
 
@@ -11511,6 +11552,7 @@ function showPage(name, options = {}){
   if(!target) return;
   target.classList.add('active');
   document.querySelectorAll('#navbar button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  if(typeof navMoreSyncActive === 'function') navMoreSyncActive(name);
   applyHnwSkin(name);
   if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
   if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
@@ -11550,9 +11592,43 @@ function dgPlayPageIn(target){
   }, DG_PAGE_IN_MS + 60);
 }
 
+/* เมนูย่อย "ความรู้"
+   ปุ่มข้างในยังเป็น button[data-page] ใน #navbar เหมือนเดิม ตัวสลับหน้าจึงไม่ต้องรู้ว่ามีเมนูย่อย
+   ที่ต้องเพิ่มมีแค่ เปิด/ปิดแผง และทำให้ปุ่มแม่ดูเป็น active เมื่อหน้าลูกกำลังเปิดอยู่ */
+function navMoreSetOpen(open){
+  const btn = document.getElementById('navMoreBtn');
+  const panel = document.getElementById('navMorePanel');
+  if(!btn || !panel) return;
+  panel.hidden = !open;
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function navMoreIsOpen(){
+  const panel = document.getElementById('navMorePanel');
+  return !!panel && !panel.hidden;
+}
+/* ปุ่มแม่ไม่มี data-page showPage จึงถอด active ให้เสมอ ต้องเติมกลับเองตามหน้าลูก */
+function navMoreSyncActive(name){
+  const btn = document.getElementById('navMoreBtn');
+  const panel = document.getElementById('navMorePanel');
+  if(!btn || !panel) return;
+  const owns = [...panel.querySelectorAll('button[data-page]')].some(b => b.dataset.page === name);
+  btn.classList.toggle('active', owns);
+}
+
 document.getElementById('navbar').addEventListener('click', (e) => {
+  if(e.target.closest('#navMoreBtn')){ navMoreSetOpen(!navMoreIsOpen()); return; }
   const btn = e.target.closest('button[data-page]');
-  if(btn) showPage(btn.dataset.page);
+  if(btn){ navMoreSetOpen(false); showPage(btn.dataset.page); }
+});
+
+document.addEventListener('click', (e) => {
+  if(navMoreIsOpen() && !e.target.closest('#navMore')) navMoreSetOpen(false);
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && navMoreIsOpen()){
+    navMoreSetOpen(false);
+    document.getElementById('navMoreBtn')?.focus();
+  }
 });
 
 /* ลิงก์ที่ส่งให้ลูกค้าไปแล้วห้ามตาย
@@ -15295,10 +15371,22 @@ function ssBuildIndex(){
               hay: (t + ' ' + S + ' ' + A + ' ' + ssStrip(body)).toLowerCase()});
   };
 
-  // หน้าหลักทุกหน้า อ่านชื่อจากแถบเมนูจริง จะได้ไม่ต้องมาแก้สองที่เวลาเปลี่ยนชื่อเมนู
+  /* หน้าหลักทุกหน้า อ่านชื่อจากแถบเมนูจริง จะได้ไม่ต้องมาแก้สองที่เวลาเปลี่ยนชื่อเมนู
+     ชื่อบนเมนูถูกย่อให้สั้นลงเพื่อความสวยงาม แต่ลูกค้ายังพิมพ์คำเต็มมาค้น
+     จึงต้องมีคำพ้องกำกับไว้ ไม่งั้นค้น "ผู้ช่วย" หรือ "คำนวณเบี้ยประกัน" แล้วไม่เจอหน้า */
+  const NAV_ALIAS = {
+    ai:        'ผู้ช่วยออกแบบแผนประกัน ผู้ช่วย จัดแผน ออกแบบแผน แนะนำแผน',
+    calc:      'คำนวณเบี้ยประกัน คิดเบี้ย ราคา เบี้ยประกัน',
+    plans:     'แผนประกันทั้งหมด รายการแผน แบบประกันทั้งหมด',
+    knowledge: 'ความรู้ประกันสุขภาพ บทความ',
+    faq:       'คำถามที่พบบ่อย คำถาม ถามตอบ',
+    tax:       'วางแผนภาษี ลดหย่อนภาษี ภาษี',
+    hnw:       'แผน HNW ความคุ้มครองระดับสูง สินทรัพย์สูง',
+    contact:   'ติดต่อหมอกึ๊ก ไลน์ นัดคุย ปรึกษา',
+  };
   document.querySelectorAll('#navbar button[data-page]').forEach(b => {
     const name = b.dataset.page;
-    add('หน้า', b.textContent, PAGE_ROUTES[name] || '', '', '', () => showPage(name));
+    add('หน้า', b.textContent, PAGE_ROUTES[name] || '', NAV_ALIAS[name] || '', '', () => showPage(name));
   });
 
   // แบบประกันทุกแบบ ค้นได้ทั้งจากชื่อ จุดเด่น เงื่อนไข และข้อความว่าเหมาะกับใคร
