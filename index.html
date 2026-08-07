@@ -627,6 +627,16 @@
   .def-warn{margin:0 0 4px;padding:10px 12px;background:#fffaf3;border-left:3px solid #d99b3f;
     border-radius:0 8px 8px 0;line-height:1.8;}
   .def-intro{margin:0 0 16px;color:#5f4a53;line-height:1.85;}
+  /* หัวข้อเกณฑ์วินิจฉัยแบบเต็มยาวมาก หุบไว้ก่อน เหลือแค่ชื่อโรค ป้ายกลุ่ม และสรุปสั้นให้เห็นตลอด
+     กดถึงเห็นเกณฑ์ละเอียด อ่านทีละโรคที่สนใจแทนที่จะไล่อ่านทั้งหน้า */
+  details.def-fold{margin-top:2px;border:1px solid #f0dde5;border-radius:9px;background:#fffdfd;}
+  details.def-fold > summary{cursor:pointer;list-style:none;padding:8px 12px;
+    font-size:.82rem;font-weight:700;color:var(--pink);}
+  details.def-fold > summary::-webkit-details-marker{display:none;}
+  details.def-fold > summary::before{content:"▸ ";}
+  details.def-fold[open] > summary::before{content:"▾ ";}
+  details.def-fold[open]{background:#fff;}
+  details.def-fold > .def-fold-body{padding:2px 12px 10px;}
   .def-item{padding:16px 0;border-top:1px solid #f0dde5;}
   .def-item:first-of-type{border-top:0;padding-top:4px;}
   .def-item h4{margin:0 0 8px;font-size:1.02rem;color:var(--pink-deep);line-height:1.5;}
@@ -1825,6 +1835,24 @@
     gap:12px;
   }
   @media (max-width:780px){.ai-grid{grid-template-columns:1fr;}}
+
+  /* ตัวเลือกแบบปุ่มกด แทน dropdown เดิม จิ้มเห็นผลทันที ไม่ต้องเปิด list */
+  .tap-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+  .tap-card{
+    flex:1 1 150px;text-align:left;cursor:pointer;font-family:inherit;
+    border:1.5px solid var(--line);border-radius:10px;background:#fffafc;
+    padding:9px 12px;color:var(--ink);transition:border-color .12s,background .12s;
+  }
+  .tap-card b{display:block;font-size:.86rem;font-weight:700;}
+  .tap-card small{display:block;font-size:.74rem;color:var(--muted);margin-top:2px;line-height:1.35;}
+  .tap-card:hover{border-color:#e9a9c2;}
+  .tap-card.is-active{
+    border-color:var(--pink);background:linear-gradient(100deg,var(--pink-soft),#fff);
+  }
+  .tap-card.is-active b{color:var(--pink-deep);}
+  .tap-card.is-active::after{content:"✓";float:right;color:var(--pink);font-weight:700;}
+  .tap-group.tap-2col .tap-card{flex:1 1 45%;}
+
   .ai-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .ai-chip{
     border:1px solid var(--line);
@@ -2661,14 +2689,25 @@
       </div>
       <div>
         <label>มีสวัสดิการหรือประกันกลุ่มอยู่แล้วไหม</label>
-        <select id="ai_hasGroup" onchange="advSyncGroupField();">
+        <div class="tap-group tap-2col" data-for="ai_hasGroup">
+          <button type="button" class="tap-card is-active" data-value="no" onclick="advTapSelect(this);"><b>ไม่มี หรือไม่แน่ใจ</b></button>
+          <button type="button" class="tap-card" data-value="yes" onclick="advTapSelect(this);"><b>มี</b></button>
+        </div>
+        <select id="ai_hasGroup" hidden onchange="advSyncGroupField();">
           <option value="no">ไม่มี หรือไม่แน่ใจ</option>
           <option value="yes">มี</option>
         </select>
       </div>
       <div>
         <label>ต้องการค่ารักษา IPD ระดับไหน</label>
-        <select id="ai_ipdNeed">
+        <div class="tap-group" data-for="ai_ipdNeed">
+          <button type="button" class="tap-card" data-value="basic" onclick="advTapSelect(this);"><b>เริ่มต้น/คุมงบ</b><small>วงเงินหลักแสนถึง 1 ล้าน</small></button>
+          <button type="button" class="tap-card is-active" data-value="balanced" onclick="advTapSelect(this);"><b>สมดุล</b><small>เล็ง 5 ล้าน แต่ยอมลดวงเงินได้ถ้างบไม่พอ</small></button>
+          <button type="button" class="tap-card" data-value="high" onclick="advTapSelect(this);"><b>วงเงินสูง</b><small>คง 5 ล้านไว้ก่อน ถ้างบไม่พอใช้ Deductible คุมเบี้ยแทน</small></button>
+          <button type="button" class="tap-card" data-value="elite20" onclick="advTapSelect(this);"><b>พรีเมียม</b><small>Elite 20 ล้าน</small></button>
+          <button type="button" class="tap-card" data-value="elite75" onclick="advTapSelect(this);"><b>พรีเมียมมาก</b><small>Elite 75/100 ล้าน</small></button>
+        </div>
+        <select id="ai_ipdNeed" hidden>
           <option value="basic">เริ่มต้น/คุมงบ — วงเงินหลักแสนถึง 1 ล้าน</option>
           <option value="balanced" selected>สมดุล — เล็ง 5 ล้าน แต่ยอมลดวงเงินได้ถ้างบไม่พอ</option>
           <option value="high">วงเงินสูง — คง 5 ล้านไว้ก่อน ถ้างบไม่พอใช้ Deductible คุมเบี้ยแทน</option>
@@ -2678,7 +2717,14 @@
       </div>
       <div>
         <label>ความคุ้มครองโรคร้ายแรง</label>
-        <select id="ai_ciStyle" onchange="advSyncCiCapital();">
+        <div class="tap-group" data-for="ai_ciStyle">
+          <button type="button" class="tap-card is-active" data-value="balanced" onclick="advTapSelect(this);"><b>สมดุล</b><small>CI Perfect Care ทุน 1 ล้าน มีตาข่ายเสียชีวิต</small></button>
+          <button type="button" class="tap-card" data-value="broad" onclick="advTapSelect(this);"><b>กว้างที่สุด</b><small>CI Perfect Care ทุน 1 ล้าน</small></button>
+          <button type="button" class="tap-card" data-value="budget" onclick="advTapSelect(this);"><b>คุมงบ</b><small>D Care ครบ 5 หมวด จ่ายได้ถึง 200% ของทุน</small></button>
+          <button type="button" class="tap-card" data-value="multi" onclick="advTapSelect(this);"><b>ครบที่สุด</b><small>CI Perfect Care + Multiple CI เคลมได้หลายกลุ่ม</small></button>
+          <button type="button" class="tap-card" data-value="none" onclick="advTapSelect(this);"><b>ยังไม่เอาโรคร้ายแรง</b></button>
+        </div>
+        <select id="ai_ciStyle" hidden onchange="advSyncCiCapital();">
           <option value="balanced" selected>สมดุล — CI Perfect Care ทุน 1 ล้าน มีตาข่ายเสียชีวิต</option>
           <option value="broad">กว้างที่สุด — CI Perfect Care ทุน 1 ล้าน</option>
           <option value="budget">คุมงบ — D Care ครบ 5 หมวด จ่ายได้ถึง 200% ของทุน</option>
@@ -2698,7 +2744,13 @@
         </div>
         <div>
           <label class="first">OPD ต้องการแค่ไหน</label>
-          <select id="ai_opdNeed">
+          <div class="tap-group" data-for="ai_opdNeed">
+            <button type="button" class="tap-card" data-value="none" onclick="advTapSelect(this);"><b>ไม่เน้น OPD</b></button>
+            <button type="button" class="tap-card is-active" data-value="light" onclick="advTapSelect(this);"><b>อยากมีติดไว้นิดหน่อย</b></button>
+            <button type="button" class="tap-card" data-value="moderate" onclick="advTapSelect(this);"><b>ใช้ OPD เป็นระยะ</b><small>อยากมีวงเงินรายปี</small></button>
+            <button type="button" class="tap-card" data-value="heavy" onclick="advTapSelect(this);"><b>ใช้ OPD เยอะ</b><small>อยากได้ OPD ดี ๆ</small></button>
+          </div>
+          <select id="ai_opdNeed" hidden>
             <option value="none">ไม่เน้น OPD</option>
             <option value="light" selected>อยากมีติดไว้นิดหน่อย</option>
             <option value="moderate">ใช้ OPD เป็นระยะ อยากมีวงเงินรายปี</option>
@@ -2707,7 +2759,14 @@
         </div>
         <div>
           <label class="first">รับความเสี่ยงส่วนแรกได้ไหม</label>
-          <select id="ai_riskChoice">
+          <div class="tap-group" data-for="ai_riskChoice">
+            <button type="button" class="tap-card is-active" data-value="auto" onclick="advTapSelect(this);"><b>ให้ระบบเลือกให้</b><small>ตามสวัสดิการเดิม</small></button>
+            <button type="button" class="tap-card" data-value="none" onclick="advTapSelect(this);"><b>ไม่อยากมี</b><small>Deductible/Co-pay</small></button>
+            <button type="button" class="tap-card" data-value="deduct" onclick="advTapSelect(this);"><b>รับ Deductible ได้</b><small>เพื่อประหยัดเบี้ย</small></button>
+            <button type="button" class="tap-card" data-value="copay10" onclick="advTapSelect(this);"><b>รับ Co-pay 10%</b></button>
+            <button type="button" class="tap-card" data-value="copay20" onclick="advTapSelect(this);"><b>รับ Co-pay 20%</b><small>เน้นประหยัด</small></button>
+          </div>
+          <select id="ai_riskChoice" hidden>
             <option value="auto" selected>ให้ระบบเลือกตามสวัสดิการเดิม</option>
             <option value="none">ไม่อยากมี Deductible/Co-pay</option>
             <option value="deduct">รับ Deductible ได้ เพื่อประหยัดเบี้ย</option>
@@ -9510,6 +9569,17 @@ const ADV_CI_CAPITAL_BY_STYLE = {
   multi:     2000000,   // เพดานทุนที่ มัลติเพิล ซีไอ เปิดขายจริง
   none:            0,
 };
+/* ปุ่มกดตัวเลือกแทน dropdown เดิม select ที่ซ่อนไว้ยังเป็นแหล่งค่าจริงเหมือนเดิมทุกจุด
+   เพื่อไม่ต้องแก้โค้ดอ่านค่าที่มีอยู่แล้วทั้งหมด กดปุ่มแล้วแค่ sync ค่าลง select แล้วยิง change ต่อ */
+function advTapSelect(btn){
+  const group = btn.closest('.tap-group');
+  if(!group) return;
+  const sel = document.getElementById(group.dataset.for);
+  if(!sel) return;
+  sel.value = btn.dataset.value;
+  group.querySelectorAll('.tap-card').forEach(b => b.classList.toggle('is-active', b === btn));
+  sel.dispatchEvent(new Event('change'));
+}
 function advSyncCiCapital(){
   const style = document.getElementById('ai_ciStyle');
   const cap = document.getElementById('ai_ciCapital');
@@ -14237,16 +14307,24 @@ const MCI_BADGE = {
 };
 let mciDefTab = 'cardio';
 
+/* หุบเกณฑ์วินิจฉัยแบบเต็มไว้ในหัวข้อพับได้ ตัวชื่อโรค ป้ายกลุ่ม และสรุปสั้นยังเห็นตลอด
+   ใช้ร่วมกันทั้งหน้า Multiple CI, D Care, CI Perfect Care กันหน้าต่างยาวจนตาลาย */
+function defFold(html){
+  return html ? `<details class="def-fold"><summary>ดูเกณฑ์วินิจฉัยและเงื่อนไขแบบเต็ม</summary><div class="def-fold-body">${html}</div></details>` : '';
+}
+
 function mciDefDiseaseHtml(d){
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
   const b = MCI_BADGE[d.group] || MCI_BADGE.other;
   let h = `<article class="def-item"><h4>${d.n}. ${d.th}<span class="def-en">${d.en}</span></h4>`;
   h += `<span class="stage-badge ${b.cls}">${b.label}</span>`;
   h += `<p class="def-body">${d.body}</p>`;
-  if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
-  if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
-  if(d.exclusions) h += `<div class="def-block def-not">`
+  let fold = '';
+  if(d.criteria) fold += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) fold += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.exclusions) fold += `<div class="def-block def-not">`
     + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(d.exclusions)}</div>`;
+  h += defFold(fold);
   if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
   return h + '</article>';
 }
@@ -14282,12 +14360,15 @@ function mciDefinitionsSection(){
         <li>${r.premium_waived_after_first ? 'หลังจ่ายครั้งที่ 1 <b>ไม่ต้องจ่ายเบี้ยของสัญญาเพิ่มเติมนี้อีก</b> แต่ความคุ้มครองกลุ่มที่เหลือยังเดินต่อในกรอบข้างต้น' : ''}</li>
       </ul>
     </div>
+    <details class="def-fold"><summary>สัญญาสิ้นผลบังคับเมื่อไหร่ และข้อยกเว้นที่ต้องพูดตั้งแต่ตอนเสนอ</summary>
+    <div class="def-fold-body">
     <div class="def-block def-not">
       <b>สัญญาสิ้นผลบังคับเมื่อ <span class="not-tag">หมดความคุ้มครอง</span></b>${li(MCI_DEF.terminate || [])}
     </div>
     <div class="def-block def-not">
       <b>ข้อยกเว้นที่ต้องพูดตั้งแต่ตอนเสนอ <span class="not-tag">ไม่คุ้มครอง</span></b>${li(MCI_DEF.exclusions || [])}
     </div>
+    </div></details>
     <p class="def-plan-key"><b>ระยะรอคอย</b> ${m.waiting || ''}</p>
     <p class="def-plan-key"><b>กำหนดเวลาแจ้งเคลม</b> ${m.notify || ''}</p>
     <p class="def-plan-key"><b>อายุ</b> ต่ออายุได้ถึง ${m.renew_to} ปีบริบูรณ์ · สัญญาสิ้นสุด ณ วันครบรอบปีกรมธรรม์ที่อายุครบ ${m.terminate_age} ปีบริบูรณ์</p>
@@ -14587,17 +14668,19 @@ function cipcStageHtml(s){
     + `<span class="stage-badge ${b.cls}">${b.label}</span>`
     + `<span class="ci-stage-name">${s.th}<span class="def-en">${s.en}</span></span></div>`;
   h += `<p class="def-body">${s.body}</p>`;
-  if(s.criteria) h += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
-  if(s.extra) h += `<p class="def-body def-extra">${s.extra}</p>`;
+  let fold = '';
+  if(s.criteria) fold += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
+  if(s.extra) fold += `<p class="def-body def-extra">${s.extra}</p>`;
   /* แผนนี้จ่ายทุกระยะของโรคเดียวกันอยู่แล้ว รายการที่ถูกตัดออกจากระยะหนึ่งจึงมักไปโผล่อีกระยะหนึ่ง
      ถ้าทาแดงว่าไม่คุ้มครอง ลูกค้าจะเข้าใจผิดทั้งที่เงินยังออกอยู่ แค่ออกคนละระยะ */
-  if(s.elsewhere) h += `<div class="def-block def-shift">`
+  if(s.elsewhere) fold += `<div class="def-block def-shift">`
     + `<b>${s.elsewhereTitle || 'ไม่เข้าระยะนี้ แต่ไปเข้าอีกระยะของโรคเดียวกัน'} `
     + `<span class="shift-tag">ยังเคลมได้ แต่คนละระยะ</span></b>${li(s.elsewhere)}</div>`;
-  if(s.once) h += `<div class="def-block def-once">`
+  if(s.once) fold += `<div class="def-block def-once">`
     + `<b>${s.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(s.once)}</div>`;
-  if(s.exclusions) h += `<div class="def-block def-not">`
+  if(s.exclusions) fold += `<div class="def-block def-not">`
     + `<b>${s.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(s.exclusions)}</div>`;
+  h += defFold(fold);
   return h + '</div>';
 }
 
@@ -14694,32 +14777,34 @@ function dcareDefDiseaseHtml(d){
   let h = `<article class="def-item"><h4>${d.th}<span class="def-en">${d.en}</span></h4>`;
   h += `<span class="stage-badge ${badge.cls}">${badge.label}</span>`;
   h += `<p class="def-body">${d.body}</p>`;
+  let fold = '';
   /* กล่องเกณฑ์ของโรคระยะเริ่มต้น ต้องเป็นสีเหลืองให้ตรงกับป้ายหัวข้อ
      ถ้าใช้สีเขียวเหมือนโรคที่เคลมได้ทั้งสองแบบ ลูกค้าจะเข้าใจว่าซื้อแบบเฉพาะระยะรุนแรงก็เคลมได้ */
-  if(d.criteria) h += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
-  if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.criteria) fold += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) fold += `<p class="def-body def-extra">${d.extra}</p>`;
   /* ข้อความ "ทั้งนี้ไม่รวมถึง" ในกรมธรรม์มีสามความหมายที่ต่างกันคนละเรื่อง
      หนึ่ง ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกันซึ่งคุ้มครองอยู่ ต้องเป็นสีเหลือง
      สอง จ่ายได้ครั้งเดียว ไม่ให้เคลมซ้ำสองข้อ ไม่ใช่ไม่คุ้มครอง ต้องเป็นกล่องกลาง
      สาม ไม่คุ้มครองเลยทั้งสองแบบ ถึงจะเป็นสีแดง
      เคยทาแดงหมด ทำให้ลูกค้าอ่านแล้วเข้าใจว่าบอลลูนกับขดลวดเคลมไม่ได้ ซึ่งผิด */
-  if(d.elsewhere) h += `<div class="def-block def-shift">`
+  if(d.elsewhere) fold += `<div class="def-block def-shift">`
     + `<b>${d.elsewhereTitle || 'ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกัน'} `
     + `<span class="shift-tag">คุ้มครองอยู่ในข้ออื่น</span></b>${li(d.elsewhere)}</div>`;
-  if(d.once) h += `<div class="def-block def-once">`
+  if(d.once) fold += `<div class="def-block def-once">`
     + `<b>${d.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(d.once)}</div>`;
   if(d.exclusions){
     const shift = d.exclusionsTone === 'early';
-    h += `<div class="def-block ${shift ? 'def-shift' : 'def-not'}">`
+    fold += `<div class="def-block ${shift ? 'def-shift' : 'def-not'}">`
       + `<b>${d.exclusionsTitle} <span class="${shift ? 'shift-tag' : 'not-tag'}">`
       + `${shift ? 'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'}</span></b>`
       + li(d.exclusions) + `</div>`;
   }
-  if(d.never) h += `<div class="def-block def-not">`
+  if(d.never) fold += `<div class="def-block def-not">`
     + `<b>${d.neverTitle} <span class="not-tag">ไม่คุ้มครองทั้ง 2 แบบ</span></b>${li(d.never)}</div>`;
   /* ข้อยกเว้นของข้อยกเว้น ต้องแยกออกมาเป็นกล่องเขียวต่างหาก
      เพราะถ้าปล่อยไว้ในบรรทัดเดียวกันจะกลายเป็นปฏิเสธซ้อนปฏิเสธ อ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม */
-  if(d.carveBack) h += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
+  if(d.carveBack) fold += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
+  h += defFold(fold);
   if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
   return h + '</article>';
 }
