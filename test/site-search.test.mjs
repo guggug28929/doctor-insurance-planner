@@ -53,7 +53,8 @@ test('ปุ่มลัดต้องไม่ไปแย่งการพ�
   // เว็บมีช่องกรอกทุนประกันและอายุอยู่หลายจุด ถ้าดักคีย์ทั้งหน้าจะพิมพ์เลขไม่ได้
   assert.match(html, /t\.tagName === 'INPUT' \|\| t\.tagName === 'TEXTAREA'/);
   assert.match(html, /if\(typing \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey\) return;/);
-  assert.match(html, /if\(e\.key === 'Escape'\)\{ closeSiteSearch\(\); return; \}/);
+  // Escape ต้องปิดทั้งกล่องค้นหาและป๊อปอัพเทียบนิยาม ไม่งั้นกดหนีจากตารางไม่ได้
+  assert.match(html, /if\(e\.key === 'Escape'\)\{ closeSiteSearch\(\); closeCiXw\(\); return; \}/);
 });
 
 /* ตรวจตรรกะจริง ไม่ใช่แค่ว่ามีโค้ดอยู่
