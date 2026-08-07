@@ -1766,6 +1766,29 @@
   .adv-run-card{text-align:center;}
   .adv-run-card h2{margin-bottom:6px;}
   .adv-run-card .btn{width:auto;padding:13px 34px;font-size:1rem;}
+  /* ---------- หัวข้อปรับละเอียดในผู้ช่วยจัดแผน ----------
+     คำถามที่คนส่วนใหญ่ไม่ต้องตอบ ถูกพับไว้ให้เหลือ 5 ข้อบนหน้าจอ
+     ยังอยู่ใน DOM ทั้งหมด ตัวอ่านค่าเดิมจึงไม่ต้องแก้ */
+  .adv-more{margin:14px 0 4px;border:1px solid var(--line);border-radius:14px;background:#fdfbfc;}
+  .adv-more > summary{
+    cursor:pointer;padding:11px 16px;font-weight:600;font-size:.9rem;color:var(--pink-deep);
+    list-style:none;border-radius:14px;
+  }
+  .adv-more > summary::-webkit-details-marker{display:none;}
+  .adv-more > summary::before{content:"▸ ";display:inline-block;transition:transform .15s;}
+  .adv-more[open] > summary::before{content:"▾ ";}
+  .adv-more[open] > summary{border-bottom:1px solid var(--line);border-radius:14px 14px 0 0;}
+  .adv-more .ai-grid{padding:14px 16px 16px;}
+
+  /* ลำดับการตัดยาวและอ่านทีหลังได้ พับไว้ให้กดเปิดเอง */
+  .ig-fold > summary{
+    cursor:pointer;list-style:none;font-weight:700;color:var(--pink-deep);
+    display:flex;align-items:center;gap:8px;padding:2px 0;
+  }
+  .ig-fold > summary::-webkit-details-marker{display:none;}
+  .ig-fold > summary::after{content:"▸";margin-left:auto;font-size:.9em;color:#a8808f;}
+  .ig-fold[open] > summary::after{content:"▾";}
+
   .adv-info{margin-top:16px;padding:16px 18px 14px;border-radius:16px;background:#fdfbfc;border:1px solid var(--line);}
   .adv-info-head{font-family:"Kanit",sans-serif;font-weight:700;font-size:.92rem;color:var(--pink-deep);margin-bottom:12px;}
   .adv-info-foot{font-size:.8rem;color:var(--muted);margin:14px 0 0;line-height:1.8;}
@@ -2611,19 +2634,8 @@
   <div id="advTab-health">
   <div class="content-card">
     <h2>ผู้ช่วยออกแบบแผนประกันสุขภาพ</h2>
-    <p style="color:var(--muted);">ระบบเรียงลำดับให้ตามหลักเดียวกับที่ตัวแทนมืออาชีพใช้ คือ<b>ปิดความเสี่ยงที่ทำให้ครอบครัวล้มละลายก่อน</b> แล้วค่อยเติมของที่จ่ายเองไหว เบี้ยทุกตัวมาจากตารางจริงของบริษัท ไม่มีการประมาณค่า</p>
+    <p style="color:var(--muted);">ตอบ 5 ข้อ ระบบจัดชุดแผนให้พร้อมเบี้ยจากตารางจริงของบริษัท ไม่มีการประมาณค่า</p>
 
-    <div class="adv-info">
-      <div class="adv-info-head">หลักที่ระบบใช้ตัดสินใจ</div>
-      <div id="advBucketBox"></div>
-      <p class="adv-info-foot">อยากเข้าใจที่มาของหลักนี้แบบเต็ม ๆ รวมถึงกับดักที่เจอบ่อยตอนเลือกแผน
-        <button type="button" class="adv-info-link" onclick="showPage('knowledge'); setKnowTab('guide');">อ่านวิธีเลือกประกันสุขภาพ &rarr;</button>
-      </p>
-    </div>
-  </div>
-
-  <div class="content-card">
-    <h2>ข้อมูลลูกค้าและความต้องการ</h2>
     <div class="ai-grid">
       <div>
         <label class="first">เพศ</label>
@@ -2639,18 +2651,14 @@
       <div>
         <label>งบเบี้ยที่อยากคุมต่อปี (บาท)</label>
         <input type="number" id="ai_budget" value="50000" step="5000" min="0" placeholder="เช่น 50000">
-        <div class="hint">ไม่จำเป็นต้องเป๊ะ ใช้เพื่อเลือกแผนประหยัด/พรีเมียมให้เหมาะขึ้น</div>
+        <div class="hint">ไม่ต้องเป๊ะ ใช้เลือกแผนประหยัดหรือพรีเมียมให้เหมาะขึ้น</div>
       </div>
       <div>
-        <label>สวัสดิการ / ประกันกลุ่มเดิม</label>
-        <select id="ai_hasGroup">
+        <label>มีสวัสดิการหรือประกันกลุ่มอยู่แล้วไหม</label>
+        <select id="ai_hasGroup" onchange="advSyncGroupField();">
           <option value="no">ไม่มี หรือไม่แน่ใจ</option>
           <option value="yes">มี</option>
         </select>
-      </div>
-      <div>
-        <label>วงเงินสวัสดิการเดิมโดยประมาณ (บาท/ปีหรือบาท/ครั้ง)</label>
-        <input type="number" id="ai_groupCoverage" value="0" step="10000" min="0" placeholder="เช่น 100000">
       </div>
       <div>
         <label>ต้องการค่ารักษา IPD ระดับไหน</label>
@@ -2663,41 +2671,63 @@
         </select>
       </div>
       <div>
-        <label>OPD ต้องการแค่ไหน</label>
-        <select id="ai_opdNeed">
-          <option value="none">ไม่เน้น OPD</option>
-          <option value="light" selected>อยากมีติดไว้นิดหน่อย</option>
-          <option value="moderate">ใช้ OPD เป็นระยะ อยากมีวงเงินรายปี</option>
-          <option value="heavy">ใช้ OPD เยอะ / อยากได้ OPD ดี ๆ</option>
-        </select>
-      </div>
-      <div>
-        <label>รับความเสี่ยงส่วนแรกได้ไหม</label>
-        <select id="ai_riskChoice">
-          <option value="auto" selected>ให้ระบบเลือกตามสวัสดิการเดิม</option>
-          <option value="none">ไม่อยากมี Deductible/Co-pay</option>
-          <option value="deduct">รับ Deductible ได้ เพื่อประหยัดเบี้ย</option>
-          <option value="copay10">รับ Co-pay 10% ได้</option>
-          <option value="copay20">รับ Co-pay 20% ได้ เน้นประหยัด</option>
-        </select>
-      </div>
-      <div>
-        <label>ทุนโรคร้ายแรงที่อยากมี (บาท)</label>
-        <input type="number" id="ai_ciCapital" value="1000000" step="100000" min="0">
-        <div class="hint">โดยทั่วไปแนะนำตั้งต้นประมาณ 1 ล้านบาทขึ้นไป แล้วค่อยปรับตามงบ</div>
-      </div>
-      <div>
-        <label>สไตล์โรคร้ายแรง</label>
-        <select id="ai_ciStyle">
-          <option value="balanced" selected>สมดุล — กว้างพอ + เน้นโรคใหญ่</option>
-          <option value="broad">อยากได้กว้างที่สุด — CI Perfect Care</option>
-          <option value="cancerckd">กังวลมะเร็ง/ไตเป็นพิเศษ — Care Plus</option>
-          <option value="budget">คุมงบ — D Care โรคยอดฮิต</option>
+        <label>ความคุ้มครองโรคร้ายแรง</label>
+        <select id="ai_ciStyle" onchange="advSyncCiCapital();">
+          <option value="balanced" selected>สมดุล — ทุน 1 ล้าน กว้างพอ + เน้นโรคใหญ่</option>
+          <option value="broad">กว้างที่สุด — ทุน 1 ล้าน CI Perfect Care</option>
+          <option value="cancerckd">กังวลมะเร็ง/ไตเป็นพิเศษ — ทุน 1 ล้าน Care Plus</option>
+          <option value="budget">คุมงบ — ทุน 5 แสน D Care โรคยอดฮิต</option>
           <option value="none">ยังไม่เอาโรคร้ายแรง</option>
         </select>
+        <div class="hint">ทุนตั้งให้ตามสไตล์ที่เลือก ปรับเองได้ในหัวข้อปรับละเอียด</div>
       </div>
     </div>
+
+    <details class="adv-more">
+      <summary>ปรับละเอียด ไม่กรอกก็ได้</summary>
+      <div class="ai-grid">
+        <div id="ai_groupCoverageBox" hidden>
+          <label class="first">วงเงินสวัสดิการเดิมโดยประมาณ (บาท/ปีหรือบาท/ครั้ง)</label>
+          <input type="number" id="ai_groupCoverage" value="0" step="10000" min="0" placeholder="เช่น 100000">
+        </div>
+        <div>
+          <label class="first">OPD ต้องการแค่ไหน</label>
+          <select id="ai_opdNeed">
+            <option value="none">ไม่เน้น OPD</option>
+            <option value="light" selected>อยากมีติดไว้นิดหน่อย</option>
+            <option value="moderate">ใช้ OPD เป็นระยะ อยากมีวงเงินรายปี</option>
+            <option value="heavy">ใช้ OPD เยอะ / อยากได้ OPD ดี ๆ</option>
+          </select>
+        </div>
+        <div>
+          <label class="first">รับความเสี่ยงส่วนแรกได้ไหม</label>
+          <select id="ai_riskChoice">
+            <option value="auto" selected>ให้ระบบเลือกตามสวัสดิการเดิม</option>
+            <option value="none">ไม่อยากมี Deductible/Co-pay</option>
+            <option value="deduct">รับ Deductible ได้ เพื่อประหยัดเบี้ย</option>
+            <option value="copay10">รับ Co-pay 10% ได้</option>
+            <option value="copay20">รับ Co-pay 20% ได้ เน้นประหยัด</option>
+          </select>
+        </div>
+        <div>
+          <label class="first">ปรับทุนโรคร้ายแรงเอง (บาท)</label>
+          <input type="number" id="ai_ciCapital" value="1000000" step="100000" min="0">
+          <div class="hint">ปกติระบบตั้งให้ตามสไตล์ที่เลือกไว้แล้ว</div>
+        </div>
+      </div>
+    </details>
+
     <button class="btn" onclick="runAiPlanner()">จัดแผนให้เลย</button>
+  </div>
+
+  <div class="content-card">
+    <div class="adv-info">
+      <div class="adv-info-head">หลักที่ระบบใช้ตัดสินใจ</div>
+      <div id="advBucketBox"></div>
+      <p class="adv-info-foot">อยากเข้าใจที่มาของหลักนี้แบบเต็ม ๆ รวมถึงกับดักที่เจอบ่อยตอนเลือกแผน
+        <button type="button" class="adv-info-link" onclick="showPage('knowledge'); setKnowTab('guide');">อ่านวิธีเลือกประกันสุขภาพ &rarr;</button>
+      </p>
+    </div>
   </div>
 
   <div id="aiPlannerOutput"></div>
@@ -9270,14 +9300,43 @@ function advPrincipleInfographic(){
       <div class="ig-cols">${b}</div>
       <p class="ig-note">ยิ่งไปทางซ้าย ยิ่งคุ้มที่จะจ่ายเบี้ยให้คนอื่นช่วยแบก · ยิ่งไปทางขวา ยิ่งคุ้มที่จะเก็บเงินไว้จ่ายเอง เพราะเบี้ยที่บริษัทคิดจะใกล้เคียงกับที่เราจ่ายจริงอยู่แล้ว</p>
     </div>
-    <div class="ig-part">
-      <div class="ig-h"><span class="ig-h-n">2</span> ถ้าเบี้ยเกินงบ ระบบจะตัดตามลำดับนี้</div>
+    <details class="ig-part ig-fold">
+      <summary><span class="ig-h-n">2</span> ถ้าเบี้ยเกินงบ ระบบจะตัดตามลำดับนี้</summary>
       <div class="ig-steps">${ADV_CUT_STEPS.map(s => `
         <div class="ig-step"><div class="ig-step-n">${s.n}</div>
           <div><div class="ig-step-t">${s.t}</div><div class="ig-step-d">${s.d}</div></div></div>`).join('')}</div>
       <p class="ig-note">ตัดจากบนลงล่าง หยุดทันทีที่เบี้ยเข้างบ · <b>แกนหลักคือวงเงินค่ารักษาก้อนใหญ่ จึงถูกแตะเป็นลำดับท้ายสุดเสมอ</b></p>
-    </div>
+    </details>
   </div>`;
+}
+
+/* ทุนโรคร้ายแรงผูกกับสไตล์ที่เลือก ลูกค้าจะได้ไม่ต้องเดาตัวเลขเอง
+   ตัวเลขเขียนไว้ในป้ายตัวเลือกด้วย จะได้เห็นก่อนกดว่าจะได้ทุนเท่าไร
+   ช่องปรับเองยังอยู่ในหัวข้อปรับละเอียด สำหรับกรณีที่ลูกค้าขอทุนเฉพาะ */
+const ADV_CI_CAPITAL_BY_STYLE = {
+  balanced:  1000000,
+  broad:     1000000,
+  cancerckd: 1000000,
+  budget:     500000,   // คุมงบ ทุนต่ำลงเพื่อให้เบี้ยอยู่ในงบตั้งแต่แรก
+  none:            0,
+};
+function advSyncCiCapital(){
+  const style = document.getElementById('ai_ciStyle');
+  const cap = document.getElementById('ai_ciCapital');
+  if(!style || !cap) return;
+  const v = ADV_CI_CAPITAL_BY_STYLE[style.value];
+  if(v !== undefined) cap.value = v;
+}
+/* ไม่มีสวัสดิการเดิม ก็ไม่ต้องถามวงเงินสวัสดิการ
+   ต้องล้างค่าเป็น 0 ด้วย ไม่งั้นเลือกมีแล้วกรอกไว้ แล้วสลับกลับเป็นไม่มี ค่าเดิมจะค้างและคำนวณผิด */
+function advSyncGroupField(){
+  const has = document.getElementById('ai_hasGroup');
+  const box = document.getElementById('ai_groupCoverageBox');
+  const inp = document.getElementById('ai_groupCoverage');
+  if(!has || !box || !inp) return;
+  const yes = has.value === 'yes';
+  box.hidden = !yes;
+  if(!yes) inp.value = 0;
 }
 
 function advPricedItems(state, input){
@@ -11561,6 +11620,9 @@ function showPage(name, options = {}){
   if(name === 'ai'){
     const bb = document.getElementById('advBucketBox');
     if(bb && !bb.dataset.done){ bb.innerHTML = advPrincipleInfographic(); bb.dataset.done = '1'; }
+    // ตั้งสถานะเริ่มต้นให้ตรงกับตัวเลือกที่เลือกอยู่ ไม่ใช่รอให้ผู้ใช้ขยับก่อน
+    if(typeof advSyncGroupField === 'function') advSyncGroupField();
+    if(typeof advSyncCiCapital === 'function') advSyncCiCapital();
   }
   window.scrollTo({top:0, behavior:'auto'});
   dgApplyReveal(target);
