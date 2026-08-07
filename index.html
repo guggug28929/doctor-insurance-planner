@@ -627,16 +627,21 @@
   .def-warn{margin:0 0 4px;padding:10px 12px;background:#fffaf3;border-left:3px solid #d99b3f;
     border-radius:0 8px 8px 0;line-height:1.8;}
   .def-intro{margin:0 0 16px;color:#5f4a53;line-height:1.85;}
-  /* หัวข้อเกณฑ์วินิจฉัยแบบเต็มยาวมาก หุบไว้ก่อน เหลือแค่ชื่อโรค ป้ายกลุ่ม และสรุปสั้นให้เห็นตลอด
-     กดถึงเห็นเกณฑ์ละเอียด อ่านทีละโรคที่สนใจแทนที่จะไล่อ่านทั้งหน้า */
-  details.def-fold{margin-top:2px;border:1px solid #f0dde5;border-radius:9px;background:#fffdfd;}
-  details.def-fold > summary{cursor:pointer;list-style:none;padding:8px 12px;
-    font-size:.82rem;font-weight:700;color:var(--pink);}
+  /* หุบทั้งหัวข้อเป็นหน่วยเดียว บรรทัดหัว (summary) เท่านั้นที่เห็นตลอด กดถึงกางเนื้อหาทั้งก้อนออกมาทีเดียว
+     ใช้สองระดับ: def-fold เปล่า ๆ สำหรับหุบหัวข้อใหญ่ระดับบล็อก, def-fold-item สำหรับหุบทีละโรคในลิสต์ */
+  details.def-fold{margin:10px 0;border:1px solid #f0dde5;border-radius:9px;background:#fffdfd;}
+  details.def-fold > summary{cursor:pointer;list-style:none;padding:10px 14px;
+    font-size:.86rem;font-weight:700;color:var(--pink-deep);}
   details.def-fold > summary::-webkit-details-marker{display:none;}
-  details.def-fold > summary::before{content:"▸ ";}
+  details.def-fold > summary::before{content:"▸ ";color:#a8808f;}
   details.def-fold[open] > summary::before{content:"▾ ";}
   details.def-fold[open]{background:#fff;}
-  details.def-fold > .def-fold-body{padding:2px 12px 10px;}
+  details.def-fold > .def-fold-body{padding:2px 14px 14px;}
+  details.def-fold.def-fold-item > summary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;
+    font-size:1rem;}
+  details.def-fold.def-fold-item > summary::before{align-self:flex-start;margin-top:3px;}
+  .def-fold-title{font-weight:700;color:var(--pink-deep);line-height:1.5;}
+  .def-fold-title .def-en{display:inline-block;margin-left:2px;}
   .def-item{padding:16px 0;border-top:1px solid #f0dde5;}
   .def-item:first-of-type{border-top:0;padding-top:4px;}
   .def-item h4{margin:0 0 8px;font-size:1.02rem;color:var(--pink-deep);line-height:1.5;}
@@ -7859,10 +7864,10 @@ const PLAN_DETAILS = {
     benefitTable: () => ciPerfectCareBenefitTable(),
     benefitTitle: 'วิธีจ่ายผลประโยชน์ และเงินคงเหลือ',
     freqSupported: true,
-    /* เดิมคีย์ detailSections ถูกประกาศสองครั้งในแผนนี้ อันหลังทับอันแรก
-       ทำให้ ciPerfectCareDetailSections() ไม่เคยถูกเรียกเลย ต้องรวมเป็นคีย์เดียว */
+    /* เดิมคีย์ detailSections ถูกประกาศสองครั้งในแผนนี้ อันหลังทับอันแรก ตอนแรกรวมเป็นคีย์เดียวที่ต่อสามส่วน
+       แต่ ciPerfectCareDetailSections() (สรุปย่อ 5 หมวด) กับ cipcDefinitionsSection() (นิยามเต็มแบบแท็บ)
+       พูดเรื่องเดียวกันซ้ำกัน จึงตัดชุดสรุปย่อออก เหลือชุดเต็มที่มีเกณฑ์ครบและอ้างอิงตรงกับกรมธรรม์ */
     detailSections: () => cipcDeathBenefitSection()
-                        + ciPerfectCareDetailSections()
                         + cipcDefinitionsSection(),
     rateTable: (freq='annual') => cipcRateTableBlock(freq),
     rateNote: 'ตารางแสดงเบี้ยจริงตามทุนที่กรอก ปรับทุนแล้วตัวเลขทั้งตารางจะเปลี่ยนตามทันที',
@@ -14307,26 +14312,29 @@ const MCI_BADGE = {
 };
 let mciDefTab = 'cardio';
 
-/* หุบเกณฑ์วินิจฉัยแบบเต็มไว้ในหัวข้อพับได้ ตัวชื่อโรค ป้ายกลุ่ม และสรุปสั้นยังเห็นตลอด
+/* พับทั้งการ์ดของแต่ละโรคเป็นหน่วยเดียว บรรทัดหัวเห็นแค่ชื่อโรคกับป้ายกลุ่ม
+   กดถึงกางเนื้อหาทั้งก้อนออกมาทีเดียว ไม่ใช่หุบซ้อนหุบเป็นกล่องย่อยข้างในอีกที
    ใช้ร่วมกันทั้งหน้า Multiple CI, D Care, CI Perfect Care กันหน้าต่างยาวจนตาลาย */
-function defFold(html){
-  return html ? `<details class="def-fold"><summary>ดูเกณฑ์วินิจฉัยและเงื่อนไขแบบเต็ม</summary><div class="def-fold-body">${html}</div></details>` : '';
+function defFoldItem(summaryHtml, bodyHtml){
+  return `<details class="def-fold def-fold-item"><summary>${summaryHtml}</summary><div class="def-fold-body">${bodyHtml}</div></details>`;
+}
+/* ใช้เมื่อต้องพับทั้งหัวข้อใหญ่ระดับหัวข้อ (เช่นบล็อกเงื่อนไขสัญญา) ไม่ใช่ระดับโรคทีละตัว */
+function defFold(summaryText, html){
+  return html ? `<details class="def-fold"><summary>${summaryText}</summary><div class="def-fold-body">${html}</div></details>` : '';
 }
 
 function mciDefDiseaseHtml(d){
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
   const b = MCI_BADGE[d.group] || MCI_BADGE.other;
-  let h = `<article class="def-item"><h4>${d.n}. ${d.th}<span class="def-en">${d.en}</span></h4>`;
-  h += `<span class="stage-badge ${b.cls}">${b.label}</span>`;
-  h += `<p class="def-body">${d.body}</p>`;
-  let fold = '';
-  if(d.criteria) fold += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
-  if(d.extra) fold += `<p class="def-body def-extra">${d.extra}</p>`;
-  if(d.exclusions) fold += `<div class="def-block def-not">`
+  const summary = `<span class="def-fold-title">${d.n}. ${d.th}<span class="def-en">${d.en}</span></span>`
+    + `<span class="stage-badge ${b.cls}">${b.label}</span>`;
+  let body = `<p class="def-body">${d.body}</p>`;
+  if(d.criteria) body += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) body += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.exclusions) body += `<div class="def-block def-not">`
     + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(d.exclusions)}</div>`;
-  h += defFold(fold);
-  if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
-  return h + '</article>';
+  if(d.doc) body += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
+  return defFoldItem(summary, body);
 }
 function mciDefGroupHtml(key){
   return (MCI_DEF.diseases || []).filter(d => d.group === key).map(mciDefDiseaseHtml).join('');
@@ -14668,29 +14676,31 @@ function cipcStageHtml(s){
     + `<span class="stage-badge ${b.cls}">${b.label}</span>`
     + `<span class="ci-stage-name">${s.th}<span class="def-en">${s.en}</span></span></div>`;
   h += `<p class="def-body">${s.body}</p>`;
-  let fold = '';
-  if(s.criteria) fold += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
-  if(s.extra) fold += `<p class="def-body def-extra">${s.extra}</p>`;
+  if(s.criteria) h += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
+  if(s.extra) h += `<p class="def-body def-extra">${s.extra}</p>`;
   /* แผนนี้จ่ายทุกระยะของโรคเดียวกันอยู่แล้ว รายการที่ถูกตัดออกจากระยะหนึ่งจึงมักไปโผล่อีกระยะหนึ่ง
      ถ้าทาแดงว่าไม่คุ้มครอง ลูกค้าจะเข้าใจผิดทั้งที่เงินยังออกอยู่ แค่ออกคนละระยะ */
-  if(s.elsewhere) fold += `<div class="def-block def-shift">`
+  if(s.elsewhere) h += `<div class="def-block def-shift">`
     + `<b>${s.elsewhereTitle || 'ไม่เข้าระยะนี้ แต่ไปเข้าอีกระยะของโรคเดียวกัน'} `
     + `<span class="shift-tag">ยังเคลมได้ แต่คนละระยะ</span></b>${li(s.elsewhere)}</div>`;
-  if(s.once) fold += `<div class="def-block def-once">`
+  if(s.once) h += `<div class="def-block def-once">`
     + `<b>${s.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(s.once)}</div>`;
-  if(s.exclusions) fold += `<div class="def-block def-not">`
+  if(s.exclusions) h += `<div class="def-block def-not">`
     + `<b>${s.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(s.exclusions)}</div>`;
-  h += defFold(fold);
   return h + '</div>';
 }
 
+/* พับทั้งโรค (ทุกระยะรวมกัน) เป็นหน่วยเดียว บรรทัดหัวเห็นชื่อโรคกับป้ายระยะที่มีทั้งหมด
+   กันซ้อนหุบสองชั้น ที่เคยทำให้กดแล้วยังเจอกล่องย่อยให้กดอีกที */
 function cipcDefGroupHtml(key){
   const list = (CIPC_DEF.diseases || []).filter(d => d.group === key);
-  return list.map(d => `<article class="def-item">`
-    + `<h4>${d.n}. ${d.th}<span class="def-en">${d.en}</span></h4>`
-    + d.stages.map(cipcStageHtml).join('')
-    + (d.doc ? `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>` : '')
-    + `</article>`).join('');
+  return list.map(d => {
+    const badges = d.stages.map(s => `<span class="stage-badge ${CIPC_STAGE[s.stage].cls}">${CIPC_STAGE[s.stage].label}</span>`).join('');
+    const summary = `<span class="def-fold-title">${d.n}. ${d.th}<span class="def-en">${d.en}</span></span>${badges}`;
+    const body = d.stages.map(cipcStageHtml).join('')
+      + (d.doc ? `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>` : '');
+    return defFoldItem(summary, body);
+  }).join('');
 }
 
 /* จุดขายที่แข็งที่สุดของแบบนี้ และเป็นจุดที่แบบโรคร้ายแรงอื่นไม่มี
@@ -14774,39 +14784,37 @@ function dcareDefDiseaseHtml(d){
   const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
   const badge = DCARE_STAGE_BADGE[d.stage || 'severe'];
   const early = d.stage === 'early';
-  let h = `<article class="def-item"><h4>${d.th}<span class="def-en">${d.en}</span></h4>`;
-  h += `<span class="stage-badge ${badge.cls}">${badge.label}</span>`;
-  h += `<p class="def-body">${d.body}</p>`;
-  let fold = '';
+  const summary = `<span class="def-fold-title">${d.th}<span class="def-en">${d.en}</span></span>`
+    + `<span class="stage-badge ${badge.cls}">${badge.label}</span>`;
+  let body = `<p class="def-body">${d.body}</p>`;
   /* กล่องเกณฑ์ของโรคระยะเริ่มต้น ต้องเป็นสีเหลืองให้ตรงกับป้ายหัวข้อ
      ถ้าใช้สีเขียวเหมือนโรคที่เคลมได้ทั้งสองแบบ ลูกค้าจะเข้าใจว่าซื้อแบบเฉพาะระยะรุนแรงก็เคลมได้ */
-  if(d.criteria) fold += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
-  if(d.extra) fold += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.criteria) body += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) body += `<p class="def-body def-extra">${d.extra}</p>`;
   /* ข้อความ "ทั้งนี้ไม่รวมถึง" ในกรมธรรม์มีสามความหมายที่ต่างกันคนละเรื่อง
      หนึ่ง ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกันซึ่งคุ้มครองอยู่ ต้องเป็นสีเหลือง
      สอง จ่ายได้ครั้งเดียว ไม่ให้เคลมซ้ำสองข้อ ไม่ใช่ไม่คุ้มครอง ต้องเป็นกล่องกลาง
      สาม ไม่คุ้มครองเลยทั้งสองแบบ ถึงจะเป็นสีแดง
      เคยทาแดงหมด ทำให้ลูกค้าอ่านแล้วเข้าใจว่าบอลลูนกับขดลวดเคลมไม่ได้ ซึ่งผิด */
-  if(d.elsewhere) fold += `<div class="def-block def-shift">`
+  if(d.elsewhere) body += `<div class="def-block def-shift">`
     + `<b>${d.elsewhereTitle || 'ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกัน'} `
     + `<span class="shift-tag">คุ้มครองอยู่ในข้ออื่น</span></b>${li(d.elsewhere)}</div>`;
-  if(d.once) fold += `<div class="def-block def-once">`
+  if(d.once) body += `<div class="def-block def-once">`
     + `<b>${d.onceTitle || 'กันเคลมซ้ำ'} <span class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง</span></b>${li(d.once)}</div>`;
   if(d.exclusions){
     const shift = d.exclusionsTone === 'early';
-    fold += `<div class="def-block ${shift ? 'def-shift' : 'def-not'}">`
+    body += `<div class="def-block ${shift ? 'def-shift' : 'def-not'}">`
       + `<b>${d.exclusionsTitle} <span class="${shift ? 'shift-tag' : 'not-tag'}">`
       + `${shift ? 'เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'}</span></b>`
       + li(d.exclusions) + `</div>`;
   }
-  if(d.never) fold += `<div class="def-block def-not">`
+  if(d.never) body += `<div class="def-block def-not">`
     + `<b>${d.neverTitle} <span class="not-tag">ไม่คุ้มครองทั้ง 2 แบบ</span></b>${li(d.never)}</div>`;
   /* ข้อยกเว้นของข้อยกเว้น ต้องแยกออกมาเป็นกล่องเขียวต่างหาก
      เพราะถ้าปล่อยไว้ในบรรทัดเดียวกันจะกลายเป็นปฏิเสธซ้อนปฏิเสธ อ่านแล้วสรุปไม่ได้ว่าตกลงจ่ายไหม */
-  if(d.carveBack) fold += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
-  h += defFold(fold);
-  if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
-  return h + '</article>';
+  if(d.carveBack) body += `<div class="def-block def-back"><b>แต่กรณีเหล่านี้กลับมาคุ้มครอง</b>${li(d.carveBack)}</div>`;
+  if(d.doc) body += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
+  return defFoldItem(summary, body);
 }
 
 function dcareDefGroupHtml(key){
@@ -16050,11 +16058,15 @@ function ssOpenDefinition(planId, tabsId, setTab, groupKey, name){
     if(document.getElementById(tabsId) && typeof setTab === 'function') setTab(groupKey);
     requestAnimationFrame(() => {
       const want = ssStrip(name);
-      const el = [...document.querySelectorAll('.def-item')].find(a => {
-        const h = a.querySelector('h4');
+      // นิยามโรคหุบเป็น details ทีละโรคแล้ว ต้องกางเองก่อนเลื่อนไปหา ไม่งั้นลูกค้าเห็นแต่บรรทัดหัว
+      const el = [...document.querySelectorAll('.def-fold-item, .def-item')].find(a => {
+        const h = a.querySelector('.def-fold-title, h4');
         return h && ssStrip(h.textContent).includes(want);
       });
-      if(el) ssFlash(el, 'faq-flash');
+      if(el){
+        if('open' in el) el.open = true;
+        ssFlash(el, 'faq-flash');
+      }
     });
   });
 }
