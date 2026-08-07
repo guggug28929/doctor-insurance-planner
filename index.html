@@ -660,6 +660,49 @@
   .lb-100{background:#e7f0e6;color:#2f6b34;border:1px solid #b9d6b8;}
   .lb-50{background:#fff8ec;color:#96601a;border:1px solid #e6cfa4;}
   .lb-25{background:#f2f5fb;color:#33477a;border:1px solid #c3cfe6;}
+  /* ปุ่มทักไลน์ลอยทุกหน้า
+     เดิมมีเฉพาะหน้าแรก คำถามที่พบบ่อย และหน้าติดต่อ · หน้าคำนวณเบี้ยกับผู้ช่วยจัดแผน
+     ซึ่งเป็นจุดที่ลูกค้าเพิ่งได้ตัวเลขและอยากถามต่อมากที่สุด กลับไม่มีทางติดต่อเลย
+     วางมุมล่างขวา ไม่ชนกับปุ่มค้นหาที่อยู่มุมบนขวา */
+  /* หน้าแรกต้องบอกให้ชัดว่าให้ทำอะไรต่อ เดิมเปิดมาเจอตารางชื่อสินค้าที่คนใหม่ไม่รู้จัก */
+  .home-hero-card{text-align:center;}
+  .home-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+  .home-cta-main{font-size:1.05rem;font-weight:700;padding:14px 30px;}
+  .home-cta-alt{background:transparent;color:var(--pink-deep,#8f0d40);border:1.5px solid var(--pink-deep,#8f0d40);}
+  .home-size-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .gender-pill{border:1px solid #ddc6d1;background:#fff;color:#7a5c68;border-radius:999px;
+    padding:5px 16px;font:inherit;font-size:.86rem;cursor:pointer;}
+  .gender-pill.on{background:var(--pink-deep,#8f0d40);color:#fff;border-color:transparent;font-weight:600;}
+  .size-price{margin-left:auto;font-size:.95rem;}
+  /* บนมือถือ ตารางกว้าง 1,344px ต้องเลื่อนซ้ายขวา คอลัมน์โฟกัสหลักซึ่งสำคัญสุดอยู่ขวาสุดจึงมองไม่เห็น
+     จอเล็กจึงสลับเป็นการ์ดเรียงลงมาแทน */
+  .home-size-cards{display:none;}
+  .size-card{border:1px solid #eadfe4;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff;}
+  .size-card-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .size-tag{background:var(--pink-deep,#8f0d40);color:#fff;border-radius:8px;padding:2px 11px;font-weight:700;}
+  .size-card-plan{font-weight:600;color:#2a1620;line-height:1.5;}
+  .size-card-focus{font-size:.86rem;color:#7a5c68;margin-top:4px;line-height:1.6;}
+  @media(max-width:760px){
+    .home-size-table{display:none;}
+    .home-size-cards{display:block;}
+    .home-cta-row{flex-direction:column;}
+    .home-cta-main,.home-cta-alt{width:100%;}
+  }
+  .line-fab{position:fixed;right:16px;bottom:16px;z-index:1150;display:flex;align-items:center;gap:8px;
+    padding:12px 20px 12px 16px;border-radius:999px;text-decoration:none;
+    background:#06C755;color:#fff;font:inherit;font-size:.95rem;font-weight:700;
+    box-shadow:0 6px 20px rgba(6,199,85,.38);transition:transform .16s,box-shadow .16s;}
+  .line-fab:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(6,199,85,.5);}
+  .line-fab svg{width:22px;height:22px;flex:none;fill:currentColor;}
+  .line-fab[hidden]{display:none;}
+  @media(max-width:640px){
+    .line-fab{right:12px;bottom:12px;padding:13px;}
+    .line-fab-t{display:none;}
+  }
+  @media print{ .line-fab, .ss-btn{display:none !important;} }
+  .fix-btn{display:block;margin-top:10px;padding:7px 14px;border:0;border-radius:999px;
+    background:var(--pink-deep,#8f0d40);color:#fff;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer;}
+  .fix-btn:hover{background:#a81250;}
   .dcare-cap-warn{color:var(--danger);margin:8px 0 0;font-weight:600;}
   .def-must-early{background:#fff8ec;border-left:3px solid #d99b3f;}
   .def-must-early b{color:#96601a;}
@@ -2116,6 +2159,12 @@
   <span class="ss-btn-t">ค้นหา</span>
 </button>
 
+<a class="line-fab" id="lineFab" href="https://line.me/R/ti/p/@doctorguginsurance"
+   target="_blank" rel="noopener" aria-label="ทักไลน์ปรึกษาหมอกึ๊ก">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.5 2 2 5.7 2 10.2c0 4 3.6 7.4 8.4 8.1.33.07.78.22.9.5.1.26.07.66.03.92l-.14.87c-.04.26-.2 1.02.9.56 1.1-.46 5.9-3.48 8.05-5.96C21.6 13.5 22 11.9 22 10.2 22 5.7 17.5 2 12 2M8.1 12.9h-2a.53.53 0 0 1-.53-.52V8.4c0-.29.24-.53.53-.53s.53.24.53.53v3.45h1.47c.29 0 .53.23.53.52s-.24.53-.53.53m2.07-.52c0 .29-.24.52-.53.52a.53.53 0 0 1-.53-.52V8.4c0-.29.24-.53.53-.53s.53.24.53.53zm4.78 0c0 .23-.15.43-.36.5a.6.6 0 0 1-.17.03.52.52 0 0 1-.43-.21l-2.04-2.78v2.46c0 .29-.24.52-.53.52a.53.53 0 0 1-.53-.52V8.4c0-.23.15-.43.36-.5a.5.5 0 0 1 .16-.03c.17 0 .33.09.43.22l2.05 2.78V8.4c0-.29.23-.53.52-.53s.53.24.53.53zm3.22-2.51c.29 0 .53.24.53.53s-.24.52-.53.52h-1.47v.94h1.47c.29 0 .53.23.53.52s-.24.53-.53.53h-2a.53.53 0 0 1-.53-.52V8.4c0-.29.24-.53.53-.53h2c.29 0 .53.24.53.53s-.24.52-.53.52h-1.47v.95z"/></svg>
+  <span class="line-fab-t">ปรึกษาหมอกึ๊ก</span>
+</a>
+
 <div id="siteSearch" class="ss-overlay" hidden onclick="if(event.target===this) closeSiteSearch();">
   <div class="ss-panel" role="dialog" aria-modal="true" aria-label="ค้นหาทั้งเว็บ">
     <div class="ss-head">
@@ -2222,7 +2271,7 @@
         <div class="hint" id="pensionMainHint"></div>
       </div>
       <label>ทุนประกัน (บาท)</label>
-      <input type="number" id="mainCapital" value="200000" step="10000" min="50000">
+      <input type="number" id="mainCapital" value="1000000" step="10000" min="50000">
       <div class="hint" id="mainCapitalHint">ทุนประกันขั้นต่ำแผน 99/20 คือ 200,000 บาท</div>
       <div class="field-err" id="mainCapitalErr"></div>
       <div class="field-err" id="paRequiredErr"></div>
@@ -2338,7 +2387,7 @@
     <div class="card">
       <h2>โรคร้ายแรง &amp; อุบัติเหตุ</h2>
 
-      <div class="notice-box" id="ciRequirementErr">แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน</div>
+      <div class="notice-box" id="ciRequirementErr">แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน<button type="button" class="fix-btn" onclick="fixCiRequirement()">ปรับทุนเป็น 1 ล้าน ให้อัตโนมัติ</button></div>
 
       <div class="check-row">
         <input type="checkbox" id="use_careplus">
@@ -2615,19 +2664,18 @@
 <div id="page-home" class="page active">
 <div class="wrap">
 
-  <div class="content-card">
-    <h2>เริ่มเลือกแผนสุขภาพแบบเร็ว: S / M / L / XL</h2>
-    <div class="table-wrap benefit-table compare-table">
-      <table>
-        <thead><tr><th>Size</th><th>แนวทางแนะนำ</th><th>โฟกัสหลัก</th></tr></thead>
-        <tbody>
-          <tr><td>S</td><td>เหมาจ่าย Extra / Extra Care Plus</td><td>กันค่ารักษาก้อนใหญ่ในงบเริ่มต้น</td></tr>
-          <tr><td>M <span class="badge-best">Best Seller</span></td><td>D Health Lite 5 ล้าน + Care Plus 5 ล้าน</td><td>สุขภาพวงเงินสูง + อุดช่องมะเร็ง/ไต</td></tr>
-          <tr><td>L</td><td>Elite Health Plus 20 ล้าน + CI</td><td>โรงพยาบาลพรีเมียม เน้น IPD สูง และแยกเงินก้อนโรคร้ายแรง</td></tr>
-          <tr><td>XL</td><td>Elite Health Plus 75 ล้าน + CI / Well-Being</td><td>วงเงินสูงมาก มี OPD ในตัวมากขึ้น ไม่ต้องซ้อน Care Plus เป็นหลัก</td></tr>
-        </tbody>
-      </table>
+  <div class="content-card home-hero-card">
+    <h2>ไม่รู้จะเริ่มตรงไหน เริ่มตรงนี้</h2>
+    <p>ตอบไม่กี่คำถาม ระบบจะจัดชุดแผนที่เหมาะกับงบและความเสี่ยงของคุณ พร้อมเบี้ยจากตารางจริงของบริษัท</p>
+    <div class="home-cta-row">
+      <button type="button" class="btn home-cta-main" onclick="showPage('ai')">จัดแผนให้ผมหน่อย</button>
+      <button type="button" class="btn home-cta-alt" onclick="showPage('calc')">รู้แล้วว่าอยากได้อะไร ขอคำนวณเบี้ยเลย</button>
     </div>
+  </div>
+
+  <div class="content-card">
+    <h2>เทียบแบบเร็ว ๆ ว่าแต่ละงบได้อะไร</h2>
+    <div id="homeSizeBody"></div>
   </div>
 
   <div class="content-card">
@@ -3525,7 +3573,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-05f';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-07';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4565,6 +4613,21 @@ function paymentFrequencyInfo(value){ return PAYMENT_FREQUENCIES[value] || PAYME
 // for the selected product/occupation/frequency combination, instead of guessing.
 
 // ---- gather inputs ----
+/* เปิดหน้ามาแล้วเจอกล่องแดงทันที ทำให้คนคิดว่าตัวเองกรอกผิด ทั้งที่ยังไม่ได้ทำอะไร
+   จึงจำไว้ว่าผู้ใช้แตะฟอร์มแล้วหรือยัง ถ้ายัง ให้คำนวณเบี้ยให้ดูตามปกติ แต่ไม่ต้องขึ้นคำเตือน */
+let calcTouched = false;
+
+/* กฎ 99/20 ทุนต่ำกว่า 1 ล้านต้องแนบ CI หรือ PA เป็นกฎของบริษัท แก้ไม่ได้
+   แต่ลูกค้าที่ไม่รู้จักชื่อสัญญาเหล่านั้นจะไปต่อไม่ถูก จึงมีปุ่มพาออกจากทางตันให้ */
+function fixCiRequirement(){
+  const el = document.getElementById('mainCapital');
+  if(!el) return;
+  calcTouched = true;
+  el.value = 1000000;
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+  el.scrollIntoView({behavior: dgReducedMotion() ? 'auto' : 'smooth', block:'center'});
+}
+
 function readInputs(){
   const gender = document.querySelector('input[name=gender]:checked').value;
   const birthYear = parseInt(document.getElementById('birthYear').value, 10);
@@ -4831,7 +4894,11 @@ function renderAll(){
     }
   }
 
-  if(issues.length){
+  /* คนที่เพิ่งเปิดหน้ามายังไม่ได้ทำอะไรผิด การขึ้นกล่องแดงทันทีทำให้เข้าใจว่าตัวเองกรอกพลาด
+     จึงเงียบไว้ก่อนจนกว่าจะมีการแตะฟอร์มจริง แต่ยังคำนวณเบี้ยให้เห็นตามปกติ */
+  if(issues.length && !calcTouched){
+    validationEl.innerHTML = '';
+  } else if(issues.length){
     validationEl.innerHTML = `<div class="validation-box bad"><strong>⚠ ตรวจพบเงื่อนไขที่ยังไม่ผ่านเกณฑ์ (${issues.length})</strong><ul>${issues.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
   } else {
     validationEl.innerHTML = `<div class="validation-box good"><strong>✓ ผ่านเกณฑ์การพิจารณาแนบสัญญาเพิ่มเติมเบื้องต้น</strong></div>`;
@@ -4845,7 +4912,9 @@ function renderAll(){
   // valid.  This prevents an invalid combination being mistaken for a usable
   // proposal.
   if(issues.length){
-    tableWrap.innerHTML = '<div class="empty-state">กรุณาปรับรายการที่เลือกให้ผ่านเงื่อนไขก่อน ระบบจะแสดงสรุปสัญญาและตารางเบี้ยเมื่อชุดแผนถูกต้องแล้ว</div>';
+    tableWrap.innerHTML = calcTouched
+      ? '<div class="empty-state">กรุณาปรับรายการที่เลือกให้ผ่านเงื่อนไขก่อน ระบบจะแสดงสรุปสัญญาและตารางเบี้ยเมื่อชุดแผนถูกต้องแล้ว</div>'
+      : '<div class="empty-state">เลือกแบบประกันและกรอกข้อมูลทางซ้าย ระบบจะคำนวณเบี้ยจากตารางจริงของบริษัทให้ทันที</div>';
     summaryEl.innerHTML = '';
     const contractSummary = document.getElementById('contractSummary');
     if(contractSummary) contractSummary.innerHTML = '';
@@ -5773,8 +5842,8 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
 
 // live validation/recalculation as soon as any field changes — no need to scroll
 // down or press the button to see whether a selection breaks an underwriting rule
-document.getElementById('inputsPanel').addEventListener('input', renderAll);
-document.getElementById('inputsPanel').addEventListener('change', renderAll);
+document.getElementById('inputsPanel').addEventListener('input', () => { calcTouched = true; renderAll(); });
+document.getElementById('inputsPanel').addEventListener('change', () => { calcTouched = true; renderAll(); });
 
 // ---- page navigation ----
 // ---- detailed per-plan pages ----
@@ -7633,6 +7702,7 @@ const PLAN_DETAILS = {
     title: 'Multiple CI', category: 'โรคร้ายแรง (4 กลุ่ม 35 โรค)',
     fit: ['มีประวัติครอบครัวหลายกลุ่มโรค หรือกังวลว่าจะเป็นซ้ำและเป็นหลายโรคในชีวิตเดียว', 'อยากได้ความคุ้มครองที่เคลมกลุ่มแรกแล้วกลุ่มที่เหลือยังอยู่ต่อโดยไม่ต้องจ่ายเบี้ย'],
     notFit: 'งบจำกัดและอยากได้ทุนสูงสุดต่อเบี้ยในการเคลมครั้งเดียว เพราะแบบนี้จ่ายเบี้ยเผื่อการเคลมหลายครั้ง',
+    detailSections: () => multipleCiReclaimSection(),
     overview: 'สัญญาเพิ่มเติมโรคร้ายแรงแบบจ่ายหลายครั้ง แบ่งความคุ้มครองเป็น 4 กลุ่มโรค จ่าย 100% ของทุนต่อกลุ่ม และจ่ายรวมได้สูงสุด 400% ของทุนประกัน',
     images: [PLAN_COVER_IMAGES.multipleci],
     coverage: [
@@ -7643,10 +7713,13 @@ const PLAN_DETAILS = {
       'เมื่อรับผลประโยชน์ครั้งแรกแล้ว ความคุ้มครองอีก 3 กลุ่มยังดำเนินต่อได้อีก 10 ปีโดยไม่ต้องชำระเบี้ย ตามเงื่อนไข',
     ],
     conditions: [
-      'อายุรับประกัน 7–69 ปี และต่ออายุได้ถึงอายุ 79 ปีตามเงื่อนไข',
-      'เป็นสัญญาเพิ่มเติม ต้องแนบท้ายประกันชีวิต',
+      'อายุรับประกันใหม่ 7–65 ปี ต่ออายุได้ถึงอายุ 79 ปี และให้ความคุ้มครองจนถึงอายุ 80 ปี',
+      'รับเฉพาะกลุ่มอาชีพ 1 และ 2 เท่านั้น',
+      'เป็นสัญญาเพิ่มเติม ต้องแนบท้ายประกันชีวิต และมีระยะเวลาเอาประกันภัยไม่เกินกรมธรรม์หลัก',
       'ทุนประกันขั้นต่ำตามข้อมูลผลิตภัณฑ์ 100,000 บาท และสูงสุดไม่เกิน 10 เท่าของทุนประกันชีวิต',
-      'ระยะรอคอย 90 วัน',
+      'ระยะรอคอย 90 วัน · ไม่คุ้มครองโรคที่วินิจฉัยหรือมีอาการที่เกี่ยวข้องภายใน 90 วันแรก และไม่คุ้มครองโรคที่เป็นมาก่อนวันทำสัญญา',
+      'ไม่คุ้มครองการเจ็บป่วยหรือการผ่าตัดที่เป็นผลโดยตรงหรือโดยอ้อมจากภาวะภูมิคุ้มกันบกพร่อง (AIDS and HIV)',
+      'อัตราเบี้ยสำหรับอายุ 66–79 ปี เป็นอัตราสำหรับการต่ออายุเท่านั้น ไม่ใช่การสมัครใหม่',
       'ตารางด้านล่างแสดงตัวอย่างทุน 500,000 / 1,000,000 / 2,000,000 บาท',
     ],
     freqSupported: true,
@@ -11445,6 +11518,7 @@ function showPage(name, options = {}){
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   if(name === 'knowledge' && typeof setKnowTab === 'function') setKnowTab(knowTab);
   if(name === 'faq' && typeof renderFaq === 'function') renderFaq();
+  if(name === 'home' && typeof setHomeGender === 'function') setHomeGender(homeSampleGender);
   if(name === 'tax' && typeof renderTaxPage === 'function') renderTaxPage();
   if(name === 'ai'){
     const bb = document.getElementById('advBucketBox');
@@ -13829,6 +13903,198 @@ function setLtpDefTab(key){
     b.classList.toggle('active', b.dataset.key === key));
 }
 
+/* มัลติเพิล ซีไอ ขายด้วยคำว่าเคลมได้ 4 ครั้ง ซึ่งฟังแล้วเข้าใจผิดได้ง่ายมาก
+   ความจริงคือคนละกลุ่มโรคเท่านั้น กลุ่มเดิมเคลมซ้ำไม่ได้ และมีเพดานเวลา 10 ปี
+   ส่วนนิยามรายโรคยังไม่ใส่ เพราะเอกสารที่มีเป็นใบสรุปผลิตภัณฑ์ ไม่ใช่ถ้อยคำในสัญญา
+   ห้ามยืมนิยามจากแผนอื่นมาใส่ เพราะชื่อโรคตรงกันไม่ได้แปลว่าเกณฑ์ตรงกัน */
+const MCI_GROUPS = [
+  {n:1, label:'โรคเกี่ยวกับหลอดเลือดและหัวใจ', list:[
+    'การผ่าตัดเปิดหัวใจด้วยวิธี Bypass (Coronary Artery Bypass Surgery)',
+    'หัวใจวาย (Heart Attack)',
+    'โรคกล้ามเนื้อหัวใจ (Cardiomyopathy)',
+    'การผ่าตัดเปลี่ยนลิ้นหัวใจ (Heart Valve Replacement)',
+    'การผ่าตัดหลอดเลือดใหญ่ (Aorta Surgery)',
+    'ความดันโลหิตสูงของเลือดแดงในปอด (Primary Pulmonary Arterial Hypertension)',
+    'การผ่าตัดเปลี่ยนหัวใจ (Heart Transplant)',
+    'อัมพาตจากโรคหลอดเลือดในสมอง (Stroke)']},
+  {n:2, label:'โรคมะเร็ง', list:[
+    'มะเร็ง (Cancer)',
+    'เนื้องอกในสมอง (Benign Tumor of The Brain)']},
+  {n:3, label:'เปลี่ยนอวัยวะสำคัญ และภาวะรุนแรงขั้นสุดท้ายของตับ ปอด และไต', list:[
+    'การผ่าตัดเปลี่ยนอวัยวะ (Major Organ Transplant)',
+    'โรคถุงน้ำในไตชั้นกลาง (Medullary cystic kidney)',
+    'โรคปอดเรื้อรัง (Chronic lung disease)',
+    'โรคตับเรื้อรัง (Chronic Liver Disease)',
+    'ไวรัสตับอักเสบชนิดรุนแรง (Fulminant Viral Hepatitis)',
+    'ไตวาย (Kidney Failure)']},
+  {n:4, label:'โรคร้ายแรงอื่น ๆ', list:[
+    'ภาวะอะแพลลิก หรือภาวะเสมือนพืช (Apallic Syndrome)',
+    'โรคอัลไซเมอร์ (Alzheimer’s Disease)',
+    'โรคโลหิตจางเนื่องจากไขกระดูกไม่ทำงาน (Aplastic Anemia)',
+    'โรคเยื่อหุ้มสมองและไขสันหลังอักเสบจากเชื้อแบคทีเรีย (Bacterial Meningitis)',
+    'ตาบอด (Blindness)',
+    'อาการหมดสติ (Coma)',
+    'หูหนวก (Deafness)',
+    'สมองอักเสบ (Encephalitis)',
+    'อาการสูญเสียความสามารถในการพูด (Loss of speech)',
+    'แผลไหม้เป็นบริเวณกว้าง (Major Burns)',
+    'โรคเซลล์ประสาทการเคลื่อนไหวผิดปกติ (Motor Neuron Disease)',
+    'โรคที่มีการกระด้างในเนื้อสมองและไขสันหลัง (Multiple Sclerosis)',
+    'โรคกล้ามเนื้อฝ่อ (Muscular Dystrophy)',
+    'อัมพาต (Paralysis)',
+    'โรคประสาทพาร์กินสัน (Parkinson’s Disease)',
+    'โรคโปลิโอ (Poliomyelitis)',
+    'การบาดเจ็บที่ศีรษะอย่างรุนแรง (Major Head Trauma)',
+    'โรคหนังแข็งชนิดลุกลาม (Progressive Scleroderma)',
+    'โรคลูปัส หรือโรค SLE (Systemic Lupus Erythematous) ที่มีภาวะไตอักเสบร่วมด้วย']},
+];
+
+/* ตาราง S/M/L/XL บนหน้าแรก
+   เดิมมีแต่ชื่อสินค้า ซึ่งคนที่เพิ่งเข้าเว็บครั้งแรกไม่รู้จักสักชื่อ และไม่มีตัวเลขราคาเลย
+   ทั้งที่คำถามแรกของทุกคนคือเท่าไหร่ · ตัวเลขคำนวณสดจากตารางจริง ไม่ได้พิมพ์ค้างไว้
+   ถ้าบริษัทปรับอัตราแล้วอัปเดตไฟล์ข้อมูล ตัวเลขหน้าแรกจะขยับตามเอง */
+const HOME_SIZES = [
+  {size:'S', best:false, plan:'เหมาจ่าย Extra หรือ Extra Care Plus',
+   focus:'กันค่ารักษาก้อนใหญ่ในงบเริ่มต้น',
+   price: (g,a) => healthRiderPremium({type:'maochai', plan:'p3'}, g, a, '1', 'annual').premium},
+  {size:'M', best:true, plan:'D Health Lite 5 ล้าน + Care Plus 5 ล้าน',
+   focus:'สุขภาพวงเงินสูง และอุดช่องมะเร็งกับไต',
+   price: (g,a) => {
+     const h = healthRiderPremium({type:'dhl', sum:'5m', mode:'deduct', deduct:'d0'}, g, a, '1', 'annual').premium;
+     const c = careplusPremium('5m', 'cackd', g, a, '1', 'annual');
+     return (h && c) ? h + c : null;
+   }},
+  {size:'L', best:false, plan:'Elite Health Plus 20 ล้าน + โรคร้ายแรง',
+   focus:'โรงพยาบาลพรีเมียม เน้นวงเงินผู้ป่วยในสูง และแยกเงินก้อนโรคร้ายแรง',
+   price: (g,a) => {
+     const h = healthRiderPremium({type:'ehp', plan:'20m', region:'thailand'}, g, a, '1', 'annual').premium;
+     const c = cipcPremium(1000000, g, a, 'annual');
+     return (h && c) ? h + c : null;
+   }},
+  {size:'XL', best:false, plan:'Elite Health Plus 75 ล้าน + โรคร้ายแรง',
+   focus:'วงเงินสูงมาก มี OPD ในตัวมากขึ้น ไม่ต้องซ้อน Care Plus เป็นหลัก',
+   price: (g,a) => {
+     const h = healthRiderPremium({type:'ehp', plan:'75m', region:'thailand'}, g, a, '1', 'annual').premium;
+     const c = cipcPremium(1000000, g, a, 'annual');
+     return (h && c) ? h + c : null;
+   }},
+];
+
+const HOME_SAMPLE_AGE = 35;
+let homeSampleGender = 'm';
+
+function homeSizeBlock(){
+  const g = homeSampleGender, a = HOME_SAMPLE_AGE;
+  const rows = HOME_SIZES.map(x => {
+    const p = x.price(g, a);
+    return {...x, baht: p === null ? null : Math.round(p)};
+  });
+  const money = r => r.baht === null
+    ? '<span class="meta">ดูในหน้าแผน</span>'
+    : `<b>${fmt(r.baht)}</b> บาท/ปี`;
+
+  const table = `<div class="table-wrap benefit-table compare-table home-size-table"><table>
+      <thead><tr><th>Size</th><th>แนวทางแนะนำ</th><th class="num">เบี้ยโดยประมาณ</th><th>โฟกัสหลัก</th></tr></thead>
+      <tbody>${rows.map(r => `<tr>
+        <td>${r.size}${r.best ? ' <span class="badge-best">Best Seller</span>' : ''}</td>
+        <td>${r.plan}</td><td class="num">${money(r)}</td><td>${r.focus}</td></tr>`).join('')}
+      </tbody></table></div>`;
+
+  const cards = `<div class="home-size-cards">${rows.map(r => `<div class="size-card">
+      <div class="size-card-h"><span class="size-tag">${r.size}</span>${r.best ? '<span class="badge-best">Best Seller</span>' : ''}
+        <span class="size-price">${money(r)}</span></div>
+      <div class="size-card-plan">${r.plan}</div>
+      <div class="size-card-focus">${r.focus}</div>
+    </div>`).join('')}</div>`;
+
+  return `<div class="home-size-controls">
+      <span class="meta">ตัวอย่างเบี้ยของ</span>
+      <button type="button" class="gender-pill${g==='m'?' on':''}" onclick="setHomeGender('m')">ชาย</button>
+      <button type="button" class="gender-pill${g==='f'?' on':''}" onclick="setHomeGender('f')">หญิง</button>
+      <span class="meta">อายุ ${a} ปี · ชำระรายปี · ขั้นอาชีพ 1</span>
+    </div>${table}${cards}
+    <p class="meta" style="margin-top:10px;">ตัวเลขนี้คือ<b>เบี้ยเฉพาะสัญญาเพิ่มเติมสุขภาพและโรคร้ายแรง</b>
+      ยังไม่รวมเบี้ยสัญญาหลักซึ่งต้องมีคู่กัน · เบี้ยจริงขึ้นกับอายุ เพศ ขั้นอาชีพ และผลพิจารณาสุขภาพ
+      กด<b>คำนวณเบี้ยประกัน</b>เพื่อใส่ข้อมูลของตัวเองได้เลย</p>`;
+}
+
+function setHomeGender(g){
+  homeSampleGender = g;
+  const host = document.getElementById('homeSizeBody');
+  if(host) host.innerHTML = homeSizeBlock();
+}
+
+function multipleCiReclaimSection(){
+  const total = MCI_GROUPS.reduce((n, g) => n + g.list.length, 0);
+  const groups = MCI_GROUPS.map(g => `<article class="def-item">
+      <h4>กลุ่มที่ ${g.n} ${g.label}<span class="def-en">${g.list.length} โรค</span></h4>
+      <span class="stage-badge lb-100">กลุ่มนี้จ่ายได้ครั้งเดียว 100% ของทุน</span>
+      <ul>${g.list.map(x => `<li>${x}</li>`).join('')}</ul>
+    </article>`).join('');
+
+  return `<div class="content-card">
+    <h2>เงื่อนไขการเคลมซ้ำ จุดที่เข้าใจผิดกันมากที่สุดของแบบนี้</h2>
+    <p>คำโฆษณาว่า<b>เคลมได้สูงสุด 4 ครั้ง 400% ของทุน</b> เป็นความจริง แต่มีเงื่อนไขกำกับสามชั้น
+       ที่ถ้าไม่อธิบายให้ครบ ลูกค้าจะคาดหวังผิดตั้งแต่วันซื้อ</p>
+
+    <div class="def-block def-must">
+      <b>กติกาเคลมซ้ำ อ่านสามข้อนี้ให้ขาด</b>
+      <ul>
+        <li><b>เคลมได้กลุ่มละครั้งเดียวเท่านั้น</b> · พอกลุ่มไหนถูกจ่ายไปแล้ว ความคุ้มครองของ<b>ทั้งกลุ่มนั้น</b>สิ้นสุด
+            แม้จะเป็นคนละโรคในกลุ่มเดียวกันก็เคลมอีกไม่ได้ · ที่เหลืออีก 3 กลุ่มยังคุ้มครองต่อ</li>
+        <li><b>รวมทั้งสัญญาไม่เกิน 4 ครั้ง และไม่เกิน 4 เท่าของทุนประกัน</b> ·
+            แต่ละกลุ่มจ่ายสูงสุด 1 เท่าของทุน จึงจะครบ 400% ได้ก็ต่อเมื่อ<b>เป็นครบทั้ง 4 กลุ่ม</b></li>
+        <li><b>หลังเคลมครั้งแรก กลุ่มที่เหลือคุ้มครองต่ออีกไม่เกิน 10 ปี</b> ·
+            นับจากวันที่จ่ายครั้งที่ 1 และสัญญาต้องยังไม่สิ้นผลบังคับไปก่อนตามเงื่อนไขของสัญญาเพิ่มเติม ·
+            พ้น 10 ปีแล้วความคุ้มครองที่เหลือจบ แม้ยังไม่เคยเคลมกลุ่มอื่นเลย</li>
+      </ul>
+    </div>
+
+    <div class="def-block def-back">
+      <b>ข้อดีที่ลูกค้ามักไม่รู้</b>
+      <ul>
+        <li><b>เคลมครั้งแรกแล้วไม่ต้องจ่ายเบี้ยของสัญญาเพิ่มเติมนี้อีก</b> แต่ความคุ้มครองกลุ่มที่เหลือยังเดินต่อ
+            ตามกรอบ 10 ปีข้างต้น · เป็นจุดที่ต่างจากสัญญาโรคร้ายแรงทั่วไปที่จ่ายจบแล้วสัญญาปิด</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:18px;">ตัวอย่างที่ทำให้เห็นภาพ</h3>
+    <div class="table-wrap"><table class="cmp">
+      <thead><tr><th>เหตุการณ์</th><th>ได้เงินไหม</th><th>เพราะอะไร</th></tr></thead>
+      <tbody>
+        <tr><td>เป็นมะเร็งเต้านม แล้วอีก 3 ปีเป็นมะเร็งปอด</td>
+            <td><b>ได้ครั้งเดียว</b></td>
+            <td>ทั้งคู่อยู่<b>กลุ่มที่ 2</b> ซึ่งจ่ายไปแล้ว กลุ่มนี้จึงปิด</td></tr>
+        <tr><td>เป็นมะเร็ง แล้วอีก 3 ปีเป็นสโตรก</td>
+            <td><b>ได้ 2 ครั้ง</b></td>
+            <td>คนละกลุ่ม คือกลุ่มที่ 2 และกลุ่มที่ 1</td></tr>
+        <tr><td>เป็นมะเร็งตอนปีที่ 1 แล้วเป็นไตวายตอนปีที่ 12</td>
+            <td><b>ได้ครั้งเดียว</b></td>
+            <td>เกิน<b>กรอบ 10 ปี</b> นับจากการจ่ายครั้งแรก</td></tr>
+        <tr><td>ผ่าตัดบายพาส แล้วอีก 2 ปีต้องเปลี่ยนลิ้นหัวใจ</td>
+            <td><b>ได้ครั้งเดียว</b></td>
+            <td>อยู่<b>กลุ่มที่ 1</b> ด้วยกันทั้งคู่</td></tr>
+      </tbody>
+    </table></div>
+
+    <p class="def-doc" style="margin-top:16px;"><b>มุมมองจากห้องตรวจ</b>
+      การจัดกลุ่มแบบนี้เอื้อกับคนที่กังวลว่าจะเป็นหลายระบบอวัยวะในชีวิตเดียว มากกว่าคนที่กังวลว่าโรคเดิมจะกลับมา ·
+      คนไข้มะเร็งที่กลับเป็นซ้ำหรือกระจายไปอวัยวะอื่น ยังนับเป็น<b>กลุ่มที่ 2 กลุ่มเดิม</b> จึงไม่ได้เงินก้อนที่สอง
+      ซึ่งเป็นสิ่งที่ต้องพูดให้ชัดตั้งแต่ตอนขาย ไม่ใช่ตอนเคลม ·
+      ในทางระบาดวิทยา คนที่เป็นครบ 4 กลุ่มภายใน 10 ปีมีน้อยมาก จึงควรมองตัวเลข 400% เป็นเพดาน ไม่ใช่สิ่งที่คาดหวังได้</p>
+  </div>
+
+  <div class="content-card">
+    <h2>รายชื่อโรคทั้ง ${total} โรค แยกตาม 4 กลุ่ม</h2>
+    <p class="def-plan-key"><b>หมายเหตุสำคัญ</b> หน้านี้แสดง<b>รายชื่อโรคตามที่ระบุในเอกสารผลิตภัณฑ์</b>
+      ยัง<b>ไม่ได้แสดงคำนิยามรายโรค</b> เพราะคำนิยามอยู่ในถ้อยคำของสัญญาเพิ่มเติมซึ่งเป็นคนละฉบับ ·
+      ชื่อโรคที่คล้ายกับแบบประกันอื่นในเว็บนี้ <b>ไม่ได้แปลว่าเกณฑ์การวินิจฉัยเหมือนกัน</b>
+      เช่นคำว่า Stroke ในแบบนี้ กับ Major Stroke ที่ต้องพบความพิการต่อเนื่อง 45 วันในแบบอื่น เป็นคนละเกณฑ์กัน ·
+      เวลาพิจารณาเคลมให้ยึดถ้อยคำในสัญญาเพิ่มเติม มัลติเพิล ซีไอ เท่านั้น</p>
+    ${groups}
+  </div>`;
+}
+
 function ltpDefinitionsSection(){
   if(!LTP_DEF || !LTP_DEF.diseases || !LTP_DEF.diseases.length) return '';
   const m = LTP_DEF._meta || {};
@@ -15163,6 +15429,8 @@ function openSiteSearch(){
   const inp = document.getElementById('ssInput');
   if(!ov || !inp) return;
   ov.hidden = false;
+  const fab = document.getElementById('lineFab');
+  if(fab) fab.hidden = true;   // ไม่ให้ปุ่มลอยทับกล่องค้นหาบนมือถือ
   document.body.style.overflow = 'hidden';
   inp.select();
   inp.focus();
@@ -15173,6 +15441,8 @@ function closeSiteSearch(){
   const ov = document.getElementById('siteSearch');
   if(!ov || ov.hidden) return;
   ov.hidden = true;
+  const fab = document.getElementById('lineFab');
+  if(fab) fab.hidden = false;
   document.body.style.overflow = '';
 }
 
