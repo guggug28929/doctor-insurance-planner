@@ -97,8 +97,19 @@ test('ทุกแบบในหน้าเทียบต้องมีจ�
   const py = html.slice(html.indexOf('const payYears = {'));
   const block = py.slice(0, py.indexOf('};'));
   const inMap = [...block.matchAll(/'([a-z0-9_]+)'\s*:/g)].map(m => m[1]);
-  const lb = html.slice(html.indexOf('const LIFE_COMPARE_PRODUCTS = {'));
+  /* ต้องตัดเฉพาะตัว LIFE_COMPARE_PRODUCTS จริง ๆ ไม่ใช่ลากยาวไปจนจบไฟล์
+     ไม่งั้นจะไปเก็บคำว่า plan: ของทะเบียนอื่นที่อยู่ถัดลงไป เช่นตารางไซซ์หน้าแรก
+     แล้วฟ้องว่าแบบประกันหายจากตาราง payYears ทั้งที่คนละเรื่องกัน */
+  const lbStart = html.indexOf('const LIFE_COMPARE_PRODUCTS = {');
+  assert.notEqual(lbStart, -1, 'ไม่พบ LIFE_COMPARE_PRODUCTS');
+  let depth = 0, lbEnd = lbStart;
+  for(let i = html.indexOf('{', lbStart); i < html.length; i++){
+    if(html[i] === '{') depth++;
+    else if(html[i] === '}'){ depth--; if(depth === 0){ lbEnd = i + 1; break; } }
+  }
+  const lb = html.slice(lbStart, lbEnd);
   const plans = [...new Set([...lb.matchAll(/plan:'([a-z0-9_]+)'/g)].map(m => m[1]))];
+  assert.ok(plans.length, 'ไม่พบแบบประกันใน LIFE_COMPARE_PRODUCTS');
   for (const p of plans) {
     assert.ok(inMap.includes(p), `แบบ ${p} ไม่มีในตาราง payYears จะขึ้นเบี้ยรวมผิด`);
   }
