@@ -666,6 +666,12 @@
   .lb-100{background:#e7f0e6;color:#2f6b34;border:1px solid #b9d6b8;}
   .lb-50{background:#fff8ec;color:#96601a;border:1px solid #e6cfa4;}
   .lb-25{background:#f2f5fb;color:#33477a;border:1px solid #c3cfe6;}
+  /* ป้ายกลุ่มโรคของ มัลติเพิล ซีไอ · ทุกโรคจ่าย 100% เท่ากัน สีจึงบอก "กลุ่ม" ไม่ได้บอกจำนวนเงิน
+     ต้องแยกสีให้ชัด เพราะลูกค้าต้องรู้ว่าสองโรคที่กลัวอยู่กลุ่มเดียวกันหรือไม่ */
+  .mb-cardio{background:#fbe9ec;color:#8a1f34;border:1px solid #e7b6c0;}
+  .mb-cancer{background:#f3ecfa;color:#5a3183;border:1px solid #cdbbe4;}
+  .mb-organ{background:#e6f2f1;color:#1d5f58;border:1px solid #aed3ce;}
+  .mb-other{background:#f4f2ea;color:#5c5533;border:1px solid #d5cfb6;}
   /* ปุ่มทักไลน์ลอยทุกหน้า
      เดิมมีเฉพาะหน้าแรก คำถามที่พบบ่อย และหน้าติดต่อ · หน้าคำนวณเบี้ยกับผู้ช่วยจัดแผน
      ซึ่งเป็นจุดที่ลูกค้าเพิ่งได้ตัวเลขและอยากถามต่อมากที่สุด กลับไม่มีทางติดต่อเลย
@@ -2673,10 +2679,10 @@
       <div>
         <label>ความคุ้มครองโรคร้ายแรง</label>
         <select id="ai_ciStyle" onchange="advSyncCiCapital();">
-          <option value="balanced" selected>สมดุล — ทุน 1 ล้าน กว้างพอ + เน้นโรคใหญ่</option>
-          <option value="broad">กว้างที่สุด — ทุน 1 ล้าน CI Perfect Care</option>
-          <option value="cancerckd">กังวลมะเร็ง/ไตเป็นพิเศษ — ทุน 1 ล้าน Care Plus</option>
-          <option value="budget">คุมงบ — ทุน 5 แสน D Care โรคยอดฮิต</option>
+          <option value="balanced" selected>สมดุล — CI Perfect Care ทุน 1 ล้าน มีตาข่ายเสียชีวิต</option>
+          <option value="broad">กว้างที่สุด — CI Perfect Care ทุน 1 ล้าน</option>
+          <option value="budget">คุมงบ — D Care ครบ 5 หมวด จ่ายได้ถึง 200% ของทุน</option>
+          <option value="multi">ครบที่สุด — CI Perfect Care + Multiple CI เคลมได้หลายกลุ่ม</option>
           <option value="none">ยังไม่เอาโรคร้ายแรง</option>
         </select>
         <div class="hint">ทุนตั้งให้ตามสไตล์ที่เลือก ปรับเองได้ในหัวข้อปรับละเอียด</div>
@@ -3640,7 +3646,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-07';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-07b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6322,6 +6328,34 @@ function ciAgeAllowed(key, age){
   const r = CI_NEW_BUSINESS_AGE[key];
   return !r || (age >= r[0] && age <= r[1]);
 }
+
+/* ---------- เบี้ย มัลติเพิล ซีไอ ----------
+   ตารางของแบบนี้เป็นช่วงอายุ ไม่ใช่รายปี และมีเฉพาะ 3 ระดับทุนที่บริษัทเปิดขาย
+   ทุนอื่นห้ามเทียบบัญญัติไตรยางศ์ ต้องคืน null เพราะไม่มีอัตราจริงรองรับ */
+const MCI_CAPITAL_COL = {500000: 2, 1000000: 3, 2000000: 4};
+function multipleCiPremium(capital, gender, age, freq){
+  freq = freq || 'annual';
+  const g = RATES.multiple_ci;
+  if(!g) return null;
+  const col = MCI_CAPITAL_COL[capital];
+  if(col === undefined) return null;
+  if(!Number.isFinite(Number(age))) return null;
+  const table = freq === 'annual' ? g : (g.payment_schedules && g.payment_schedules[freq]);
+  const rows = table && table[gender];
+  if(!rows) return null;
+  // อายุต่ำกว่าตารางคือยังรับทำไม่ได้ · อายุเกินตารางให้หยุดที่ช่วงสุดท้าย ไม่ปล่อยเป็นค่าว่าง
+  if(age < rows[0][0]) return null;
+  const band = rows.find(b => age >= b[0] && age <= b[1]) || rows[rows.length - 1];
+  const v = band[col];
+  return (v === null || v === undefined) ? null : v;
+}
+/* ทุนที่ใกล้เคียงที่สุดซึ่งบริษัทเปิดขายจริง ใช้ตอนผู้ช่วยจัดแผนอยากได้ทุนที่ไม่มีในตาราง */
+function multipleCiNearestCapital(want){
+  const caps = (RATES.multiple_ci && RATES.multiple_ci.allowed_capitals) || Object.keys(MCI_CAPITAL_COL).map(Number);
+  let best = null;
+  for(const c of caps) if(c <= want && (best === null || c > best)) best = c;
+  return best === null ? Math.min(...caps) : best;
+}
 // คืนเบี้ยรายปีจริงของแต่ละแบบ ที่อายุและทุนที่กำหนด · null คือแบบนั้นรับทำใหม่ไม่ได้ที่อายุนี้
 function ciAnnualPremiums(age, sex, sum){
   const out = {};
@@ -6334,14 +6368,7 @@ function ciAnnualPremiums(age, sex, sum){
     const map = {500000:'500k', 1000000:'1m', 2000000:'2m'};
     return map[sum] ? cancerPremium(map[sum], sex, age, 'annual') : null;
   })();
-  out.multipleci = (function(){
-    if(!ciAgeAllowed('multipleci', age)) return null;
-    const g = RATES.multiple_ci; if(!g) return null;
-    const col = {500000:2, 1000000:3, 2000000:4}[sum];
-    if(col === undefined) return null;
-    const band = (g[sex] || []).find(b => age >= b[0] && age <= b[1]);
-    return band ? band[col] : null;
-  })();
+  out.multipleci = ciAgeAllowed('multipleci', age) ? multipleCiPremium(sum, sex, age, 'annual') : null;
   out.careplus = (function(){
     if(!ciAgeAllowed('careplus', age)) return null;
     // careplusPremium(sum, plan, gender, age, occupationClass, freq)
@@ -7786,7 +7813,7 @@ const PLAN_DETAILS = {
     title: 'Multiple CI', category: 'โรคร้ายแรง (4 กลุ่ม 35 โรค)',
     fit: ['มีประวัติครอบครัวหลายกลุ่มโรค หรือกังวลว่าจะเป็นซ้ำและเป็นหลายโรคในชีวิตเดียว', 'อยากได้ความคุ้มครองที่เคลมกลุ่มแรกแล้วกลุ่มที่เหลือยังอยู่ต่อโดยไม่ต้องจ่ายเบี้ย'],
     notFit: 'งบจำกัดและอยากได้ทุนสูงสุดต่อเบี้ยในการเคลมครั้งเดียว เพราะแบบนี้จ่ายเบี้ยเผื่อการเคลมหลายครั้ง',
-    detailSections: () => multipleCiReclaimSection(),
+    detailSections: () => multipleCiReclaimSection() + mciDefinitionsSection(),
     overview: 'สัญญาเพิ่มเติมโรคร้ายแรงแบบจ่ายหลายครั้ง แบ่งความคุ้มครองเป็น 4 กลุ่มโรค จ่าย 100% ของทุนต่อกลุ่ม และจ่ายรวมได้สูงสุด 400% ของทุนประกัน',
     images: [PLAN_COVER_IMAGES.multipleci],
     coverage: [
@@ -8146,7 +8173,13 @@ function packageLabelItem(item){
     ? `Care Plus มะเร็ง วงเงิน 5 ล้านบาท/ปี`
     : `Care Plus มะเร็ง+ไตวายเรื้อรัง วงเงิน 5 ล้านบาท/ปี/โรค`;
   if(item.kind==='cipc') return `CI Perfect Care ทุน ${fmt(item.capital)} บาท`;
-  if(item.kind==='dcare') return `D Care โรคยอดฮิต ทุน ${fmt(item.capital)} บาท`;
+  if(item.kind==='dcare'){
+    const label = (typeof DCARE_LABELS !== 'undefined' && DCARE_LABELS[item.cat || 'popular']) || 'โรคยอดฮิต';
+    const st = DCARE_STAGES[item.stage || 'early_and_severe'];
+    // ต้องบอกเพดานจ่ายจริงด้วย ไม่ใช่บอกแค่ทุน เพราะโหมดสองระยะจ่ายได้ 200%
+    return `D Care ${label} ทุน ${fmt(item.capital)} บาท (จ่ายได้ถึง ${fmt(item.capital * st.payPct / 100)} บาท)`;
+  }
+  if(item.kind==='mci') return `Multiple CI ทุน ${fmt(item.capital)} บาท (เคลมได้กลุ่มละครั้ง สูงสุด 4 กลุ่ม)`;
   if(item.kind==='pa') return `PA Easy Plan แผน ${item.plan}`;
   return item.kind;
 }
@@ -8161,7 +8194,8 @@ function premiumOfItem(item, gender, age){
   if(item.kind==='opd_krang') return opdPremium({type:'krang', plan:String(item.plan)}, gender, age).premium;
   if(item.kind==='careplus') return careplusPremium('5m', item.plan === 'ca' ? 'ca' : 'cackd', gender, age);
   if(item.kind==='cipc') return cipcPremium(item.capital, gender, age);
-  if(item.kind==='dcare') return dcarePremium('popular', item.capital, gender, age);
+  if(item.kind==='dcare') return dcarePremium(item.cat || 'popular', item.capital, gender, age, 'annual', item.stage || 'early_and_severe');
+  if(item.kind==='mci') return multipleCiPremium(item.capital, gender, age, 'annual');
   if(item.kind==='pa') return paPremium(item.plan, age);
   return null;
 }
@@ -9316,14 +9350,48 @@ function advCiItems(input, healthItems, opts){
   if(hasElite){
     // Elite จ่ายค่าล้างไต รังสีรักษา และเคมีบำบัด (หมวด 9–11) ตามจริงอยู่แล้ว
     // จึงไม่ซ้อน Care Plus ให้เปลืองเบี้ย แต่ใช้ CI เป็นเงินก้อนชดเชยรายได้แทน
-    if(input.ciStyle === 'budget') return [{kind:'dcare', capital: Math.min(1000000, Math.max(250000, target))}];
-    return [{kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)}];
+    if(input.ciStyle === 'budget') return advDcareItems(target);
+    const eliteOut = [{kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)}];
+    if(input.ciStyle === 'multi') advPushMci(eliteOut, target);
+    return eliteOut;
   }
+  /* Care Plus ไม่ใช่โรคร้ายแรงแบบเจอจ่ายจบ แต่เป็นตัวจ่ายค่ารักษาหมวด 9-11 ที่สัญญาสุขภาพไม่คุ้มครอง
+     ระบบใส่ให้ทุกแพ็กเกจที่ไม่ใช่ Elite อยู่แล้ว จึงไม่ใช่ตัวเลือกของลูกค้า และไม่ควรทำเป็นตัวเลือกหลอก */
   const out = [{kind:'careplus', plan:'cackd'}];
-  if(input.ciStyle === 'broad' || input.ciStyle === 'balanced'){
-    out.push({kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)});
+  if(input.ciStyle === 'budget'){
+    // ชั้นที่ 1 ปูพื้นด้วย D Care เพราะจ่ายต่อบาทดีที่สุดและไม่ผูกกับทุนสัญญาหลัก
+    advDcareItems(target).forEach(x => out.push(x));
+    return out;
   }
+  // ชั้นที่ 2 CI Perfect Care ซื้อสิ่งที่ D Care ไม่มี คือตาข่ายเสียชีวิตและระยะกลาง
+  out.push({kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)});
+  // ชั้นที่ 3 เติม มัลติเพิล ซีไอ ให้คนที่กังวลป่วยหลายระบบอวัยวะ
+  if(input.ciStyle === 'multi') advPushMci(out, target);
   return out;
+}
+
+/* ---------- ชั้นที่ 1 ของโรคร้ายแรง · D Care ----------
+   โหมดสองระยะจ่ายได้ 200% ของทุน และเพดานทุนเป็น "รวมทุกกลุ่มโรค" ไม่ใช่ต่อกลุ่ม
+   กลุ่มยอดฮิตบริษัทบังคับให้ซื้อเดี่ยว ห้ามรวมกับกลุ่มอื่นเด็ดขาด */
+const ADV_DCARE_STAGE = 'early_and_severe';
+const ADV_DCARE_FULL_CATS = ['cancer', 'cardio', 'organ', 'neuro', 'other'];
+function advDcareItems(target){
+  const st = DCARE_STAGES[ADV_DCARE_STAGE];
+  const cats = ADV_DCARE_FULL_CATS;
+  // งบทุนที่ตั้งไว้ ถูกหารเฉลี่ยลงทุกกลุ่ม แล้วปัดลงเป็นขั้นละ 50,000 ตามที่บริษัทรับ
+  const perCat = Math.floor(Math.min(target, st.maxSum) / cats.length / 50000) * 50000;
+  if(perCat * cats.length < st.minSum || perCat <= 0){
+    // งบน้อยเกินกว่าจะซื้อครบหมวด ถอยไปกลุ่มยอดฮิตซึ่งต้องซื้อเดี่ยวอยู่แล้ว
+    const solo = Math.max(st.minSum, Math.min(target, st.maxSum));
+    return [{kind:'dcare', cat:'popular', capital: solo, stage: ADV_DCARE_STAGE}];
+  }
+  return cats.map(c => ({kind:'dcare', cat:c, capital: perCat, stage: ADV_DCARE_STAGE}));
+}
+/* ---------- ชั้นที่ 3 · มัลติเพิล ซีไอ ----------
+   ตารางเบี้ยมีเฉพาะ 3 ระดับทุน ห้ามเทียบบัญญัติไตรยางศ์ จึงต้องปัดลงหาทุนที่ขายได้จริง */
+function advPushMci(out, target){
+  const cap = multipleCiNearestCapital(Math.min(target, 2000000));
+  if(cap) out.push({kind:'mci', capital: cap});
 }
 
 /* ---------- OPD / PA ---------- */
@@ -9433,8 +9501,13 @@ function advPrincipleInfographic(){
 const ADV_CI_CAPITAL_BY_STYLE = {
   balanced:  1000000,
   broad:     1000000,
+  /* เอาตัวเลือก 'กังวลมะเร็งและไต' ออกแล้ว เพราะ Care Plus ถูกใส่ให้ทุกแพ็กเกจที่ไม่ใช่ Elite อยู่แล้ว
+     กดหรือไม่กดก็ได้ผลเหมือนกัน จึงเป็นตัวเลือกหลอก · คีย์นี้คงไว้เผื่อค่าเก่าที่ยังส่งเข้ามา */
   cancerckd: 1000000,
-  budget:     500000,   // คุมงบ ทุนต่ำลงเพื่อให้เบี้ยอยู่ในงบตั้งแต่แรก
+  /* คุมงบใช้ D Care ครบ 5 หมวด ทุน 2.5 ล้านคือเพดานของโหมดสองระยะ ซึ่งจ่ายได้ถึง 5 ล้าน
+     ทุนสูงกว่าตัวอื่นแต่เบี้ยถูกกว่า เพราะ D Care คิดเบี้ยต่อบาทถูกที่สุดในกลุ่มโรคร้ายแรง */
+  budget:    2500000,
+  multi:     2000000,   // เพดานทุนที่ มัลติเพิล ซีไอ เปิดขายจริง
   none:            0,
 };
 function advSyncCiCapital(){
@@ -14140,6 +14213,100 @@ var LTP_DEF = (function(){
   console.error('โหลด data/ltp-definitions.json ไม่สำเร็จ');
   return null;
 })();
+var MCI_DEF = (function(){
+  for(const base of ['/data/', './data/']){
+    try{
+      const req = new XMLHttpRequest();
+      req.open('GET', base + 'mci-definitions.json?v=' + DATA_VERSION, false);
+      req.send(null);
+      if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+    }catch(e){}
+  }
+  console.error('โหลด data/mci-definitions.json ไม่สำเร็จ');
+  return null;
+})();
+
+/* ป้ายของ มัลติเพิล ซีไอ ตอบคำถามเดียวคือ เป็นโรคนี้แล้วปิดกลุ่มไหน
+   ทุกโรคจ่าย 100% ของทุนเท่ากันหมด สิ่งที่ต่างคือ<b>กลุ่ม</b> เพราะจ่ายกลุ่มละครั้งเดียว
+   ลูกค้าจึงต้องเห็นตั้งแต่แรกว่าโรคที่กลัวสองโรคอยู่กลุ่มเดียวกันหรือเปล่า */
+const MCI_BADGE = {
+  cardio: {cls:'mb-cardio', label:'กลุ่ม 1 หลอดเลือดและหัวใจ · จ่าย 100% แล้วปิดกลุ่มนี้'},
+  cancer: {cls:'mb-cancer', label:'กลุ่ม 2 มะเร็ง · จ่าย 100% แล้วปิดกลุ่มนี้'},
+  organ:  {cls:'mb-organ',  label:'กลุ่ม 3 เปลี่ยนอวัยวะและระยะสุดท้าย · จ่าย 100% แล้วปิดกลุ่มนี้'},
+  other:  {cls:'mb-other',  label:'กลุ่ม 4 โรคร้ายแรงอื่น ๆ · จ่าย 100% แล้วปิดกลุ่มนี้'},
+};
+let mciDefTab = 'cardio';
+
+function mciDefDiseaseHtml(d){
+  const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  const b = MCI_BADGE[d.group] || MCI_BADGE.other;
+  let h = `<article class="def-item"><h4>${d.n}. ${d.th}<span class="def-en">${d.en}</span></h4>`;
+  h += `<span class="stage-badge ${b.cls}">${b.label}</span>`;
+  h += `<p class="def-body">${d.body}</p>`;
+  if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
+  if(d.exclusions) h += `<div class="def-block def-not">`
+    + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(d.exclusions)}</div>`;
+  if(d.doc) h += `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>`;
+  return h + '</article>';
+}
+function mciDefGroupHtml(key){
+  return (MCI_DEF.diseases || []).filter(d => d.group === key).map(mciDefDiseaseHtml).join('');
+}
+function setMciDefTab(key){
+  mciDefTab = key;
+  const host = document.getElementById('mciDefBody');
+  if(host) host.innerHTML = mciDefGroupHtml(key);
+  document.querySelectorAll('#mciDefTabs .def-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.key === key));
+}
+
+function mciDefinitionsSection(){
+  if(!MCI_DEF || !MCI_DEF.diseases || !MCI_DEF.diseases.length) return '';
+  const m = MCI_DEF._meta || {};
+  const li = arr => `<ul>${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  const tabs = Object.entries(m.groups || {}).map(([k, label]) => {
+    const n = MCI_DEF.diseases.filter(d => d.group === k).length;
+    return `<button type="button" class="def-tab${k === mciDefTab ? ' active' : ''}" data-key="${k}" onclick="setMciDefTab('${k}')">${label} (${n})</button>`;
+  }).join('');
+  const r = m.reclaim || {};
+  return `<div class="content-card">
+    <h2>เงื่อนไขการจ่ายตามถ้อยคำในกรมธรรม์</h2>
+    <div class="def-block def-must"><b>ความคุ้มครอง</b>${li(MCI_DEF.coverage || [])}</div>
+    <div class="def-block def-once">
+      <b>สรุปกติกาเคลมซ้ำ <span class="once-tag">จ่ายกลุ่มละครั้งเดียว</span></b>
+      <ul>
+        <li>สูงสุด <b>${r.max_times} ครั้ง</b> และไม่เกิน <b>${r.max_multiple} เท่า</b>ของทุน · แต่ละกลุ่มไม่เกิน ${r.per_group_multiple} เท่า</li>
+        <li>กลุ่มที่จ่ายไปแล้ว<b>ปิดทั้งกลุ่ม</b> แม้เป็นคนละโรคในกลุ่มเดียวกันก็เคลมอีกไม่ได้</li>
+        <li>กลุ่มที่เหลือคุ้มครองต่ออีก<b>ไม่เกิน ${r.window_years} ปี</b>นับจากวันจ่ายครั้งที่ 1</li>
+        <li>${r.premium_waived_after_first ? 'หลังจ่ายครั้งที่ 1 <b>ไม่ต้องจ่ายเบี้ยของสัญญาเพิ่มเติมนี้อีก</b> แต่ความคุ้มครองกลุ่มที่เหลือยังเดินต่อในกรอบข้างต้น' : ''}</li>
+      </ul>
+    </div>
+    <div class="def-block def-not">
+      <b>สัญญาสิ้นผลบังคับเมื่อ <span class="not-tag">หมดความคุ้มครอง</span></b>${li(MCI_DEF.terminate || [])}
+    </div>
+    <div class="def-block def-not">
+      <b>ข้อยกเว้นที่ต้องพูดตั้งแต่ตอนเสนอ <span class="not-tag">ไม่คุ้มครอง</span></b>${li(MCI_DEF.exclusions || [])}
+    </div>
+    <p class="def-plan-key"><b>ระยะรอคอย</b> ${m.waiting || ''}</p>
+    <p class="def-plan-key"><b>กำหนดเวลาแจ้งเคลม</b> ${m.notify || ''}</p>
+    <p class="def-plan-key"><b>อายุ</b> ต่ออายุได้ถึง ${m.renew_to} ปีบริบูรณ์ · สัญญาสิ้นสุด ณ วันครบรอบปีกรมธรรม์ที่อายุครบ ${m.terminate_age} ปีบริบูรณ์</p>
+  </div>
+  <div class="content-card">
+    <h2>นิยามโรคร้ายแรงทั้ง ${m.total_diseases} โรค พร้อมเกณฑ์การวินิจฉัย</h2>
+    <p>คัดจากถ้อยคำในกรมธรรม์โดยไม่ย่อความ ตัวหนาคือจุดที่ตัดสินว่าเคลมได้หรือไม่ได้
+      ทุกโรคจ่าย 100% ของทุนเท่ากัน สิ่งที่ต่างกันคือ<b>อยู่กลุ่มไหน</b> เพราะจ่ายได้กลุ่มละครั้งเดียว</p>
+    <div class="def-legend">
+      <span class="stage-badge mb-cardio">กลุ่ม 1 หลอดเลือดและหัวใจ</span>
+      <span class="stage-badge mb-cancer">กลุ่ม 2 มะเร็ง</span>
+      <span class="stage-badge mb-organ">กลุ่ม 3 เปลี่ยนอวัยวะและระยะสุดท้าย</span>
+      <span class="stage-badge mb-other">กลุ่ม 4 โรคร้ายแรงอื่น ๆ</span>
+    </div>
+    <div class="def-tabs" id="mciDefTabs">${tabs}</div>
+    <div id="mciDefBody">${mciDefGroupHtml(mciDefTab)}</div>
+    <p class="meta">ที่มา ${m.source} · ตรวจทานเมื่อ ${m.verified_at}</p>
+  </div>`;
+}
 
 /* ป้ายของ ไลฟ์ไทม์ โพรเทคชั่น ตอบคำถามเดียวคือ เป็นโรคนี้แล้วได้กี่เปอร์เซ็นต์ และสัญญาจบไหม
    ตาราง (ก) จ่ายได้รายการเดียวแล้วสัญญาสิ้นสุด ตาราง (ข) จ่ายได้ทีละรายการโดยสัญญายังอยู่
