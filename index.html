@@ -5859,7 +5859,12 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   const dcareStageLive = DCARE_STAGES[inp.dcareStage] || DCARE_STAGES.early_and_severe;
   const dcareOverCap = dcareTotal > dcareStageLive.maxSum;
   const hintEl = document.getElementById('dcareCapHint');
-  if(hintEl) hintEl.textContent = `แบบ${dcareStageLive.label} ทุนประกันรวมทุกกลุ่มโรคต้องไม่เกิน ${fmt(dcareStageLive.maxSum)} บาท`;
+  /* บอกเพดานจ่ายจริงด้วย ไม่ใช่บอกแค่เพดานทุน
+     โหมดสองระยะจ่ายได้ทั้งระยะเริ่มต้นและระยะรุนแรงของโรคเดียวกัน รวมเป็น 200% ของทุน
+     ถ้าบอกแค่ทุน 2.5 ล้าน ลูกค้าจะเข้าใจว่าได้ 2.5 ล้าน ทั้งที่จ่ายจริงได้ถึง 5 ล้าน */
+  if(hintEl) hintEl.textContent =
+    `แบบ${dcareStageLive.label} ทุนประกันรวมทุกกลุ่มโรคต้องไม่เกิน ${fmt(dcareStageLive.maxSum)} บาท`
+    + ` · จ่ายสูงสุด ${dcareStageLive.payPct}% ของทุน คิดเป็น ${fmt(dcareStageLive.maxSum * dcareStageLive.payPct / 100)} บาท`;
   document.querySelectorAll('.dcare-chk').forEach(chk => {
     const capInput = document.getElementById(chk.id+'_cap');
     const isChecked = chk.checked;
@@ -5939,6 +5944,14 @@ function dcareBenefitLine(){
   return `ทุน ${fmt(sum)} บาท · ระยะเริ่มต้นรับ ${fmt(sum)} บาท `
     + `แล้วถ้าลุกลามถึงระยะรุนแรงรับเพิ่มอีก ${fmt(sum)} บาท <b>รวมทั้งสัญญา ${fmt(sum*2)} บาท</b> (200% ของทุน)`;
 }
+/* เพดานของแบบ ไม่ใช่ของทุนที่กรอกอยู่
+   เขียนเป็นเงินที่ได้จริง เพราะ "ทุนสูงสุด 2.5 ล้าน" อ่านแล้วดูด้อยกว่าความจริงครึ่งหนึ่ง */
+function dcareCeilingLine(){
+  const st = DCARE_STAGES[dcareTableStage];
+  const pay = st.maxSum * st.payPct / 100;
+  return `เพดานของแบบ${st.label} คือทุนรวมทุกกลุ่มโรค ${fmt(st.maxSum)} บาท `
+    + `ซึ่งจ่ายได้สูงสุด <b>${fmt(pay)} บาท</b> (${st.payPct}% ของทุน)`;
+}
 
 function dcareRateTableBlock(freq='annual'){
   const sum = dcareTableSum, stage = dcareTableStage, st = DCARE_STAGES[stage];
@@ -5966,7 +5979,8 @@ function dcareRateTableBlock(freq='annual'){
           ${Object.entries(DCARE_STAGES).map(([k,v])=>`<option value="${k}"${k===stage?' selected':''}>${v.label}</option>`).join('')}
         </select></label>
     </div>
-    <p class="meta dcare-benefit">${dcareBenefitLine()}</p>${warn}${table}`;
+    <p class="meta dcare-benefit">${dcareBenefitLine()}</p>
+    <p class="meta">${dcareCeilingLine()}</p>${warn}${table}`;
 }
 
 /* ช่องกรอกทุนแบบใช้ซ้ำได้ สำหรับแผนที่ตารางเดิมล็อกทุนไว้ค่าเดียว
@@ -7758,9 +7772,12 @@ const PLAN_DETAILS = {
     ],
     benefitTable: () => ciPerfectCareBenefitTable(),
     benefitTitle: 'วิธีจ่ายผลประโยชน์ และเงินคงเหลือ',
-    detailSections: () => ciPerfectCareDetailSections(),
     freqSupported: true,
-    detailSections: () => cipcDefinitionsSection(),
+    /* เดิมคีย์ detailSections ถูกประกาศสองครั้งในแผนนี้ อันหลังทับอันแรก
+       ทำให้ ciPerfectCareDetailSections() ไม่เคยถูกเรียกเลย ต้องรวมเป็นคีย์เดียว */
+    detailSections: () => cipcDeathBenefitSection()
+                        + ciPerfectCareDetailSections()
+                        + cipcDefinitionsSection(),
     rateTable: (freq='annual') => cipcRateTableBlock(freq),
     rateNote: 'ตารางแสดงเบี้ยจริงตามทุนที่กรอก ปรับทุนแล้วตัวเลขทั้งตารางจะเปลี่ยนตามทันที',
   },
@@ -8515,10 +8532,27 @@ function lifeCapitalForBudget(product, gender, age, budget, freq){
 
 /* ---------- เลือกแบบให้ตรงวัตถุประสงค์ ---------- */
 function lifeCandidates(st){
-  return LIFE_PRODUCTS.filter(p => {
+  const base = LIFE_PRODUCTS.filter(p => {
     if(st.age < p.entryAgeMin || st.age > p.entryAgeMax) return false;
     return p.purposes.includes(st.purpose);
   });
+  /* แบบชั่วระยะเวลาที่คุ้มครองสั้นกว่าภาระที่ลูกค้าต้องแบก ตอบโจทย์ไม่ได้
+     ตัวเรียงลำดับใช้เบี้ยต่อทุนหนึ่งล้าน แบบ 1/1 จึงชนะทุกครั้งเพราะคุ้มครองปีเดียว
+     ทั้งที่คนต้องดูแลครอบครัวอีกยี่สิบปีเอาไปใช้ไม่ได้จริง
+     ตรรกะนี้ตรงกับที่ lifeBucketPick ใช้อยู่แล้ว ย้ายมาไว้ตรงนี้ด้วยให้ทั้งสองทางคิดเหมือนกัน */
+  const needYears = Math.max(1, st.dependencyYears || lifeDefaultDependencyYears(st.age));
+  const temp = base.filter(p => lifeBucket(p) === 'temporary');
+  if(temp.length < 2) return base;
+  const enough = temp.filter(p => lifeCoverYears(p, st.age) >= needYears);
+  const keep = enough.length
+    ? enough
+    // ไม่มีแบบไหนยาวพอเลย ให้เก็บแบบที่ยาวที่สุดไว้ ดีกว่าเสนอแบบที่สั้นที่สุด
+    : (() => {
+        const longest = Math.max(...temp.map(p => lifeCoverYears(p, st.age)), 0);
+        return temp.filter(p => lifeCoverYears(p, st.age) === longest);
+      })();
+  const keepIds = new Set(keep.map(p => p.id));
+  return base.filter(p => lifeBucket(p) !== 'temporary' || keepIds.has(p.id));
 }
 
 /**
@@ -9127,11 +9161,85 @@ function renderLifeAdvisorResultOnly(){
 
 const ADV_NO_40M_REASON = 'Elite 75 ล้าน แพงกว่า Elite 40 ล้านเพียงประมาณ 2–5% แต่ได้วงเงินเกือบสองเท่า ค่าห้องสูงกว่า วงเงิน OPD เป็นสองเท่า และปลดล็อกกายภาพบำบัด ฝังเข็ม และจิตเวชที่แผน 40 ล้านไม่คุ้มครองเลย แผน 40 ล้านจึงไม่มีข้อไหนชนะแผน 75 ล้าน ระบบจึงไม่เสนอ';
 
+/* เรียงจากทุนมากไปน้อย บันไดการตัดเดินจากบนลงล่าง
+   สามขั้นบนเพิ่มเข้ามาเพื่อรองรับกฎ CI Perfect Care ห้ามเกิน 10 เท่าของทุนสัญญาหลัก
+   ถ้าไม่มีขั้นเหล่านี้ ระบบจะเสนอ CI 1-5 ล้านคู่กับทุนหลัก 200,000 ซึ่งยื่นไม่ผ่าน */
 const ADV_MAIN_LEVELS = [
+  {plan:'99_20', capital:500000, label:'Smart Protection 99/20 ทุน 500,000 บาท'},
+  {plan:'99_20', capital:300000, label:'Smart Protection 99/20 ทุน 300,000 บาท'},
   {plan:'99_20', capital:200000, label:'Smart Protection 99/20 ทุน 200,000 บาท'},
   {plan:'99_99', capital:100000, label:'Whole Life 99/99 ทุน 100,000 บาท'},
   {plan:'99_99', capital:50000,  label:'Whole Life 99/99 ทุน 50,000 บาท'},
 ];
+
+/* CI Perfect Care ทำทุนได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก
+   หน้าคำนวณเบี้ยบังคับกฎนี้อยู่แล้ว ผู้ช่วยจัดแผนต้องใช้กฎเดียวกัน
+   ไม่งั้นตัวแทนได้ใบเสนอที่บริษัทตีกลับ */
+const ADV_CIPC_MAIN_RATIO = 10;
+
+/* สัญญาหลัก 99/20 ทุนต่ำกว่า 1 ล้าน บริษัทบังคับให้แนบโรคร้ายแรงหรืออุบัติเหตุอย่างน้อยหนึ่ง
+   ส่วน 99/99 ไม่มีข้อบังคับนี้ ถ้าบันไดตัด PA ทิ้งจนไม่เหลืออะไรแนบ
+   ต้องย้ายสัญญาหลักไปเป็น 99/99 ไม่ใช่ปล่อยให้เสนอ 99/20 เปล่า ๆ ที่ยื่นไม่ผ่าน */
+const ADV_MAIN_RIDER_REQUIRED_BELOW = 1000000;
+function advMainNeedsRider(level){
+  const m = ADV_MAIN_LEVELS[level];
+  return !!m && m.plan === '99_20' && m.capital < ADV_MAIN_RIDER_REQUIRED_BELOW;
+}
+function advHasAttachableRider(state){
+  return (state.ci && state.ci.length > 0) || !!state.paPlan;
+}
+/* เรียกหลังทุกครั้งที่บันไดตัดของออก คืนข้อความถ้าต้องย้ายแบบสัญญาหลัก */
+function advFixMainRiderRule(state){
+  if(!state || state.mainLevel < 0) return null;
+  if(!advMainNeedsRider(state.mainLevel)) return null;
+  if(advHasAttachableRider(state)) return null;
+  for(let i = 0; i < ADV_MAIN_LEVELS.length; i++){
+    const m = ADV_MAIN_LEVELS[i];
+    if(m.plan === '99_20') continue;
+    if(state.input && !advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) continue;
+    state.mainLevel = i;
+    return `ย้ายสัญญาหลักเป็น ${m.label} เพราะแผน 99/20 ทุนต่ำกว่า ${fmt(ADV_MAIN_RIDER_REQUIRED_BELOW)} บาท`
+         + ' บริษัทบังคับให้แนบโรคร้ายแรงหรืออุบัติเหตุอย่างน้อยหนึ่งแบบ แต่แพ็กเกจนี้ไม่เหลือแล้ว';
+  }
+  return null;
+}
+
+/* ทุนสัญญาหลักขั้นต่ำที่ชุดโรคร้ายแรงชุดนี้ต้องการ */
+function advRequiredMainCapital(ciItems){
+  let need = 0;
+  (ciItems || []).forEach(c => {
+    if(c.kind === 'cipc') need = Math.max(need, Math.ceil(c.capital / ADV_CIPC_MAIN_RATIO));
+  });
+  return need;
+}
+/* ขั้นสัญญาหลักที่ต่ำที่สุดซึ่งยังรองรับทุน CI ชุดนี้ได้ และตีราคาได้จริงที่อายุนี้
+   คืน -1 ถ้าไม่มีขั้นไหนใช้ได้เลย */
+function advMainLevelFor(input, ciItems){
+  const need = advRequiredMainCapital(ciItems);
+  let best = -1;
+  for(let i = 0; i < ADV_MAIN_LEVELS.length; i++){
+    const m = ADV_MAIN_LEVELS[i];
+    if(m.capital < need) continue;
+    if(!advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, input)) continue;
+    best = i;   // เดินต่อเพื่อเก็บขั้นที่ต่ำที่สุดที่ยังผ่านเงื่อนไข
+  }
+  return best;
+}
+/* ลดทุน CI ลงให้พอดีกับทุนสัญญาหลักที่เหลืออยู่ ใช้ตอนบันไดตัดลดสัญญาหลักแล้ว
+   คืนข้อความอธิบายถ้ามีการลด เพื่อให้ตัวแทนเห็นว่าระบบเปลี่ยนอะไรและเพราะอะไร */
+function advClampCiToMain(state){
+  const m = ADV_MAIN_LEVELS[state.mainLevel];
+  if(!m) return null;
+  const cap = m.capital * ADV_CIPC_MAIN_RATIO;
+  let msg = null;
+  state.ci.forEach(c => {
+    if(c.kind === 'cipc' && c.capital > cap){
+      msg = `ลดทุน CI Perfect Care เหลือ ${fmt(cap)} บาท เพราะทำทุนได้ไม่เกิน ${ADV_CIPC_MAIN_RATIO} เท่าของทุนสัญญาหลัก ${fmt(m.capital)} บาท`;
+      c.capital = cap;
+    }
+  });
+  return msg;
+}
 const ADV_OPD_ORDER = ['heavy','moderate','light','none'];
 const ADV_OPD_LABEL = {heavy:'OPD เหมาจ่าย 100,000/ปี', moderate:'OPD เหมาจ่าย 30,000/ปี', light:'OPD รายครั้ง 1,000/ครั้ง', none:'ไม่มี OPD'};
 const ADV_TIER_RANK = {dhl5:1, elite20:2, elite75:3, elite100:4};
@@ -9246,15 +9354,24 @@ function advFirstMainLevel(input){
 /* ---------- สร้างและตีราคาแพ็กเกจจาก state ---------- */
 function advInitState(input, healthItems, opts){
   opts = opts || {};
-  return {
+  const ci = advCiItems(input, healthItems, opts).map(advCloneItem);
+  /* เลือกขั้นสัญญาหลักจากทุน CI ที่จะเสนอ ไม่ใช่เลือกขั้นแรกที่ตีราคาได้เฉย ๆ
+     ถ้าไม่มีขั้นไหนรองรับทุน CI ได้เลย ให้ถอยไปใช้ขั้นที่ตีราคาได้แล้วลดทุน CI ตามทีหลัง */
+  const state = {
     healthItems: healthItems.map(advCloneItem),
-    ci: advCiItems(input, healthItems, opts).map(advCloneItem),
+    ci,
     opdLevel: input.opdNeed,
     paPlan: advInitialPa(input),
-    mainLevel: advFirstMainLevel(input),
+    mainLevel: (() => {
+      const lv = advMainLevelFor(input, ci);
+      return lv >= 0 ? lv : advFirstMainLevel(input);
+    })(),
     lockCarePlus: !!opts.forceCarePlus,
     input,
   };
+  advClampCiToMain(state);
+  advFixMainRiderRule(state);   // ลูกค้าเลือกไม่เอาโรคร้ายแรงตั้งแต่ต้น ก็ต้องไม่ได้ 99/20 เปล่า ๆ
+  return state;
 }
 function advIsElite(state){ return state.healthItems.some(h => h.kind === 'ehp'); }
 function advItemsOf(state){
@@ -9357,7 +9474,9 @@ function advNextConcession(state){
   const extraIdx = state.ci.findIndex(c => c.kind === 'cipc' || c.kind === 'dcare');
   if(extraIdx >= 0){
     const cut = state.ci.splice(extraIdx, 1)[0];
-    return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`;
+    const mv = advFixMainRiderRule(state);
+    return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`
+         + (mv ? ` \u00b7 ${mv}` : '');
   }
   // Elite: ห้ามลดทุนชีวิตลงมา เพราะจ่ายเบี้ยสุขภาพหลักแสนแต่คุ้มครองชีวิตห้าหมื่นไม่สมเหตุผล
   if(!advIsElite(state) && state.mainLevel >= 0){
@@ -9365,13 +9484,18 @@ function advNextConcession(state){
       const m = ADV_MAIN_LEVELS[i];
       if(!state.input || advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) {
         state.mainLevel = i;
-        return `ลดสัญญาหลักเป็น ${m.label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`;
+        // ลดทุนหลักแล้วเพดาน 10 เท่าของ CI ลดตาม ต้องหั่นทุน CI ตามทันที ไม่ใช่ปล่อยให้เกิน
+        const cut = advClampCiToMain(state);
+        return `ลดสัญญาหลักเป็น ${m.label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`
+             + (cut ? ` · ${cut}` : '');
       }
     }
   }
   if(state.paPlan){
     state.paPlan = null;
-    return 'ตัด PA อุบัติเหตุ เป็นลำดับท้าย ๆ เพราะเบี้ยถูกและปิดความเสี่ยงจริง แต่ยังจำเป็นน้อยกว่าค่ารักษาพยาบาลก้อนใหญ่';
+    const mvPa = advFixMainRiderRule(state);
+    return 'ตัด PA อุบัติเหตุ เป็นลำดับท้าย ๆ เพราะเบี้ยถูกและปิดความเสี่ยงจริง แต่ยังจำเป็นน้อยกว่าค่ารักษาพยาบาลก้อนใหญ่'
+         + (mvPa ? ` \u00b7 ${mvPa}` : '');
   }
   const cp = state.ci.find(c => c.kind === 'careplus' && c.plan === 'cackd');
   if(cp){
@@ -9626,21 +9750,27 @@ function advEconomyConcession(state, input){
   }
   if(state.paPlan){
     state.paPlan = null;
-    return 'ตัด PA อุบัติเหตุออก เบี้ยถูกก็จริง แต่ยังจำเป็นน้อยกว่าค่ารักษาก้อนใหญ่';
+    const mvPa2 = advFixMainRiderRule(state);
+    return 'ตัด PA อุบัติเหตุออก เบี้ยถูกก็จริง แต่ยังจำเป็นน้อยกว่าค่ารักษาก้อนใหญ่'
+         + (mvPa2 ? ` \u00b7 ${mvPa2}` : '');
   }
   if(!advIsElite(state) && state.mainLevel >= 0){
     for(let i = state.mainLevel + 1; i < ADV_MAIN_LEVELS.length; i++){
       const m = ADV_MAIN_LEVELS[i];
       if(!state.input || advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) {
         state.mainLevel = i;
-        return `ลดสัญญาหลักเป็น ${m.label} ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง`;
+        const cut2 = advClampCiToMain(state);
+        return `ลดสัญญาหลักเป็น ${m.label} ทุนชีวิตระดับนี้ใช้เพื่อให้สัญญาเพิ่มเติมแนบได้เท่านั้น ถ้าต้องการทุนชีวิตจริงจังควรแยกเล่มภายหลัง`
+             + (cut2 ? ` · ${cut2}` : '');
       }
     }
   }
   const extraIdx = state.ci.findIndex(c => c.kind === 'cipc' || c.kind === 'dcare');
   if(extraIdx >= 0){
     const cut = state.ci.splice(extraIdx, 1)[0];
-    return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`;
+    const mv = advFixMainRiderRule(state);
+    return `ตัด ${packageLabelItem(cut)} ออก เพราะเป็นเงินก้อนชดเชยรายได้ ไม่ใช่ตัวจ่ายค่ารักษาจริง`
+         + (mv ? ` \u00b7 ${mv}` : '');
   }
   const dhl = state.healthItems.find(h => h.kind === 'dhl');
   if(dhl && dhl.mode !== 'copay' && (!dhl.deduct || dhl.deduct === 'd0')){
@@ -14311,6 +14441,41 @@ function cipcDefGroupHtml(key){
     + d.stages.map(cipcStageHtml).join('')
     + (d.doc ? `<p class="def-doc"><b>มุมมองจากห้องตรวจ</b> ${d.doc}</p>` : '')
     + `</article>`).join('');
+}
+
+/* จุดขายที่แข็งที่สุดของแบบนี้ และเป็นจุดที่แบบโรคร้ายแรงอื่นไม่มี
+   ตัวเลขและถ้อยคำทั้งหมดยกมาจากตารางผลประโยชน์และไฟล์นิยามของแบบนี้ ไม่ได้เขียนขึ้นเอง */
+function cipcDeathBenefitSection(){
+  const waiver = 'เว้นแต่ผู้เอาประกันภัยได้เสียชีวิตลงก่อนครบกำหนดระยะเวลาดังกล่าว'
+               + 'ด้วยโรคร้ายแรงหรือเป็นผลสืบเนื่องโดยตรงจากโรคร้ายแรงในข้อนี้';
+  return `<div class="content-card">
+    <h2>ตาข่ายกรณีเสียชีวิต จุดที่ต่างจากแบบโรคร้ายแรงอื่น</h2>
+    <p>แบบโรคร้ายแรงทั่วไปจ่ายเมื่อ<b>เข้านิยามโรคเท่านั้น</b>
+      ป่วยหนักแล้วเสียชีวิตโดยผลวินิจฉัยไม่ตรงนิยามข้อใดเลย คือไม่ได้เงินสักบาท
+      แบบนี้มีทางออกสองชั้นที่ปิดช่องนั้น</p>
+
+    <div class="def-block def-must">
+      <b>ชั้นที่ 1 · เสียชีวิตทุกกรณี</b>
+      <ul>
+        <li>จ่ายสูงสุด 100% ของทุน หักเงินระยะเริ่มต้นและระยะกลางที่เคยรับไปแล้ว</li>
+        <li>ไม่ได้จำกัดว่าต้องเสียชีวิตด้วยโรคร้ายแรง อุบัติเหตุหรือสาเหตุอื่นก็เข้าเงื่อนไข</li>
+        <li>ผลประโยชน์เสียชีวิตและโรคร้ายแรงรวมกันไม่เกิน 100% ของทุนตลอดสัญญา</li>
+      </ul>
+    </div>
+
+    <div class="def-block def-must">
+      <b>ชั้นที่ 2 · ยกเว้นเงื่อนไขเวลาเมื่อเสียชีวิตก่อนครบกำหนด</b>
+      <p style="margin:6px 0;">นิยามหลายโรคของแบบนี้บังคับให้อาการคงอยู่ต่อเนื่อง 30 ถึง 180 วัน
+        แต่มีถ้อยคำนี้กำกับไว้ในเกือบทุกข้อที่บังคับระยะเวลา</p>
+      <p class="def-quote" style="margin:6px 0;">${waiver}</p>
+      <p style="margin:6px 0;">แปลว่าคนไข้ที่เป็นอัมพาตแล้วเสียชีวิตในวันที่ 120 ทั้งที่นิยามบังคับ 180 วัน
+        <b>ยังเข้าเกณฑ์</b> ส่วนแบบที่ไม่มีถ้อยคำนี้ ไม่ครบวันคือไม่จ่าย</p>
+    </div>
+
+    <p class="meta">ประเด็นที่ต้องพูดให้ตรงตอนเสนอ ผลประโยชน์เสียชีวิตของแบบนี้ไม่ได้มาแทนประกันชีวิต
+      เพราะหักเงินที่เคยรับไปแล้ว และรวมทั้งสัญญาไม่เกินทุนหนึ่งเท่า
+      ทุนชีวิตจริงจังยังต้องอยู่ที่สัญญาหลักหรือแยกเล่มต่างหาก</p>
+  </div>`;
 }
 
 function cipcDefinitionsSection(){
