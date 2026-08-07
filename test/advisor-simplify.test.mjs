@@ -52,13 +52,18 @@ vm.runInContext(
              html.indexOf('function advSyncCiCapital()'))
   + '\nthis.ADV_CI_CAPITAL_BY_STYLE = ADV_CI_CAPITAL_BY_STYLE;', ctx);
 
-test('ทุกสไตล์ต้องมีทุนกำหนดไว้ ไม่มีตัวไหนหลุดเป็นค่าว่าง', () => {
+test('ทุกสไตล์ที่เลือกได้ ต้องมีทุนกำหนดไว้ ไม่มีตัวไหนหลุดเป็นค่าว่าง', () => {
   const map = ctx.ADV_CI_CAPITAL_BY_STYLE;
   const styles = [...sliceTag(healthTab, '<select id="ai_ciStyle"', 'select')
     .matchAll(/value="([a-z]+)"/g)].map(m => m[1]);
-  assert.deepEqual(styles.sort(), Object.keys(map).sort());
+  for(const s of styles)
+    assert.ok(Number.isFinite(map[s]), `สไตล์ ${s} ที่เลือกได้บนหน้าจอ ไม่มีทุนกำหนดไว้`);
   for(const [k, v] of Object.entries(map))
     assert.ok(Number.isFinite(v) && v >= 0, `${k} ทุนไม่ใช่ตัวเลข`);
+  /* cancerckd ถูกถอดออกจากตัวเลือกแล้วเพราะเป็นตัวเลือกหลอก แต่ยังคงคีย์ไว้ในทะเบียน
+     เผื่อค่าเก่าที่ยังส่งเข้ามา จึงยอมให้ทะเบียนมีคีย์มากกว่าตัวเลือกบนจอได้ */
+  assert.ok(!styles.includes('cancerckd'), 'ตัวเลือกหลอกกลับมาอยู่บนหน้าจออีกแล้ว');
+  assert.ok(Number.isFinite(map.cancerckd), 'ยังต้องรองรับค่าเก่า');
 });
 
 test('ทุนต้องสมเหตุผลกับสไตล์ และไม่เอาโรคร้ายแรงต้องเป็นศูนย์', () => {
@@ -67,15 +72,19 @@ test('ทุนต้องสมเหตุผลกับสไตล์ แ�
   assert.equal(m.balanced, 1000000);
   assert.equal(m.broad, 1000000);
   assert.equal(m.cancerckd, 1000000);
-  // คุมงบต้องได้ทุนต่ำกว่าตัวอื่น ไม่งั้นชื่อกับผลลัพธ์ขัดกัน
-  assert.ok(m.budget < m.balanced, 'สไตล์คุมงบต้องได้ทุนต่ำกว่าสมดุล');
-  assert.ok(m.budget >= 250000, 'ทุนต่ำกว่านี้ไม่พอใช้จริงตอนป่วยหนัก');
+  /* สไตล์คุมงบใช้ D Care ครบหมวด ซึ่งเบี้ยต่อบาทถูกที่สุด จึงตั้งทุนได้สูงกว่าแบบอื่น
+     ทุนสูงในที่นี้ไม่ได้แปลว่าเบี้ยแพงกว่า ซึ่งกลับกับสัญชาตญาณ จึงต้องมีเทสต์ล็อกไว้ */
+  assert.equal(m.budget, 2500000, 'ต้องเท่ากับเพดานทุนของ D Care โหมดสองระยะ');
+  assert.equal(m.multi, 2000000, 'ต้องเท่ากับเพดานทุนที่ Multiple CI เปิดขายจริง');
 });
 
-test('ป้ายตัวเลือกต้องบอกทุนที่จะได้ ลูกค้าจะได้เห็นก่อนกด', () => {
+test('ป้ายตัวเลือกต้องบอกสิ่งที่จะได้ ลูกค้าจะได้เห็นก่อนกด', () => {
   const sel = sliceTag(healthTab, '<select id="ai_ciStyle"', 'select');
   assert.ok(sel.includes('ทุน 1 ล้าน'), 'ขาดทุนบนป้ายตัวเลือกหลัก');
-  assert.ok(sel.includes('ทุน 5 แสน'), 'ขาดทุนบนป้ายตัวเลือกคุมงบ');
+  // สไตล์คุมงบขายที่ "จ่ายได้ถึง 200%" ไม่ใช่ขายที่ทุน เพราะทุนอย่างเดียวสื่อไม่ครบ
+  assert.ok(sel.includes('D Care ครบ 5 หมวด'), 'ต้องบอกว่าได้ครบหมวด ไม่ใช่แค่กลุ่มยอดฮิต');
+  assert.ok(sel.includes('200% ของทุน'), 'ต้องบอกเพดานจ่ายจริงของโหมดสองระยะ');
+  assert.ok(sel.includes('Multiple CI'), 'ต้องมีตัวเลือกชั้นที่สาม');
   assert.ok(sel.includes('onchange="advSyncCiCapital();"'), 'เลือกสไตล์แล้วทุนต้องเปลี่ยนตาม');
   assert.match(html, /if\(name === 'ai'\)\{[\s\S]*?advSyncCiCapital\(\);/,
     'เปิดหน้ามาต้องตั้งทุนให้ตรงกับสไตล์ตั้งต้นทันที');

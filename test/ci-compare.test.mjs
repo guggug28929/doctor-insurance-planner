@@ -52,6 +52,8 @@ vm.runInContext(
     extract("function careplusPremium("),
     extract("function occKeyFor("),
     extractConst("CI_PLANS"),
+    extract("const MCI_CAPITAL_COL = "),
+    extract("function multipleCiPremium("),
     extract("const CI_NEW_BUSINESS_AGE = "),
     extract("function ciAgeAllowed("),
     extract("function ciAnnualPremiums("),
