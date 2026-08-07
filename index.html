@@ -610,6 +610,12 @@
     font-size:.9rem;font-weight:600;color:#8a5c72;text-decoration:none;transition:background .15s,color .15s;}
   .plan-jump a:hover{background:var(--pink-deep);border-color:var(--pink-deep);color:#fff;}
   .plan-jump a.pj-unsure{background:#fdf3f7;border-style:dashed;}
+  /* ชิปเดียวในแถวที่พาไปคนละหน้า ใช้สีทองของธีม HNW ให้ต่างจากชิปเลื่อนในหน้า */
+  .plan-jump a.pj-hnw{
+    border-color:#d4af6a;color:#7a5a1f;
+    background:linear-gradient(100deg,rgba(240,220,176,.30),rgba(255,255,255,.85));
+  }
+  .plan-jump a.pj-hnw:hover{background:linear-gradient(100deg,#3a2b1c,#241722);border-color:#d4af6a;color:#f0dcb0;}
   @media (max-width:520px){ .plan-jump{padding:12px;} .plan-jump a{flex:1 1 auto;text-align:center;} }
   .plan-flash{animation:planFlash 2s ease-out 1;}
   @keyframes planFlash{0%,45%{background:#fdf3f7;}100%{background:transparent;}}
@@ -866,18 +872,6 @@
     .nav-more-btn{width:100%;}
     .nav-more-panel{position:static;width:100%;min-width:0;box-shadow:none;margin-top:6px;
       inset:auto !important;}
-  }
-
-  /* ---------- ทางเข้าแผน HNW ในหน้าแผนทั้งหมด ---------- */
-  .hnw-entry{
-    border:1px solid rgba(212,175,106,.55);
-    background:linear-gradient(100deg,rgba(240,220,176,.16),rgba(255,255,255,.92));
-  }
-  .hnw-entry h2{margin-top:0;}
-  .btn-hnw{
-    margin-top:10px;padding:9px 18px;font-size:.85rem;
-    background:linear-gradient(100deg,#3a2b1c,#241722);
-    border-color:#d4af6a;color:#f0dcb0;
   }
 
   .page{display:none;}
@@ -2844,15 +2838,13 @@
     <a href="#grp-pa" onclick="return jumpToPlanGroup('grp-pa');">อุบัติเหตุ</a>
     <a href="#grp-pension" onclick="return jumpToPlanGroup('grp-pension');">บำนาญ</a>
     <a class="pj-unsure" href="#grp-guide" onclick="return jumpToPlanGroup('grp-guide');">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</a>
+    <!-- ชิปนี้ต่างจากตัวอื่นตรงที่พาไปคนละหน้า ไม่ใช่เลื่อนลงในหน้าเดิม
+         จึงทำสีทองและมีลูกศรกำกับ ให้เห็นชัดว่าเป็นคนละพฤติกรรม -->
+    <a class="pj-hnw" href="/hnw" onclick="showPage('hnw'); return false;">แผน HNW &rarr;</a>
   </nav>
 
 
 
-  <div class="content-card hnw-entry">
-    <h2>มองหาแผนสำหรับความคุ้มครองระดับสูง</h2>
-    <p class="meta">วงเงินค่ารักษาหลักสิบล้านขึ้นไป คุ้มครองต่างประเทศ และการวางแผนส่งต่อทรัพย์สิน</p>
-    <button class="btn btn-hnw" onclick="showPage('hnw')">ดูแผน HNW &rarr;</button>
-  </div>
 
 
   <div class="plan-grid">
