@@ -2258,15 +2258,21 @@
   /* ---- ป๊อปอัพตารางเทียบนิยามรายโรค (หน้าเทียบโรคร้ายแรง) ----
      แยกจาก .ss-panel เพราะตารางกว้างกว่ากล่องค้นหามาก และต้องตรึงหัวตารางกับคอลัมน์ชื่อโรคไว้
      ไม่งั้นเลื่อนไปไม่กี่แถวก็ลืมแล้วว่าคอลัมน์ไหนคือแบบไหน */
-  .xw-panel{width:min(1040px,100%);max-height:86vh;display:flex;flex-direction:column;
+  /* กล่องนี้ใช้พื้นที่จอมากกว่ากล่องค้นหา จึงลดขอบบนของ overlay ลงด้วย
+     ไม่งั้นตารางเหลือความสูงไม่พอ ต้องเลื่อนถี่มาก */
+  #ciXw{padding:4vh 12px 12px;}
+  .xw-panel{width:min(1280px,100%);max-height:92vh;display:flex;flex-direction:column;
     background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
-  .xw-head{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid #eadfe4;}
+  .xw-head{flex:none;display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid #eadfe4;}
   .xw-head h3{margin:0;font-size:1.02rem;color:var(--ink);}
   .xw-head p{margin:3px 0 0;font-size:.78rem;color:var(--muted);line-height:1.55;}
-  .xw-tabs{display:flex;gap:6px;overflow-x:auto;padding:9px 16px;border-bottom:1px solid #f0e4ea;
+  /* หัวตารางเป็น sticky ถ้าแถบแท็บไม่มี stacking context ของตัวเอง หัวตารางจะลอยขึ้นมาทับจนแท็บโดนตัดครึ่ง
+     ต้องมี position กับ z-index สูงกว่า และมีพื้นหลังทึบ */
+  .xw-tabs{position:relative;z-index:6;background:#fff;flex:none;
+    display:flex;gap:6px;overflow-x:auto;padding:10px 16px 12px;border-bottom:1px solid #f0e4ea;
     -webkit-overflow-scrolling:touch;}
   .xw-tabs .def-tab{flex:none;}
-  #ciXwBody{overflow:auto;-webkit-overflow-scrolling:touch;}
+  #ciXwBody{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;}
   .xw-table{border-collapse:separate;border-spacing:0;width:100%;font-size:.8rem;}
   .xw-table thead th{position:sticky;top:0;z-index:3;background:#fdf3f7;color:var(--pink-deep);
     font-family:"Kanit",sans-serif;font-weight:600;font-size:.78rem;text-align:center;
@@ -2287,11 +2293,14 @@
   .xw-no{color:#c4aab6;}
   .xw-no span{font-size:.7rem;}
   .xw-cnt{display:block;font-size:.66rem;font-weight:400;color:var(--muted);margin-top:2px;}
-  .xw-hot{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:.62rem;
-    font-weight:600;background:#fbe8f0;color:var(--pink-deep);border:1px solid #f0c8da;}
+  /* ต้องขึ้นบรรทัดใหม่ ไม่ใช่ต่อท้ายชื่อโรค เพราะโรคชื่อยาวจะดันป้ายไปทับคอลัมน์ถัดไป */
+  .xw-hot{display:block;width:fit-content;max-width:100%;margin:4px 0 0;padding:1px 7px;
+    border-radius:999px;font-size:.62rem;font-weight:600;background:#fbe8f0;color:var(--pink-deep);
+    border:1px solid #f0c8da;}
   .xw-sep td{background:#faeef4;font-family:"Kanit",sans-serif;font-weight:700;font-size:.76rem;
     color:var(--pink-deep);text-align:left;padding:7px 14px;position:sticky;left:0;}
-  .xw-foot{padding:10px 16px;border-top:1px solid #f0e4ea;font-size:.72rem;color:var(--muted);line-height:1.6;}
+  .xw-foot{flex:none;position:relative;z-index:6;background:#fff;
+    padding:10px 16px;border-top:1px solid #f0e4ea;font-size:.72rem;color:var(--muted);line-height:1.6;}
   .xw-open{margin-top:18px;padding-top:16px;border-top:1px dashed #eedbe4;}
   .xw-open h4{margin:0 0 4px;font-size:.94rem;color:var(--pink-deep);}
   .xw-open p{margin:0 0 10px;font-size:.82rem;color:var(--muted);line-height:1.7;}
