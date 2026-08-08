@@ -2751,15 +2751,19 @@
   <div id="advTab-health">
   <div class="content-card">
     <h2>ผู้ช่วยออกแบบแผนประกันสุขภาพ</h2>
-    <p style="color:var(--muted);">ตอบ 5 ข้อ ระบบจัดชุดแผนให้พร้อมเบี้ยจากตารางจริงของบริษัท ไม่มีการประมาณค่า</p>
+    <p style="color:var(--muted);">ตอบ 6 ข้อ ระบบจัดชุดแผนให้พร้อมเบี้ยจากตารางจริงของบริษัท ไม่มีการประมาณค่า · ส่วนวงเงิน OPD ทุนโรคร้ายแรง และความเสี่ยงส่วนแรก ระบบตั้งให้จากคำตอบข้างบน ไม่ต้องกรอกเพิ่ม</p>
 
     <div class="ai-grid">
       <div>
-        <label class="first">เพศ</label>
-        <div class="radio-group">
-          <label><input type="radio" name="ai_gender" value="m" checked> ชาย</label>
-          <label><input type="radio" name="ai_gender" value="f"> หญิง</label>
+        <label class="first">เพศกำเนิด</label>
+        <div class="tap-group tap-2col" data-for="ai_gender">
+          <button type="button" class="tap-card is-active" data-value="m" onclick="advTapSelect(this);"><b>ชาย</b></button>
+          <button type="button" class="tap-card" data-value="f" onclick="advTapSelect(this);"><b>หญิง</b></button>
         </div>
+        <select id="ai_gender" hidden>
+          <option value="m" selected>ชาย</option>
+          <option value="f">หญิง</option>
+        </select>
       </div>
       <div>
         <label class="first">ปีเกิด (พ.ศ.)</label>
@@ -2767,14 +2771,14 @@
       </div>
       <div>
         <label>งบเบี้ยที่อยากคุมต่อปี (บาท)</label>
-        <input type="number" id="ai_budget" value="50000" step="5000" min="0" placeholder="เช่น 50000">
-        <div class="hint">ไม่ต้องเป๊ะ ใช้เลือกแผนประหยัดหรือพรีเมียมให้เหมาะขึ้น</div>
+        <input type="number" id="ai_budget" value="50000" step="5000" min="0" placeholder="เช่น 50000" oninput="advSyncCiCapital();">
+        <div class="hint">ไม่ต้องเป๊ะ ใช้เลือกแผนประหยัดหรือพรีเมียมให้เหมาะขึ้น และใช้ตั้งทุนโรคร้ายแรงให้พอดีกับงบ</div>
       </div>
       <div>
         <label>มีสวัสดิการหรือประกันกลุ่มอยู่แล้วไหม</label>
         <div class="tap-group tap-2col" data-for="ai_hasGroup">
-          <button type="button" class="tap-card is-active" data-value="no" onclick="advTapSelect(this);"><b>ไม่มี หรือไม่แน่ใจ</b></button>
-          <button type="button" class="tap-card" data-value="yes" onclick="advTapSelect(this);"><b>มี</b></button>
+          <button type="button" class="tap-card is-active" data-value="no" onclick="advTapSelect(this);"><b>ไม่มี หรือไม่แน่ใจ</b><small>จัดแผนที่จ่ายตั้งแต่บาทแรก</small></button>
+          <button type="button" class="tap-card" data-value="yes" onclick="advTapSelect(this);"><b>มีอยู่แล้ว</b><small>ใช้ของเดิมรับส่วนแรก แล้วลดเบี้ยด้วย Deductible</small></button>
         </div>
         <select id="ai_hasGroup" hidden onchange="advSyncGroupField();">
           <option value="no">ไม่มี หรือไม่แน่ใจ</option>
@@ -2785,15 +2789,13 @@
         <label>ต้องการค่ารักษา IPD ระดับไหน</label>
         <div class="tap-group" data-for="ai_ipdNeed">
           <button type="button" class="tap-card" data-value="basic" onclick="advTapSelect(this);"><b>เริ่มต้น/คุมงบ</b><small>วงเงินหลักแสนถึง 1 ล้าน</small></button>
-          <button type="button" class="tap-card is-active" data-value="balanced" onclick="advTapSelect(this);"><b>สมดุล</b><small>เล็ง 5 ล้าน แต่ยอมลดวงเงินได้ถ้างบไม่พอ</small></button>
-          <button type="button" class="tap-card" data-value="high" onclick="advTapSelect(this);"><b>วงเงินสูง</b><small>คง 5 ล้านไว้ก่อน ถ้างบไม่พอใช้ Deductible คุมเบี้ยแทน</small></button>
+          <button type="button" class="tap-card is-active" data-value="balanced" onclick="advTapSelect(this);"><b>สมดุล</b><small>เล็ง 5 ล้าน ถ้างบไม่พอจะลดวงเงินหรือใช้ Deductible ช่วย</small></button>
           <button type="button" class="tap-card" data-value="elite20" onclick="advTapSelect(this);"><b>พรีเมียม</b><small>Elite 20 ล้าน</small></button>
           <button type="button" class="tap-card" data-value="elite75" onclick="advTapSelect(this);"><b>พรีเมียมมาก</b><small>Elite 75/100 ล้าน</small></button>
         </div>
         <select id="ai_ipdNeed" hidden>
           <option value="basic">เริ่มต้น/คุมงบ — วงเงินหลักแสนถึง 1 ล้าน</option>
-          <option value="balanced" selected>สมดุล — เล็ง 5 ล้าน แต่ยอมลดวงเงินได้ถ้างบไม่พอ</option>
-          <option value="high">วงเงินสูง — คง 5 ล้านไว้ก่อน ถ้างบไม่พอใช้ Deductible คุมเบี้ยแทน</option>
+          <option value="balanced" selected>สมดุล — เล็ง 5 ล้าน ถ้างบไม่พอจะลดวงเงินหรือใช้ Deductible ช่วย</option>
           <option value="elite20">พรีเมียม — Elite 20 ล้าน</option>
           <option value="elite75">พรีเมียมมาก — Elite 75/100 ล้าน</option>
         </select>
@@ -2814,56 +2816,32 @@
           <option value="multi">ครบที่สุด — CI Perfect Care + Multiple CI เคลมได้หลายกลุ่ม</option>
           <option value="none">ยังไม่เอาโรคร้ายแรง</option>
         </select>
-        <div class="hint">ทุนตั้งให้ตามสไตล์ที่เลือก ปรับเองได้ในหัวข้อปรับละเอียด</div>
+        <div class="hint" id="ai_ciCapitalHint">ทุนตั้งให้อัตโนมัติตามสไตล์ที่เลือกและงบที่กรอก</div>
       </div>
     </div>
 
-    <details class="adv-more">
-      <summary>ปรับละเอียด ไม่กรอกก็ได้</summary>
-      <div class="ai-grid">
-        <div id="ai_groupCoverageBox" hidden>
-          <label class="first">วงเงินสวัสดิการเดิมโดยประมาณ (บาท/ปีหรือบาท/ครั้ง)</label>
-          <input type="number" id="ai_groupCoverage" value="0" step="10000" min="0" placeholder="เช่น 100000">
-        </div>
-        <div>
-          <label class="first">OPD ต้องการแค่ไหน</label>
-          <div class="tap-group" data-for="ai_opdNeed">
-            <button type="button" class="tap-card" data-value="none" onclick="advTapSelect(this);"><b>ไม่เน้น OPD</b></button>
-            <button type="button" class="tap-card is-active" data-value="light" onclick="advTapSelect(this);"><b>อยากมีติดไว้นิดหน่อย</b></button>
-            <button type="button" class="tap-card" data-value="moderate" onclick="advTapSelect(this);"><b>ใช้ OPD เป็นระยะ</b><small>อยากมีวงเงินรายปี</small></button>
-            <button type="button" class="tap-card" data-value="heavy" onclick="advTapSelect(this);"><b>ใช้ OPD เยอะ</b><small>อยากได้ OPD ดี ๆ</small></button>
-          </div>
-          <select id="ai_opdNeed" hidden>
-            <option value="none">ไม่เน้น OPD</option>
-            <option value="light" selected>อยากมีติดไว้นิดหน่อย</option>
-            <option value="moderate">ใช้ OPD เป็นระยะ อยากมีวงเงินรายปี</option>
-            <option value="heavy">ใช้ OPD เยอะ / อยากได้ OPD ดี ๆ</option>
-          </select>
-        </div>
-        <div>
-          <label class="first">รับความเสี่ยงส่วนแรกได้ไหม</label>
-          <div class="tap-group" data-for="ai_riskChoice">
-            <button type="button" class="tap-card is-active" data-value="auto" onclick="advTapSelect(this);"><b>ให้ระบบเลือกให้</b><small>ตามสวัสดิการเดิม</small></button>
-            <button type="button" class="tap-card" data-value="none" onclick="advTapSelect(this);"><b>ไม่อยากมี</b><small>Deductible/Co-pay</small></button>
-            <button type="button" class="tap-card" data-value="deduct" onclick="advTapSelect(this);"><b>รับ Deductible ได้</b><small>เพื่อประหยัดเบี้ย</small></button>
-            <button type="button" class="tap-card" data-value="copay10" onclick="advTapSelect(this);"><b>รับ Co-pay 10%</b></button>
-            <button type="button" class="tap-card" data-value="copay20" onclick="advTapSelect(this);"><b>รับ Co-pay 20%</b><small>เน้นประหยัด</small></button>
-          </div>
-          <select id="ai_riskChoice" hidden>
-            <option value="auto" selected>ให้ระบบเลือกตามสวัสดิการเดิม</option>
-            <option value="none">ไม่อยากมี Deductible/Co-pay</option>
-            <option value="deduct">รับ Deductible ได้ เพื่อประหยัดเบี้ย</option>
-            <option value="copay10">รับ Co-pay 10% ได้</option>
-            <option value="copay20">รับ Co-pay 20% ได้ เน้นประหยัด</option>
-          </select>
-        </div>
-        <div>
-          <label class="first">ปรับทุนโรคร้ายแรงเอง (บาท)</label>
-          <input type="number" id="ai_ciCapital" value="1000000" step="100000" min="0">
-          <div class="hint">ปกติระบบตั้งให้ตามสไตล์ที่เลือกไว้แล้ว</div>
-        </div>
-      </div>
-    </details>
+    <!-- ค่าที่ระบบตั้งให้เอง ไม่ได้ถามลูกค้าแล้ว แต่ต้องคงไว้ใน DOM เพราะตัวอ่านค่ากับเครื่องจัดแผนยังใช้ทุกตัว
+         ยิ่งถามเยอะลูกค้ายิ่งปิดหนี สามข้อนี้เดาแทนได้จากคำตอบที่ถามไปแล้ว จึงย้ายมาเป็นค่าอัตโนมัติ
+           groupCoverage / riskChoice → ผูกกับคำถามสวัสดิการเดิม (advSyncGroupField)
+           ciCapital                  → ผูกกับสไตล์โรคร้ายแรงและงบ (advSyncCiCapital)
+           opdNeed                    → ตั้งต้นไม่เน้น OPD แล้วให้เครื่องจัดแผนเติมเองถ้างบเหลือ -->
+    <div hidden>
+      <input type="number" id="ai_groupCoverage" value="0">
+      <input type="number" id="ai_ciCapital" value="1000000">
+      <select id="ai_riskChoice">
+        <option value="auto">ให้ระบบเลือกตามสวัสดิการเดิม</option>
+        <option value="none" selected>ไม่อยากมี Deductible/Co-pay</option>
+        <option value="deduct">รับ Deductible ได้ เพื่อประหยัดเบี้ย</option>
+        <option value="copay10">รับ Co-pay 10% ได้</option>
+        <option value="copay20">รับ Co-pay 20% ได้ เน้นประหยัด</option>
+      </select>
+      <select id="ai_opdNeed">
+        <option value="none" selected>ไม่เน้น OPD</option>
+        <option value="light">อยากมีติดไว้นิดหน่อย</option>
+        <option value="moderate">ใช้ OPD เป็นระยะ อยากมีวงเงินรายปี</option>
+        <option value="heavy">ใช้ OPD เยอะ / อยากได้ OPD ดี ๆ</option>
+      </select>
+    </div>
 
     <button class="btn" onclick="runAiPlanner()">จัดแผนให้เลย</button>
   </div>
@@ -3794,7 +3772,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-07c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-08';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6970,40 +6948,11 @@ function ciPerfectCareBenefitTable(){
   </div>`;
 }
 
-function ciPerfectCareDetailSections(){
-  const groups = [
-    {title:'สมอง ระบบประสาท และการรับรู้', items:[
-      ['อัลไซเมอร์/สมองเสื่อม','เริ่มต้น: อายุรแพทย์ประสาทวิทยาวินิจฉัย มี Mini-Mental ต่ำกว่า 20/30 (หรือเทียบเท่า) และสูญเสียความจำ เหตุผล และการรับรู้/เข้าใจอย่างถาวร; รุนแรง: ความบกพร่องทางระบบประสาททำให้ทำกิจวัตรเองไม่ได้ถาวรตั้งแต่ 3 กิจกรรมขึ้นไป. ไม่รวมสาเหตุจากยา แอลกอฮอล์ หรือภาวะทางจิต'],
-      ['เยื่อหุ้มสมองและไขสันหลังอักเสบจากเชื้อแบคทีเรีย','ระยะรุนแรง: ต้องยืนยันจากการเจาะน้ำไขสันหลัง มีความบกพร่องทางระบบประสาทต่อเนื่องอย่างน้อย 60 วัน และทำกิจวัตรเองไม่ได้ถาวรอย่างน้อย 1 กิจกรรม'],
-      ['เนื้องอกในสมองชนิดไม่ใช่มะเร็ง','เริ่มต้น: ผ่าตัดเนื้องอกต่อมใต้สมองผ่านรูจมูก; กลาง: ผ่าเปิดกะโหลกเอาเนื้องอกต่อมใต้สมอง; รุนแรง: CT/MRI ยืนยันก้อนเป็นอันตรายถึงชีวิต กดสมอง/มีอาการทางระบบประสาท และผ่าตัดหรือ Gamma Knife'],
-      ['บาดเจ็บศีรษะรุนแรง / โคม่า','โคม่าระยะรุนแรงต้องใช้เครื่องพยุงชีวิต ไม่ตอบสนองต่อสิ่งกระตุ้นอย่างน้อย 96 ชั่วโมง และหลังจากนั้น 30 วันมีสมองเสียหายถาวรจนทำกิจวัตรไม่ได้; บาดเจ็บศีรษะรุนแรงต้องเกิดจากอุบัติเหตุ มีความพิการทางระบบประสาทถาวรตามรายงานแพทย์. ไม่รวมอาการจากยาเสพติดหรือแอลกอฮอล์'],
-      ['Multiple Sclerosis / Motor Neuron Disease / Muscular Dystrophy / Parkinson / Viral Encephalitis / Poliomyelitis','MS ต้องมีอาการทางประสาทต่อเนื่อง/เป็นซ้ำและหลักฐาน MRI; Motor Neuron Disease ต้องมีการเสื่อมของเซลล์ประสาทสั่งการและความพิการถาวร; Muscular Dystrophy ต้องเป็นโรคพันธุกรรมกล้ามเนื้อเสื่อมที่อ่อนแรงลุกลาม. Parkinson ต้องเป็นชนิด idiopathic ควบคุมด้วยยาไม่ได้—ระยะกลางทำกิจวัตรเองไม่ได้ 2 อย่างต่อเนื่อง 180 วัน และระยะรุนแรง 3 อย่างต่อเนื่อง 180 วัน. Viral encephalitis ระยะรุนแรงทำกิจวัตรไม่ได้ถาวรอย่างน้อย 1 อย่างต่อเนื่อง 60 วัน; โปลิโอต้องอัมพาตหรือกล้ามเนื้อหายใจอ่อนแรงชัดเจนต่อเนื่อง 90 วัน'],
-      ['โรคหลอดเลือดสมอง / ภาวะอะแพลลิก','Major Stroke ต้องเกิดจากสมองอุดตัน เลือดออกในสมอง หรือลิ่มเลือด มีความพิการทางประสาท (ไม่นับอาการชา) ต่อเนื่องอย่างน้อย 45 วัน และ CT/MRI พบรอยโรคใหม่; ไม่รวม TIA และเลือดออก/สมองขาดเลือดจากบาดเจ็บภายนอก. Aplallic syndrome ต้องสมองใหญ่เสียหายกว้างขวาง วินิจฉัยโดย neurologist/neurosurgeon และบันทึกอาการต่อเนื่อง 30 วัน'],
-    ]},
-    {title:'หัวใจ หลอดเลือด และปอด', items:[
-      ['กล้ามเนื้อหัวใจตายเฉียบพลัน','เริ่มต้นคือใส่ Pacemaker และระยะกลางคือใส่ Defibrillator เพราะหัวใจเต้นผิดจังหวะรุนแรงที่รักษาวิธีอื่นไม่ได้ โดย cardiologist รับรอง; ระยะรุนแรงต้องครบทั้ง 3 ข้อ: เจ็บหน้าอกลักษณะหัวใจขาดเลือด, Troponin T/I สูงอย่างน้อย 3 เท่าค่าสูงสุดปกติหรือ CK-MB สูงอย่างน้อย 2 เท่า, และ ECG มีการเปลี่ยนแปลงใหม่จำเพาะของกล้ามเนื้อหัวใจตาย'],
-      ['ผ่าตัดหลอดเลือดหัวใจ / ผ่าตัดลิ้นหัวใจ','หลอดเลือดหัวใจ: เริ่มต้นคือ Transmyocardial Laser Therapy เมื่อยาและ bypass/angioplasty ใช้ไม่ได้; กลางคือ MIDCAB/port access; รุนแรงคือเปิดทรวงอกตัดต่อเส้นเลือดใหม่. ลิ้นหัวใจ: เริ่มต้นคือ balloon valvuloplasty, กลางคือเปลี่ยนลิ้นผ่านสายสวน, รุนแรงคือผ่าตัดเปิดหัวใจซ่อมหรือเปลี่ยนลิ้น. การสวนตรวจอย่างเดียวไม่ใช่ผลประโยชน์'],
-      ['Cardiomyopathy / ความดันหลอดเลือดปอดสูงปฐมภูมิ / COPD ระยะสุดท้าย','Cardiomyopathy ระยะกลาง/รุนแรงต้องหัวใจห้องล่างซ้ายทำงานบกพร่องถาวรอย่างน้อย 90 วันแม้รักษา และอยู่ NYHA class 3/4 ตามลำดับ; COPD ระยะรุนแรงต้อง specialist ยืนยัน ออกซิเจนถาวรโดย pO2 ขณะหายใจอากาศปกติไม่เกิน 55 mmHg และ FEV1 ต่ำกว่า 1 ลิตร; PAH ต้องสวนหัวใจยืนยัน โดยระยะเริ่มต้น NYHA 3 และรุนแรง NYHA 4'],
-      ['ผ่าตัดเอออร์ตา','เริ่มต้น: ผ่าแผลเล็ก/ใช้สายสวนซ่อม aorta ส่วนอกหรือท้องจากโป่งพอง ตีบ อุดตัน หรือผนังแยก โดย Echo หรือ cardiologist ยืนยัน; รุนแรง: ผ่าตัดเปิดอกหรือช่องท้องใช้ graft ซ่อม aorta ส่วนอก/ท้อง. ไม่รวมแขนงของ aorta และไม่รวมวิธีแผลเล็ก/สายสวนในผลประโยชน์ระยะรุนแรง'],
-    ]},
-    {title:'มะเร็ง เลือด และอวัยวะสำคัญ', items:[
-      ['มะเร็ง','เริ่มต้น: CIS/non-invasive ที่พยาธิวิทยายืนยัน ยังไม่ผ่าน basement membrane และไม่ลุกลาม; รวม prostate/thyroid/bladder T1N0M0, CLL ต่ำกว่า RAI 3, melanoma ต่ำกว่า stage 2 และ borderline ovarian. กลาง: มะเร็งเฉพาะอวัยวะระยะต้นที่ผ่าตัดรากถอนโคนพร้อมอวัยวะและต่อมน้ำเหลืองตามรายการ. รุนแรง: พยาธิวิทยายืนยันมะเร็ง invasive ผ่าน basement membrane หรือลุกลาม/แพร่กระจาย. ไม่รวม CIN/PIN, มะเร็งผิวหนังยกเว้น melanoma ตามระยะที่ระบุ และมะเร็งจาก HIV'],
-      ['Aplastic Anemia','เริ่มต้น: ไขกระดูกล้มเหลวกลับเป็นปกติได้ ต้องรับเลือดและใช้ยากระตุ้นไขกระดูกหรือยากดภูมิ พร้อมมีอย่างน้อย 2 ค่า: neutrophil <500, platelets <20,000, reticulocyte <20,000/ลบ.มม.; hematologist ยืนยันจากการตรวจไขกระดูก. รุนแรง: ไขกระดูกล้มเหลวถาวร ยืนยันด้วย bone marrow biopsy มีซีด เม็ดเลือดขาวต่ำ เกล็ดเลือดต่ำ และต้องรับเลือด/ใช้ยา/ปลูกถ่ายไขกระดูก'],
-      ['ตับวาย / ไตวายเรื้อรัง / ไวรัสตับอักเสบขั้นรุนแรง / Medullary Cystic Disease / Lupus Nephritis','ตับวายระยะรุนแรงต้องเป็นตับแข็งระยะท้าย และมีดีซ่านถาวร ท้องมาน ภาวะสมองจากตับ หรือ hepatorenal syndrome; Fulminant Viral Hepatitis ต้องตับเล็กลงเร็ว ตับตายทั้งกลีบ ผลเลือดตับผิดปกติรุนแรงและดีซ่านรุนแรง. ไตวายกลาง: eGFR <15 ml/min/1.73m² ต่อเนื่องอย่างน้อย 6 เดือน; รุนแรง: ต้องล้างไตประจำหรือปลูกถ่ายไต. Medullary cystic ต้องมีถุงน้ำชั้น medulla, tubular atrophy/interstitial fibrosis และไตวายเรื้อรังครบ พร้อม renal biopsy. Lupus nephritis รุนแรงต้อง WHO class 3 ขึ้นไป ยืนยันด้วย biopsy ไตหรือ urine protein/BUN/creatinine'],
-      ['เปลี่ยนอวัยวะสำคัญหรือปลูกถ่ายไขกระดูก','ต้องได้รับการปลูกถ่ายหัวใจ ปอด ตับ ไต ตับอ่อน หรือไขกระดูก เพราะอวัยวะระยะสุดท้าย/ไขกระดูกล้มเหลว ไม่ใช่เพียงอยู่ในรายชื่อรอปลูกถ่ายหรือเป็นผู้บริจาค'],
-    ]},
-    {title:'ตา หู การสื่อสาร และความพิการ', items:[
-      ['ตาบอด / สูญเสียการได้ยิน / สูญเสียความสามารถในการพูด','ตาบอด: เริ่มต้นสูญเสียตา 1 ข้างอย่างสิ้นเชิงและถาวร; กลาง optic nerve atrophy ทั้งสองข้างและตาดีที่สุดเห็น 6/60 หรือต่ำกว่าแม้ใช้อุปกรณ์ช่วย; รุนแรงคือ <3/60 หรือ field of vision <10 องศา. หู: เริ่มต้นต้องสูญเสียสองข้างตั้งแต่ 60 dB ทุกความถี่ต่อเนื่อง 180 วัน; รุนแรงคือ ≥80 dB ทุกความถี่ต่อเนื่อง 180 วัน โดย ENT/Audiometry ยืนยัน. การพูดต้องสูญเสียถาวรจากโรคหรืออุบัติเหตุ และ specialist ยืนยัน'],
-      ['ทุพพลภาพถาวรสิ้นเชิง / อัมพาต','TPD: ทำกิจวัตรเองไม่ได้ถาวรอย่างน้อย 3 กิจกรรม หรือทำงานหารายได้ใด ๆ ไม่ได้ ต่อเนื่องอย่างน้อย 180 วัน; รวมสูญเสียตาสองข้าง มือ/เท้าสองข้าง หรือ ตาหนึ่งข้างร่วมมือ/เท้าหนึ่งข้าง. อัมพาตเริ่มต้นคือใช้แขนหรือขา 1 ข้างไม่ได้ถาวร; รุนแรงคือแขน/ขาอย่างน้อย 2 ข้างใช้งานไม่ได้ถาวรต่อเนื่อง 180 วัน'],
-      ['แผลไหม้ฉกรรจ์','เริ่มต้นและรุนแรงแบ่งตามความลึกระดับสามและสัดส่วนพื้นที่ผิวหนังที่ไหม้; ระยะรุนแรงต้องเป็นแผลไหม้ระดับสามครอบคลุมอย่างน้อย 20% ของพื้นที่ผิวกาย โดยแพทย์ผู้เชี่ยวชาญยืนยัน'],
-    ]},
-    {title:'36 โรคที่คุ้มครองตามชื่อในกรมธรรม์', items:[
-      ['รายชื่อครบถ้วน','อัลไซเมอร์, Aplastic Anemia, เยื่อหุ้มสมองอักเสบแบคทีเรีย, เนื้องอกสมองไม่ใช่มะเร็ง, ตาบอด, มะเร็ง, Cardiomyopathy, ตับวาย, COPD/ปอดระยะสุดท้าย, โคม่า, ผ่าตัดหลอดเลือดหัวใจ, หัวใจวายเฉียบพลัน, ผ่าตัดลิ้นหัวใจ, ไตวายเรื้อรัง, สูญเสียการได้ยิน, TPD, สูญเสียการพูด, แผลไหม้ฉกรรจ์, บาดเจ็บศีรษะรุนแรง, ปลูกถ่ายอวัยวะ/ไขกระดูก, Motor Neuron Disease, Multiple Sclerosis, Muscular Dystrophy, Fulminant Viral Hepatitis, อัมพาต, Parkinson, Primary Pulmonary Arterial Hypertension, Major Stroke, ผ่าตัดเอออร์ตา, Lupus Nephritis, Viral Encephalitis, Aplallic Syndrome, Poliomyelitis, Medullary Cystic Disease, Progressive Scleroderma และ Terminal Illness'],
-    ]}
-  ];
-  return `<div class="content-card plan-detail-faq"><h2>เกณฑ์วินิจฉัยรายกลุ่มโรค</h2><p class="meta">กดหัวข้อเพื่ออ่านเกณฑ์สรุป แต่ละเคสต้องให้แพทย์ผู้เชี่ยวชาญวินิจฉัยและบริษัทพิจารณาจากหลักฐานจริงตามคำจำกัดความในกรมธรรม์</p>${groups.map(g=>`<details><summary>${g.title}</summary>${g.items.map(i=>`<p><strong>${i[0]}</strong><br>${i[1]}</p>`).join('')}</details>`).join('')}<p class="meta">เอกสารอ้างอิง: สัญญาเพิ่มเติม CI Perfect Care ที่ผู้ใช้ส่งให้ ฉบับ 33 หน้า โดยเฉพาะนิยามโรคและหน้าผลประโยชน์ ไม่ควรใช้ข้อความสรุปนี้แทนเอกสารกรมธรรม์ฉบับจริง</p></div>`;
-}
-
+/* เคยมีฟังก์ชัน ciPerfectCareDetailSections() สรุปเกณฑ์วินิจฉัยเป็น 5 หมวดอยู่ตรงนี้ ตอนนี้ลบแล้ว
+   เหตุผลไม่ใช่แค่ว่าซ้ำกับ cipcDefinitionsSection() แต่เพราะการมีข้อมูลนิยามสองชุดคือต้นเหตุของปัญหาจริง
+   ชุดสรุปเคยมีระยะรุนแรงของโรคมะเร็งอยู่ แต่ตอนย้ายมาทำ data/cipc-definitions.json กลับตกไป
+   ลูกค้าที่เปิดหน้าแผนจึงเห็นว่ามะเร็งมีแค่ระยะเริ่มต้นกับระยะกลาง ทั้งที่กรมธรรม์จ่ายระยะลุกลาม 100%
+   ต่อจากนี้ นิยามโรคของแบบนี้ต้องมีที่เดียวคือไฟล์ JSON เท่านั้น ห้ามเขียนสรุปคู่ขนานไว้ในโค้ดอีก */
 const PLAN_DETAILS = {
   main9920: {
     title: 'สมาร์ท โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
@@ -8288,7 +8237,7 @@ function renderAdvisor(inp, rows, riderItems, mainItem, totalY1, entryAge){
   if(el) el.innerHTML = '';
 }
 
-function aiGender(){ return document.querySelector('input[name=ai_gender]:checked').value; }
+function aiGender(){ return document.getElementById('ai_gender').value; }
 function aiAge(){ return currentBEYear() - (parseInt(document.getElementById('ai_birthYear').value,10)||0); }
 function aiReadInputs(){
   return {
@@ -8308,12 +8257,13 @@ function aiReadInputs(){
 function prefillAiFromCalculator(){
   try{
     const inp = readInputs();
-    document.querySelector(`input[name=ai_gender][value="${inp.gender}"]`).checked = true;
+    advSetTap('ai_gender', inp.gender);
     document.getElementById('ai_birthYear').value = inp.birthYear || document.getElementById('birthYear').value;
     const hasDhl = inp.healthList.some(h => h.type === 'dhl');
     const hasEhp = inp.healthList.some(h => h.type === 'ehp');
-    if(hasEhp) document.getElementById('ai_ipdNeed').value = 'elite75';
-    else if(hasDhl) document.getElementById('ai_ipdNeed').value = 'high';
+    // เดิมมีระดับ "วงเงินสูง" แยกต่างหาก แต่ให้ผลเหมือนสมดุลทุกทาง จึงยุบรวมแล้ว
+    if(hasEhp) advSetTap('ai_ipdNeed', 'elite75');
+    else if(hasDhl) advSetTap('ai_ipdNeed', 'balanced');
     if(inp.opdList.length>0) document.getElementById('ai_opdNeed').value = 'moderate';
     if(inp.useCipc) document.getElementById('ai_ciCapital').value = inp.cipcCapital || 1000000;
   }catch(e){}
@@ -9683,23 +9633,65 @@ function advTapSelect(btn){
   group.querySelectorAll('.tap-card').forEach(b => b.classList.toggle('is-active', b === btn));
   sel.dispatchEvent(new Event('change'));
 }
+/* ตั้งค่าให้ปุ่มการ์ดจากโค้ด ใช้ตอนดึงค่ามาจากหน้าคำนวณ ปุ่มกับ select ต้องตรงกันเสมอ
+   ถ้าตั้งแต่ select อย่างเดียว ปุ่มจะยังติ๊กอันเก่าค้างไว้ ลูกค้าเห็นแล้วสับสน */
+function advSetTap(selectId, value){
+  const sel = document.getElementById(selectId);
+  if(!sel) return;
+  sel.value = value;
+  const group = document.querySelector(`.tap-group[data-for="${selectId}"]`);
+  if(group) group.querySelectorAll('.tap-card').forEach(b =>
+    b.classList.toggle('is-active', b.dataset.value === value));
+}
+
+/* เพดานทุนที่แต่ละสไตล์ทำได้จริง ห้ามให้กฎงบดันทุนเกินเพดานของผลิตภัณฑ์
+   D Care 2.5 ล้านคือเพดานโหมดสองระยะ · Multiple CI 2 ล้านคือทุนสูงสุดที่บริษัทเปิดขาย
+   ส่วน CI Perfect Care ยังมีกฎ 10 เท่าของทุนสัญญาหลักคุมอีกชั้นในเครื่องจัดแผน */
+const ADV_CI_MAX_BY_STYLE = {
+  balanced:  3000000,
+  broad:     3000000,
+  cancerckd: 3000000,
+  budget:    2500000,
+  multi:     2000000,
+  none:            0,
+};
+/* งบมากพอ ควรได้ทุนโรคร้ายแรงมากขึ้น ไม่ใช่ล็อก 1 ล้านทุกคน
+   แต่ไม่ใช่คูณดื้อ ๆ เพราะทุนที่ตั้งได้จริงถูกจำกัดด้วยผลิตภัณฑ์ ไม่ใช่ด้วยกำลังจ่าย */
+function advCiTargetByBudget(budget){
+  const b = Number(budget) || 0;
+  if(b >= 120000) return 3000000;
+  if(b >=  60000) return 2000000;
+  return 1000000;
+}
 function advSyncCiCapital(){
   const style = document.getElementById('ai_ciStyle');
   const cap = document.getElementById('ai_ciCapital');
+  const budget = document.getElementById('ai_budget');
   if(!style || !cap) return;
-  const v = ADV_CI_CAPITAL_BY_STYLE[style.value];
-  if(v !== undefined) cap.value = v;
+  const base = ADV_CI_CAPITAL_BY_STYLE[style.value];
+  if(base === undefined) return;
+  if(base === 0){ cap.value = 0; return; }
+  const max = ADV_CI_MAX_BY_STYLE[style.value] !== undefined ? ADV_CI_MAX_BY_STYLE[style.value] : base;
+  const want = Math.max(base, advCiTargetByBudget(budget ? budget.value : 0));
+  cap.value = Math.min(want, max);
+  const hint = document.getElementById('ai_ciCapitalHint');
+  if(hint) hint.textContent = `ระบบตั้งทุนให้ ${fmt(Number(cap.value))} บาท ตามสไตล์ที่เลือกและงบที่กรอก`;
 }
-/* ไม่มีสวัสดิการเดิม ก็ไม่ต้องถามวงเงินสวัสดิการ
-   ต้องล้างค่าเป็น 0 ด้วย ไม่งั้นเลือกมีแล้วกรอกไว้ แล้วสลับกลับเป็นไม่มี ค่าเดิมจะค้างและคำนวณผิด */
+
+/* คำถามสวัสดิการเดิมกับคำถาม "รับความเสี่ยงส่วนแรกได้ไหม" เป็นเรื่องเดียวกันในทางปฏิบัติ
+   คนที่มีสวัสดิการอยู่แล้วคือคนที่รับส่วนแรกได้ เพราะของเดิมจ่ายให้ก่อนอยู่แล้ว
+   จึงยุบเหลือคำถามเดียว แล้วตั้งวงเงินกับตัวเลือกส่วนแรกให้เองตรงนี้
+   30,000 คือระดับที่ตรรกะเดิมใช้ตัดสินว่าคุ้มที่จะใช้ Deductible (ดู useDeduct) */
 function advSyncGroupField(){
   const has = document.getElementById('ai_hasGroup');
-  const box = document.getElementById('ai_groupCoverageBox');
-  const inp = document.getElementById('ai_groupCoverage');
-  if(!has || !box || !inp) return;
+  const cov = document.getElementById('ai_groupCoverage');
+  const risk = document.getElementById('ai_riskChoice');
+  if(!has || !cov || !risk) return;
   const yes = has.value === 'yes';
-  box.hidden = !yes;
-  if(!yes) inp.value = 0;
+  cov.value = yes ? 30000 : 0;
+  // ไม่มีสวัสดิการต้องเป็น none ไม่ใช่ auto เพราะ auto จะปล่อยให้ระบบใส่ Deductible ได้
+  // ทั้งที่ลูกค้าไม่มีอะไรมารับส่วนแรกให้เลย
+  risk.value = yes ? 'auto' : 'none';
 }
 
 function advPricedItems(state, input){
@@ -14452,10 +14444,13 @@ function ciXwCell(plan, names){
     tag = st.map(s => `<span class="xw-tag xw-${s}">${CIPC_STAGE[s].label}</span>`).join('');
     note = st.length > 1 ? 'ไล่จ่ายเป็นระยะ' : '';
   } else if(plan === 'dcare'){
+    /* ต้องใช้ถ้อยคำชุดเดียวกับหน้าแผน D Care ห้ามเขียนคำใหม่ตรงนี้
+       เพราะ 'ระยะเริ่มต้น' ของ D Care ไม่ได้แปลว่าจ่ายตั้งแต่ระยะเริ่มต้น
+       แต่แปลว่าโรคนี้เคลมได้เฉพาะคนที่ซื้อโหมดสองระยะ ซึ่งคนละความหมายกันคนละเรื่อง */
     const early = ds.some(d => (d.stage || 'severe') === 'early');
     const sev   = ds.some(d => (d.stage || 'severe') !== 'early');
-    if(sev)   tag += `<span class="xw-tag xw-severe">ระยะรุนแรง</span>`;
-    if(early) tag += `<span class="xw-tag xw-early">ระยะเริ่มต้น</span>`;
+    if(sev)   tag += `<span class="xw-tag xw-severe">${DCARE_STAGE_BADGE.both.label}</span>`;
+    if(early) tag += `<span class="xw-tag xw-early">${DCARE_STAGE_BADGE.early.label}</span>`;
     // D Care ขายเป็นกลุ่ม ถ้าไม่บอกว่าโรคนี้อยู่กลุ่มไหน ลูกค้าจะนึกว่าซื้อแบบไหนก็ได้โรคนี้
     const gs = [...new Set(ds.map(d => d._groupLabel).filter(Boolean))];
     note = gs.length ? 'ต้องซื้อกลุ่ม' + gs.join(' หรือ ') : '';
