@@ -6947,6 +6947,27 @@ const PLAN_BROCHURES = {
   dcare: [{file:'d-care.pdf', label:'โบรชัวร์ D Care'}],
   hb: [{file:'hb-rider.pdf', label:'โบรชัวร์ HB'}],
   pa: [{file:'pa-easy.pdf', label:'โบรชัวร์ PA Easy Plan'}],
+
+  /* สัญญาหลักและแบบบำนาญ · ป้ายต้องบอกตรงว่าไฟล์นั้นคืออะไร
+     เอกสารสองชนิดนี้ต่างกันมากในสายตาลูกค้า
+       "เอกสารสรุปแบบประกัน" คือเอกสารอธิบายแบบ อ่านแล้วเข้าใจว่าคุ้มครองอะไร
+       "ตารางอัตราเบี้ย" คือตารางเบี้ยทางการของบริษัท เปิดมาเจอแต่ตัวเลขล้วน
+     ถ้าเขียนว่าโบรชัวร์ทั้งคู่ ลูกค้าที่กดหวังเห็นความคุ้มครองจะเจอตารางเบี้ยแล้วงง
+     ห้ามใส่เอกสารภายในของตัวแทน เช่น หลักเกณฑ์รับประกัน HNW หรือสไลด์แจ้งจองสิทธิ์การขาย */
+  main997:              [{file:'smart-protection-99-7.pdf',            label:'เอกสารสรุปแบบประกัน สมาร์ท โพรเทคชั่น 99/7'}],
+  main8010:             [{file:'smart-protection-80-10.pdf',           label:'เอกสารสรุปแบบประกัน สมาร์ท โพรเทคชั่น 80/10'}],
+  lifetimeprotection:   [{file:'lifetime-protection-99-20.pdf',        label:'เอกสารสรุปแบบประกัน ไลฟ์ไทม์ โพรเทคชั่น 99/20'}],
+  /* อีซี่ โพรเทคชั่นมีแต่สไลด์ขายภายในกับตารางเบี้ย สไลด์ถูก .gitignore ไว้ตั้งใจแล้ว
+     (แจ้งวันเปิดขาย เงื่อนไขการส่งงาน) จึงลงได้เฉพาะตารางเบี้ย ห้ามคัดลอกสไลด์เข้ามาเลี่ยง .gitignore */
+  easyprotection:       [{file:'easy-protection-rates.pdf',            label:'ตารางอัตราเบี้ย อีซี่ โพรเทคชั่น'}],
+  waigao9090:           [{file:'waigao-90-90-rates.pdf',               label:'ตารางอัตราเบี้ย สบายใจ 90/90'}],
+  wholelife991cashback: [{file:'whole-life-99-1-cashback.pdf',         label:'ใบปลิว คุ้มครองตลอดชีพ 99/1 มีเงินคืน'}],
+  flexi_retire_90xx:    [{file:'flexi-retire-9055-9060-9065-rates.pdf', label:'ตารางอัตราเบี้ย เฟล็กซี่ รีไทร์ 9055/9060/9065'}],
+  flexi_retire_90_1:    [{file:'flexi-retire-90-1-rates.pdf',          label:'ตารางอัตราเบี้ย เฟล็กซี่ รีไทร์ 90/1'}],
+  flexi_retire_90_5:    [{file:'flexi-retire-90-5-rates.pdf',          label:'ตารางอัตราเบี้ย เฟล็กซี่ รีไทร์ 90/5'}],
+  mt_8501:              [{file:'mt-8501.pdf',                          label:'เอกสารสรุปแบบประกัน เมืองไทย 8501'}],
+  mt_9901_d65:          [{file:'mt-9901-d65.pdf',                      label:'เอกสารสรุปแบบประกัน เมืองไทย 9901 ดี65'}],
+  mt_happy_retire_60:   [{file:'happy-retire-60.pdf',                  label:'เอกสารสรุปแบบประกัน แฮปปี้ รีไทร์ 60'}],
 };
 
 function brochureUrl(file){
@@ -6958,7 +6979,9 @@ function brochureUrl(file){
 function renderBrochureButtons(id){
   const list = PLAN_BROCHURES[id];
   if(!list || !list.length) return '';
-  const buttons = list.map(b => `<a class="btn-download-brochure" href="${brochureUrl(b.file)}" target="_blank" rel="noopener" download>📄 ดาวน์โหลด${list.length>1?b.label.replace('โบรชัวร์ ',''):'โบรชัวร์ฉบับเต็ม (PDF)'}</a>`).join('');
+  /* ใช้ป้ายที่ตั้งไว้ตรง ๆ เสมอ เดิมเขียนทับเป็นคำว่า "โบรชัวร์ฉบับเต็ม" เมื่อมีไฟล์เดียว
+     ซึ่งใช้ไม่ได้กับแบบที่ไฟล์เป็นตารางอัตราเบี้ย ลูกค้าจะกดเข้าไปแล้วเจอคนละอย่างกับที่ปุ่มบอก */
+  const buttons = list.map(b => `<a class="btn-download-brochure" href="${brochureUrl(b.file)}" target="_blank" rel="noopener" download>📄 ดาวน์โหลด${b.label}${/PDF/.test(b.label) ? '' : ' (PDF)'}</a>`).join('');
   return `<div class="brochure-download-row">${buttons}</div>`;
 }
 
