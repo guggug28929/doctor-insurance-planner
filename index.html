@@ -268,7 +268,6 @@
   }
   #page-knowledge .faq blockquote,
 
-  #page-faq .faq-chatbot{
     margin:18px 22px 18px;
     padding:18px;
     border:1px solid #edbfd1;
@@ -276,7 +275,6 @@
     background:linear-gradient(135deg,#fff1f6 0%,#ffffff 72%);
     box-shadow:0 6px 22px rgba(143,13,64,.08);
   }
-  #page-faq .faq-chatbot h3{
     margin:0 0 8px;
     padding:0;
     border:0;
@@ -284,7 +282,6 @@
     color:var(--pink-deep);
     font-size:1.08rem;
   }
-  #page-faq .faq-chatbot p{
     margin:8px 0 12px;
     color:#4a2635;
     line-height:1.8;
@@ -295,7 +292,6 @@
     gap:10px;
     align-items:flex-start;
   }
-  #page-faq #faqChatInput{
     flex:1;
     min-height:82px;
     resize:vertical;
@@ -308,13 +304,10 @@
     color:#2d1822;
     background:#fff;
   }
-  #page-faq #faqChatInput:focus{outline:2px solid #ffd2e3;border-color:var(--pink);}
-  #page-faq .faq-chat-actions{
     display:flex;
     flex-direction:column;
     gap:8px;
   }
-  #page-faq .faq-chat-actions button{
     min-width:116px;
     border:0;
     border-radius:12px;
@@ -326,13 +319,11 @@
     cursor:pointer;
     box-shadow:0 4px 12px rgba(200,30,92,.18);
   }
-  #page-faq .faq-chat-actions button.secondary{
     background:#fff;
     color:var(--pink-deep);
     border:1px solid #e7b5ca;
     box-shadow:none;
   }
-  #page-faq #faqChatAnswer{
     margin-top:14px;
     padding:14px 16px;
     border:1px solid #f0c9d8;
@@ -342,28 +333,22 @@
     line-height:1.85;
     font-size:.95rem;
   }
-  #page-faq #faqChatAnswer .hit-title{
     color:var(--pink-deep);
     font-weight:800;
     margin:10px 0 5px;
   }
-  #page-faq #faqChatAnswer mark{
     background:#ffdce9;
     color:var(--pink-deep);
     padding:0 2px;
     border-radius:4px;
   }
-  #page-faq #faqChatAnswer .chat-meta{
     color:#7b5664;
     font-size:.9rem;
     margin-bottom:8px;
   }
-  #page-faq #faqChatAnswer a{
     color:var(--pink-deep);
     font-weight:700;
   }
-  #page-faq .faq-chatbot code,
-  #page-faq #faqChatAnswer code{
     background:#fff;
     border:1px solid #f0c9d8;
     border-radius:6px;
@@ -372,17 +357,14 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-size:.88em;
   }
-  #page-faq #faqChatAnswer .chat-ai-answer{
     white-space:pre-wrap;
   }
-  #page-faq #faqChatAnswer .chat-error{
     color:#7a1f2a;
     background:#fff6f6;
     border:1px solid #f1c7c7;
     border-radius:12px;
     padding:12px 14px;
   }
-  #page-faq #faqChatAnswer .chat-ok{
     color:#25543b;
     background:#f3fff7;
     border:1px solid #ccebd8;
@@ -392,8 +374,6 @@
   }
   @media(max-width:720px){
     #page-faq .faq-chat-row{flex-direction:column;}
-    #page-faq .faq-chat-actions{flex-direction:row;flex-wrap:wrap;width:100%;}
-    #page-faq .faq-chat-actions button{flex:1;min-width:120px;}
   }
   .ai-priority-box{
     margin-top:12px;
@@ -1751,9 +1731,6 @@
   .faq-inline-link{background:var(--pink-soft,#fff0f5);border:1px solid #eab9cd;color:var(--pink-deep);
     border-radius:999px;padding:3px 11px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;}
   .faq-inline-link:hover{background:#ffe3ee;}
-  .faq-ai{margin-top:28px;}
-  .faq-ai .faq-chatbot{background:#fff;border:1.5px solid #eab9cd;border-radius:14px;padding:20px 22px;}
-  .faq-ai h3{margin:0 0 8px;color:var(--pink-deep);font-size:1.02rem;}
   .faq-cta{margin-top:16px;text-align:center;}
   .faq-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
   .faq-cta-btns .btn{width:auto;margin-top:0;padding:12px 22px;text-decoration:none;
@@ -8384,14 +8361,15 @@ function showPlanDetail(id, options = {}){
       <h2>เงื่อนไขและข้อควรทราบ</h2>
       <ul>${p.conditions.map(c=>`<li>${c}</li>`).join('')}</ul>
     </div>
+    ${p.rateTable || !p.pension ? `
     <div class="content-card">
       <h2>ตารางอัตราเบี้ยอ้างอิง</h2>
       ${p.freqSupported ? `<label style="display:block;margin-bottom:8px;font-size:.82rem;color:var(--muted);">เลือกงวดชำระเพื่อดูอัตราเบี้ยจริงของแผนนี้</label>${renderPlanDetailFreqSelector()}` : ''}
       <div id="planDetailRateBody">${p.rateTable ? p.rateTable('annual') : '<p>ไม่มีตารางเบี้ยแยกสำหรับแผนนี้</p>'}</div>
       ${p.rateNote ? `<p class="meta" style="margin-top:10px;">${p.rateNote}</p>` : ''}
-      ${!p.freqSupported ? `<p class="meta" style="margin-top:6px;">แผนนี้ยังไม่มีตารางเบี้ยรายงวด (ราย 6 เดือน/3 เดือน/เดือน) ที่เผยแพร่จากบริษัท จึงแสดงเฉพาะเบี้ยรายปี กรุณาสอบถามอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคาแบบผ่อนชำระ</p>` : ''}
+      ${!p.freqSupported ? `<p class="meta" style="margin-top:6px;">แผนนี้ยังไม่มีตารางเบี้ยรายงวด (ราย 6 เดือน/3 เดือน/เดือน) ที่เผยแพร่จากบริษัท จึงแสดงเฉพาะเบี้ยรายปี ถ้าต้องการผ่อนชำระ ทักมาถามหมอกึ๊กเพื่อขออัตราที่แท้จริงก่อนตัดสินใจได้เลยครับ</p>` : ''}
       <p class="meta" style="margin-top:6px;">ตัวเลขในตารางนี้ใช้ในเครื่องคำนวณเบี้ยของเว็บนี้ อ้างอิงจากไฟล์คำนวณต้นฉบับและตารางเบี้ยที่เผยแพร่บนเว็บไซต์ทางการของบริษัท เพื่อการนำเสนอเบื้องต้น ไม่ใช่เอกสารเสนอขายอย่างเป็นทางการ</p>
-    </div>
+    </div>` : ''}
     ${p.faq && p.faq.length ? `
     <div class="content-card">
       <h2>คำถามที่พบบ่อย</h2>
@@ -9529,10 +9507,15 @@ function advFixMainRiderRule(state){
 }
 
 /* ทุนสัญญาหลักขั้นต่ำที่ชุดโรคร้ายแรงชุดนี้ต้องการ */
+/* สัญญาที่บริษัทจำกัดทุนไว้ไม่เกิน 10 เท่าของทุนสัญญาหลัก
+   เดิมรายการนี้มีแต่ CI Perfect Care ทำให้ มัลติเพิล ซีไอ หลุดกฎ
+   แล้วระบบเสนอ MCI 1 ล้านคู่กับทุนหลัก 50,000 ซึ่งเป็น 20 เท่า ยื่นจริงโดนตีกลับ
+   เพิ่มสัญญาตัวใหม่ที่มีกฎเดียวกันเข้าลิสต์นี้เสมอ อย่าไปเพิ่มเงื่อนไขกระจายในโค้ด */
+const ADV_MAIN_RATIO_KINDS = ['cipc', 'mci'];
 function advRequiredMainCapital(ciItems){
   let need = 0;
   (ciItems || []).forEach(c => {
-    if(c.kind === 'cipc') need = Math.max(need, Math.ceil(c.capital / ADV_CIPC_MAIN_RATIO));
+    if(ADV_MAIN_RATIO_KINDS.includes(c.kind)) need = Math.max(need, Math.ceil(c.capital / ADV_CIPC_MAIN_RATIO));
   });
   return need;
 }
@@ -9555,13 +9538,27 @@ function advClampCiToMain(state){
   const m = ADV_MAIN_LEVELS[state.mainLevel];
   if(!m) return null;
   const cap = m.capital * ADV_CIPC_MAIN_RATIO;
+  const LABEL = {cipc: 'CI Perfect Care', mci: 'มัลติเพิล ซีไอ'};
   let msg = null;
   state.ci.forEach(c => {
-    if(c.kind === 'cipc' && c.capital > cap){
-      msg = `ลดทุน CI Perfect Care เหลือ ${fmt(cap)} บาท เพราะทำทุนได้ไม่เกิน ${ADV_CIPC_MAIN_RATIO} เท่าของทุนสัญญาหลัก ${fmt(m.capital)} บาท`;
-      c.capital = cap;
+    if(!ADV_MAIN_RATIO_KINDS.includes(c.kind) || c.capital <= cap) return;
+    /* มัลติเพิล ซีไอ ขายได้เฉพาะ 3 ระดับทุนที่มีในตาราง ปัดลงเป็นตัวเลขสวย ๆ ไม่ได้
+       ต้องถอยไปทุนที่ขายจริงซึ่งไม่เกินเพดาน ถ้าไม่มีเลยให้ถอดออก ดีกว่าเสนอทุนที่ซื้อไม่ได้ */
+    if(c.kind === 'mci'){
+      const fit = multipleCiNearestCapital(cap);
+      if(fit && fit <= cap){
+        msg = `ลดทุน มัลติเพิล ซีไอ เหลือ ${fmt(fit)} บาท เพราะทำทุนได้ไม่เกิน ${ADV_CIPC_MAIN_RATIO} เท่าของทุนสัญญาหลัก ${fmt(m.capital)} บาท`;
+        c.capital = fit;
+      } else {
+        msg = `ถอด มัลติเพิล ซีไอ ออก เพราะทุนขั้นต่ำที่บริษัทเปิดขายยังเกิน ${ADV_CIPC_MAIN_RATIO} เท่าของทุนสัญญาหลัก ${fmt(m.capital)} บาท`;
+        c.capital = 0;
+      }
+      return;
     }
+    msg = `ลดทุน ${LABEL[c.kind]} เหลือ ${fmt(cap)} บาท เพราะทำทุนได้ไม่เกิน ${ADV_CIPC_MAIN_RATIO} เท่าของทุนสัญญาหลัก ${fmt(m.capital)} บาท`;
+    c.capital = cap;
   });
+  state.ci = state.ci.filter(c => c.capital !== 0);
   return msg;
 }
 const ADV_OPD_ORDER = ['heavy','moderate','light','none'];
@@ -9642,7 +9639,7 @@ function advCiItems(input, healthItems, opts){
     // จึงไม่ซ้อน Care Plus ให้เปลืองเบี้ย แต่ใช้ CI เป็นเงินก้อนชดเชยรายได้แทน
     if(input.ciStyle === 'budget') return advDcareItems(target);
     const eliteOut = [{kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)}];
-    if(input.ciStyle === 'multi') advPushMci(eliteOut, target);
+    if(input.ciStyle === 'multi') advPushMci(eliteOut, target, input);
     return eliteOut;
   }
   /* Care Plus ไม่ใช่โรคร้ายแรงแบบเจอจ่ายจบ แต่เป็นตัวจ่ายค่ารักษาหมวด 9-11 ที่สัญญาสุขภาพไม่คุ้มครอง
@@ -9656,7 +9653,7 @@ function advCiItems(input, healthItems, opts){
   // ชั้นที่ 2 CI Perfect Care ซื้อสิ่งที่ D Care ไม่มี คือตาข่ายเสียชีวิตและระยะกลาง
   out.push({kind:'cipc', capital: Math.min(Math.max(500000, target), 5000000)});
   // ชั้นที่ 3 เติม มัลติเพิล ซีไอ ให้คนที่กังวลป่วยหลายระบบอวัยวะ
-  if(input.ciStyle === 'multi') advPushMci(out, target);
+  if(input.ciStyle === 'multi') advPushMci(out, target, input);
   return out;
 }
 
@@ -9670,7 +9667,11 @@ function advDcareItems(target){
   const cats = ADV_DCARE_FULL_CATS;
   // งบทุนที่ตั้งไว้ ถูกหารเฉลี่ยลงทุกกลุ่ม แล้วปัดลงเป็นขั้นละ 50,000 ตามที่บริษัทรับ
   const perCat = Math.floor(Math.min(target, st.maxSum) / cats.length / 50000) * 50000;
-  if(perCat * cats.length < st.minSum || perCat <= 0){
+  /* ทุนขั้นต่ำ 250,000 บาทเป็นเกณฑ์ "ต่อกลุ่มโรค" ไม่ใช่ยอดรวมทุกกลุ่ม
+     เจ้าของธุรกิจยืนยันเมื่อ 9 ส.ค. 2569 · เดิมโค้ดเทียบยอดรวม จึงเสนอกลุ่มละ 200,000 ได้
+     ซึ่งต่ำกว่าขั้นต่ำจริง ตัวแทนยื่นใบคำขอแล้วโดนตีกลับ
+     เพดาน 2,500,000 ยังเป็นยอดรวมทุกกลุ่มตามเดิม ตรงนี้คนละเกณฑ์กัน อย่าสลับ */
+  if(perCat < st.minSum || perCat <= 0){
     // งบน้อยเกินกว่าจะซื้อครบหมวด ถอยไปกลุ่มยอดฮิตซึ่งต้องซื้อเดี่ยวอยู่แล้ว
     const solo = Math.max(st.minSum, Math.min(target, st.maxSum));
     return [{kind:'dcare', cat:'popular', capital: solo, stage: ADV_DCARE_STAGE}];
@@ -9679,9 +9680,15 @@ function advDcareItems(target){
 }
 /* ---------- ชั้นที่ 3 · มัลติเพิล ซีไอ ----------
    ตารางเบี้ยมีเฉพาะ 3 ระดับทุน ห้ามเทียบบัญญัติไตรยางศ์ จึงต้องปัดลงหาทุนที่ขายได้จริง */
-function advPushMci(out, target){
+function advPushMci(out, target, input){
   const cap = multipleCiNearestCapital(Math.min(target, 2000000));
-  if(cap) out.push({kind:'mci', capital: cap});
+  if(!cap) return;
+  const item = {kind:'mci', capital: cap};
+  /* ตารางเบี้ยเริ่มที่อายุ 7 ปี เด็กเล็กกว่านั้นบริษัทยังไม่รับทำ
+     ถ้าไม่กันไว้ ระบบจะใส่รายการที่ตีราคาไม่ได้ลงในข้อเสนอ แล้วเบี้ยรวมจะขาดของจริงไป
+     ตัวแทนเอาไปเสนอลูกค้าแล้วยื่นไม่ผ่าน */
+  if(input && !advCanPrice(item, input)) return;
+  out.push(item);
 }
 
 /* ---------- OPD / PA ---------- */
@@ -10549,71 +10556,6 @@ function advBuildResult(input){
 function plannerEscapeHtml(s){
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function plannerPackageForAi(pkg, idx){
-  return {
-    index: idx,
-    name: pkg.name,
-    premium: pkg.premium,
-    role: pkg.kind === 'primary' ? 'ข้อเสนอหลักที่ระบบจัดตามลำดับความเสี่ยง' : 'ทางเลือกสำรอง',
-    conflictsStatedPreference: !!pkg.conflictsStated,
-    lockedFromBeingTop: !!pkg.conflictsStated,
-    recommendedBeforeAI: !!pkg.recommended,
-    warnings: pkg.warnings || [],
-    missing: pkg.missing || [],
-    items: (pkg.items || []).map(it => ({
-      kind: it.kind,
-      label: packageLabelItem(it).replace(/<[^>]*>/g,''),
-      premium: it.premium || 0
-    })),
-    why: pkg.why || []
-  };
-}
-function plannerProfileForAi(input){
-  return {
-    gender: input.gender,
-    age: input.age,
-    birthYear: input.birthYear,
-    budget: input.budget || 0,
-    hasGroup: !!input.hasGroup,
-    groupCoverage: input.groupCoverage || 0,
-    ipdNeed: document.getElementById('ai_ipdNeed')?.selectedOptions?.[0]?.textContent || input.ipdNeed,
-    opdNeed: document.getElementById('ai_opdNeed')?.selectedOptions?.[0]?.textContent || input.opdNeed,
-    riskChoice: document.getElementById('ai_riskChoice')?.selectedOptions?.[0]?.textContent || input.riskChoice,
-    ciCapital: input.ciCapital || 0,
-    ciStyle: document.getElementById('ai_ciStyle')?.selectedOptions?.[0]?.textContent || input.ciStyle
-  };
-}
-function renderAiBackendAdvice(aiAdvice, isLoading=false, errorText=''){
-  if(isLoading){
-    return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#b7e4c7;background:#f4fff8;">
-      <b>AI กำลังวิเคราะห์แพ็กเกจจากเบี้ยจริงในเว็บ...</b><br>
-      ระบบยังใช้เครื่องคำนวณเดิมเป็นฐาน เพื่อกัน AI แต่งเบี้ยหรือแต่งชื่อแผนเอง
-    </div>`;
-  }
-  if(errorText){
-    // ยังไม่ได้ตั้งค่า AI บนเซิร์ฟเวอร์ = เรื่องภายใน ไม่ใช่ความผิดพลาดที่ลูกค้าต้องเห็น
-    // ผลลัพธ์ที่แสดงอยู่มาจาก engine กฎซึ่งทำงานครบอยู่แล้ว จึงเงียบไปเลย
-    if(/ANTHROPIC_API_KEY|not configured/i.test(errorText)) return '';
-    return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#f3b4b4;background:#fff7f7;">
-      <b>ชั้นวิเคราะห์เสริมด้วย AI ยังไม่พร้อมใช้งานตอนนี้</b><br>${plannerEscapeHtml(errorText)}<br>
-      ผลที่แสดงด้านล่างมาจากเครื่องคำนวณและกฎการจัดแผนของระบบ ซึ่งใช้งานได้ตามปกติ
-    </div>`;
-  }
-  if(!aiAdvice) return '';
-  const reasons = (aiAdvice.reasons||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
-  const risks = (aiAdvice.riskFlags||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
-  const qs = (aiAdvice.followUpQuestions||[]).map(x=>`<li>${plannerEscapeHtml(x)}</li>`).join('');
-  return `<div class="ai-note" id="aiBackendPlanAdvisor" style="margin-top:14px;border-color:#b7e4c7;background:#f4fff8;">
-    <b>AI วิเคราะห์แผนจากเบี้ยจริงในเว็บแล้ว</b>
-    ${aiAdvice.model?`<div class="meta">model: ${plannerEscapeHtml(aiAdvice.model)} • tier: ${plannerEscapeHtml(aiAdvice.routeTier||'')}</div>`:''}
-    ${aiAdvice.summary?`<p>${plannerEscapeHtml(aiAdvice.summary)}</p>`:''}
-    ${reasons?`<b>เหตุผลที่เลือก</b><ul>${reasons}</ul>`:''}
-    ${aiAdvice.budgetWarning?`<p style="color:#9a4f00;"><b>เรื่องงบ:</b> ${plannerEscapeHtml(aiAdvice.budgetWarning)}</p>`:''}
-    ${aiAdvice.clientMessage?`<b>ข้อความสั้นสำหรับคุยกับลูกค้า</b><p>${plannerEscapeHtml(aiAdvice.clientMessage)}</p>`:''}
-    ${risks?`<b>จุดที่ต้องระวัง</b><ul>${risks}</ul>`:''}
-    ${qs?`<b>ควรถามเพิ่ม</b><ul>${qs}</ul>`:''}
-  </div>`;
-}
 function advGapTableHtml(rows){
   if(!rows || !rows.length) return '';
   return `<div class="adv-gap-wrap">
@@ -10756,7 +10698,7 @@ function closePkgModal(){
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closePkgModal(); });
 
 let AI_LAST_INPUT = null;
-function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, errorText=''){
+function renderAiPlannerOutput(input, result){
   AI_LAST_INPUT = input;
   AI_PACKAGES = result.packages;
   window.AI_PRIMARY_PREMIUM = result.primary ? result.primary.premium : 0;
@@ -10807,32 +10749,12 @@ function renderAiPlannerOutput(input, result, aiAdvice=null, loading=false, erro
       })()}
       ${followNote}
       ${noteNo40}
-      ${renderAiBackendAdvice(aiAdvice, loading, errorText)}
       <div class="ai-result-grid">
         ${result.packages.map((p,idx)=>renderAiPackageCard(p, idx, input)).join('')}
       </div>
       <div class="ai-note" style="margin-top:14px;">ตัวเลขเป็นเบี้ยปีแรกโดยประมาณตามตารางในไฟล์นี้ ไม่รวมผลตรวจสุขภาพ การเพิ่มเบี้ย หรือข้อยกเว้นเฉพาะบุคคล ควรเช็กใบเสนอจริงก่อนปิดการขายทุกครั้ง</div>
     </div>`;
   dgApplyReveal(out);
-}
-async function askAiPlannerBackend(input, result){
-  const response = await fetch(INSURANCE_PLAN_AI_ENDPOINT, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      profile: plannerProfileForAi(input),
-      packages: result.packages.map(plannerPackageForAi),
-      allowWebSearch: false
-    })
-  });
-  const data = await response.json().catch(()=>({}));
-  if(!response.ok) throw new Error(data.error || `AI backend error ${response.status}`);
-  // AI ปรับอันดับได้เฉพาะแผนที่ไม่ขัดกับสิ่งที่ลูกค้าแจ้งไว้เท่านั้น
-  const target = result.packages[data.recommendationIndex];
-  if(Number.isInteger(data.recommendationIndex) && target && !target.conflictsStated){
-    result.packages.forEach((p,idx)=>p.recommended = idx === data.recommendationIndex);
-  }
-  renderAiPlannerOutput(input, result, data, false, '');
 }
 function runAiPlanner(){
   const input = aiReadInputs();
@@ -10846,11 +10768,8 @@ function runAiPlanner(){
     return;
   }
   const result = advBuildResult(input);
-  renderAiPlannerOutput(input, result, null, true, '');
+  renderAiPlannerOutput(input, result);
   out.scrollIntoView({behavior:'smooth', block:'start'});
-  askAiPlannerBackend(input, result).catch(err=>{
-    renderAiPlannerOutput(input, result, null, false, err.message || 'ไม่ทราบสาเหตุ');
-  });
 }
 
 function setChecked(id, checked){
@@ -13273,161 +13192,6 @@ function faqEscapeRegExp(s){
 }
 // อ่านจาก FAQ_ITEMS โดยตรง เคยพลาดตอนย้ายหน้า เพราะฟังก์ชันนี้ไปดึงจาก DOM ที่ถูกลบไปแล้ว
 // ทำให้ AI ได้ resource เปล่า แล้วตอบโดยไม่มีข้อมูลของเราเลย
-function faqGetResourceList(){
-  const strip = t => (t || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-  return FAQ_ITEMS.map((it, idx) => {
-    const title = it.q;
-    const body = [strip(it.lead), strip(it.body), it.doc ? 'มุมของหมอ: ' + strip(it.doc) : '']
-      .filter(Boolean).join('\n');
-    return {idx, title, body, text:(title + '\n' + body).trim()};
-  });
-}
-const FAQ_CHAT_KEYWORDS = [
-  {keys:['ระยะรอ','รอคอย','waiting','30 วัน','120 วัน'], terms:['ระยะเวลารอคอย','Waiting Period','30 วัน','120 วัน','โรคระยะก่อตัวนาน']},
-  {keys:['แฟกซ์','fax','เคลม','claim','direct claim','สำรองจ่าย'], terms:['แฟกซ์เคลม','Fax Claim','Direct Claim','สำรองจ่าย','Pre-authorization','พรีเคลม']},
-  {keys:['copay','copayment','โคเพย์','ร่วมจ่าย'], terms:['Copayment','ร่วมจ่าย','20%','เงื่อนไข Copayment']},
-  {keys:['ปกปิด','แถลง','โกหก','ประวัติ','pre-existing','โรคเดิม'], terms:['ปกปิดประวัติ','แถลงเท็จ','Pre-existing','โมฆียะ','หน้า 5 หลัง 3','โรคเดิม']},
-  {keys:['ข้อยกเว้น','ยกเว้น','exclusion','cof','เพิ่มเบี้ย'], terms:['ข้อยกเว้น','exclusion','COF','สลักหลัง','เพิ่มเบี้ย','ถอดข้อยกเว้น']},
-  {keys:['ไม่รับทำ','decline','รับประกัน','โรคอะไร','โรคร้ายแรง'], terms:['Decline Case','ไม่รับทำ','รับแบบเว้นโรค','รับแบบเพิ่มเบี้ย','โรคร้ายแรง']},
-  {keys:['ตัวแทน','ออนไลน์','ซื้อเอง','ซื้อผ่าน'], terms:['ซื้อผ่านตัวแทน','ซื้อผ่านช่องทางออนไลน์','ตัวแทน','คำแนะนำเฉพาะตัว']},
-  {keys:['เบี้ย','เพิ่มตามอายุ','คงที่','udr','ul'], terms:['เบี้ยประกันสุขภาพ','เพิ่มตามอายุ','เบี้ยคงที่','ยูนิตลิงก์','UL Plus']},
-  {keys:['opd','ipd','ผู้ป่วยนอก','ผู้ป่วยใน'], terms:['OPD','IPD','ผู้ป่วยนอก','ผู้ป่วยใน','หมวด 1–5','หมวด 6–13']},
-  {keys:['deduct','deductible','ดีดัก','ส่วนแรก'], terms:['Deductible','ค่าความรับผิดส่วนแรก','ลด Deductible','Convertible Option']}
-];
-function faqExpandQueryTerms(query){
-  const q = faqNormalizeText(query);
-  const terms = new Set(q.split(/\s+/).filter(x => x.length >= 2));
-  if(q) terms.add(q);
-  FAQ_CHAT_KEYWORDS.forEach(group => {
-    if(group.keys.some(k => q.includes(faqNormalizeText(k)))){
-      group.terms.forEach(t => terms.add(faqNormalizeText(t)));
-    }
-  });
-  return Array.from(terms).filter(Boolean).slice(0, 40);
-}
-function faqScoreResource(res, terms){
-  const title = faqNormalizeText(res.title);
-  const text = faqNormalizeText(res.text);
-  let score = 0;
-  terms.forEach(term => {
-    if(!term || term.length < 2) return;
-    if(title.includes(term)) score += 8;
-    if(text.includes(term)) score += 2;
-  });
-  return score;
-}
-function faqPickSnippet(text, terms){
-  const parts = (text||'').split(/\n+/).map(x=>x.trim()).filter(x=>x.length>20);
-  let picked = parts.find(p => terms.some(t => t.length>=2 && faqNormalizeText(p).includes(t)));
-  if(!picked) picked = parts.slice(0,3).join(' ');
-  picked = picked || text || '';
-  if(picked.length > 720) picked = picked.slice(0,720).replace(/\s+\S*$/,'') + '…';
-  return picked;
-}
-function faqHighlight(text, terms){
-  let safe = faqEscapeHtml(text);
-  const hi = terms.filter(t => t.length >= 3).sort((a,b)=>b.length-a.length).slice(0,8);
-  hi.forEach(term => {
-    const re = new RegExp('('+faqEscapeRegExp(term)+')','ig');
-    safe = safe.replace(re, '<mark>$1</mark>');
-  });
-  return safe;
-}
-const INSURANCE_AI_ENDPOINT = window.INSURANCE_AI_ENDPOINT || '/api/insurance-chat';
-const INSURANCE_PLAN_AI_ENDPOINT = window.INSURANCE_PLAN_AI_ENDPOINT || '/api/insurance-plan';
-
-function faqFormatAiText(text){
-  return faqEscapeHtml(text || '').replace(/\n/g, '<br>');
-}
-
-// ถ้า backend ยังไม่พร้อม อย่างน้อยต้องยังตอบลูกค้าได้จากเนื้อหาในเว็บ
-// และห้ามโชว์ชื่อไฟล์โค้ดหรือชื่อ API key ให้ลูกค้าเห็นเด็ดขาด
-function faqLocalAnswer(q){
-  const terms = faqExpandQueryTerms(q);
-  const hits = faqGetResourceList()
-    .map(r => ({r, sc: faqScoreResource(r, terms)}))
-    .filter(x => x.sc > 0).sort((a,b) => b.sc - a.sc).slice(0, 3);
-  if(!hits.length) return '';
-  return `<div class="chat-ok"><b>ตอบจากคำถามที่พบบ่อยในหน้านี้</b> — ผู้ช่วย AI ยังไม่พร้อมใช้งานชั่วคราว ระบบจึงค้นให้จากเนื้อหาในเว็บแทน</div>`
-    + hits.map(h => `<div class="hit-title">${faqEscapeHtml(h.r.title)}</div>
-        <div class="chat-ai-answer">${faqHighlight(faqPickSnippet(h.r.body, terms), terms)}</div>`).join('')
-    + `<div class="chat-meta" style="margin-top:12px;">ถ้ายังไม่ตรงกับที่สงสัย ทักมาถามหมอกึ๊กได้เลยครับ เคสสุขภาพแต่ละคนไม่เหมือนกัน</div>`;
-}
-
-// ปิดกล่องถาม AI ไว้ก่อน เพราะ backend ยังไม่ได้ตั้ง ANTHROPIC_API_KEY บน Vercel
-// ระบบที่โฆษณาว่าเป็น AI จริงแต่ตอบไม่ได้ เสียความน่าเชื่อถือมากกว่าไม่มี
-// วิธีเปิดกลับ: ตั้งค่า ANTHROPIC_API_KEY บน Vercel แล้วเปลี่ยนค่านี้เป็น true
-// จากนั้นใส่ <div class="faq-ai">...</div> กลับเข้าหน้า /faq เหนือกล่อง faq-cta
-const FAQ_AI_ENABLED = false;
-
-async function faqChatAsk(){
-  const input = document.getElementById('faqChatInput');
-  const answer = document.getElementById('faqChatAnswer');
-  const q = (input?.value || '').trim();
-  if(!q){
-    answer.innerHTML = 'ลองพิมพ์คำถามก่อนครับ เช่น “ระยะรอคอยคืออะไร” หรือ “ปกปิดประวัติมีผลยังไง”';
-    return;
-  }
-
-  const resources = faqGetResourceList().map(r => ({ title:r.title, body:r.body }));
-  answer.innerHTML = `<div class="chat-meta">กำลังส่งคำถามให้ AI วิเคราะห์จาก Resource ในเว็บ + web search ฝั่ง backend...</div>`;
-
-  try{
-    const res = await fetch(INSURANCE_AI_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        question:q,
-        resources,
-        allowWebSearch:true,
-        pageUrl:location.href
-      })
-    });
-
-    let data = null;
-    try{ data = await res.json(); }catch(_){ data = null; }
-    if(!res.ok){
-      const msg = data?.error || data?.message || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-    if(!data || !data.answer){
-      throw new Error('backend ไม่ส่งคำตอบกลับมาในรูปแบบ { answer }');
-    }
-
-    const sourceNote = data.usedWebSearch ? 'AI วิเคราะห์จาก Resource ในเว็บ และอาจค้นเว็บเพิ่มเติมเมื่อจำเป็น' : 'AI วิเคราะห์จาก Resource / FAQ ที่อยู่ในเว็บนี้';
-    answer.innerHTML = `<div class="chat-ok"><b>ตอบโดย AI จริง</b> — ${faqEscapeHtml(sourceNote)}</div>
-      <div class="chat-ai-answer">${faqFormatAiText(data.answer)}</div>
-      <div class="chat-meta" style="margin-top:12px;">หมายเหตุ: คำตอบ AI ใช้เพื่อให้ข้อมูลเบื้องต้น เงื่อนไขจริงให้ยืนยันจากกรมธรรม์/ใบเสนอ/บริษัทอีกครั้ง โดยเฉพาะเคสรับประกันหรือเคลมจริง</div>`;
-  }catch(err){
-    // ลูกค้าไม่ควรเห็นรายละเอียดเทคนิค ให้ค้นจากเนื้อหาในเว็บแทนแล้วบอกทางออก
-    const local = faqLocalAnswer(q);
-    answer.innerHTML = local || `<div class="chat-error"><b>ตอนนี้ผู้ช่วย AI ยังใช้งานไม่ได้ชั่วคราว</b><br>
-      ลองใช้ช่องค้นหาด้านบนของหน้านี้ หรือทักมาถามหมอกึ๊กโดยตรงได้เลยครับ</div>`;
-    console.warn('insurance-chat backend error:', err);
-  }
-}
-
-
-function faqChatClear(){
-  const input = document.getElementById('faqChatInput');
-  const answer = document.getElementById('faqChatAnswer');
-  if(input) input.value = '';
-  if(answer) answer.innerHTML = 'พร้อมเรียก AI ผ่าน backend <code>/api/insurance-chat</code> ครับ — ถ้ายังไม่ได้ deploy backend ระบบจะแจ้งวิธีเชื่อมต่อแทนการตอบมั่ว';
-}
-document.addEventListener('keydown', function(e){
-  const input = document.getElementById('faqChatInput');
-  if(input && document.activeElement === input && e.key === 'Enter' && (e.ctrlKey || e.metaKey)){
-    e.preventDefault();
-    faqChatAsk();
-  }
-});
-
-renderAll();
-// ============ Plan compare feature ============
-// Maps a benefit-table row label to a stable key shared across products, so
-// rows from different xxxBenefitRows() arrays can be aligned in one unified
-// comparison table. Numbered rows (1., 2.4, ...) use their number; extension
-// rows (no number, Elite-only wording) are matched by a label substring.
 function benefitRowKey(label){
   const s = String(label||'');
   const m = s.match(/^(\d+(?:\.\d+)?)/);
