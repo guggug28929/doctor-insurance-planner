@@ -96,7 +96,11 @@ test('คีย์ detailSections ของแผนนี้ต้องมี�
   const block = html.slice(s, end);
   const n = (block.match(/detailSections:/g) || []).length;
   assert.equal(n, 1, `พบคีย์ detailSections ${n} ครั้งในแผน cipc อันหลังจะทับอันแรกจนไม่ทำงาน`);
-  // ทั้งสามส่วนต้องถูกเรียกครบ ไม่ใช่เหลือแค่ส่วนเดียว
-  for(const f of ['cipcDeathBenefitSection()', 'ciPerfectCareDetailSections()', 'cipcDefinitionsSection()'])
+  // ciPerfectCareDetailSections() (สรุปย่อ) ถูกตัดออกเพราะพูดซ้ำกับ cipcDefinitionsSection() (นิยามเต็ม)
+  // เหลือสองส่วนที่ต้องเรียกครบคือตาข่ายเสียชีวิตกับนิยามเต็ม
+  for(const f of ['cipcDeathBenefitSection()', 'cipcDefinitionsSection()'])
     assert.ok(block.includes(f), `แผน cipc ไม่ได้เรียก ${f}`);
+  // เช็คว่าไม่ถูก "เรียก" จริง (มี + นำหน้า) ไม่ใช่แค่เช็คชื่อฟังก์ชัน เพราะคอมเมนต์อธิบายเหตุผลก็มีชื่อนี้อยู่
+  assert.ok(!/\+\s*ciPerfectCareDetailSections\(\)/.test(block),
+    'ชุดสรุปย่อถูกตัดออกแล้ว ไม่ควรถูกเรียกอีก เพราะเนื้อหาซ้ำกับนิยามเต็ม');
 });
