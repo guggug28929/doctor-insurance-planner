@@ -15979,11 +15979,14 @@ function pensionDeductRule(){
 /* เงินได้ที่ทำให้ตกฐานภาษีนั้นพอดี ใช้ขอบล่างของขั้นถัดไปเป็นตัวแทน
    เพราะลูกค้าเลือกจาก "ฐานภาษี" ไม่ได้กรอกเงินได้ จึงต้องเดาเงินได้กลับจากฐาน */
 function pensionIncomeAtRate(rate){
-  const bs = TAX_BRACKETS || [];
+  /* ต้องอ่านจาก TAX_RULES.brackets ไม่ใช่ TAX_BRACKETS
+     เพราะ TAX_BRACKETS เป็นแค่รายการไว้ทำ dropdown มี rate กับ label เท่านั้น ไม่มีช่วงเงินได้
+     ถ้าอ่านผิดตัว ทุกอย่างจะกลายเป็นศูนย์แบบเงียบ ๆ โดยหน้าไม่พัง ซึ่งอันตรายกว่าพัง */
+  const bs = ((TAX_RULES || {}).brackets) || [];
   let prev = 0;
   for(const b of bs){
     if(Math.abs(b.rate - rate) < 1e-9) return b.upTo == null ? prev * 1.5 : (prev + b.upTo) / 2;
-    prev = b.upTo == null ? prev : b.upTo;
+    if(b.upTo != null) prev = b.upTo;
   }
   return 0;
 }
