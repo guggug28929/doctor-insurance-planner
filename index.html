@@ -8281,10 +8281,13 @@ function planCardPensionPremium(id){
   const g = PLAN_CARD_CASE.gender === 'm' ? 'male' : 'female';
   const freq = pensionDefaultFreq(id);
   for(const [vk, v] of Object.entries(p.variants || {})){
-    if(v.entryAgeMax != null && age > v.entryAgeMax) continue;
-    if(v.entryAgeMin != null && age < v.entryAgeMin) continue;
-    const prem = pensionPremium(id, vk, g, age, sum, freq);
-    if(prem != null) return {premium:prem, age, unit: freq === 'single' ? 'จ่ายครั้งเดียว' : 'ต่อปี',
+    /* บางแบบรับเฉพาะช่วงอายุสูง เช่น 8501 รับ 55-70 ปี ถ้ายืนอายุอ้างอิง 35 ไว้
+       การ์ดใบนั้นจะไม่มีเบี้ยขึ้นเลยทั้งที่ขายอยู่จริง จึงเลื่อนไปที่อายุรับขั้นต่ำของแบบนั้น
+       แล้วป้ายบนการ์ดจะบอกอายุที่ใช้คำนวณจริงกำกับไว้ ไม่ใช่อายุ 35 ที่ซื้อไม่ได้ */
+    const useAge = (v.entryAgeMin != null && age < v.entryAgeMin) ? v.entryAgeMin : age;
+    if(v.entryAgeMax != null && useAge > v.entryAgeMax) continue;
+    const prem = pensionPremium(id, vk, g, useAge, sum, freq);
+    if(prem != null) return {premium:prem, age:useAge, unit: freq === 'single' ? 'จ่ายครั้งเดียว' : 'ต่อปี',
       note:`${v.label || vk} ทุน ${fmt(sum)} บาท`};
   }
   return null;
