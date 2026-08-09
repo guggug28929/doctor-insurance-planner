@@ -28,9 +28,14 @@ test('ทุกโรคต้องมีชื่อไทย ชื่ออ�
       }
       // บางโรคเนื้อความหลักสั้นเพราะสาระอยู่ในเกณฑ์ที่แตกเป็นข้อ จึงนับรวมกัน
       const full = (d.body || '') + (d.criteria || []).join('') + (d.extra || '')
-        + (d.exclusions || []).join('') + (d.carveBack || []).join('');
+        + (d.exclusions || []).join('') + (d.carveBack || []).join('')
+        + (d.elsewhere || []).join('') + (d.elsewhereTitle || '')
+        + (d.once || []).join('') + (d.onceTitle || '') + (d.doc || '');
       assert.ok(full.length > 150, `${d.en} เนื้อความสั้นเกินไป น่าจะถูกย่อ`);
       if(d.exclusions) assert.ok(d.exclusionsTitle, `${d.en} มีข้อยกเว้นแต่ไม่มีหัวข้อ`);
+      // กล่องที่บอกว่าไปเข้าข้ออื่น ต้องระบุชื่อข้อปลายทางเสมอ ไม่งั้นลูกค้าไปตามหาต่อไม่ถูก
+      if(d.elsewhere) assert.match(d.elsewhereTitle || '', /<b>/,
+        `${d.en} บอกว่าไปเข้าข้ออื่น แต่ไม่ได้ระบุว่าข้อไหน`);
       if(d.criteria) assert.ok(d.criteriaTitle, `${d.en} มีเกณฑ์แต่ไม่มีหัวข้อ`);
     }
   }
@@ -89,7 +94,7 @@ test('สโตรก ต้องมี 45 วัน หลักฐานค�
   assert.equal(d.exclusions.length, 2);
 });
 
-test('บายพาสหัวใจ ต้องระบุว่าไม่รวมบอลลูน ขดลวด และเลเซอร์', () => {
+test('บายพาสหัวใจ ต้องบอกว่าบอลลูนกับขดลวดไปเข้าข้อไหน', () => {
   const s = find('Coronary Artery By-pass Surgery');
   for(const k of ['เปิดเข้าทางทรวงอก', 'Angioplasty', 'Stent Insertion', 'Laser'])
     assert.ok(s.includes(k), `ขาดคำว่า ${k}`);
@@ -163,7 +168,7 @@ test('ข้อยกเว้นของข้อยกเว้น ต้อ�
   // เหลือกรณีเดียวคือเมลาโนมาตั้งแต่ระยะ 2 ส่วนกรณีอื่นย้ายไปกล่องเหลืองที่บอกว่าไปเข้าระยะเริ่มต้นแทน
   assert.ok(inv.carveBack && inv.carveBack.length >= 1, 'มะเร็งระยะลุกลามต้องมีกล่องกรณีที่กลับมาคุ้มครอง');
   assert.match(inv.carveBack.join(' '), /Malignant Melanoma/);
-  assert.match(html, /if\(d\.carveBack\) h \+= `<div class="def-block def-back">/);
+  assert.match(html, /if\(d\.carveBack\) body \+= `<div class="def-block def-back">/);
   assert.match(html, /แต่กรณีเหล่านี้กลับมาคุ้มครอง/);
 });
 
@@ -240,10 +245,117 @@ test('ข้อยกเว้นที่ไปเข้าระยะเร�
   assert.match(inv.exclusions.join(' '), /Carcinoma in Situ/);
   assert.match(inv.never.join(' '), /Pre-Malignant/);
   assert.match(inv.never.join(' '), /เอชไอวี/);
-  assert.match(html, /const early = d\.exclusionsTone === 'early';/);
+  assert.match(html, /const shift = d\.exclusionsTone === 'early';/);
   // ชื่อคลาสถูกเลือกด้วยเงื่อนไขในโค้ด จึงตรวจที่จุดตัดสินใจแทนตัวอักษรตรง ๆ
-  assert.match(html, /early \? 'shift-tag' : 'not-tag'/);
-  assert.match(html, /early \? 'def-shift' : 'def-not'/);
+  assert.match(html, /shift \? 'shift-tag' : 'not-tag'/);
+  assert.match(html, /shift \? 'def-shift' : 'def-not'/);
   assert.match(html, /เคลมได้เฉพาะแบบระยะเริ่มต้นและรุนแรง' : 'ไม่คุ้มครองทั้ง 2 แบบ'/);
   assert.match(html, /\.def-shift\{background:#fff8ec/);
+});
+
+/* กฎการเขียนกล่องข้อยกเว้น ตกลงกันไว้ว่า
+   ถ้าของที่ถูกตัดออก ไปจ่ายในข้ออื่นของแผนเดียวกันโดยนิยามตรงกันเป๊ะ ให้ตัดกล่องทิ้งไปเลย
+   ไม่ต้องเขียนว่าไม่จ่ายข้อนี้แต่จ่ายข้ออื่น เพราะไม่ได้เพิ่มข้อมูล มีแต่ทำให้อ่านยาก
+   แล้วไปเขียนเป็นข้อความเชิงบวกในมุมมองจากห้องตรวจแทน
+   จะเก็บกล่องไว้ได้ก็ต่อเมื่อปลายทางมีเกณฑ์เพิ่ม จนมีโอกาสหลุดทั้งสองข้อ */
+test('ของที่ปลายทางรับไว้ตรงเป๊ะ ต้องไม่มีกล่องข้อยกเว้นเหลืออยู่', () => {
+  const byEn = en => DEF.groups.flatMap(g => g.diseases).filter(d => d.en === en);
+  const cases = [
+    ['Surgery to Aorta', ['Minimally Invasive Surgery', 'สายสวน'], ['ส่องกล้อง', 'ระดับอกและช่องท้อง']],
+    ['Percutaneous valvuloplasty or valvotomy', ['เปลี่ยนลิ้นหัวใจ'], ['เปลี่ยนลิ้นหัวใจ']],
+    ['Coronary Artery By-pass Surgery', ['Angioplasty', 'Stent'], ['สวนหลอดเลือดหัวใจ', '50%', '60%']],
+    ['Open Heart Surgery for the Heart Valve', ['บอลลูน', 'สายสวน'], ['ผ่านทางเส้นเลือด', 'ไม่เข้าทั้งสองข้อ']],
+  ];
+  for(const [en, gone, mustSay] of cases){
+    const list = byEn(en);
+    assert.ok(list.length, `ไม่พบโรค ${en}`);
+    for(const d of list){
+      assert.ok(!d.elsewhere, `${en} ยังเหลือกล่องบอกว่าไปเข้าข้ออื่น ทั้งที่นิยามตรงเป๊ะ`);
+      const boxes = [...(d.exclusions || []), ...(d.never || [])].join(' ');
+      for(const w of gone)
+        assert.ok(!boxes.includes(w), `${en} ยังทิ้ง "${w}" ไว้ในกล่องข้อยกเว้น`);
+      // ต้องไม่หายไปเฉย ๆ สาระต้องย้ายไปอยู่ในมุมมองจากห้องตรวจ
+      for(const w of mustSay)
+        assert.ok((d.doc || '').includes(w), `${en} ลบกล่องแล้วแต่ไม่ได้เขียน "${w}" ไว้ที่ไหนเลย`);
+    }
+  }
+});
+
+/* ที่ยังเก็บกล่องไว้ ต้องมีเหตุผลจริง คือปลายทางเกณฑ์ไม่เท่ากัน */
+test('ที่ยังเหลือกล่อง ต้องเป็นเคสที่ปลายทางเกณฑ์ต่างกันจริง', () => {
+  const withBox = DEF.groups.flatMap(g => g.diseases).filter(d => d.elsewhere);
+  const allowed = new Set([
+    'Coronary Artery Disease requiring Angioplasty',   // ปลายทางต้องตีบสองเส้น เกณฑ์ไม่เท่ากันจริง
+  ]);
+  for(const d of withBox)
+    assert.ok(allowed.has(d.en), `${d.en} ยังมีกล่องอยู่ ทั้งที่ไม่ได้อยู่ในรายการที่ตกลงว่าเกณฑ์ต่างกัน`);
+  assert.equal(withBox.length, allowed.size, 'จำนวนข้อที่เหลือกล่องไม่ตรงกับที่ตกลงไว้');
+});
+
+test('เครื่องกระตุ้นกับเครื่องกระตุกหัวใจ ต้องบอกว่าจ่ายครั้งเดียว ไม่ใช่ไม่คุ้มครอง', () => {
+  const byEn = en => DEF.groups.flatMap(g => g.diseases).filter(d => d.en === en);
+  for(const en of ['Cardiac pacemaker implantation', 'Cardiac defibrillator']){
+    const list = byEn(en);
+    assert.ok(list.length, `ไม่พบ ${en}`);
+    for(const d of list){
+      assert.ok(d.once && d.once.length, `${en} ต้องมีกล่องกันเคลมซ้ำ`);
+      assert.ok(!d.exclusions, `${en} ต้องไม่มีกล่องข้อยกเว้นสีแดงแล้ว`);
+    }
+  }
+  assert.match(html, /function dcareDefDiseaseHtml/);
+  assert.match(html, /class="once-tag">จ่ายได้ครั้งเดียว ไม่ใช่ไม่คุ้มครอง/);
+});
+
+/* ป้ายหัวข้อของโรคระยะเริ่มต้นเป็นสีเหลือง กล่องเกณฑ์ข้างในต้องเป็นสีเดียวกัน
+   ถ้าเป็นสีเขียวจะสื่อว่าซื้อแบบเฉพาะระยะรุนแรงก็เคลมได้ ซึ่งไม่จริง */
+test('กล่องเกณฑ์ของโรคระยะเริ่มต้นต้องเป็นสีเหลือง ไม่ใช่เขียว', () => {
+  assert.match(html, /const early = d\.stage === 'early';/);
+  assert.match(html, /early \? 'def-must-early' : 'def-must'/);
+  assert.match(html, /\.def-must-early\{background:#fff8ec;border-left:3px solid #d99b3f;\}/);
+});
+
+/* คำถามที่ลูกค้าถามตรง ๆ คือ ฉีดสีเฉย ๆ เคลมได้ไหม
+   คำตอบคือไม่ได้ และห้ามเขียนกำกวมจนอ่านแล้วคิดว่าได้ */
+test('การฉีดสีเฉย ๆ ต้องบอกชัดว่าไม่ใช่เหตุการณ์ที่จ่าย พร้อมเกณฑ์ของทางออกอีกข้อ', () => {
+  const list = DEF.groups.flatMap(g => g.diseases)
+    .filter(d => d.en === 'Coronary Artery Disease requiring Angioplasty');
+  assert.ok(list.length, 'ไม่พบโรค');
+  for(const d of list){
+    const red = (d.exclusions || []).join(' ');
+    assert.ok(red.includes('Diagnostic angiography'), 'การฉีดสีเฉย ๆ ต้องอยู่ในกล่องที่บอกว่าไม่จ่าย');
+    assert.match(d.exclusionsTitle || '', /ไม่ใช่เหตุการณ์ที่สัญญาจ่าย/);
+    assert.ok(!d.exclusionsTone, 'กล่องนี้ต้องเป็นสีแดง ไม่ใช่เหลือง');
+
+    // ทางออกอีกข้อมีเกณฑ์เข้มกว่า ถ้าไม่บอกจะกลายเป็นสัญญาว่าเคลมได้เสมอ
+    // เงื่อนไขต้องเขียนให้ลูกค้าเอาไปเทียบกับผลตรวจตัวเองได้ ไม่ใช่ประโยคนามธรรม
+    const title = d.elsewhereTitle || '';
+    assert.ok(title.includes('ไม่ได้ถ่างบอลลูนหรือใส่ขดลวด'), 'หัวข้อต้องเริ่มจากเงื่อนไขที่ลูกค้าเช็คเองได้');
+    assert.ok(title.includes('ตีบตั้งแต่ 2 เส้นขึ้นไป') && title.includes('อย่างน้อยร้อยละ 60'),
+      'หัวข้อต้องบอกเกณฑ์ 2 เส้น และ 60% ให้ครบ');
+    const y = (d.elsewhere || []).join(' ');
+    assert.ok(y.includes('อย่างน้อย 2 เส้น'), 'ต้องบอกว่าข้อรักษาด้วยยาต้องตีบสองเส้น');
+    assert.ok(y.includes('Left Main Stem') && y.includes('ไม่นับแขนงย่อย'), 'ต้องระบุว่าเส้นไหนนับบ้าง');
+    assert.ok(y.includes('รักษาด้วยยาเท่านั้น'), 'ต้องบอกเงื่อนไขว่าต้องรักษาด้วยยาเท่านั้น');
+    assert.ok(y.includes('invasive coronary arteriography'), 'ต้องบอกว่า CT ไม่เข้าเกณฑ์');
+
+    // ช่องว่างจริงที่ทำให้ไม่ได้เงินเลย ต้องเขียนไว้ให้ตัวแทนใช้ ไม่ใช่ปล่อยให้ไปเจอตอนเคลม
+    assert.match(d.doc || '', /ไม่ได้เงินจากข้อไหนเลย/);
+    assert.match(d.doc || '', /ตีบเส้นเดียว/);
+  }
+});
+
+/* การซ่อมลิ้นหัวใจที่ไม่ได้ถ่างด้วยบอลลูนและไม่ได้ใส่อุปกรณ์ ไม่มีข้อไหนรับจริง
+   จึงต้องเป็นสีแดง ไม่ใช่เหลือง เพราะบอกว่าไปเข้าข้ออื่นได้จะเป็นการสัญญาเกินจริง */
+test('การซ่อมลิ้นที่ไม่เข้าเงื่อนไขทั้งสองข้อ ต้องเป็นสีแดง', () => {
+  const list = all.filter(d => d.en === 'Percutaneous valve replacement or device repair');
+  assert.ok(list.length);
+  for(const d of list){
+    assert.ok(!d.elsewhere, 'ต้องไม่บอกว่าไปเข้าข้ออื่น เพราะไม่มีข้อไหนรับ');
+    const red = (d.exclusions || []).join(' ');
+    assert.ok(red.includes('ไม่ได้ถ่างด้วยบอลลูน'), 'ต้องระบุว่าเป็นการซ่อมที่ไม่ได้ใช้บอลลูน');
+    assert.ok(!red.includes('การใช้บอลลูนขยายลิ้นหัวใจผ่านทางหลอดเลือด'),
+      'บอลลูนตรงเป๊ะกับอีกข้อ ต้องถูกตัดออกจากกล่องแล้ว');
+    assert.match(d.doc || '', /ถ่างด้วยบอลลูน/);
+    assert.match(d.doc || '', /ไม่เข้าข้อไหนเลย/);
+  }
 });
