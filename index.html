@@ -1817,6 +1817,16 @@
   .adv-info{margin-top:16px;padding:16px 18px 14px;border-radius:16px;background:#fdfbfc;border:1px solid var(--line);}
   .adv-info-head{font-family:"Kanit",sans-serif;font-weight:700;font-size:.92rem;color:var(--pink-deep);margin-bottom:12px;}
   .adv-info-foot{font-size:.8rem;color:var(--muted);margin:14px 0 0;line-height:1.8;}
+  .adv-readfirst{margin:6px 0 0;font-size:.86rem;color:var(--muted);}
+  .pen-howmuch h3,.pen-strat h3{margin:0 0 6px;font-size:1rem;color:var(--pink-deep);}
+  .pen-warn-line{margin:10px 0 0;padding:9px 12px;border-radius:10px;background:#fff5e6;
+    border:1px solid #f0d5ab;color:#7a5a24;font-size:.82rem;line-height:1.7;}
+  .pen-strat-sub{display:block;font-size:.72rem;color:var(--muted);font-weight:400;margin-top:2px;}
+  .pen-strat-best td{background:#f2fbf5;}
+  .pen-tag-best{display:inline-block;padding:1px 7px;border-radius:999px;font-size:.62rem;font-weight:600;
+    background:#e7f5ec;color:#146c43;border:1px solid #a9d9bd;}
+  .pen-strat-notes{margin-top:12px;}
+  .pen-strat-notes p{margin:0 0 8px;font-size:.83rem;line-height:1.75;color:#5f4a53;}
   .adv-info-link{
     background:none;border:0;padding:0;margin-left:4px;cursor:pointer;
     color:var(--pink);font-family:"Kanit",sans-serif;font-weight:700;font-size:.8rem;text-decoration:underline;
@@ -2752,6 +2762,11 @@
   <div class="content-card">
     <h2>ผู้ช่วยออกแบบแผนประกันสุขภาพ</h2>
     <p style="color:var(--muted);">ตอบ 6 ข้อ ระบบจัดชุดแผนให้พร้อมเบี้ยจากตารางจริงของบริษัท ไม่มีการประมาณค่า · ส่วนวงเงิน OPD ทุนโรคร้ายแรง และความเสี่ยงส่วนแรก ระบบตั้งให้จากคำตอบข้างบน ไม่ต้องกรอกเพิ่ม</p>
+    <!-- ลิงก์นี้เคยอยู่ท้ายกล่องหลักการล่างสุด ซึ่งลูกค้าไม่เลื่อนลงไปถึง
+         คนที่ยังไม่รู้ว่าตัวเองต้องการอะไร ต้องเห็นทางไปอ่านก่อนกรอกฟอร์ม ไม่ใช่หลังกรอกเสร็จ -->
+    <p class="adv-readfirst">ยังไม่แน่ใจว่าควรเลือกแบบไหน
+      <button type="button" class="adv-info-link" onclick="showPage('knowledge'); setKnowTab('guide');">อ่านวิธีเลือกประกันสุขภาพก่อน &rarr;</button>
+    </p>
 
     <div class="ai-grid">
       <div>
@@ -15944,6 +15959,205 @@ function pensionAdvisorCandidates(){
   return picked;
 }
 
+/* =========================================================================
+   ควรซื้อบำนาญเท่าไรถึงพอดี
+   คนส่วนใหญ่ถามว่า "ซื้อเท่าไรดี" แล้วตัวแทนตอบด้วยความรู้สึก
+   ที่จริงมีเพดานกฎหมายกำหนดไว้ชัด จึงคำนวณย้อนจากเพดานให้ดูเลยว่าเต็มสิทธิคือเท่าไร
+     เบี้ยบำนาญ ลดหย่อนได้ 15% ของเงินได้ และไม่เกิน 200,000 บาท
+     เมื่อรวมกับ RMF SSF กบข. กองทุนสำรองเลี้ยงชีพ ประกันสังคม ต้องไม่เกิน 500,000 บาท
+   ตัวเลขทั้งสองมาจาก data/tax-rules.json ไม่ได้พิมพ์ค้างไว้ในโค้ด ========================= */
+function pensionDeductRule(){
+  const list = (TAX_RULES && TAX_RULES.deductions) || [];
+  const d = list.find(x => (x.label || '').includes('เบี้ยประกันชีวิตแบบบำนาญ')) || {};
+  return {pct: d.percentOfIncome || 0.15, cap: d.cap || 200000, groupCap: 500000};
+}
+/* เงินได้ที่ทำให้ตกฐานภาษีนั้นพอดี ใช้ขอบล่างของขั้นถัดไปเป็นตัวแทน
+   เพราะลูกค้าเลือกจาก "ฐานภาษี" ไม่ได้กรอกเงินได้ จึงต้องเดาเงินได้กลับจากฐาน */
+function pensionIncomeAtRate(rate){
+  const bs = TAX_BRACKETS || [];
+  let prev = 0;
+  for(const b of bs){
+    if(Math.abs(b.rate - rate) < 1e-9) return b.upTo == null ? prev * 1.5 : (prev + b.upTo) / 2;
+    prev = b.upTo == null ? prev : b.upTo;
+  }
+  return 0;
+}
+function pensionHowMuchBox(annualOutlay){
+  const st = pensionAdvisorState;
+  const rate = Number(st.tax) || 0;
+  const r = pensionDeductRule();
+  if(!rate) return `<div class="content-card pen-howmuch"><h3>ควรซื้อบำนาญเท่าไรถึงพอดี</h3>
+    <p class="meta">เลือกฐานภาษีในฟอร์มด้านบน แล้วระบบจะคำนวณให้ว่าเบี้ยบำนาญเท่าไรถึงใช้สิทธิลดหย่อนได้เต็มโดยไม่ล้นเพดาน</p></div>`;
+  const income = pensionIncomeAtRate(rate);
+  const byPct = Math.floor(income * r.pct);
+  const room = Math.min(byPct, r.cap);
+  const saved = Math.round(room * rate);
+  const savedNow = Math.round(Math.min(annualOutlay, room) * rate);
+  const over = annualOutlay > room ? annualOutlay - room : 0;
+  return `<div class="content-card pen-howmuch">
+    <h3>ควรซื้อบำนาญเท่าไรถึงพอดี</h3>
+    <p class="meta">ที่ฐานภาษี ${(rate*100).toFixed(0)}% เงินได้ประมาณ ${fmt(income)} บาทต่อปี เพดานลดหย่อนของคุณคำนวณได้ดังนี้</p>
+    <div class="table-wrap"><table><tbody>
+      <tr><td>15% ของเงินได้</td><td style="text-align:right;">${fmt(byPct)}</td></tr>
+      <tr><td>เพดานของเบี้ยบำนาญ</td><td style="text-align:right;">${fmt(r.cap)}</td></tr>
+      <tr style="font-weight:700;"><td>ใช้สิทธิได้จริง เอาตัวที่น้อยกว่า</td><td style="text-align:right;">${fmt(room)}</td></tr>
+      <tr><td>ประหยัดภาษีได้ ถ้าซื้อเต็มสิทธิ</td><td style="text-align:right;">${fmt(saved)}</td></tr>
+      <tr><td>แผนที่แนะนำอยู่ตอนนี้ เบี้ย ${fmt(annualOutlay)} ต่อปี ประหยัดภาษี</td><td style="text-align:right;">${fmt(savedNow)}</td></tr>
+    </tbody></table></div>
+    ${over ? `<p class="pen-warn-line">เบี้ยที่แนะนำเกินเพดานอยู่ ${fmt(over)} บาท ส่วนที่เกินยัง<b>ได้บำนาญตามปกติ แต่ลดหย่อนภาษีไม่ได้</b> ถ้าซื้อเพื่อภาษีเป็นหลัก ให้ลดทุนลงมาที่เบี้ยประมาณ ${fmt(room)} บาทต่อปี</p>` : ''}
+    <p class="meta">ข้อควรรู้ที่กระทบสิทธิจริง · เบี้ยบำนาญเมื่อ<b>รวมกับ RMF SSF กบข. กองทุนสำรองเลี้ยงชีพ และประกันสังคม ต้องไม่เกิน ${fmt(r.groupCap)} บาท</b> ถ้าคุณใช้กลุ่มนี้ไปแล้วเท่าไร ต้องหักออกจากตัวเลขข้างบนก่อน ·
+      ถ้ายังไม่ได้ใช้สิทธิเบี้ยประกันชีวิตทั่วไป 100,000 บาท เบี้ยบำนาญส่วนที่เกินเพดานสามารถนำไปใช้ช่องนั้นแทนได้ ·
+      ตัวเลขเงินได้เป็นค่ากลางของฐานภาษีที่เลือก ไม่ใช่เงินได้จริงของคุณ
+      <button type="button" class="adv-info-link" onclick="showPage('tax')">คำนวณจากเงินได้จริงในหน้าวางแผนภาษี &rarr;</button></p>
+  </div>`;
+}
+
+/* =========================================================================
+   เทียบกลยุทธ์การชำระเบี้ย ไม่ใช่เทียบแบบประกัน
+   เฟล็กซี่ รีไทร์ มีครบสามรูปแบบที่อายุเริ่มรับบำนาญเดียวกัน จึงเทียบกันได้ตรง ๆ
+     90_1  จ่ายครั้งเดียวจบ
+     90_5  จ่าย 5 ปี
+     90xx  จ่ายยาวถึงก่อนเกษียณ
+   จุดที่คนพลาดคือคิดว่าจ่ายครั้งเดียวแล้วค่อยทยอยซื้อเพิ่มทีหลังก็ได้เหมือนกัน
+   แต่เบี้ยของกรมธรรม์ใบใหม่คิดตามอายุ ณ วันที่ซื้อ ยิ่งซื้อช้ายิ่งแพงต่อบำนาญที่ได้เท่ากัน
+   จึงต้องจำลองการทยอยซื้อจริง ๆ ให้เห็นเบี้ยรวมกับ IRR ========================= */
+const PEN_STRAT_FAMILY = {single: 'flexi_retire_90_1', short: 'flexi_retire_90_5', long: 'flexi_retire_90xx'};
+
+function penStratVariant(planId, startAge){
+  const p = pensionPlan(planId);
+  if(!p) return null;
+  for(const [vk, v] of Object.entries(p.variants || {}))
+    if(Number(v.pensionStartAge) === Number(startAge)) return vk;
+  return null;
+}
+/* รวมกระแสเงินสดของหลายกรมธรรม์ที่ซื้อคนละปี ให้เป็นเส้นเดียวตามอายุ
+   ต้องเรียงตามอายุจริง ไม่ใช่ตามลำดับใบ ไม่งั้น IRR จะผิด */
+function penStratMerge(buys, endAge){
+  const first = Math.min(...buys.map(b => b.entryAge));
+  const n = endAge - first + 1;
+  const prem = new Array(n).fill(0), pen = new Array(n).fill(0);
+  for(const b of buys){
+    const off = b.entryAge - first;
+    b.cf.rows.forEach((r, i) => {
+      if(off + i < n){ prem[off + i] += r.premium; pen[off + i] += r.pension; }
+    });
+    if(b.cf.maturity) pen[n - 1] += b.cf.maturity;
+  }
+  /* เบี้ยรวมดิบเทียบกันตรง ๆ ไม่ได้ เพราะเป็นเงินคนละเวลา
+     จ่ายก้อนเดียววันนี้ กับทยอยจ่าย 25 ปี ต่างกันจริงน้อยกว่าที่ตัวเลขดิบทำให้รู้สึกมาก
+     จึงคิดลดกลับมาเป็นเงินวันนี้ที่ 3% ต่อปี ซึ่งใกล้เคียงผลตอบแทนที่ไม่เสี่ยง */
+  const DISC = 0.03;
+  return {first, prem, pen,
+    totalPremium: prem.reduce((a, x) => a + x, 0),
+    pvPremium: prem.reduce((s, x, i) => s + x / Math.pow(1 + DISC, i), 0),
+    maxYearly: Math.max(...prem),
+    payYears: prem.filter(x => x > 0).length,
+    totalGet: pen.reduce((a, x) => a + x, 0),
+    irr: irrOf(pen.map((p, i) => p - prem[i]))};
+}
+function penStratBuild(planId, vk, gender, entryAge, sum, freq){
+  const cf = pensionCashflow(planId, vk, gender, entryAge, sum, freq);
+  return cf ? {entryAge, cf} : null;
+}
+/* ทยอยซื้อใบละเท่า ๆ กันทุก step ปี จนกว่าจะเลยอายุที่บริษัทรับทำ */
+function penStratLadder(planId, vk, gender, startEntryAge, totalSum, step, retireAge){
+  const p = pensionPlan(planId), v = (p.variants || {})[vk];
+  const maxAge = Math.min(v.entryAgeMax != null ? v.entryAgeMax : 99, retireAge - 1);
+  const ages = [];
+  for(let a = startEntryAge; a <= maxAge; a += step) ages.push(a);
+  if(!ages.length) return null;
+  /* ต้องซื้อทุก step ปีจริงจนถึงก่อนเกษียณ ห้ามบีบจำนวนใบลงเพื่อให้ทุนรวมลงตัว
+     เพราะป้ายบอกลูกค้าว่า "ซื้อทุกปี" ถ้าคำนวณเป็นทุก 3 ปี ตัวเลขก็โกหก
+     ทุนต่อใบจึงตรึงที่ขั้นต่ำของบริษัท แล้วปล่อยให้ทุนรวมเป็นไปตามจำนวนปีจริง */
+  const per = Math.max(p.sumAssuredMin || 100000, Math.floor(totalSum / ages.length / 10000) * 10000);
+  const buys = [];
+  for(const a of ages){
+    const b = penStratBuild(planId, vk, gender, a, per, pensionDefaultFreq(planId));
+    if(b) buys.push(b);
+  }
+  if(!buys.length) return null;
+  return {rounds: buys.length, perSum: per, merged: penStratMerge(buys, buys[0].cf.endAge)};
+}
+
+function pensionStrategyTable(){
+  const st = pensionAdvisorState;
+  const age = pensionAdvisorAge();
+  const retire = Number(st.startAge) || 60;
+  const gender = st.gender;
+  const rows = [];
+  const vkOf = k => penStratVariant(PEN_STRAT_FAMILY[k], retire);
+  const vLong = vkOf('long'), vSingle = vkOf('single'), vShort = vkOf('short');
+  if(!vLong || !vSingle || !vShort)
+    return `<div class="content-card"><h3>เทียบรูปแบบการชำระเบี้ย</h3>
+      <p class="meta">อายุเริ่มรับบำนาญ ${retire} ปี ยังไม่มีครบทั้งสามรูปแบบให้เทียบ ลองเปลี่ยนเป็น 55 60 หรือ 65 ปี</p></div>`;
+
+  /* ทุนอ้างอิงต้องใหญ่พอให้ "ซื้อทุกปีจนถึงก่อนเกษียณ" ทำได้จริงด้วยทุนขั้นต่ำต่อใบ
+     ถ้าตั้ง 1 ล้านตายตัว คนอายุ 35 จะซื้อได้แค่ 10 ใบ ทั้งที่มีเวลาซื้อ 25 ปี
+     จึงคิดกลับจากจำนวนปีที่ซื้อได้จริง แล้วให้ทุกทางเลือกใช้ทุนก้อนเดียวกันนี้ */
+  const vSingleDef = (pensionPlan(PEN_STRAT_FAMILY.single).variants || {})[vSingle] || {};
+  const lastBuyAge = Math.min(vSingleDef.entryAgeMax != null ? vSingleDef.entryAgeMax : 99, retire - 1);
+  const yearsToBuy = Math.max(1, lastBuyAge - age + 1);
+  const minPer = pensionPlan(PEN_STRAT_FAMILY.single).sumAssuredMin || 100000;
+  const SUM = Math.max(1000000, yearsToBuy * minPer);
+  const mk = (label, planId, vk, sub) => {
+    const b = penStratBuild(planId, vk, gender, age, SUM, pensionDefaultFreq(planId));
+    if(!b) return null;
+    const m = penStratMerge([b], b.cf.endAge);
+    return {label, sub, sum: SUM, totalPremium: m.totalPremium, pvPremium: m.pvPremium,
+      maxYearly: m.maxYearly, payYears: m.payYears, totalGet: m.totalGet, irr: m.irr, rounds: 1};
+  };
+  const rLong = mk('จ่ายยาวถึงก่อนเกษียณ', PEN_STRAT_FAMILY.long, vLong, `ผูกเบี้ยที่อายุ ${age} ปีไว้ตลอด`);
+  const rSingle = mk('จ่ายครั้งเดียวจบ', PEN_STRAT_FAMILY.single, vSingle, 'ก้อนเดียวตอนนี้ จบเลย');
+  const rShort = mk('จ่าย 5 ปี', PEN_STRAT_FAMILY.short, vShort, 'จ่ายสั้น แล้วรอรับบำนาญ');
+  if(rLong) rows.push(rLong);
+  if(rSingle) rows.push(rSingle);
+  if(rShort) rows.push(rShort);
+
+  const lad1 = penStratLadder(PEN_STRAT_FAMILY.single, vSingle, gender, age, SUM, 1, retire);
+  if(lad1) rows.push({label: 'จ่ายครั้งเดียว แล้วซื้อเพิ่มทุกปี',
+    sub: `ซื้อ ${lad1.rounds} ใบ ใบละทุน ${fmt(lad1.perSum)} ตั้งแต่อายุ ${age} ถึง ${age + lad1.rounds - 1} ปี`,
+    sum: lad1.perSum * lad1.rounds, totalPremium: lad1.merged.totalPremium,
+    pvPremium: lad1.merged.pvPremium, maxYearly: lad1.merged.maxYearly, payYears: lad1.merged.payYears,
+    totalGet: lad1.merged.totalGet, irr: lad1.merged.irr, rounds: lad1.rounds});
+  const lad5 = penStratLadder(PEN_STRAT_FAMILY.short, vShort, gender, age, SUM, 5, retire);
+  if(lad5) rows.push({label: 'จ่าย 5 ปี แล้วซื้อเพิ่มทุก 5 ปี',
+    sub: `ซื้อ ${lad5.rounds} ใบ ใบละทุน ${fmt(lad5.perSum)} ทุก 5 ปี เริ่มอายุ ${age} ปี`,
+    sum: lad5.perSum * lad5.rounds, totalPremium: lad5.merged.totalPremium,
+    pvPremium: lad5.merged.pvPremium, maxYearly: lad5.merged.maxYearly, payYears: lad5.merged.payYears,
+    totalGet: lad5.merged.totalGet, irr: lad5.merged.irr, rounds: lad5.rounds});
+
+  if(!rows.length) return '';
+  const best = rows.reduce((a, b) => (b.irr || -9) > (a.irr || -9) ? b : a);
+  const body = rows.map(r => `<tr${r === best ? ' class="pen-strat-best"' : ''}>
+      <td><b>${r.label}</b>${r === best ? ' <span class="pen-tag-best">IRR ดีที่สุด</span>' : ''}<span class="pen-strat-sub">${r.sub}</span></td>
+      <td style="text-align:right;">${fmt(r.sum)}</td>
+      <td style="text-align:right;">${fmt(Math.round(r.maxYearly))}<span class="pen-strat-sub">จ่าย ${r.payYears} ปี</span></td>
+      <td style="text-align:right;">${fmt(Math.round(r.totalPremium))}</td>
+      <td style="text-align:right;"><b>${fmt(Math.round(r.pvPremium))}</b></td>
+      <td style="text-align:right;">${fmt(Math.round(r.totalGet))}</td>
+      <td style="text-align:right;">${r.irr == null ? '—' : (r.irr * 100).toFixed(2) + '%'}</td>
+    </tr>`).join('');
+
+  return `<div class="content-card pen-strat">
+    <h3>จ่ายปีเดียว จ่าย 5 ปี หรือจ่ายยันเกษียณ แบบไหนคุ้มกว่า</h3>
+    <p class="meta">คิดที่เพศ${gender==='male'?'ชาย':'หญิง'} อายุ ${age} ปี เริ่มรับบำนาญ ${retire} ปี ใช้ตระกูลเฟล็กซี่ รีไทร์ ซึ่งมีครบทั้งสามรูปแบบที่อายุรับบำนาญเดียวกัน จึงเทียบกันได้ตรง ๆ ·
+      <b>ทุกทางเลือกตั้งทุนรวมเท่ากันที่ ${fmt(SUM)} บาท</b> บำนาญที่ได้จึงเท่ากันหมด ${fmt(rows[0] ? rows[0].totalGet : 0)} บาท สิ่งที่ต่างกันคือ<b>ต้องจ่ายเท่าไรถึงได้เท่ากัน</b></p>
+    <p class="meta pen-pv-note">อ่านคอลัมน์ไหนดี · <b>เบี้ยรวมดิบ</b> คือผลบวกเฉย ๆ เทียบกันตรง ๆ ไม่ได้เพราะเป็นเงินคนละเวลา · <b>เบี้ยคิดเป็นเงินวันนี้</b> คือคิดลดกลับมาที่ปัจจุบันที่ 3% ต่อปี อันนี้คือตัวที่ใช้เทียบกันได้จริง · <b>เบี้ยต่อปี</b> คือภาระที่ต้องแบกในแต่ละปี ซึ่งเป็นตัวตัดสินว่าไหวหรือไม่ไหว</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="min-width:180px;">ทางเลือก</th><th style="text-align:right;">ทุนรวม</th>
+        <th style="text-align:right;">เบี้ยต่อปี</th><th style="text-align:right;">เบี้ยรวมดิบ</th>
+        <th style="text-align:right;">เบี้ยคิดเป็นเงินวันนี้</th><th style="text-align:right;">ได้คืนรวม</th>
+        <th style="text-align:right;">IRR</th></tr></thead>
+      <tbody>${body}</tbody></table></div>
+    <div class="pen-strat-notes">
+      <p><b>ข้อดีของการทยอยซื้อ</b> ไม่ต้องผูกเงินก้อนใหญ่ทีเดียว ปรับตามรายได้แต่ละปีได้ และถ้าเงินขาดมือปีไหนก็แค่ไม่ซื้อใบใหม่ ไม่กระทบใบเดิมที่จ่ายจบไปแล้ว</p>
+      <p><b>ข้อเสียที่ตัวเลขข้างบนสะท้อนออกมา</b> เบี้ยของใบใหม่คิดตามอายุ ณ วันที่ซื้อ ยิ่งซื้อช้ายิ่งแพงต่อบำนาญที่ได้เท่ากัน เบี้ยรวมจึงสูงกว่าและ IRR ต่ำกว่าการล็อกตั้งแต่แรก</p>
+      <p><b>ความเสี่ยงที่ใส่เป็นตัวเลขไม่ได้</b> บริษัท<b>ปิดการขายแบบนั้นเมื่อไรก็ได้</b> คนที่วางแผนจะทยอยซื้อเพิ่มอีกหลายใบ ถ้าแบบถูกปิดกลางทางจะซื้อต่อไม่ได้เลย ต้องไปใช้แบบใหม่ที่เงื่อนไขอาจแย่กว่า ส่วนคนที่ล็อกแบบจ่ายยาวไว้แล้วไม่ได้รับผลกระทบ เพราะกรมธรรม์ที่ออกแล้วยังเดินตามสัญญาเดิม · นอกจากนี้แบบจ่ายยาวยัง<b>ต้องจ่ายต่อเนื่องจริง</b> ถ้าขาดส่งกลางคันจะเสียมูลค่าไปมาก จึงเหมาะกับคนที่รายได้นิ่งเท่านั้น</p>
+      <p class="meta">การจำลองการซื้อเพิ่มในอนาคต ใช้<b>ตารางเบี้ยปัจจุบัน</b>คิดที่อายุในอนาคต เป็นการประมาณการเพื่อเทียบทางเลือก ไม่ใช่ใบเสนอราคา เบี้ยจริงตอนซื้อขึ้นกับอัตราที่บริษัทใช้ ณ วันนั้นและการพิจารณารับประกัน</p>
+    </div>
+  </div>`;
+}
+
 function renderPensionAdvisor(){
   const box = document.getElementById('pensionAdvisorResult');
   if(!box) return;
@@ -15993,6 +16207,8 @@ function renderPensionAdvisor(){
       — พบ ${list.length} ทางเลือกที่ทำได้</div>
     <div class="adv-cards">${cards}</div>
     ${others ? `<div class="content-card" style="margin-top:14px;"><h3 style="font-size:.95rem;margin:0 0 8px;">ทางเลือกอื่นที่ทำได้</h3><ul class="adv-others">${others}</ul></div>` : ''}
+    ${pensionHowMuchBox(top[0] ? top[0].annualOutlay : 0)}
+    ${pensionStrategyTable()}
     <p class="pension-hint">การจัดอันดับพิจารณาจากผลตอบแทน IRR จำนวนเท่าที่ได้คืน ความตรงกับอายุเกษียณที่ต้องการ จุดคุ้มทุน และสิทธิลดหย่อนภาษี ตัวเลขทั้งหมดเป็นการประมาณการจากตารางเบี้ยและอัตราบำนาญทางการ ไม่รวมเงินปันผลและค่าใช้จ่ายอื่น ผลประโยชน์จริงยึดตามกรมธรรม์
     ${st.tax ? ' ส่วนตัวเลขภาษีเป็นการประมาณการเบื้องต้นจากฐานภาษีที่เลือก สิทธิจริงขึ้นกับเงินได้และค่าลดหย่อนอื่นที่ใช้ไปแล้ว ควรตรวจสอบกับผู้เชี่ยวชาญด้านภาษี' : ''}</p>`;
 }
