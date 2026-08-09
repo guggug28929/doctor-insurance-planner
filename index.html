@@ -15966,10 +15966,15 @@ function pensionAdvisorCandidates(){
      เบี้ยบำนาญ ลดหย่อนได้ 15% ของเงินได้ และไม่เกิน 200,000 บาท
      เมื่อรวมกับ RMF SSF กบข. กองทุนสำรองเลี้ยงชีพ ประกันสังคม ต้องไม่เกิน 500,000 บาท
    ตัวเลขทั้งสองมาจาก data/tax-rules.json ไม่ได้พิมพ์ค้างไว้ในโค้ด ========================= */
+/* deductions เป็น object ที่ซ้อนกันหลายชั้น ไม่ใช่ array
+   เบี้ยบำนาญอยู่ใน retirementGroup.items.pensionInsurance และเพดานรวม 500,000 อยู่ที่ retirementGroup.cap
+   ถ้าโครงสร้างเปลี่ยน ให้ตกกลับไปใช้ค่าตามกฎหมายแทนการพัง เพราะกล่องนี้อยู่กลางหน้าที่ลูกค้าใช้จริง */
 function pensionDeductRule(){
-  const list = (TAX_RULES && TAX_RULES.deductions) || [];
-  const d = list.find(x => (x.label || '').includes('เบี้ยประกันชีวิตแบบบำนาญ')) || {};
-  return {pct: d.percentOfIncome || 0.15, cap: d.cap || 200000, groupCap: 500000};
+  const g = ((TAX_RULES || {}).deductions || {}).retirementGroup || {};
+  /* ต้องอ้างคีย์ pensionInsurance ตรง ๆ ห้ามค้นด้วยคำว่า "บำนาญ"
+     เพราะ กบข. ก็มีคำนี้ในชื่อและมี cap 500,000 จะหยิบผิดตัวแล้วได้เพดานผิดไป 2.5 เท่า */
+  const d = (g.items || {}).pensionInsurance || {};
+  return {pct: d.percentOfIncome || 0.15, cap: d.cap || 200000, groupCap: g.cap || 500000};
 }
 /* เงินได้ที่ทำให้ตกฐานภาษีนั้นพอดี ใช้ขอบล่างของขั้นถัดไปเป็นตัวแทน
    เพราะลูกค้าเลือกจาก "ฐานภาษี" ไม่ได้กรอกเงินได้ จึงต้องเดาเงินได้กลับจากฐาน */
