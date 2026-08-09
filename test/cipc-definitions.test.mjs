@@ -99,10 +99,11 @@ test('ต้องชี้จุดที่คุ้มครองกว้�
 });
 
 test('หน้าแผน CI Perfect Care ต้องแสดงส่วนนิยามจริง พร้อมแท็บและป้าย 3 ระยะ', () => {
-  // เดิมคีย์นี้ถูกประกาศซ้ำสองครั้งจนอันแรกถูกทับ ตอนนี้รวมเป็นคีย์เดียวที่ต่อสามส่วนเข้าด้วยกัน
+  // เดิมคีย์นี้ถูกประกาศซ้ำสองครั้งจนอันแรกถูกทับ ตอนนี้รวมเป็นคีย์เดียว
+  // ciPerfectCareDetailSections() (สรุปย่อ 5 หมวด) เคยถูกต่อไว้ด้วย แต่พูดซ้ำกับ cipcDefinitionsSection() (นิยามเต็ม)
+  // จึงตัดออก เหลือเรียกแค่ตาข่ายเสียชีวิตกับนิยามเต็มชุดเดียว
   assert.match(html, /\+ cipcDefinitionsSection\(\)/);
   assert.match(html, /detailSections: \(\) => cipcDeathBenefitSection\(\)/);
-  assert.match(html, /\+ ciPerfectCareDetailSections\(\)/);
   assert.match(html, /function cipcDefinitionsSection\(\)\{/);
   assert.match(html, /function setCipcDefTab\(key\)\{/);
   assert.match(html, /const CIPC_STAGE = \{/);
@@ -162,4 +163,58 @@ test('มุมมองจากห้องตรวจ ต้องเขี�
   assert.deepEqual(stray, [], `doc ที่ระดับระยะจะไม่ขึ้นจอ พบที่ ${stray.join(', ')}`);
   const sec = html.slice(html.indexOf('function cipcStageHtml'), html.indexOf('function cipcDefGroupHtml'));
   assert.ok(!sec.includes('s.doc'), 'ตัวแสดงผลระดับระยะไม่ได้อ่าน doc');
+});
+
+/* ---------- กันเหตุที่เคยเกิดจริง: นิยามหายไประหว่างย้ายข้อมูล ----------
+   เคยมีข้อมูลนิยามสองชุด คือชุดสรุปในโค้ดกับไฟล์ JSON ตอนย้ายมาใช้ไฟล์ JSON
+   ระยะรุนแรงของโรคมะเร็งตกหล่นไป ลูกค้าที่เปิดหน้าแผนจึงเห็นว่ามะเร็งมีแค่สองระยะ
+   ทั้งที่กรมธรรม์จ่ายมะเร็งระยะลุกลาม 100% ซึ่งเป็นเหตุผลหลักที่คนซื้อแบบนี้
+   เทสต์ชุดนี้ล็อกโครงสร้างไว้กับกรมธรรม์ตัวจริง ไม่ให้พลาดซ้ำ */
+
+const CIPCJ = JSON.parse(readFileSync(new URL('../data/cipc-definitions.json', import.meta.url), 'utf8'));
+
+test('ทุกโรคต้องมีระยะรุนแรง เพราะแบบนี้จ่าย 100% ที่ระยะรุนแรงเป็นแกนของสัญญา', () => {
+  const miss = CIPCJ.diseases.filter(d => !d.stages.some(s => s.stage === 'severe'))
+    .map(d => `#${d.n} ${d.th}`);
+  assert.deepEqual(miss, [], 'โรคที่ไม่มีระยะรุนแรง แปลว่าเก็บนิยามมาไม่ครบ');
+});
+
+test('จำนวนโรคและจำนวนหัวข้อระยะ ต้องตรงกับกรมธรรม์ที่นับไว้', () => {
+  assert.equal(CIPCJ.diseases.length, 36);
+  assert.equal(CIPCJ._meta.total_diseases, 36);
+  // นับจากรายละเอียดท้ายกรมธรรม์ได้ 81 หัวข้อระยะ (ข้อ x.y ทั้งหมดในส่วนนิยามโรค)
+  const stages = CIPCJ.diseases.reduce((n, d) => n + d.stages.length, 0);
+  assert.equal(stages, 81, 'จำนวนหัวข้อระยะไม่ตรงกับกรมธรรม์ มีระยะหายหรือเกิน');
+  const order = {early: 0, mid: 1, severe: 2};
+  for(const d of CIPCJ.diseases){
+    const seq = d.stages.map(s => order[s.stage]);
+    assert.deepEqual(seq, [...seq].sort((a, b) => a - b), `#${d.n} ${d.th} ระยะเรียงผิดลำดับ`);
+    assert.equal(new Set(seq).size, seq.length, `#${d.n} ${d.th} มีระยะซ้ำ`);
+  }
+});
+
+test('โรคมะเร็งต้องครบสามระยะ และระยะลุกลามต้องมีข้อยกเว้นครบตามกรมธรรม์', () => {
+  const c = CIPCJ.diseases.find(d => d.n === 6);
+  assert.deepEqual(c.stages.map(s => s.stage), ['early', 'mid', 'severe']);
+  const sev = c.stages.find(s => s.stage === 'severe');
+  assert.match(sev.th, /ลุกลาม/);
+  assert.equal(sev.exclusions.length, 8, 'กรมธรรม์ข้อ 6.3 มีข้อยกเว้น 8 ข้อ');
+  // สองข้อนี้คือจุดที่ตัวแทนพลาดบ่อยที่สุดเวลาตอบลูกค้า จึงต้องมีอยู่เสมอ
+  assert.ok(sev.exclusions.some(x => x.includes('90 วัน')), 'ขาดเงื่อนไขมะเร็งที่เกิดก่อนหรือภายใน 90 วัน');
+  assert.ok(sev.exclusions.some(x => x.includes('เอชไอวี')), 'ขาดข้อยกเว้นมะเร็งในผู้ป่วยติดเชื้อเอชไอวี');
+  assert.ok(sev.criteria.some(x => x.includes('มะเร็งเม็ดเลือดขาว')), 'ขาดวรรคที่ให้รวมถึงมะเร็งเม็ดเลือดขาว');
+});
+
+test('ห้ามมีนิยามชุดที่สองอยู่ในโค้ดอีก เพราะเป็นต้นเหตุที่ข้อมูลเคยหาย', () => {
+  assert.ok(!/function ciPerfectCareDetailSections\(\)\{/.test(html),
+    'ชุดสรุปนิยามในโค้ดกลับมาแล้ว ต้องมีนิยามที่เดียวคือไฟล์ JSON');
+});
+
+test('ป้าย D Care ในป๊อปอัพเทียบ ต้องใช้ถ้อยคำชุดเดียวกับหน้าแผน D Care', () => {
+  const fn = html.slice(html.indexOf('function ciXwCell('), html.indexOf('let ciXwTab'));
+  assert.match(fn, /DCARE_STAGE_BADGE\.both\.label/);
+  assert.match(fn, /DCARE_STAGE_BADGE\.early\.label/);
+  // ถ้าเขียนคำเองจะสื่อผิด เพราะ early ของ D Care คือเงื่อนไขการซื้อ ไม่ใช่จังหวะที่จ่าย
+  assert.ok(!/xw-severe">ระยะรุนแรง<|xw-early">ระยะเริ่มต้น</.test(fn),
+    'ยังพิมพ์ป้าย D Care เองอยู่ ต้องอ่านจากทะเบียนเดียวกับหน้าแผน');
 });
