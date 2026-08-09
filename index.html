@@ -1103,6 +1103,21 @@
   }
   .plan-card ul{margin:8px 0 0;padding-left:18px;font-size:.82rem;line-height:1.6;}
   .plan-card .meta{font-size:.76rem;color:var(--muted);margin-top:8px;}
+  /* แถบเบี้ยเริ่มต้นบนการ์ด · ตัวเลขต้องเด่นกว่าคำอธิบายเงื่อนไข
+     แต่เงื่อนไขต้องอยู่ติดกันเสมอ ห้ามให้ตัวเลขลอยเดี่ยวจนลูกค้าเข้าใจว่าเป็นราคาของทุกทุน */
+  .plan-start{
+    margin:10px 0 0;
+    padding:8px 10px;
+    border-radius:10px;
+    background:rgba(143,13,64,.05);
+    border:1px solid rgba(143,13,64,.12);
+    font-size:.86rem;
+    line-height:1.45;
+  }
+  .plan-start b{color:var(--pink-deep);font-size:.95rem;}
+  .plan-start span{display:block;margin-top:2px;font-size:.72rem;color:var(--muted);}
+  body.hnw .plan-start{background:rgba(212,175,106,.08);border-color:rgba(212,175,106,.35);}
+  body.hnw .plan-start b{color:var(--gold, #d4af6a);}
 
   /* ---- Plan compare feature ---- */
   .adv-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
@@ -8192,6 +8207,130 @@ function renderPlanFit(p){
     + `</div>`;
 }
 
+/* ---- เบี้ยเริ่มต้นบนการ์ดหน้ารายการแผน ----
+   ลูกค้าที่เปิดหน้ารายการแผนถามคำถามเดียวกันทุกคนคือ "แบบนี้เท่าไร"
+   ก่อนหน้านี้ต้องกดเข้าไปทีละใบถึงจะเห็นตัวเลข การ์ดนี้จึงเติมเบี้ยเริ่มต้นให้เห็นตั้งแต่หน้ารวม
+
+   กติกาที่ห้ามผิด
+   1) ตัวเลขทุกตัวคำนวณสดด้วยฟังก์ชันเบี้ยตัวเดียวกับหน้าคำนวณ ซึ่งอ่านจาก data/premium-rates.json
+      ห้ามพิมพ์ตัวเลขเบี้ยค้างไว้ในไฟล์นี้เด็ดขาด ไม่งั้นวันที่บริษัทปรับอัตรา
+      หน้ารวมจะยังโชว์ราคาที่ขายไม่ได้แล้ว ทั้งที่หน้าแผนข้างในเปลี่ยนไปแล้ว
+   2) ตัวเลขต้องมาคู่กับเงื่อนไขที่ทำให้ตัวเลขนั้นจริงเสมอ (อายุ เพศ ทุน แผนย่อย)
+      เบี้ยทุน 250,000 ที่ไม่บอกทุน คือข้อมูลที่ทำให้ลูกค้าเข้าใจผิดทันที
+   3) ถ้าคำนวณไม่ได้ ให้ไม่แสดงอะไรเลย ดีกว่าขึ้นคำว่าไม่มีข้อมูลให้ดูเหมือนเว็บพัง */
+const PLAN_CARD_CASE = {gender:'m', occClass:'1', age:35, seniorAge:55};
+// วัยเก๋ารับตั้งแต่อายุ 50 ปี ใช้เคส 35 ปีไม่ได้ ต้องยกอายุอ้างอิงให้อยู่ในช่วงที่ขายจริง
+const PLAN_CARD_SENIOR_IDS = new Set(['waigao9090', 'waigao9910']);
+
+/* แบบที่ไม่ได้อยู่ในทะเบียนของหน้าเปรียบเทียบ ต้องบอกวิธีคิดเบี้ยไว้ตรงนี้
+   note คือเงื่อนไขที่ทำให้ตัวเลขเป็นจริง จะขึ้นต่อท้ายตัวเลขบนการ์ดเสมอ */
+const PLAN_CARD_EXTRA = {
+  cipc:       {note:'ทุน 500,000 บาท',  calc:(g,a)=>cipcPremium(500000, g, a, 'annual')},
+  multipleci: {note:'ทุน 500,000 บาท',  calc:(g,a)=>multipleCiPremium(500000, g, a, 'annual')},
+  cancer:     {note:'ทุน 300,000 บาท',  calc:(g,a)=>cancerPremium('300k', g, a, 'annual')},
+  dcare:      {note:'กลุ่มมะเร็ง ทุน 250,000 บาท แบบระยะเริ่มต้น+รุนแรง',
+               calc:(g,a)=>dcarePremium('cancer', 250000, g, a, 'annual', 'early_and_severe')},
+  hb:         {note:'ชดเชยวันละ 1,000 บาท', calc:(g,a)=>hbPremium(1000, a, 'annual')},
+  pa:         {note:'แผน 1',            calc:(g,a)=>paPremium('1', a, 'annual')},
+  // ตารางฝากครรภ์มีเฉพาะเพศหญิง จึงต้องบอกบนการ์ดว่าเป็นเบี้ยของหญิง ไม่ใช่เคสชายเหมือนแบบอื่น
+  maternity:  {note:'หญิง แผน 1',       calc:(g,a)=>maternityPremiumAtEntry('p1', a, PLAN_CARD_CASE.occClass, 'annual')},
+  wellbeing:  {note:'แผน 1',            calc:(g,a)=>wellbeingPremiumAtEntry('p1', a, 'annual')},
+  termrider:  {note:'แบบ 10/5 ทุน 100,000 บาท', calc:(g,a)=>termRiderPremium('10/5', 100000, g, a, 'annual')},
+};
+
+function planCardAge(id){
+  return PLAN_CARD_SENIOR_IDS.has(id) ? PLAN_CARD_CASE.seniorAge : PLAN_CARD_CASE.age;
+}
+
+/* สัญญาหลัก · ไล่ทุนจากน้อยไปมาก เอาทุนแรกที่ตารางมีอัตราจริง
+   ไล่แทนการหยิบทุนต่ำสุดตัวเดียว เพราะบางแบบทุนต่ำสุดในทะเบียนเทียบ
+   ยังไม่มีอัตราที่อายุอ้างอิง ถ้าไม่ไล่ต่อจะกลายเป็นการ์ดว่างทั้งที่ขายได้ */
+function planCardLifePremium(id){
+  const p = typeof LIFE_COMPARE_PRODUCTS === 'object' ? LIFE_COMPARE_PRODUCTS[id] : null;
+  if(!p) return null;
+  const age = planCardAge(id);
+  const caps = p.tiers.map(t => Number(t.value)).filter(Number.isFinite).sort((a,b) => a-b);
+  for(const cap of caps){
+    const v = mainPremiumAtEntry(p.plan, cap, PLAN_CARD_CASE.gender, age, 'annual');
+    if(v != null) return {premium:v, note:`ทุน ${fmt(cap)} บาท`, age, unit:'ต่อปี'};
+  }
+  return null;
+}
+
+/* สัญญาเพิ่มเติมสุขภาพ · เอาแผนย่อยที่เบี้ยถูกที่สุด เพราะคำว่า "เริ่มต้น" ต้องแปลว่าถูกที่สุดจริง
+   ไม่ใช่แผนแรกในรายการซึ่งบางตัวเรียงตามวงเงิน ไม่ได้เรียงตามราคา */
+function planCardRiderPremium(id){
+  const p = typeof COMPARE_PRODUCTS === 'object' ? COMPARE_PRODUCTS[id] : null;
+  if(!p) return null;
+  const age = planCardAge(id);
+  let best = null;
+  for(const t of p.tiers){
+    const v = p.getPremium(t.cfg, PLAN_CARD_CASE.gender, age, PLAN_CARD_CASE.occClass, 'annual');
+    if(v != null && (best === null || v < best.premium)) best = {premium:v, note:t.label, age, unit:'ต่อปี'};
+  }
+  return best;
+}
+
+/* บำนาญ · บางแบบชำระครั้งเดียว หน่วยจึงไม่ใช่ "ต่อปี" ต้องอ่านงวดจริงของแบบนั้นมาแสดง
+   ถ้าเขียนว่าต่อปีทั้งหมด แบบจ่ายครั้งเดียวจะดูแพงกว่าความจริงหลายสิบเท่า */
+function planCardPensionPremium(id){
+  const p = typeof pensionPlan === 'function' ? pensionPlan(id) : null;
+  if(!p) return null;
+  const age = planCardAge(id);
+  const sum = p.sumAssuredMin || 100000;
+  const g = PLAN_CARD_CASE.gender === 'm' ? 'male' : 'female';
+  const freq = pensionDefaultFreq(id);
+  for(const [vk, v] of Object.entries(p.variants || {})){
+    if(v.entryAgeMax != null && age > v.entryAgeMax) continue;
+    if(v.entryAgeMin != null && age < v.entryAgeMin) continue;
+    const prem = pensionPremium(id, vk, g, age, sum, freq);
+    if(prem != null) return {premium:prem, age, unit: freq === 'single' ? 'จ่ายครั้งเดียว' : 'ต่อปี',
+      note:`${v.label || vk} ทุน ${fmt(sum)} บาท`};
+  }
+  return null;
+}
+
+function planCardExtraPremium(id){
+  const def = PLAN_CARD_EXTRA[id];
+  if(!def) return null;
+  const age = planCardAge(id);
+  const v = def.calc(PLAN_CARD_CASE.gender, age);
+  return v == null ? null : {premium:v, note:def.note, age, unit:'ต่อปี'};
+}
+
+function planCardPremiumInfo(id){
+  return planCardLifePremium(id) || planCardRiderPremium(id)
+      || planCardPensionPremium(id) || planCardExtraPremium(id);
+}
+
+function planCardPremiumHtml(id){
+  const info = planCardPremiumInfo(id);
+  if(!info) return '';
+  // เพศระบุเฉพาะแบบที่เบี้ยขึ้นกับเพศจริง ฝากครรภ์เป็นตารางหญิงล้วนจึงบอกไว้ใน note แล้ว
+  const who = id === 'maternity' ? `อายุ ${info.age} ปี` : `ชาย อายุ ${info.age} ปี`;
+  return `<p class="plan-start"><b>เริ่มต้น ${fmt(Math.round(info.premium))} บาท</b> ${info.unit}`
+    + `<span>${who} · ${info.note}</span></p>`;
+}
+
+/* เติมเบี้ยลงการ์ดหลังหน้าโหลดเสร็จ แทนการเขียนไว้ใน HTML ทีละใบ
+   เพราะการ์ดมี 40 ใบ ถ้าเขียนมือจะมีวันที่ลืมแก้บางใบแล้วตัวเลขขัดกับหน้าแผนข้างใน */
+function renderPlanCardPremiums(){
+  document.querySelectorAll('.plan-card').forEach(card => {
+    if(card.querySelector('.plan-start')) return;
+    const btn = card.querySelector('[onclick*="showPlanDetail("]');
+    if(!btn) return;
+    const m = /showPlanDetail\('([^']+)'/.exec(btn.getAttribute('onclick') || '');
+    if(!m) return;
+    let html = '';
+    try{ html = planCardPremiumHtml(m[1]); }
+    catch(e){ console.error('คิดเบี้ยเริ่มต้นของการ์ด ' + m[1] + ' ไม่สำเร็จ', e); return; }
+    if(!html) return;
+    const meta = card.querySelector('.meta');
+    if(meta) meta.insertAdjacentHTML('afterend', html);
+    else card.querySelector('h3').insertAdjacentHTML('afterend', html);
+  });
+}
+
 function showPlanDetail(id, options = {}){
   const p = PLAN_DETAILS[id];
   const el = document.getElementById('planDetailContent');
@@ -12320,6 +12459,8 @@ function enhanceHints(root){
 document.addEventListener('DOMContentLoaded', () => {
   enhanceHints();
   new MutationObserver(() => enhanceHints()).observe(document.body, {childList: true, subtree: true});
+  // เติมทีเดียวหลังทุกอย่างพร้อม การ์ดเป็น HTML คงที่ จึงไม่ต้องเติมซ้ำเวลาสลับหน้า
+  renderPlanCardPremiums();
 });
 
 const CONTENT_CREDIT = 'ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance';
