@@ -867,6 +867,24 @@
     background:#fff;color:var(--pink-deep);cursor:pointer;
   }
   .dcare-add:hover{background:rgba(143,13,64,.06);}
+  /* จอแคบบีบสามช่องในบรรทัดเดียวจนชื่อกลุ่มโรคกับชื่อแบบถูกตัดหมด
+     สองรายการที่คนละแบบเลยดูเหมือนกันเป๊ะ ทั้งที่เป็นคนละความคุ้มครอง
+     จึงแยกเป็นสองบรรทัด ชื่อกลุ่มโรคเต็มบรรทัดบน แบบกับทุนอยู่บรรทัดล่าง */
+  @media (max-width:640px){
+    .dcare-item{
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      grid-template-areas:'cat cat del' 'stage cap cap';
+      gap:6px;
+      padding:8px;margin-bottom:8px;
+      border:1px solid rgba(143,13,64,.15);border-radius:10px;
+      background:rgba(143,13,64,.03);
+    }
+    .dcare-item .dcare-cat{grid-area:cat;width:100%;}
+    .dcare-item .dcare-stage{grid-area:stage;width:100%;}
+    .dcare-item .dcare-cap{grid-area:cap;width:100%;}
+    .dcare-item .dcare-del{grid-area:del;}
+  }
 
   /* ---------- เมนูย่อย "ความรู้" ----------
      ปุ่มที่ย้ายลงมาอยู่ในเมนูย่อยยังต้องเป็น button[data-page] และอยู่ใน #navbar เหมือนเดิม
@@ -4011,12 +4029,28 @@ function dcareRowHtml(id, catKey, stage, capital){
       <button type="button" class="dcare-del" onclick="dcareRemoveRow('${id}')" aria-label="ลบรายการนี้">&times;</button>
     </div>`;
 }
+/* กดเพิ่มแล้วต้องได้ค่าที่ยังไม่ซ้ำของเดิม
+   ถ้าตั้งค่าเริ่มต้นเหมือนกันทุกครั้ง แถวใหม่จะหน้าตาเหมือนแถวเดิมเป๊ะ
+   คนกดจะคิดว่าเว็บใส่ซ้ำให้เอง ทั้งที่ตั้งใจให้ไปแก้เป็นแบบอื่น
+   ไล่จากกลุ่มของแถวล่าสุดก่อน เพราะคนมักเพิ่มอีกแบบของกลุ่มเดิมต่อกัน */
+function dcareNextCombo(){
+  const used = new Set([...document.querySelectorAll('#dcare_list .dcare-item')]
+    .map(r => r.querySelector('.dcare-cat').value + '|' + r.querySelector('.dcare-stage').value));
+  const rows = document.querySelectorAll('#dcare_list .dcare-item');
+  const lastCat = rows.length ? rows[rows.length-1].querySelector('.dcare-cat').value : null;
+  const cats = lastCat ? [lastCat, ...DCARE_CATS.map(c=>c.key).filter(k=>k!==lastCat)] : DCARE_CATS.map(c=>c.key);
+  for(const cat of cats)
+    for(const st of ['early_and_severe','severe'])
+      if(!used.has(cat+'|'+st)) return {cat, stage:st};
+  return {cat: DCARE_CATS[0].key, stage:'early_and_severe'};
+}
 function dcareAddRow(catKey, stage, capital){
   const wrap = document.getElementById('dcare_list');
   if(!wrap) return;
+  const next = (catKey && stage) ? {cat:catKey, stage} : dcareNextCombo();
   const id = 'dcr' + (++dcareRowSeq);
   wrap.insertAdjacentHTML('beforeend',
-    dcareRowHtml(id, catKey || DCARE_CATS[0].key, stage || 'early_and_severe', capital == null ? 100000 : capital));
+    dcareRowHtml(id, catKey || next.cat, stage || next.stage, capital == null ? 100000 : capital));
   // เพิ่มแถวแล้วต้องคิดเบี้ยใหม่ทันที ไม่ต้องรอให้ผู้ใช้ขยับช่องอื่นก่อน
   if(typeof calcTouched !== 'undefined') calcTouched = true;
   if(typeof renderAll === 'function') renderAll();
@@ -5164,6 +5198,17 @@ function validateInputs(inp){
   if(hasPopular && inp.dcareSelections.some(d=>d.key!=='popular')){
     issues.push('D Care โรคยอดฮิต ต้องซื้อเดี่ยว ห้ามรวมกับกลุ่มโรคอื่น');
   }
+  /* กลุ่มเดียวกันคนละแบบซื้อได้ แต่กลุ่มเดียวกันแบบเดียวกันสองรายการไม่ใช่ชุดที่ตั้งใจ
+     น่าจะกดเพิ่มแล้วลืมเปลี่ยน ถ้าปล่อยไว้จะได้ใบเสนอราคาที่มีบรรทัดซ้ำโดยไม่มีเหตุผล */
+  const dcareCombo = new Set();
+  for(const d of inp.dcareSelections){
+    const k = d.key + '|' + d.stage;
+    if(dcareCombo.has(k)){
+      issues.push(`D Care มีรายการซ้ำ ${d.itemName} อยู่สองบรรทัด ถ้าตั้งใจเพิ่มทุน ให้รวมเป็นบรรทัดเดียว`);
+      break;
+    }
+    dcareCombo.add(k);
+  }
 
   // HB checks
   if(inp.useHb){
@@ -6229,6 +6274,15 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   };
   if(hintEl) hintEl.textContent = (dcareUsedStages.length ? dcareUsedStages : ['early_and_severe'])
     .map(dcareHintFor).join(' · ');
+  /* สองบรรทัดที่กลุ่มกับแบบเหมือนกันเป๊ะ คือกดเพิ่มแล้วลืมเปลี่ยน
+     ต้องบอกให้เห็นทันที ไม่ใช่ปล่อยไปโผล่ในใบเสนอราคา */
+  const dcareSeen = new Set();
+  let dcareDupItem = null;
+  for(const d of inp.dcareSelections){
+    const k = d.key + '|' + d.stage;
+    if(dcareSeen.has(k)){ dcareDupItem = d; break; }
+    dcareSeen.add(k);
+  }
   // ทำเครื่องหมายเฉพาะรายการที่ใช้แบบซึ่งทุนเกินจริง ไม่ใช่ขึ้นแดงยกชุดทั้งที่อีกแบบยังไม่เต็มเพดาน
   inp.dcareSelections.forEach((d, i) => {
     const row = document.querySelectorAll('#dcare_list .dcare-item')[i];
@@ -6242,7 +6296,8 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   dcareErrEl.textContent = dcareOverCap
     ? dcareOverStages.map(o => `ทุนประกัน D Care รายการที่เลือกแบบ${o.def.label} รวมกัน (${fmt(o.sum)} บาท) เกินเพดาน ${fmt(o.def.maxSum)} บาท`).join(' · ')
     : dcareOverIssueAge ? 'D Care รับทำประกันใหม่ถึงอายุ 70 ปีเท่านั้น'
-    : dcareUnavailable ? 'มีบางกลุ่มโรคที่ไม่สามารถแนบได้ที่อายุปัจจุบัน' : '';
+    : dcareUnavailable ? 'มีบางกลุ่มโรคที่ไม่สามารถแนบได้ที่อายุปัจจุบัน'
+    : dcareDupItem ? `มีรายการซ้ำ ${dcareDupItem.itemName} อยู่สองบรรทัด ถ้าตั้งใจเพิ่มทุน ให้รวมเป็นบรรทัดเดียว` : '';
 
   // PA availability at entry age (issue-age max 85; plans 4-7 require entry age 16+; plan 7 stops renewing after age 60, plan 5/6 after 75)
   let paUnavailable = false, paUnavailableMsg = '';
