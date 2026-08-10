@@ -866,6 +866,8 @@
   .nav-more-panel[hidden]{display:none;}
   .nav-more-panel button{width:100%;text-align:left;border-radius:10px;}
   .nav-more-btn::after{content:" ▾";font-size:.75em;}
+  /* บอกว่าปุ่มนี้มีของให้เลือกเพิ่ม เฉพาะจอที่ชี้เมาส์ได้ จอแคบไม่มีแผงจึงไม่ต้องมีลูกศร */
+  @media (min-width:641px){ .nav-plans-btn::after{content:" ▾";font-size:.75em;} }
   .nav-more-btn[aria-expanded="true"]{background:rgba(255,255,255,.18);}
 
   /* ปุ่มที่ยังต้องอยู่ใน DOM เพื่อให้ระบบเดิมทำงาน แต่ไม่แสดงบนแถบเมนู */
@@ -877,6 +879,10 @@
     .nav-more-btn{width:100%;}
     .nav-more-panel{position:static;width:100%;min-width:0;box-shadow:none;margin-top:6px;
       inset:auto !important;}
+    /* แผงของแผนทั้งหมดเปิดด้วยการชี้เมาส์เท่านั้น จอแคบจึงไม่มีทางเปิด
+       ซ่อนไว้เลยกันเผลอโผล่ ถ้าโผล่จะดันเมนูยาวลงมาโดยที่ผู้ใช้ไม่ได้สั่ง
+       ทางเข้ากลุ่มบนจอแคบคือชิปที่อยู่บนหน้าแผน ซึ่งทำหน้าที่เดียวกัน */
+    .nav-plans .nav-more-panel{display:none !important;}
   }
 
   .page{display:none;}
@@ -2389,8 +2395,24 @@
       <button data-page="home" class="active">หน้าแรก</button>
       <button data-page="ai">จัดแผนให้</button>
       <button data-page="calc">คำนวณเบี้ย</button>
-      <button data-page="plans">แผนทั้งหมด</button>
-      <button data-page="accident">อุบัติเหตุ</button>
+      <!-- แผนทั้งหมด · ชี้เมาส์แล้วกางกลุ่มให้เลือก กดที่ตัวปุ่มยังเข้าหน้ารวมเหมือนเดิม
+           กลุ่มในแผงตรงกับชิปที่อยู่บนหน้าแผน จอแคบไม่มีการชี้เมาส์ จึงกดเข้าหน้าแล้วใช้ชิปแทน -->
+      <div class="nav-more nav-plans" id="navPlans">
+        <button data-page="plans" class="nav-plans-btn">แผนทั้งหมด</button>
+        <div class="nav-more-panel" id="navPlansPanel" hidden>
+          <button type="button" data-plan-group="grp-life">ประกันชีวิต</button>
+          <button type="button" data-plan-group="grp-health">สุขภาพ</button>
+          <button type="button" data-plan-group="grp-ci">โรคร้ายแรง</button>
+          <button type="button" data-plan-group="grp-pa">อุบัติเหตุ</button>
+          <button type="button" data-plan-group="grp-pension">บำนาญ</button>
+          <button type="button" data-plan-group="grp-guide">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</button>
+          <button type="button" data-nav-page="hnw">แผน HNW</button>
+        </div>
+      </div>
+      <!-- หน้าอุบัติเหตุยังอยู่ครบและลิงก์ที่ส่งลูกค้าไปแล้วยังเปิดได้
+           ปุ่มถูกซ่อนเพราะทางเข้าหลักย้ายไปอยู่ในแผงของแผนทั้งหมด
+           แต่ยังต้องอยู่ใน #navbar เพราะสถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ -->
+      <button data-page="accident" class="nav-off">อุบัติเหตุ</button>
       <div class="nav-more" id="navMore">
         <button type="button" class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-controls="navMorePanel">ความรู้</button>
         <div class="nav-more-panel" id="navMorePanel" hidden>
@@ -12527,10 +12549,59 @@ function navMoreSyncActive(name){
   btn.classList.toggle('active', owns);
 }
 
+/* แผงกลุ่มแผนใต้ปุ่ม "แผนทั้งหมด"
+   ต่างจากเมนูย่อยความรู้สองข้อ
+     1) ปุ่มแม่ยังเป็นหน้าอยู่ กดแล้วต้องเข้าหน้ารวมเหมือนเดิม แผงจึงเปิดด้วยการชี้เมาส์เท่านั้น
+     2) ปุ่มข้างในไม่ใช่หน้า แต่เป็นตำแหน่งในหน้าแผน จึงใช้ data-plan-group ไม่ใช่ data-page
+        ถ้าใช้ data-page จะไปโผล่ซ้ำในดัชนีค้นหาทั้งเว็บและทำสถานะ active เพี้ยน */
+let navPlansHideTimer = null;
+function navPlansSetOpen(open){
+  const wrap = document.getElementById('navPlans');
+  const panel = document.getElementById('navPlansPanel');
+  if(!wrap || !panel) return;
+  clearTimeout(navPlansHideTimer);
+  if(open && window.innerWidth < NAV_MORE_FIXED_MIN_W) return;   // จอแคบใช้ชิปบนหน้าแผนแทน
+  panel.hidden = !open;
+  if(!open) return;
+  const r = wrap.querySelector('.nav-plans-btn').getBoundingClientRect();
+  panel.style.top = Math.round(r.bottom + 8) + 'px';
+  panel.style.left = '0px';
+  const w = panel.getBoundingClientRect().width;
+  panel.style.left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - w - 8)) + 'px';
+}
+(() => {
+  const wrap = document.getElementById('navPlans');
+  if(!wrap) return;
+  wrap.addEventListener('mouseenter', () => navPlansSetOpen(true));
+  /* หน่วงก่อนปิด เพราะระหว่างปุ่มกับแผงมีช่องว่าง 8px
+     ถ้าปิดทันทีที่เมาส์ออกจากปุ่ม จะปิดใส่หน้าคนที่กำลังเลื่อนลงไปเลือก */
+  wrap.addEventListener('mouseleave', () => {
+    clearTimeout(navPlansHideTimer);
+    navPlansHideTimer = setTimeout(() => navPlansSetOpen(false), 220);
+  });
+  // แป้นพิมพ์ก็ต้องเข้าถึงได้ ไม่ใช่เฉพาะคนที่ใช้เมาส์
+  wrap.addEventListener('focusin', () => navPlansSetOpen(true));
+  wrap.addEventListener('focusout', () => {
+    setTimeout(() => { if(!wrap.contains(document.activeElement)) navPlansSetOpen(false); }, 0);
+  });
+})();
+addEventListener('resize', () => navPlansSetOpen(false));
+addEventListener('scroll', () => navPlansSetOpen(false), {passive:true});
+
 document.getElementById('navbar').addEventListener('click', (e) => {
   if(e.target.closest('#navMoreBtn')){ navMoreSetOpen(!navMoreIsOpen()); return; }
+  const grp = e.target.closest('button[data-plan-group]');
+  if(grp){
+    navPlansSetOpen(false);
+    showPage('plans');
+    // รอให้หน้าแผนขึ้นก่อน ไม่งั้นตำแหน่งที่เลื่อนไปจะเป็นของหน้าเดิม
+    setTimeout(() => jumpToPlanGroup(grp.dataset.planGroup), 60);
+    return;
+  }
+  const alt = e.target.closest('button[data-nav-page]');
+  if(alt){ navPlansSetOpen(false); showPage(alt.dataset.navPage); return; }
   const btn = e.target.closest('button[data-page]');
-  if(btn){ navMoreSetOpen(false); showPage(btn.dataset.page); }
+  if(btn){ navMoreSetOpen(false); navPlansSetOpen(false); showPage(btn.dataset.page); }
 });
 
 document.addEventListener('click', (e) => {
