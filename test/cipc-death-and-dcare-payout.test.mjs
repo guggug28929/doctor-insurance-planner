@@ -31,8 +31,10 @@ test('เพดานจ่ายจริงของแต่ละโหม�
 });
 
 test('หน้าคำนวณเบี้ยต้องบอกเพดานจ่ายจริง ไม่ใช่บอกแค่เพดานทุน', () => {
-  assert.match(html, /จ่ายสูงสุด \$\{dcareStageLive\.payPct\}% ของทุน/);
-  assert.match(html, /dcareStageLive\.maxSum \* dcareStageLive\.payPct \/ 100/);
+  // ข้อความบอกแยกตามแบบที่ลูกค้าเลือกใช้จริง เพราะเพดานเป็นของแต่ละแบบ ไม่ใช่ของทั้งกรมธรรม์
+  assert.match(html, /จ่ายสูงสุด \$\{def\.payPct\}% ของทุน/);
+  assert.match(html, /def\.maxSum \* def\.payPct \/ 100/);
+  assert.match(html, /const dcareUsedStages = Object\.keys\(DCARE_STAGES\)\.filter\(k => dcareStageSums\[k\] > 0\);/);
 });
 
 test('หน้าแผน D Care ต้องมีบรรทัดเพดานของแบบ และคิดจาก payPct ไม่ใช่พิมพ์ค้าง', () => {

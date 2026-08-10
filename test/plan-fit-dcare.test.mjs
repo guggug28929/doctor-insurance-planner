@@ -113,3 +113,55 @@ test('ทางเลือกเรื่องเบี้ยหลังเ�
   // จุดที่ลูกค้าเข้าใจผิดบ่อยที่สุดเรื่องการเปลี่ยนความรับผิดส่วนแรกตอนเกษียณ
   assert.match(html, /เบี้ยจะคิดตามอัตราของแบบไม่มีความรับผิดส่วนแรก ณ อายุนั้น/);
 });
+
+/* เพดานทุนของสองแบบไม่เท่ากัน และเป็นเพดานรวมทุกกลุ่มโรค ไม่ใช่ต่อกลุ่ม
+   เฉพาะระยะรุนแรง 10 ล้าน · ระยะเริ่มต้นและรุนแรง 2.5 ล้าน
+   ถ้าปล่อยให้กรอกเกินโดยไม่เตือน ลูกค้าจะได้ตัวเลขเบี้ยของทุนที่ซื้อไม่ได้จริง */
+test('เพดานทุน D Care ต้องตรงตามกรมธรรม์ทั้งสองแบบ', () => {
+  const i = html.indexOf('const DCARE_STAGES = {');
+  assert.notEqual(i, -1);
+  const seg = html.slice(i, i + 400);
+  assert.match(seg, /early_and_severe: \{label:'[^']*', minSum: 250000, maxSum: 2500000/);
+  assert.match(seg, /severe: *\{label:'[^']*', *minSum: 500000, maxSum: 10000000/);
+});
+
+test('หน้าแผนต้องเตือนสีแดงเมื่อกรอกทุนเกินเพดานของแบบที่เลือก', () => {
+  assert.match(html, /const warn = sum > st\.maxSum/);
+  assert.match(html, /ทุนรวมทุกกลุ่มโรคสูงสุด \$\{fmt\(st\.maxSum\)\} บาท/);
+  assert.match(html, /\.dcare-cap-warn\{color:var\(--danger\)/);
+  // ช่องกรอกต้องแดงด้วย ไม่ใช่มีแต่ข้อความใต้ตาราง
+  assert.match(html, /class="\$\{sum > st\.maxSum \|\| sum < st\.minSum \? 'field-error' : ''\}"/);
+  assert.match(html, /max="\$\{st\.maxSum\}"/);
+});
+
+test('หน้าคำนวณเบี้ยต้องเลือกแบบความคุ้มครองแยกรายกลุ่มโรค', () => {
+  /* บริษัทให้คละแบบในกรมธรรม์เดียวได้ เช่น มะเร็งเอาสองระยะ หัวใจเอาเฉพาะระยะรุนแรง
+     เดิมใช้ตัวเลือกเดียวคุมทุกกลุ่ม พอสลับแบบ กลุ่มที่ติ๊กไว้ก่อนก็เปลี่ยนตาม
+     ทำให้ชุดที่ขายได้จริงบางชุดสร้างในเครื่องคำนวณไม่ได้เลย */
+  assert.ok(!html.includes('<select id="dcare_stage">'), 'ตัวเลือกแบบรวมอันเดียวต้องถูกถอดออก');
+  assert.match(html, /<select id="dcare_\$\{c\.key\}_stage" class="dcare-stage"/);
+  assert.match(html, /stage: DCARE_STAGES\[raw\] \? raw : 'early_and_severe'/);
+  assert.ok(!/dcareSelections, dcareStage,/.test(html), 'ยังส่งแบบรวมอันเดียวเข้าเครื่องคำนวณ');
+
+  // เพดานนับแยกตามแบบ กลุ่มคนละแบบต้องไม่ดึงกันจนเกินเพดาน
+  assert.match(html, /function dcareSumByStage\(selections, stageKey\)\{/);
+  assert.match(html, /const sum = dcareSumByStage\(inp\.dcareSelections, stageKey\);/);
+  assert.match(html, /if\(sum > def\.maxSum\)\{/);
+  assert.ok(!html.includes('if(dcareTotal > 2500000){'), 'ยังเหลือเพดานตายตัวในการตรวจก่อนคำนวณ');
+  // แถวที่ขึ้นแดงต้องเป็นแถวของแบบที่เกินจริง ไม่ใช่แดงยกชุด
+  assert.match(html, /const rowOverCap = dcareOverStages\.some\(o => o\.k === stage\);/);
+});
+
+test('เลือกแบบแล้ว เบี้ยที่คำนวณต้องเปลี่ยนตามแบบของกลุ่มนั้น ไม่ใช่เตือนอย่างเดียว', () => {
+  // เคยพลาดได้ง่าย คือเตือนเพดานถูกแต่ยังคิดเบี้ยด้วยแบบเดิม ลูกค้าเลยเห็นเบี้ยผิด
+  for(const call of [
+    "dcarePremium(d.key, d.capital, gender, age, freq, d.stage)",
+    "dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage)",
+    "dcarePremium(d.key, d.capital, gender, age, 'annual', d.stage)",
+  ]) assert.ok(html.includes(call), `ยังไม่ได้ส่งแบบของกลุ่มนั้นเข้าไปที่ ${call}`);
+  assert.ok(!html.includes('inp.dcareStage'), 'ยังเหลือการอ่านแบบรวมอันเดียว');
+  // ชุดที่กดมาจากผู้ช่วยจัดแผนต้องคืนค่าแบบลงฟอร์มด้วย ไม่งั้นเบี้ยที่เห็นสองหน้าจะไม่ตรงกัน
+  assert.match(html, /setValue\('dcare_'\+cat\+'_stage', it\.stage \|\| 'early_and_severe'\);/);
+  assert.match(html, /document\.querySelectorAll\('\.dcare-stage'\)\.forEach\(sel => \{ sel\.value='early_and_severe'; \}\);/);
+});
+
