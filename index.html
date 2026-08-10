@@ -922,6 +922,21 @@
      ตั้ง tabular-nums ซ้ำที่ตารางด้วย เพราะบางเบราว์เซอร์ไม่สืบทอดค่าจาก body */
   table, .plan-start b, .sum-total, input[type=number]{font-variant-numeric:tabular-nums;}
 
+  /* ---------- ตารางที่อ่านง่ายขึ้นตอนเลื่อน ----------
+     ตารางเบี้ยของเว็บนี้ยาวหลายสิบแถว พอเลื่อนลงไปกลางตารางแล้วหัวคอลัมน์หายไป
+     ผู้อ่านต้องเลื่อนกลับขึ้นไปดูว่าคอลัมน์ไหนคืออะไร จึงตรึงหัวไว้กับกรอบตาราง */
+  .table-wrap{max-height:min(70vh, 620px);overflow:auto;}
+  .table-wrap table thead th{
+    position:sticky;top:0;z-index:2;
+  }
+  /* แถวสลับสีอ่อนมาก ช่วยกวาดสายตาตามแถวโดยไม่ทำให้ตารางดูลาย */
+  .table-wrap table tbody tr:nth-child(even){background:rgba(143,13,64,.022);}
+  .table-wrap table tbody tr:hover{background:rgba(184,134,59,.07);}
+
+  /* กล่องสรุปเบี้ยใช้เงาชุดเดียวกับการ์ดอื่น และตัวเลขเน้นด้วยขนาดไม่ใช่สี */
+  .stat{box-shadow:var(--sh-1) !important;border-radius:var(--r-sm) !important;}
+  .stat .v{letter-spacing:-.01em;}
+
   /* ---------- ตารางเกณฑ์วงเงิน HB ---------- */
   .hb-limit-table th{font-size:.8rem;line-height:1.35;}
   .hb-limit-table .th-sub{font-weight:400;font-size:.72rem;color:rgba(255,255,255,.85);}
@@ -5486,6 +5501,8 @@ function renderAll(){
     <div class="stat"><div class="k">ชำระเบี้ยสัญญาหลัก</div><div class="v">${payTermMain >= 99 ? 'จนครบสัญญา' : payTermMain + ' ปี'}</div></div>
     <div class="stat"><div class="k">เบี้ยรวมสะสมทั้งหมด</div><div class="v">${fmt(lastCumulative)} บาท</div></div>
   `;
+  // ให้ตัวเลขในกล่องสรุปนับขึ้น ผู้ใช้จะเห็นว่าค่าเปลี่ยนหลังแก้ฟอร์ม
+  dgAnimateSummary(summaryEl);
 
   const totalHeaders = paymentInfo.periods === 1
     ? '<th class="total-col">เบี้ยรวม/ปี</th><th class="total-col">เบี้ยรวมสะสม</th>'
@@ -12784,6 +12801,47 @@ function dgPlayPageIn(target){
     target.classList.remove('dg-page-in');
     dgPageInTimer = null;
   }, DG_PAGE_IN_MS + 60);
+}
+
+/* ---------- ตัวเลขนับขึ้นเมื่อผลลัพธ์เปลี่ยน ----------
+   จุดประสงค์ไม่ใช่ความสวยอย่างเดียว แต่เพื่อบอกสายตาว่า "ตัวเลขนี้เพิ่งเปลี่ยน"
+   เวลาผู้ใช้แก้ทุนหรือสลับงวดชำระแล้วเบี้ยขยับ ถ้าเปลี่ยนแบบตัดภาพจะไม่มีใครสังเกตเห็น
+   นับเฉพาะตอนค่าเปลี่ยนจริง และข้ามให้ทันทีถ้าเครื่องตั้งค่าลดการเคลื่อนไหว */
+function dgCountUp(el, target, ms){
+  if(!el) return;
+  const prev = Number(el.dataset.dgVal || 0);
+  el.dataset.dgVal = String(target);
+  if(prev === target) return;
+  if(typeof dgReducedMotion === 'function' && dgReducedMotion()){ el.textContent = fmt(Math.round(target)); return; }
+  const t0 = performance.now(), dur = ms || 420;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    // ชะลอตอนท้ายให้ตัวเลขนิ่งลงแทนการหยุดกึก
+    const eased = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(Math.round(prev + (target - prev) * eased));
+    if(k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+/* ไล่หาค่าตัวเลขในกล่องสรุปแล้วนับขึ้นให้ทุกกล่องที่เป็นจำนวนเงินจริง
+   กล่องที่เป็นข้อความ เช่น เพศหรือชื่องวดชำระ จะถูกข้ามไปเอง */
+function dgAnimateSummary(box){
+  if(!box) return;
+  box.querySelectorAll('.stat .v').forEach(v => {
+    const raw = v.textContent.trim();
+    const m = raw.match(/^([0-9,]+)(\s*บาท.*)$/);
+    if(!m) return;
+    const num = Number(m[1].replace(/,/g,''));
+    if(!Number.isFinite(num) || num <= 0) return;
+    const tail = m[2];
+    const span = document.createElement('span');
+    v.textContent = '';
+    v.appendChild(span);
+    v.insertAdjacentText('beforeend', tail);
+    span.dataset.dgVal = v.dataset.dgPrev || '0';
+    dgCountUp(span, num);
+    v.dataset.dgPrev = String(num);
+  });
 }
 
 /* เมนูย่อย "ความรู้"
