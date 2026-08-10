@@ -12811,8 +12811,12 @@ function dgCountUp(el, target, ms){
   if(!el) return;
   const prev = Number(el.dataset.dgVal || 0);
   el.dataset.dgVal = String(target);
+  /* เขียนค่าจริงลงไปก่อนเสมอ แล้วค่อยให้อนิเมชันนับทับ
+     ถ้าไม่ทำแบบนี้ แท็บที่ถูกพักไว้เบื้องหลังจะไม่เดิน requestAnimationFrame
+     ผู้ใช้ที่สลับแท็บกลับมาจะเห็นช่องเบี้ยว่างเปล่าเหลือแต่คำว่าบาท */
+  el.textContent = fmt(Math.round(target));
   if(prev === target) return;
-  if(typeof dgReducedMotion === 'function' && dgReducedMotion()){ el.textContent = fmt(Math.round(target)); return; }
+  if(typeof dgReducedMotion === 'function' && dgReducedMotion()) return;
   const t0 = performance.now(), dur = ms || 420;
   const step = now => {
     const k = Math.min(1, (now - t0) / dur);
