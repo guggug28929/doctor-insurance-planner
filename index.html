@@ -2381,11 +2381,11 @@
   body:not(.hnw) .navbar button:nth-child(6){border-color:rgba(246,182,164,.65);}
   body:not(.hnw) .navbar button:nth-child(7){border-color:rgba(255,194,218,.7);}
   body:not(.hnw) .navbar button.active::before{background:var(--pink) !important;}
-  body:not(.hnw) .plan-card:nth-of-type(5n+1) .cat{color:var(--a1);}
-  body:not(.hnw) .plan-card:nth-of-type(5n+2) .cat{color:var(--a2);}
-  body:not(.hnw) .plan-card:nth-of-type(5n+3) .cat{color:var(--a3);}
-  body:not(.hnw) .plan-card:nth-of-type(5n+4) .cat{color:var(--a4);}
-  body:not(.hnw) .plan-card:nth-of-type(5n+5) .cat{color:var(--a5);}
+  /* เดิมป้ายบอกประเภทถูกไล่สีรุ้งห้าสีวนตามลำดับการ์ด
+     ผลคือการ์ดที่เขียนคำเดียวกันว่าสัญญาหลักกลับมีป้ายคนละสี สีไม่ได้สื่ออะไรเลย
+     สายตาจับความต่างของสีก่อนอ่านข้อความ แล้วสรุปว่าการ์ดพวกนี้คนละชุดกัน
+     ป้ายจึงใช้สีเดียวทั้งเว็บ ความต่างให้มาจากข้อความในป้ายซึ่งบอกประเภทจริงอยู่แล้ว */
+  body:not(.hnw) .plan-card .cat{color:var(--gold);}
   /* ค้นหาทั้งเว็บ
      ปุ่มลอยมุมบนขวาให้เห็นได้จากทุกหน้า ไม่ผูกกับแถบเมนู เพราะแถบเมนูเลื่อนหายไปตอนอ่านเนื้อหายาว */
   .ss-btn{position:fixed;top:14px;right:14px;z-index:1200;display:flex;align-items:center;gap:7px;
