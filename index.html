@@ -1111,6 +1111,16 @@
   .pa-guide span{font-size:.8rem;color:var(--muted);line-height:1.5;}
   .pa-rate-head{margin:14px 0 6px;font-size:.92rem;color:var(--pink-deep);}
   .pa-card .plan-start{margin-bottom:2px;}
+  /* คำถามคัดทางเลือกบนหน้าอุบัติเหตุ ต้องเด่นกว่าการ์ดปกติ เพราะเป็นจุดที่ตัดสินใจว่าจะอ่านบล็อกไหน */
+  .pa-fork{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px;}
+  .pa-fork a{
+    display:block;text-decoration:none;padding:14px 16px;border-radius:12px;
+    background:#fff;border:1.5px solid rgba(143,13,64,.25);transition:border-color .15s, box-shadow .15s;
+  }
+  .pa-fork a:hover{border-color:var(--pink-deep);box-shadow:0 4px 14px rgba(143,13,64,.10);}
+  .pa-fork b{display:block;color:var(--pink-deep);font-size:.95rem;margin-bottom:4px;}
+  .pa-fork span{display:block;font-size:.82rem;color:var(--muted);line-height:1.55;}
+  .pa-fork-table td:first-child{white-space:nowrap;font-weight:600;}
 
   /* ---- Plan compare feature ---- */
   .adv-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
@@ -3400,10 +3410,10 @@
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('dcare')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
-    <div id="grp-pa" class="group-break"><h2>สัญญาเพิ่มเติมอุบัติเหตุ</h2><p>คุ้มครองเหตุฉุกเฉินจากอุบัติเหตุและค่ารักษาจากอุบัติเหตุ ใช้เสริมพอร์ตสุขภาพ</p></div>
+    <div id="grp-pa" class="group-break"><h2>สัญญาเพิ่มเติมอุบัติเหตุ</h2><p>คุ้มครองเหตุฉุกเฉินจากอุบัติเหตุและค่ารักษาจากอุบัติเหตุ ใช้เสริมพอร์ตสุขภาพ · แบบในกลุ่มนี้ต้องแนบกับกรมธรรม์หลัก ถ้าอยากซื้ออุบัติเหตุอย่างเดียวโดยไม่มีประกันชีวิต ดูกลุ่มกรมธรรม์เดี่ยวได้ที่ปุ่มด้านล่าง</p></div>
 
     <div class="plan-card">
-      <div class="cat">อุบัติเหตุ</div>
+      <div class="cat">สัญญาเพิ่มเติม · อุบัติเหตุ</div>
       <h3>PA Easy Plan Rider</h3>
       <p class="meta">อายุรับ 30 วัน – 85 ปี • ต่ออายุได้ถึง 85 ปี • คุ้มครองสูงสุด 10 ล้านบาท (แผน 7) • ค่ารักษาสูงสุด 300,000 บาท/ครั้ง</p>
       <ul>
@@ -3411,6 +3421,20 @@
         <li>รับเฉพาะกลุ่มอาชีพ 1–2 (อาชีพเสี่ยงสูงไม่รับทำ)</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('pa')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <!-- สะพานไปกลุ่มซื้อเดี่ยว
+         ถ้าไม่มีการ์ดใบนี้ ลูกค้าที่กดชิปอุบัติเหตุจะเห็นแค่แบบที่ต้องมีกรมธรรม์หลัก
+         แล้วสรุปว่าเว็บมีอุบัติเหตุแบบเดียว ทั้งที่อีกแปดแบบซื้อได้เลยโดยไม่ต้องมีประกันชีวิต -->
+    <div class="plan-card">
+      <div class="cat">กรมธรรม์เดี่ยว · อุบัติเหตุ</div>
+      <h3>อุบัติเหตุแบบไม่ต้องมีประกันชีวิต 8 แบบ</h3>
+      <p class="meta">ซื้อเป็นกรมธรรม์อุบัติเหตุส่วนบุคคลได้เลย ไม่ต้องมีสัญญาหลัก · คุ้มครอง 1 ปี ต่ออายุได้ตามเงื่อนไขบริษัท</p>
+      <ul>
+        <li>บางแบบมีเงินคืนเมื่อไม่เคลม เงินก้อนกรณีกระดูกหัก หรือคุ้มครองการแข่งขันกีฬา ซึ่งสัญญาเพิ่มเติมไม่มี</li>
+        <li>บางแบบรับกลุ่มอาชีพ 3 ที่สัญญาเพิ่มเติมไม่รับ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPage('accident')">ดูทั้ง 8 แบบ + ตารางเทียบและเบี้ย &rarr;</button>
     </div>
 
     <div id="grp-pension" class="group-break group-break-with-action"><div class="group-break-text"><h2>ประกันชีวิตแบบบำนาญ</h2><p>เปลี่ยนเงินออมวันนี้ให้เป็นรายรับประจำหลังเกษียณ เลือกอายุเริ่มรับบำนาญและระยะจ่ายเบี้ยได้ ทุกแบบยกเว้นแฮปปี้ รีไทร์ 60 ใช้สิทธิลดหย่อนภาษีกลุ่มบำนาญได้สูงสุด 300,000 บาท — ทุกหน้ามีเครื่องคำนวณเบี้ย ตารางบำนาญรายปี ผลตอบแทน IRR และภาษีที่ประหยัดได้</p></div><button class="btn-compare-toggle" onclick="showPage('pension-compare')">เปรียบเทียบแบบบำนาญ</button></div>
@@ -3651,9 +3675,43 @@
 <div id="page-accident" class="page">
 <div class="wrap">
   <div class="content-card">
-    <h2>ประกันอุบัติเหตุ ซื้อเดี่ยวได้ ไม่ต้องมีประกันชีวิต</h2>
-    <p style="color:var(--muted);">แบบในหน้านี้เป็นกรมธรรม์อุบัติเหตุส่วนบุคคลที่ซื้อได้เลย ไม่ต้องซื้อประกันชีวิตหลักมาแนบ ต่างจากสัญญาเพิ่มเติมอุบัติเหตุที่ต้องมีกรมธรรม์หลักก่อน · คุ้มครองตลอด 24 ชั่วโมงทั่วโลก ระยะเวลาเอาประกัน 1 ปี ต่ออายุได้ตามเงื่อนไขบริษัท</p>
+    <h2>ประกันอุบัติเหตุ</h2>
+    <p style="color:var(--muted);">ซื้ออุบัติเหตุได้สองทาง คือซื้อเป็นกรมธรรม์เดี่ยวโดยไม่ต้องมีประกันชีวิต หรือแนบเป็นสัญญาเพิ่มเติมกับกรมธรรม์ที่มีอยู่แล้ว หน้านี้รวมทั้งสองทางไว้ที่เดียว</p>
+
+    <!-- คำถามคัดทางเลือก
+         ลูกค้าไม่รู้จักคำว่าสัญญาหลักหรือสัญญาเพิ่มเติม แต่ตอบได้ทันทีว่าตอนนี้มีกรมธรรม์อยู่ไหม
+         จึงถามด้วยภาษาที่เขาตอบเองได้ แล้วพาไปบล็อกที่ถูกต้อง -->
+    <p style="margin-top:16px;"><b>ตอนนี้มีประกันชีวิตของเมืองไทยอยู่แล้วหรือยัง</b></p>
+    <div class="pa-fork">
+      <a href="#pa-standalone" onclick="return jumpToPlanGroup('pa-standalone');">
+        <b>ยังไม่มี หรือไม่อยากทำประกันชีวิต</b>
+        <span>ซื้ออุบัติเหตุเป็นกรมธรรม์เดี่ยว 8 แบบ จบในตัว ไม่ต้องเปิดกรมธรรม์ชีวิต</span>
+      </a>
+      <a href="#pa-rider" onclick="return jumpToPlanGroup('pa-rider');">
+        <b>มีกรมธรรม์อยู่แล้ว</b>
+        <span>แนบสัญญาเพิ่มเติมอุบัติเหตุเข้ากับกรมธรรม์เดิม ไม่ต้องทำสัญญาใหม่</span>
+      </a>
+    </div>
   </div>
+
+  <div class="content-card">
+    <h2>สองทางนี้ต่างกันตรงไหน</h2>
+    <div class="table-wrap">
+      <table class="pa-fork-table">
+        <thead><tr><th>หัวข้อ</th><th>ซื้อเป็นกรมธรรม์เดี่ยว</th><th>แนบกับกรมธรรม์ที่มีอยู่</th></tr></thead>
+        <tbody>
+          <tr><td>ต้องมีประกันชีวิตก่อนไหม</td><td>ไม่ต้อง ซื้อได้เลย</td><td>ต้องมีกรมธรรม์หลักที่มีผลบังคับอยู่</td></tr>
+          <tr><td>ถ้ากรมธรรม์หลักสิ้นผล</td><td>ไม่เกี่ยวกัน ความคุ้มครองเดินต่อ</td><td>ความคุ้มครองสิ้นสุดตามกรมธรรม์หลัก</td></tr>
+          <tr><td>กลุ่มอาชีพที่รับ</td><td>กลุ่ม 1–2 ทุกแบบ · กลุ่ม 3 รับใน PA Pay Max, PA Take Care และ PA Takaful Safety</td><td>รับเฉพาะกลุ่มอาชีพ 1–2</td></tr>
+          <tr><td>ความคุ้มครองที่มีเฉพาะทางนี้</td><td>เงินคืนเมื่อไม่เคลม · เงินก้อนกรณีกระดูกหัก · คุ้มครองการแข่งขันกีฬา แล้วแต่แบบที่เลือก</td><td>ไม่มีสามข้อนี้ แต่เลือกวงเงินได้ถึง 7 แผนในสัญญาเดียว</td></tr>
+          <tr><td>อายุที่รับประกัน</td><td>ต่างกันตามแบบ กว้างสุด 30 วัน – 85 ปี</td><td>30 วัน – 85 ปี ต่ออายุได้ถึง 85 ปี</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta" style="margin-top:10px;">ทั้งสองทางคุ้มครองอุบัติเหตุเหมือนกันในหลักการ ต่างกันที่เงื่อนไขการซื้อและความคุ้มครองพิเศษบางข้อ ไม่ใช่ว่าทางใดทางหนึ่งดีกว่าเสมอ</p>
+  </div>
+
+  <div id="pa-standalone" class="group-break"><h2>ทางที่ 1 · ซื้อเป็นกรมธรรม์เดี่ยว</h2><p>กรมธรรม์อุบัติเหตุส่วนบุคคลที่ซื้อได้เลยโดยไม่ต้องมีประกันชีวิต คุ้มครองตลอด 24 ชั่วโมงทั่วโลก ระยะเวลาเอาประกัน 1 ปี ต่ออายุได้ตามเงื่อนไขบริษัท</p></div>
 
   <div class="content-card">
     <h2>เลือกแบบไหนดี</h2>
@@ -3675,6 +3733,20 @@
     <h2>ตารางเทียบทุกแบบ</h2>
     <p style="color:var(--muted);margin-bottom:10px;">เทียบหัวข้อที่ใช้ตัดสินใจจริง ทั้งอายุที่รับ กลุ่มอาชีพ ค่ารักษา มอเตอร์ไซค์ และเงินคืน · ช่องที่ขึ้นว่าไม่มี คือแบบนั้นไม่ได้ให้ความคุ้มครองข้อนั้นจริง ไม่ใช่ข้อมูลขาด</p>
     <div id="paCompareTable"></div>
+  </div>
+
+  <div id="pa-rider" class="group-break"><h2>ทางที่ 2 · แนบกับกรมธรรม์ที่มีอยู่แล้ว</h2><p>ถ้ามีกรมธรรม์ของเมืองไทยอยู่แล้ว แนบสัญญาเพิ่มเติมอุบัติเหตุเข้าไปได้เลย ไม่ต้องเปิดกรมธรรม์ใหม่ ความคุ้มครองและการต่ออายุจะเดินไปพร้อมกรมธรรม์หลัก</p></div>
+
+  <div class="plan-card">
+    <div class="cat">สัญญาเพิ่มเติม · อุบัติเหตุ</div>
+    <h3>PA Easy Plan Rider</h3>
+    <p class="meta">อายุรับ 30 วัน – 85 ปี • ต่ออายุได้ถึง 85 ปี • คุ้มครองสูงสุด 10 ล้านบาท (แผน 7) • ค่ารักษาสูงสุด 300,000 บาท/ครั้ง</p>
+    <ul>
+      <li>7 แผนให้เลือก เบี้ยปรับตามช่วงอายุปัจจุบัน ไม่ใช่อายุที่เริ่มทำ</li>
+      <li>รับเฉพาะกลุ่มอาชีพ 1–2 อาชีพเสี่ยงสูงไม่รับทำ</li>
+      <li>ต้องแนบท้ายกรมธรรม์หลักที่มีผลบังคับอยู่ คุ้มครองไม่เกินกว่ากรมธรรม์หลัก</li>
+    </ul>
+    <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('pa')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
   </div>
 
   <div class="content-card">
@@ -8520,17 +8592,39 @@ function planCardAge(id){
   return PLAN_CARD_SENIOR_IDS.has(id) ? PLAN_CARD_CASE.seniorAge : PLAN_CARD_CASE.age;
 }
 
-/* สัญญาหลัก · ไล่ทุนจากน้อยไปมาก เอาทุนแรกที่ตารางมีอัตราจริง
-   ไล่แทนการหยิบทุนต่ำสุดตัวเดียว เพราะบางแบบทุนต่ำสุดในทะเบียนเทียบ
-   ยังไม่มีอัตราที่อายุอ้างอิง ถ้าไม่ไล่ต่อจะกลายเป็นการ์ดว่างทั้งที่ขายได้ */
+/* ทุนขั้นต่ำที่บริษัทเปิดขายจริง อ่านจากแถว "ทุนขั้นต่ำ" ของทะเบียนหน้าเปรียบเทียบ
+   อ่านจากที่เดียวแทนการพิมพ์ตัวเลขทุนชุดที่สอง เพราะถ้ามีสองชุดจะมีวันที่แก้ที่หนึ่ง
+   แล้วลืมอีกที่ แล้วหน้าเปรียบเทียบกับการ์ดจะบอกทุนขั้นต่ำไม่ตรงกัน */
+function planCardMinSum(p){
+  const raw = p && p.rows ? String(p.rows.minSum || '').replace(/<[^>]*>/g, '') : '';
+  const n = Number(raw.replace(/[^\d]/g, ''));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/* แบบชำระครั้งเดียวต้องไม่เขียนว่า "ต่อปี"
+   ไม่งั้นแบบ 99/1 ที่จ่ายก้อนเดียวจะดูเหมือนต้องจ่ายเท่านั้นทุกปี ซึ่งผิดคนละโลก */
+function planCardLifeUnit(p){
+  const pay = p && p.rows ? String(p.rows.pay || '').replace(/<[^>]*>/g, '') : '';
+  return /ครั้งเดียว/.test(pay) ? 'จ่ายครั้งเดียว' : 'ต่อปี';
+}
+
+/* สัญญาหลัก · เริ่มที่ทุนขั้นต่ำที่บริษัทเปิดขายจริง แล้วค่อยไล่ทุนในทะเบียนเทียบจากน้อยไปมาก
+   คำว่า "เริ่มต้น" ต้องแปลว่าถูกที่สุดที่ซื้อได้จริง ไม่ใช่ถูกที่สุดในตารางเปรียบเทียบ
+   ก่อนหน้านี้การ์ด 99/20 ขึ้นเบี้ยของทุน 500,000 ทั้งที่ทุนขั้นต่ำคือ 200,000
+   ลูกค้างบจำกัดจึงเห็นตัวเลขสูงเกินจริงเกือบสามเท่าแล้วปิดหน้าไป
+   ที่ยังต้องไล่ทุนต่อ เพราะบางแบบ (เฟล็กซี่ 99/20 และกลุ่มสะสมทรัพย์) ตารางเป็นเบี้ยรายระดับทุน
+   ทุนนอกตารางคำนวณไม่ได้และห้ามเทียบบัญญัติไตรยางศ์ */
 function planCardLifePremium(id){
   const p = typeof LIFE_COMPARE_PRODUCTS === 'object' ? LIFE_COMPARE_PRODUCTS[id] : null;
   if(!p) return null;
   const age = planCardAge(id);
-  const caps = p.tiers.map(t => Number(t.value)).filter(Number.isFinite).sort((a,b) => a-b);
+  const unit = planCardLifeUnit(p);
+  const tiers = p.tiers.map(t => Number(t.value)).filter(Number.isFinite).sort((a,b) => a-b);
+  const min = planCardMinSum(p);
+  const caps = [...new Set(min != null ? [min, ...tiers] : tiers)];
   for(const cap of caps){
     const v = mainPremiumAtEntry(p.plan, cap, PLAN_CARD_CASE.gender, age, 'annual');
-    if(v != null) return {premium:v, note:`ทุน ${fmt(cap)} บาท`, age, unit:'ต่อปี'};
+    if(v != null) return {premium:v, note:`ทุน ${fmt(cap)} บาท`, age, unit};
   }
   return null;
 }
