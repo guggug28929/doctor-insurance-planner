@@ -1007,7 +1007,7 @@
   /* จอแคบบีบสามช่องในบรรทัดเดียวจนชื่อกลุ่มโรคกับชื่อแบบถูกตัดหมด
      สองรายการที่คนละแบบเลยดูเหมือนกันเป๊ะ ทั้งที่เป็นคนละความคุ้มครอง
      จึงแยกเป็นสองบรรทัด ชื่อกลุ่มโรคเต็มบรรทัดบน แบบกับทุนอยู่บรรทัดล่าง */
-  @media (max-width:640px){
+  @media (max-width:860px){
     .dcare-item{
       display:grid;
       grid-template-columns:1fr 120px 34px;
@@ -4195,6 +4195,7 @@ function dcareAddRow(catKey, stage, capital){
   wrap.insertAdjacentHTML('beforeend',
     dcareRowHtml(id, catKey || next.cat, stage || next.stage, capital == null ? 100000 : capital));
   // เพิ่มแถวแล้วต้องคิดเบี้ยใหม่ทันที ไม่ต้องรอให้ผู้ใช้ขยับช่องอื่นก่อน
+  dcareSyncRules();
   if(typeof calcTouched !== 'undefined') calcTouched = true;
   if(typeof renderAll === 'function') renderAll();
   return id;
@@ -4203,9 +4204,39 @@ function dcareRemoveRow(id){
   const row = document.querySelector(`#dcare_list .dcare-item[data-row="${id}"]`);
   if(!row) return;
   row.remove();
+  dcareSyncRules();
   if(typeof calcTouched !== 'undefined') calcTouched = true;
   if(typeof renderAll === 'function') renderAll();
 }
+/* โรคยอดฮิตต้องซื้อเดี่ยว จึงต้องกันตั้งแต่ตอนเลือก ไม่ใช่ปล่อยให้เลือกผิดแล้วค่อยเตือนทีหลัง
+   คนที่เลือกไปแล้วต้องย้อนกลับมาแก้เอง ซึ่งเป็นงานที่ระบบทำแทนได้
+   โครงเดิมที่เป็นช่องติ๊กเคยปิดช่องอื่นให้อัตโนมัติ ความสามารถนี้หายไปตอนเปลี่ยนเป็นรายการ */
+function dcareSyncRules(){
+  const rows = [...document.querySelectorAll('#dcare_list .dcare-item')];
+  const hasPopular = rows.some(r => r.querySelector('.dcare-cat').value === 'popular');
+  rows.forEach(r => {
+    const sel = r.querySelector('.dcare-cat');
+    const mine = sel.value === 'popular';
+    [...sel.options].forEach(o => {
+      // เลือกโรคยอดฮิตได้ต่อเมื่อรายการนี้เป็นรายการเดียวในกรมธรรม์
+      if(o.value === 'popular') o.disabled = rows.length > 1 && !mine;
+      // ถ้ารายการนี้เป็นโรคยอดฮิตอยู่ กลุ่มอื่นยังเลือกได้ เพราะเป็นการเปลี่ยนใจออกจากโรคยอดฮิต
+      else o.disabled = false;
+    });
+  });
+  const addBtn = document.getElementById('dcareAddBtn');
+  if(addBtn){
+    addBtn.disabled = hasPopular;
+    addBtn.title = hasPopular ? 'โรคยอดฮิตต้องซื้อเดี่ยว ถ้าจะเพิ่มกลุ่มอื่นต้องเปลี่ยนรายการนี้ก่อน' : '';
+    addBtn.style.opacity = hasPopular ? '.45' : '';
+    addBtn.style.cursor = hasPopular ? 'not-allowed' : 'pointer';
+  }
+}
+/* ผูกครั้งเดียวที่กล่องรายการ แถวถูกสร้างและลบตลอดเวลา การผูกรายแถวจะหลุดง่าย */
+document.addEventListener('change', e => {
+  if(e.target.closest && e.target.closest('#dcare_list')) dcareSyncRules();
+});
+
 function dcareClearRows(){
   const wrap = document.getElementById('dcare_list');
   if(wrap) wrap.innerHTML = '';
