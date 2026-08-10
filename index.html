@@ -1099,6 +1099,19 @@
   body.hnw .plan-start{background:rgba(212,175,106,.08);border-color:rgba(212,175,106,.35);}
   body.hnw .plan-start b{color:var(--gold, #d4af6a);}
 
+  /* ---- หน้าประกันอุบัติเหตุแบบซื้อเดี่ยว ---- */
+  .pa-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}
+  .pa-guide > div{
+    background:rgba(143,13,64,.04);
+    border:1px solid rgba(143,13,64,.10);
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .pa-guide b{display:block;color:var(--pink-deep);font-size:.9rem;margin-bottom:2px;}
+  .pa-guide span{font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .pa-rate-head{margin:14px 0 6px;font-size:.92rem;color:var(--pink-deep);}
+  .pa-card .plan-start{margin-bottom:2px;}
+
   /* ---- Plan compare feature ---- */
   .adv-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .adv-tab{flex:1;min-width:120px;padding:11px 14px;border-radius:11px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-weight:600;font-size:.88rem;cursor:pointer;transition:all .15s;}
@@ -2367,6 +2380,7 @@
       <button data-page="ai">จัดแผนให้</button>
       <button data-page="calc">คำนวณเบี้ย</button>
       <button data-page="plans">แผนทั้งหมด</button>
+      <button data-page="accident">อุบัติเหตุ</button>
       <div class="nav-more" id="navMore">
         <button type="button" class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-controls="navMorePanel">ความรู้</button>
         <div class="nav-more-panel" id="navMorePanel" hidden>
@@ -3631,6 +3645,58 @@
 </div>
 </div>
 
+<!-- ============ PAGE: ACCIDENT (stand-alone PA) ============
+     แยกจาก /plans เพราะกลุ่มนี้ซื้อได้โดยไม่ต้องมีสัญญาประกันชีวิตหลัก
+     ซึ่งเป็นคนละเงื่อนไขกับทุกแผนในหน้ารายการแผนทั้งหมด -->
+<div id="page-accident" class="page">
+<div class="wrap">
+  <div class="content-card">
+    <h2>ประกันอุบัติเหตุ ซื้อเดี่ยวได้ ไม่ต้องมีประกันชีวิต</h2>
+    <p style="color:var(--muted);">แบบในหน้านี้เป็นกรมธรรม์อุบัติเหตุส่วนบุคคลที่ซื้อได้เลย ไม่ต้องซื้อประกันชีวิตหลักมาแนบ ต่างจากสัญญาเพิ่มเติมอุบัติเหตุที่ต้องมีกรมธรรม์หลักก่อน · คุ้มครองตลอด 24 ชั่วโมงทั่วโลก ระยะเวลาเอาประกัน 1 ปี ต่ออายุได้ตามเงื่อนไขบริษัท</p>
+  </div>
+
+  <div class="content-card">
+    <h2>เลือกแบบไหนดี</h2>
+    <div class="pa-guide">
+      <div><b>งบน้อยที่สุด</b><span>Classic PA เริ่ม 440 บาทต่อปี แต่เป็น อบ.1 คือไม่มีค่ารักษาพยาบาล</span></div>
+      <div><b>อยากได้ค่ารักษาด้วย</b><span>PA Take Care หรือ PA Pay Max จ่ายค่ารักษาตามจริงตามวงเงินที่เลือก</span></div>
+      <div><b>ขี่มอเตอร์ไซค์ประจำ</b><span>PA Pay Max ให้ทั้งเสียชีวิตและค่ารักษาจากมอเตอร์ไซค์ในวงเงินสูงสุดของกลุ่ม</span></div>
+      <div><b>เล่นกีฬาเอ็กซ์ตรีมหรือแข่งรถ</b><span>PA Extreme เป็นแบบเดียวที่คุ้มครองการแข่งขัน ซึ่งแบบอื่นยกเว้น</span></div>
+      <div><b>ทำงานช่างหรือภาคสนาม</b><span>PA Take Care รับกลุ่มอาชีพ 3 ได้ทุกแผน</span></div>
+      <div><b>อยากได้เบี้ยคืนถ้าไม่เคลม</b><span>PA Return Bonus คืน 30% ทุก 3 ปี · PA Return Cash คืนเบี้ยปีสุดท้ายเต็มจำนวน</span></div>
+      <div><b>ลูกเล็กซนบ่อย</b><span>PA Broken Bone จ่ายเงินก้อนเมื่อกระดูกหักหรือน้ำร้อนลวก รับตั้งแต่อายุ 1 เดือน</span></div>
+      <div><b>ต้องการแบบตามหลักศาสนาอิสลาม</b><span>PA Takaful Safety เป็นแบบตะกาฟุล เรียกเบี้ยว่าเงินสมทบ</span></div>
+    </div>
+  </div>
+
+  <div id="paCards"></div>
+
+  <div class="content-card">
+    <h2>ตารางเทียบทุกแบบ</h2>
+    <p style="color:var(--muted);margin-bottom:10px;">เทียบหัวข้อที่ใช้ตัดสินใจจริง ทั้งอายุที่รับ กลุ่มอาชีพ ค่ารักษา มอเตอร์ไซค์ และเงินคืน · ช่องที่ขึ้นว่าไม่มี คือแบบนั้นไม่ได้ให้ความคุ้มครองข้อนั้นจริง ไม่ใช่ข้อมูลขาด</p>
+    <div id="paCompareTable"></div>
+  </div>
+
+  <div class="content-card">
+    <h2>อบ.1 กับ อบ.2 ต่างกันตรงไหน</h2>
+    <p><b>แบบ อบ.1</b> คุ้มครองเฉพาะเสียชีวิต สูญเสียอวัยวะ สายตา การรับฟังเสียง การพูดออกเสียง และทุพพลภาพถาวร · <b>แบบ อบ.2</b> ให้ความคุ้มครองชุดเดียวกัน แล้วเพิ่มค่ารักษาพยาบาลตามที่จ่ายจริงในวงเงินที่ซื้อไว้</p>
+    <p style="color:var(--muted);">ในทางปฏิบัติ อุบัติเหตุที่เจอบ่อยคือแบบที่รักษาแล้วหาย ไม่ถึงขั้นสูญเสียอวัยวะ ค่ารักษาจึงเป็นส่วนที่ได้ใช้จริงมากกว่า ส่วนวงเงินเสียชีวิตเป็นตาข่ายให้คนข้างหลัง ถ้างบจำกัดจริง ๆ ค่อยเริ่มที่ อบ.1 ก่อนแล้วขยับทีหลังได้</p>
+  </div>
+
+  <div class="content-card">
+    <p class="meta">ตัวเลขทุกตัวคัดจากตารางที่บริษัทเผยแพร่ ไม่ได้ประมาณเอา · เบี้ยจริงขึ้นกับอายุ กลุ่มอาชีพ และแผนที่เลือก ควรออกใบเสนอราคาก่อนตัดสินใจทุกครั้ง</p>
+    <button class="btn" style="margin-top:10px;" onclick="showPage('contact')">ทักหมอกึ๊กเพื่อขอใบเสนอราคา</button>
+  </div>
+</div>
+</div>
+
+<div id="page-accident-detail" class="page">
+<div class="wrap">
+  <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('accident')">&larr; กลับไปหน้าประกันอุบัติเหตุ</button>
+  <div id="paDetailContent" style="margin-top:14px;"></div>
+</div>
+</div>
+
 <!-- ============ PAGE: PENSION COMPARE ============ -->
 <div id="page-pension-compare" class="page">
 <div class="wrap">
@@ -3777,7 +3843,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-08b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-08-09a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6645,6 +6711,217 @@ function renderCiXwOpeners(){
   ).join('');
 }
 
+/* ---------- หน้าประกันอุบัติเหตุแบบซื้อเดี่ยว ---------- */
+
+const PA_ORDER = ['classic_pa', 'pa_take_care', 'pa_takaful_safety', 'pa_broken_bone',
+                  'pa_pay_max', 'pa_return_bonus', 'pa_extreme', 'pa_return_cash'];
+
+function paPlanList(){
+  if(!PA_PLANS) return [];
+  return PA_ORDER.filter(k => PA_PLANS[k]).map(k => Object.assign({key:k}, PA_PLANS[k]));
+}
+
+/* เบี้ยเริ่มต้นของแบบหนึ่ง คือค่าน้อยที่สุดที่ยังเป็นตัวเลขจริงในตารางของแบบนั้น
+   ต้องข้าม null ทิ้งเสมอ เพราะ null แปลว่าบริษัทไม่เปิดขาย ไม่ใช่ราคาศูนย์บาท */
+function paMinPremium(plan){
+  const rates = plan.rates || {};
+  let min = null, unit = rates.unit || '';
+  for(const [k, rows] of Object.entries(rates)){
+    if(k === 'unit' || !Array.isArray(rows)) continue;
+    for(const row of rows){
+      const nums = [].concat(row.v || [], row.male || [], row.female || [])
+        .filter(x => typeof x === 'number' && x > 0);
+      for(const n of nums) if(min === null || n < min) min = n;
+    }
+  }
+  return {value: min, perMonth: /เดือน/.test(unit)};
+}
+
+function paPremiumText(plan){
+  const m = paMinPremium(plan);
+  if(m.value === null) return 'สอบถามเบี้ย';
+  return `เริ่มต้น ${fmt(m.value)} บาท${m.perMonth ? 'ต่อเดือน' : 'ต่อปี'}`;
+}
+
+function paEntryAgeText(plan){
+  const e = plan.entryAge || {};
+  if(e.all) return e.all;
+  /* แบบที่อายุรับต่างกันรายแผน ต้องแสดงให้ครบทุกช่วง ไม่ใช่หยิบช่วงเดียวมาโชว์
+     เพราะลูกค้าอายุ 70 ที่เห็นแค่ "16-60 ปี" จะเข้าใจว่าซื้อไม่ได้ทั้งที่แผน 1-3 ยังซื้อได้ */
+  const LABEL = {plan_1_3:'แผน 1-3', plan_4:'แผน 4', plan_4_5:'แผน 4-5', plan_5_6:'แผน 5-6', plan_6:'แผน 6'};
+  const parts = [];
+  for(const [k, v] of Object.entries(e)){
+    if(k === 'note' || typeof v !== 'string') continue;
+    parts.push(`${LABEL[k] || k} ${v}`);
+  }
+  if(!parts.length && e.occ_1_2 && e.occ_1_2.plan_1_3) parts.push(e.occ_1_2.plan_1_3);
+  return parts.join(' · ');
+}
+
+function paOccText(plan){
+  const list = (plan.occupations || []).join(', ');
+  return list ? `กลุ่มอาชีพ ${list}` : '';
+}
+
+function paCardsHtml(){
+  const plans = paPlanList();
+  if(!plans.length) return '<p class="meta">โหลดข้อมูลแผนอุบัติเหตุไม่สำเร็จ ลองรีเฟรชหน้าอีกครั้งครับ</p>';
+  return `<div class="plan-grid">${plans.map(p => `
+    <div class="plan-card pa-card">
+      <div class="cat">${p.form === 'อบ.1' ? 'อุบัติเหตุ แบบ อบ.1' : 'อุบัติเหตุ แบบ อบ.2'}</div>
+      <h3>${p.name}</h3>
+      <p class="meta">${p.tagline}</p>
+      <p class="plan-start"><b>${paPremiumText(p)}</b> <span>${paEntryAgeText(p)} · ${paOccText(p)}</span></p>
+      <ul>${(p.highlights || []).slice(0, 3).map(h => `<li>${h}</li>`).join('')}</ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPaDetail('${p.key}')">ดูความคุ้มครองและตารางเบี้ย &rarr;</button>
+    </div>`).join('')}</div>`;
+}
+
+function paValueCell(v){
+  if(v === null || v === undefined || v === '') return '<span class="compare-na">–</span>';
+  return typeof v === 'number' ? fmt(v) : v;
+}
+
+function paBenefitTableHtml(plan){
+  const heads = ['ความคุ้มครอง'].concat(plan.plans.map(n => `แผน ${n}`));
+  const sums = plan.sumInsured
+    ? `<tr><td>ทุนประกันของแผน</td>${plan.sumInsured.map(s => `<td class="num">${fmt(s)}</td>`).join('')}</tr>` : '';
+  const rows = (plan.benefits || []).map(b =>
+    `<tr><td>${b.label}</td>${b.values.map(v => `<td class="num">${paValueCell(v)}</td>`).join('')}</tr>`).join('');
+  return `<div class="table-wrap"><table class="cmp">
+    <thead><tr>${heads.map((h,i) => `<th${i ? ' class="num"' : ''}>${h}</th>`).join('')}</tr></thead>
+    <tbody>${sums}${rows}</tbody></table></div>`;
+}
+
+/* ชื่อชุดตารางเบี้ย · เก็บเป็นทะเบียนเดียวเพราะไฟล์ข้อมูลใช้คีย์เดียวกันทุกแบบ
+   ถ้าเพิ่มแบบใหม่ที่มีคีย์อื่น ให้เติมที่นี่ที่เดียว ไม่ใช่ไปเดาชื่อตอนแสดงผล */
+const PA_RATE_LABEL = {
+  occ_1: 'กลุ่มอาชีพ 1', occ_2: 'กลุ่มอาชีพ 2', occ_3: 'กลุ่มอาชีพ 3',
+  occ_1_2: 'กลุ่มอาชีพ 1 และ 2 (อัตราเดียวกัน)',
+  occ_1_male: 'กลุ่มอาชีพ 1 · เพศชาย', occ_1_female: 'กลุ่มอาชีพ 1 · เพศหญิง',
+  occ_2_male: 'กลุ่มอาชีพ 2 · เพศชาย', occ_2_female: 'กลุ่มอาชีพ 2 · เพศหญิง',
+};
+
+function paRateTablesHtml(plan){
+  const rates = plan.rates || {};
+  const keys = Object.keys(rates).filter(k => k !== 'unit' && Array.isArray(rates[k]));
+  if(!keys.length) return '';
+  const blocks = keys.map(k => {
+    const rows = rates[k];
+    // ตารางของกลุ่มอาชีพ 3 ในแบบตะกาฟุลแยกชาย-หญิงคนละคอลัมน์ จึงมีหัวตารางคนละแบบ
+    const splitSex = rows.length && rows[0].male;
+    const heads = splitSex
+      ? ['อายุ'].concat(plan.plans.slice(0, rows[0].male.length).map(n => `ชาย แผน ${n}`))
+          .concat(plan.plans.slice(0, rows[0].female.length).map(n => `หญิง แผน ${n}`))
+      : ['อายุ'].concat(plan.plans.map(n => `แผน ${n}`));
+    const body = rows.map(r => {
+      const cells = splitSex ? [].concat(r.male, r.female) : r.v;
+      return `<tr><td>${r.age}</td>${cells.map(v => `<td class="num">${paValueCell(v)}</td>`).join('')}</tr>`;
+    }).join('');
+    return `<h4 class="pa-rate-head">${PA_RATE_LABEL[k] || k}</h4>
+      <div class="table-wrap"><table class="cmp">
+        <thead><tr>${heads.map((h,i) => `<th${i ? ' class="num"' : ''}>${h}</th>`).join('')}</tr></thead>
+        <tbody>${body}</tbody></table></div>`;
+  }).join('');
+  return `${blocks}<p class="meta" style="margin-top:8px;">${rates.unit || ''} · คัดจากตารางอัตราเบี้ยที่บริษัทเผยแพร่ ช่องที่เป็นขีดกลางคือบริษัทไม่เปิดขายแผนนั้นในช่วงอายุหรือกลุ่มอาชีพนั้น</p>`;
+}
+
+function showPaDetail(key){
+  const p = PA_PLANS && PA_PLANS[key];
+  const el = document.getElementById('paDetailContent');
+  if(!p || !el) return;
+  const meta = (PA_PLANS._meta || {});
+  el.innerHTML = `
+    <div class="content-card">
+      <div class="cat">${p.form === 'อบ.1' ? 'อุบัติเหตุ แบบ อบ.1' : 'อุบัติเหตุ แบบ อบ.2'} · ซื้อเดี่ยวได้ ไม่ต้องมีสัญญาหลัก</div>
+      <h2 style="margin-top:4px;">${p.name}</h2>
+      <p>${p.tagline}</p>
+      <div class="table-wrap"><table><tbody>
+        <tr><td>อายุที่รับประกัน</td><td>${paEntryAgeText(p)}</td></tr>
+        <tr><td>กลุ่มอาชีพที่รับ</td><td>${paOccText(p)}${p.occupationNote ? ' · ' + p.occupationNote : ''}</td></tr>
+        <tr><td>งวดชำระ</td><td>${(p.paymentFrequency || []).map(f => f === 'monthly' ? 'รายเดือน' : 'รายปี').join(' / ')}</td></tr>
+        ${p.healthCheck ? `<tr><td>การตรวจสุขภาพ</td><td>${p.healthCheck}</td></tr>` : ''}
+        ${p.creditCard === false ? '<tr><td>บัตรเครดิต</td><td>ไม่รับชำระด้วยบัตรเครดิตและบัญชีเครดิต (CCP)</td></tr>' : ''}
+        ${p.maxPolicies ? `<tr><td>จำนวนกรมธรรม์</td><td>${typeof p.maxPolicies === 'number' ? 'ซื้อได้ ' + p.maxPolicies + ' ฉบับต่อคน' : p.maxPolicies}</td></tr>` : ''}
+      </tbody></table></div>
+    </div>
+    <div class="content-card">
+      <h2>จุดเด่นของแบบนี้</h2>
+      <ul>${(p.highlights || []).map(h => `<li>${h}</li>`).join('')}</ul>
+    </div>
+    <div class="content-card">
+      <h2>ตารางความคุ้มครอง</h2>
+      ${paBenefitTableHtml(p)}
+    </div>
+    <div class="content-card">
+      <h2>ตารางอัตราเบี้ยประกันภัย</h2>
+      ${paRateTablesHtml(p)}
+    </div>
+    ${(p.conditions || []).length || (p.notWorkFor || []).length ? `
+    <div class="content-card">
+      <h2>เงื่อนไขที่ต้องรู้ก่อนตัดสินใจ</h2>
+      <ul>${(p.conditions || []).map(c => `<li>${c}</li>`).join('')}
+          ${(p.notWorkFor || []).map(c => `<li>${c}</li>`).join('')}</ul>
+    </div>` : ''}
+    <div class="content-card">
+      <p class="meta">${meta.standalone_note || ''}</p>
+      <p class="meta">ตัวเลขทั้งหมดคัดจากตารางที่บริษัทเผยแพร่ ตรวจล่าสุด ${meta.verified_at || ''} เพื่อการนำเสนอเบื้องต้น ไม่ใช่เอกสารเสนอขายอย่างเป็นทางการ เงื่อนไขจริงยึดตามกรมธรรม์</p>
+    </div>`;
+  showPage('accident-detail', {updateUrl:false});
+  replaceOrPushPath('/accident/' + key.replace(/_/g, '-'));
+}
+
+/* ตารางเทียบข้ามแบบ · เลือกหัวข้อที่ทุกแบบมีเหมือนกันเป็นแกน
+   แบบไหนไม่มีหัวข้อนั้นต้องขึ้นว่าไม่มี ไม่ใช่เว้นว่างให้เข้าใจว่าลืมใส่ */
+const PA_COMPARE_ROWS = [
+  {label: 'แบบความคุ้มครอง', get: p => p.form},
+  {label: 'จำนวนแผนให้เลือก', get: p => p.plans.length + ' แผน'},
+  {label: 'อายุที่รับประกัน', get: p => paEntryAgeText(p)},
+  {label: 'กลุ่มอาชีพที่รับ', get: p => paOccText(p) + (p.occupationNote ? '<br><span class="meta">' + p.occupationNote + '</span>' : '')},
+  {label: 'งวดชำระ', get: p => (p.paymentFrequency || []).map(f => f === 'monthly' ? 'รายเดือน' : 'รายปี').join(' / ')},
+  {label: 'เบี้ยเริ่มต้น', get: p => paPremiumText(p)},
+  {label: 'ทุนสูงสุดของแบบ (เสียชีวิตจากอุบัติเหตุ)', get: p => {
+    const row = (p.benefits || []).find(b => /เสียชีวิต/.test(b.label));
+    const nums = row ? row.values.filter(v => typeof v === 'number') : [];
+    return nums.length ? fmt(Math.max(...nums)) + ' บาท' : '–';
+  }},
+  {label: 'ค่ารักษาพยาบาลจากอุบัติเหตุ', get: p => {
+    const row = (p.benefits || []).find(b => /ค่ารักษาพยาบาล/.test(b.label));
+    if(!row) return '<span class="compare-na">ไม่มี (เป็นแบบ อบ.1)</span>';
+    const nums = row.values.filter(v => typeof v === 'number');
+    return nums.length ? 'สูงสุด ' + fmt(Math.max(...nums)) + ' บาทต่อครั้ง' : '–';
+  }},
+  {label: 'คุ้มครองมอเตอร์ไซค์', get: p =>
+    (p.benefits || []).some(b => /มอเตอร์ไซค์/.test(b.label)) ? 'คุ้มครอง' : '<span class="compare-na">ไม่ระบุ</span>'},
+  {label: 'ชดเชยรายได้ระหว่างนอนโรงพยาบาล', get: p => {
+    const row = (p.benefits || []).find(b => /ชดเชยรายได้/.test(b.label));
+    if(!row) return '<span class="compare-na">ไม่มี</span>';
+    const nums = row.values.filter(v => typeof v === 'number');
+    return nums.length ? 'วันละ ' + fmt(Math.max(...nums)) + ' บาท' : '–';
+  }},
+  {label: 'เงินคืนเมื่อไม่เคลม', get: p => {
+    const row = (p.benefits || []).find(b => /เงินคืน/.test(b.label));
+    return row ? String(row.values[0]) : '<span class="compare-na">ไม่มี</span>';
+  }},
+];
+
+function paCompareTableHtml(){
+  const plans = paPlanList();
+  if(!plans.length) return '';
+  return `<div class="table-wrap"><table class="cmp">
+    <thead><tr><th>หัวข้อ</th>${plans.map(p => `<th>${p.name}</th>`).join('')}</tr></thead>
+    <tbody>${PA_COMPARE_ROWS.map(r =>
+      `<tr><td>${r.label}</td>${plans.map(p => `<td>${r.get(p)}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderAccidentPage(){
+  const c = document.getElementById('paCards');
+  if(c) c.innerHTML = paCardsHtml();
+  const t = document.getElementById('paCompareTable');
+  if(t) t.innerHTML = paCompareTableHtml();
+}
+
 function renderCiComparePage(){
   const t = document.getElementById('ciCompareTable');
   if(t) t.innerHTML = renderCiCompareTable();
@@ -8088,6 +8365,7 @@ const PAGE_ROUTES = {
   compare: '/plans/compare',
   'pension-compare': '/plans/compare-pension',
   'ci-compare': '/plans/compare-ci',
+  accident: '/accident',
   hnw: '/hnw',
   knowledge: '/health-knowledge',
   faq: '/faq',
@@ -12080,6 +12358,7 @@ function showPage(name, options = {}){
   if(options.updateUrl !== false && PAGE_ROUTES[name]) replaceOrPushPath(PAGE_ROUTES[name]);
   if(name === 'pension-compare' && typeof renderPensionCompare === 'function') renderPensionCompare();
   if(name === 'ci-compare' && typeof renderCiComparePage === 'function') renderCiComparePage();
+  if(name === 'accident' && typeof renderAccidentPage === 'function') renderAccidentPage();
   if(name === 'ai' && typeof setAdvisorTab === 'function') setAdvisorTab(advisorTab);
   if(name === 'knowledge' && typeof setKnowTab === 'function') setKnowTab(knowTab);
   if(name === 'faq' && typeof renderFaq === 'function') renderFaq();
@@ -13172,6 +13451,12 @@ function routeFromLocation(){
   if(planId){
     showPlanDetail(planId, {updateUrl:false});
     return;
+  }
+  /* /accident/<slug> เป็นหน้าลูกของกลุ่มอุบัติเหตุ ไม่ได้อยู่ใน PAGE_ROUTES
+     ถ้าไม่ดักไว้ ลิงก์ที่ส่งให้ลูกค้าจะเด้งกลับหน้าแรกทั้งที่แผนมีอยู่จริง */
+  if(path.startsWith('/accident/') && typeof PA_PLANS === 'object' && PA_PLANS){
+    const key = path.slice('/accident/'.length).replace(/-/g, '_');
+    if(PA_PLANS[key]){ showPaDetail(key); return; }
   }
   const page = Object.keys(PAGE_ROUTES).find(name => PAGE_ROUTES[name] === path) || 'home';
   showPage(page, {updateUrl:false});
@@ -14347,6 +14632,28 @@ var CI_XW = (function(){
     }catch(e){}
   }
   console.error('โหลด data/ci-crosswalk.json ไม่สำเร็จ');
+  return null;
+})();
+
+/* =========================================================================
+   ประกันอุบัติเหตุส่วนบุคคลแบบซื้อเดี่ยว (หน้า /accident)
+
+   กลุ่มนี้ต่างจากทุกแผนที่มีในเว็บตรงที่ "ซื้อได้เลยโดยไม่ต้องมีสัญญาประกันชีวิตหลัก"
+   จึงแยกออกมาเป็นหน้าของตัวเอง ไม่ยัดรวมกับ /plans ที่ทั้งหน้าอธิบายบนสมมติฐานว่าต้องมีสัญญาหลัก
+
+   ตัวเลขทุกตัวอ่านจาก data/pa-plans.json ห้ามพิมพ์เบี้ยหรือวงเงินค้างไว้ในโค้ดนี้
+   และห้ามคำนวณค่าที่บริษัทไม่ได้ประกาศ ช่องที่เป็น null คือบริษัทไม่เปิดขาย ต้องขึ้นขีดกลาง
+   ========================================================================= */
+var PA_PLANS = (function(){
+  for(const base of ['/data/', './data/']){
+    try{
+      const req = new XMLHttpRequest();
+      req.open('GET', base + 'pa-plans.json?v=' + DATA_VERSION, false);
+      req.send(null);
+      if(req.status >= 200 && req.status < 300) return JSON.parse(req.responseText);
+    }catch(e){}
+  }
+  console.error('โหลด data/pa-plans.json ไม่สำเร็จ');
   return null;
 })();
 
