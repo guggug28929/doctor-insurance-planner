@@ -134,34 +134,52 @@ test('หน้าแผนต้องเตือนสีแดงเมื�
   assert.match(html, /max="\$\{st\.maxSum\}"/);
 });
 
-test('หน้าคำนวณเบี้ยต้องเลือกแบบความคุ้มครองแยกรายกลุ่มโรค', () => {
-  /* บริษัทให้คละแบบในกรมธรรม์เดียวได้ เช่น มะเร็งเอาสองระยะ หัวใจเอาเฉพาะระยะรุนแรง
-     เดิมใช้ตัวเลือกเดียวคุมทุกกลุ่ม พอสลับแบบ กลุ่มที่ติ๊กไว้ก่อนก็เปลี่ยนตาม
-     ทำให้ชุดที่ขายได้จริงบางชุดสร้างในเครื่องคำนวณไม่ได้เลย */
+test('D Care ในหน้าคำนวณเบี้ยต้องเป็นรายการที่เพิ่มเองได้ และซ้ำกลุ่มโรคได้', () => {
+  /* กติกาจริงสองข้อที่โครงเดิมทำไม่ได้
+       1) แบบความคุ้มครองเป็นของแต่ละความคุ้มครอง คละกันได้ในกรมธรรม์เดียว
+       2) กลุ่มโรคเดียวกันซื้อได้ทั้งสองแบบพร้อมกัน
+          เช่น มะเร็งเฉพาะระยะรุนแรง 1 ล้าน คู่กับมะเร็งระยะเริ่มต้นและรุนแรง 5 แสน
+     โครงติ๊กกลุ่มละครั้งทำชุดข้อ 2 ไม่ได้เลย ไม่ว่าจะจัดหน้าอย่างไร */
   assert.ok(!html.includes('<select id="dcare_stage">'), 'ตัวเลือกแบบรวมอันเดียวต้องถูกถอดออก');
-  assert.match(html, /<select id="dcare_\$\{c\.key\}_stage" class="dcare-stage"/);
-  assert.match(html, /stage: DCARE_STAGES\[raw\] \? raw : 'early_and_severe'/);
-  assert.ok(!/dcareSelections, dcareStage,/.test(html), 'ยังส่งแบบรวมอันเดียวเข้าเครื่องคำนวณ');
+  assert.ok(!html.includes('class="dcare-chk"'), 'ต้องไม่เหลือโครงติ๊กกลุ่มละครั้ง');
+  assert.match(html, /function dcareAddRow\(catKey, stage, capital\)\{/);
+  assert.match(html, /function dcareRemoveRow\(id\)\{/);
+  assert.match(html, /onclick="dcareAddRow\(\)"/);
+  assert.match(html, /<select class="dcare-cat"/);
+  assert.match(html, /<select class="dcare-stage"/);
+  assert.match(html, /<input type="number" class="dcare-cap"/);
 
-  // เพดานนับแยกตามแบบ กลุ่มคนละแบบต้องไม่ดึงกันจนเกินเพดาน
+  /* คีย์ของคอลัมน์ต้องผูกกับรายการ ไม่ใช่ผูกกับกลุ่มโรค
+     ถ้าใช้ชื่อกลุ่มเป็นคีย์ รายการที่สองของกลุ่มเดิมจะไปทับค่าของรายการแรกทั้งตาราง */
+  assert.match(html, /colKey:'dcare_'\+i/);
+  assert.ok(!html.includes("cols.push({key:'dcare_'+d.key"), 'คอลัมน์ยังผูกกับกลุ่มโรคอยู่');
+  assert.match(html, /cols\.push\(\{key:d\.colKey, label:d\.itemName\}\)/);
+  assert.match(html, /row\.values\[d\.colKey\]/);
+  // ชื่อรายการต้องบอกแบบด้วย ไม่งั้นสองรายการของกลุ่มเดียวกันจะอ่านไม่ออกว่าอันไหนคืออันไหน
+  assert.match(html, /itemName:`D Care - \$\{shortLabel\} \(\$\{DCARE_STAGES\[stage\]\.label\}\)`/);
+
+  // เพดานนับแยกตามแบบ รายการคนละแบบต้องไม่ดึงกันจนเกินเพดาน
   assert.match(html, /function dcareSumByStage\(selections, stageKey\)\{/);
   assert.match(html, /const sum = dcareSumByStage\(inp\.dcareSelections, stageKey\);/);
-  assert.match(html, /if\(sum > def\.maxSum\)\{/);
   assert.ok(!html.includes('if(dcareTotal > 2500000){'), 'ยังเหลือเพดานตายตัวในการตรวจก่อนคำนวณ');
-  // แถวที่ขึ้นแดงต้องเป็นแถวของแบบที่เกินจริง ไม่ใช่แดงยกชุด
-  assert.match(html, /const rowOverCap = dcareOverStages\.some\(o => o\.k === stage\);/);
+  assert.match(html, /const rowOverCap = dcareOverStages\.some\(o => o\.k === d\.stage\);/);
+
+  /* โรคยอดฮิตยังต้องซื้อเดี่ยว แต่ต้องนับว่ามี "กลุ่มอื่น" ปนไหม
+     ไม่ใช่นับจำนวนรายการ ไม่งั้นโรคยอดฮิตสองแบบจะโดนเตือนทั้งที่ยังเป็นกลุ่มเดียว */
+  assert.match(html, /if\(hasPopular && inp\.dcareSelections\.some\(d=>d\.key!=='popular'\)\)\{/);
 });
 
-test('เลือกแบบแล้ว เบี้ยที่คำนวณต้องเปลี่ยนตามแบบของกลุ่มนั้น ไม่ใช่เตือนอย่างเดียว', () => {
+test('เลือกแบบแล้ว เบี้ยที่คำนวณต้องเปลี่ยนตามแบบของรายการนั้น ไม่ใช่เตือนอย่างเดียว', () => {
   // เคยพลาดได้ง่าย คือเตือนเพดานถูกแต่ยังคิดเบี้ยด้วยแบบเดิม ลูกค้าเลยเห็นเบี้ยผิด
   for(const call of [
     "dcarePremium(d.key, d.capital, gender, age, freq, d.stage)",
     "dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage)",
     "dcarePremium(d.key, d.capital, gender, age, 'annual', d.stage)",
-  ]) assert.ok(html.includes(call), `ยังไม่ได้ส่งแบบของกลุ่มนั้นเข้าไปที่ ${call}`);
+  ]) assert.ok(html.includes(call), `ยังไม่ได้ส่งแบบของรายการนั้นเข้าไปที่ ${call}`);
   assert.ok(!html.includes('inp.dcareStage'), 'ยังเหลือการอ่านแบบรวมอันเดียว');
-  // ชุดที่กดมาจากผู้ช่วยจัดแผนต้องคืนค่าแบบลงฟอร์มด้วย ไม่งั้นเบี้ยที่เห็นสองหน้าจะไม่ตรงกัน
-  assert.match(html, /setValue\('dcare_'\+cat\+'_stage', it\.stage \|\| 'early_and_severe'\);/);
-  assert.match(html, /document\.querySelectorAll\('\.dcare-stage'\)\.forEach\(sel => \{ sel\.value='early_and_severe'; \}\);/);
+  // ชุดที่กดมาจากผู้ช่วยจัดแผนต้องสร้างรายการตามที่เสนอ ไม่งั้นเบี้ยที่เห็นสองหน้าจะไม่ตรงกัน
+  assert.match(html, /dcareAddRow\(it\.cat \|\| 'popular', it\.stage \|\| 'early_and_severe', it\.capital\);/);
+  assert.match(html, /function dcareClearRows\(\)\{/);
+  assert.match(html, /\n  dcareClearRows\(\);/);
 });
 
