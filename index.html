@@ -848,6 +848,26 @@
     border-color:#fff;
   }
 
+  /* ---------- รายการ D Care ในหน้าคำนวณเบี้ย ----------
+     แต่ละแถวคือความคุ้มครองหนึ่งรายการ กลุ่มโรคเดียวกันมีได้หลายแถว */
+  .dcare-item{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+  .dcare-item .dcare-cat{flex:1 1 34%;min-width:0;}
+  .dcare-item .dcare-stage{flex:1 1 30%;min-width:0;}
+  .dcare-item .dcare-cap{flex:1 1 24%;min-width:0;}
+  .dcare-item select, .dcare-item input{margin:0;}
+  .dcare-del{
+    flex:0 0 auto;width:30px;height:30px;line-height:1;font-size:1.1rem;
+    border-radius:8px;border:1px solid rgba(143,13,64,.25);
+    background:#fff;color:var(--pink-deep);cursor:pointer;
+  }
+  .dcare-del:hover{background:rgba(143,13,64,.08);}
+  .dcare-add{
+    margin:2px 0 4px;padding:7px 14px;font-size:.85rem;
+    border-radius:10px;border:1px dashed rgba(143,13,64,.4);
+    background:#fff;color:var(--pink-deep);cursor:pointer;
+  }
+  .dcare-add:hover{background:rgba(143,13,64,.06);}
+
   /* ---------- เมนูย่อย "ความรู้" ----------
      ปุ่มที่ย้ายลงมาอยู่ในเมนูย่อยยังต้องเป็น button[data-page] และอยู่ใน #navbar เหมือนเดิม
      เพราะทั้งการสลับหน้า สถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ที่เดียว */
@@ -2665,8 +2685,9 @@
       <div class="divider"></div>
 
       <label class="first">D Care <span style="color:var(--muted);font-weight:400;">(เลือกได้หลายกลุ่มโรค ยกเว้น "โรคยอดฮิต" ที่ต้องซื้อเดี่ยว)</span><span class="info-icon">i<span class="tooltip">เลือกทำเฉพาะกลุ่มโรคที่กังวลจริง ประหยัดกว่าซื้อความคุ้มครองกว้างที่ไม่จำเป็น เหมาะกับคนมีประวัติครอบครัวเป็นโรคเฉพาะกลุ่ม</span></span></label>
-      <div class="hint" style="margin-bottom:8px;">เลือกแบบความคุ้มครองแยกได้ทีละกลุ่มโรค เช่น มะเร็งเอาแบบระยะเริ่มต้น + ระยะรุนแรง ส่วนหัวใจเอาเฉพาะระยะรุนแรง<span class="info-icon">i<span class="tooltip">เฉพาะระยะรุนแรง จ่าย 100% ของทุนเมื่อถึงระยะรุนแรง ทุนรวมของกลุ่มที่ใช้แบบนี้สูงสุด 10 ล้านบาท · ระยะเริ่มต้นและรุนแรง จ่ายทั้งสองระยะรวม 200% ของทุน ทุนรวมของกลุ่มที่ใช้แบบนี้สูงสุด 2.5 ล้านบาท และเบี้ยแพงกว่าเกือบเท่าตัว</span></span></div>
-      <div class="check-list" id="dcare_list"></div>
+      <div class="hint" style="margin-bottom:8px;">กดเพิ่มได้ทีละความคุ้มครอง กลุ่มโรคเดียวกันใส่ได้ทั้งสองแบบ เช่น มะเร็งเฉพาะระยะรุนแรง 1 ล้าน คู่กับมะเร็งระยะเริ่มต้น + รุนแรง 5 แสน<span class="info-icon">i<span class="tooltip">เฉพาะระยะรุนแรง จ่าย 100% ของทุนเมื่อถึงระยะรุนแรง ทุนรวมของรายการที่ใช้แบบนี้สูงสุด 10 ล้านบาท · ระยะเริ่มต้นและรุนแรง จ่ายทั้งสองระยะรวม 200% ของทุน ทุนรวมของรายการที่ใช้แบบนี้สูงสุด 2.5 ล้านบาท และเบี้ยแพงกว่าเกือบเท่าตัว</span></span></div>
+      <div id="dcare_list"></div>
+      <button type="button" class="dcare-add" id="dcareAddBtn" onclick="dcareAddRow()">+ เพิ่มความคุ้มครอง D Care</button>
       <div class="hint" id="dcareCapHint">ทุนประกันรวมทุกกลุ่มโรคของ D Care ต้องไม่เกิน 2,500,000 บาท</div>
       <div class="field-err" id="dcareErr"></div>
 
@@ -3968,40 +3989,50 @@ const HB_TIERS = [
   {amt:8000, ipdMin:1000000, noIpdMin:null},
 ];
 
-/* แบบความคุ้มครองเป็นของ "รายกลุ่มโรค" ไม่ใช่ของทั้งกรมธรรม์
-   บริษัทให้คละแบบในกรมธรรม์เดียวกันได้ เช่น มะเร็งเอาสองระยะ หัวใจเอาเฉพาะระยะรุนแรง
-   เดิมใช้ตัวเลือกเดียวคุมทุกกลุ่ม พอสลับแบบ กลุ่มที่ติ๊กไว้ก่อนหน้าก็เปลี่ยนตามไปด้วย
-   ทำให้ชุดที่ขายได้จริงบางชุดสร้างในเครื่องคำนวณไม่ได้เลย */
-function buildDcareList(){
-  const wrap = document.getElementById('dcare_list');
-  wrap.innerHTML = DCARE_CATS.map(c => `
-    <div class="check-row dcare-row">
-      <input type="checkbox" id="dcare_${c.key}" class="dcare-chk" data-key="${c.key}">
-      <label style="margin:0;flex:1;">${c.label}</label>
-      <select id="dcare_${c.key}_stage" class="dcare-stage" data-key="${c.key}">
-        <option value="early_and_severe">ระยะเริ่มต้น + รุนแรง</option>
-        <option value="severe">เฉพาะระยะรุนแรง</option>
+/* D Care เป็นรายการที่กดเพิ่มเอง ไม่ใช่ติ๊กกลุ่มละครั้ง
+
+   เหตุผลที่ต้องเป็นรายการ ไม่ใช่ติ๊กรายกลุ่ม
+     1) แบบความคุ้มครองเป็นของแต่ละความคุ้มครอง ไม่ใช่ของทั้งกรมธรรม์
+        คละได้ เช่น มะเร็งเอาสองระยะ หัวใจเอาเฉพาะระยะรุนแรง
+     2) กลุ่มโรคเดียวกันซื้อได้ทั้งสองแบบพร้อมกันในกรมธรรม์เดียว
+        เช่น มะเร็งเฉพาะระยะรุนแรง 1 ล้าน คู่กับมะเร็งระยะเริ่มต้นและรุนแรง 5 แสน
+        โครงแบบติ๊กกลุ่มละครั้งทำชุดนี้ไม่ได้เลย ไม่ว่าจะจัดหน้าอย่างไร */
+let dcareRowSeq = 0;
+function dcareRowHtml(id, catKey, stage, capital){
+  const opts = DCARE_CATS.map(c => `<option value="${c.key}"${c.key === catKey ? ' selected' : ''}>${c.label}</option>`).join('');
+  return `
+    <div class="dcare-item" data-row="${id}">
+      <select class="dcare-cat" aria-label="กลุ่มโรค">${opts}</select>
+      <select class="dcare-stage" aria-label="แบบความคุ้มครอง">
+        <option value="early_and_severe"${stage === 'early_and_severe' ? ' selected' : ''}>ระยะเริ่มต้น + รุนแรง</option>
+        <option value="severe"${stage === 'severe' ? ' selected' : ''}>เฉพาะระยะรุนแรง</option>
       </select>
-      <input type="number" id="dcare_${c.key}_cap" value="100000" step="10000" min="0">
-    </div>
-  `).join('');
-  document.querySelectorAll('.dcare-chk').forEach(chk => {
-    chk.addEventListener('change', handleDcareExclusivity);
-  });
+      <input type="number" class="dcare-cap" value="${capital}" step="10000" min="0" aria-label="ทุนประกัน">
+      <button type="button" class="dcare-del" onclick="dcareRemoveRow('${id}')" aria-label="ลบรายการนี้">&times;</button>
+    </div>`;
 }
-function handleDcareExclusivity(){
-  const popular = document.getElementById('dcare_popular');
-  const others = Array.from(document.querySelectorAll('.dcare-chk')).filter(c => c.id !== 'dcare_popular');
-  if(this.id === 'dcare_popular' && this.checked){
-    others.forEach(c => { c.checked = false; c.disabled = true; });
-  } else if(this.id === 'dcare_popular' && !this.checked){
-    others.forEach(c => c.disabled = false);
-  } else {
-    const anyOtherChecked = others.some(c => c.checked);
-    popular.disabled = anyOtherChecked;
-  }
+function dcareAddRow(catKey, stage, capital){
+  const wrap = document.getElementById('dcare_list');
+  if(!wrap) return;
+  const id = 'dcr' + (++dcareRowSeq);
+  wrap.insertAdjacentHTML('beforeend',
+    dcareRowHtml(id, catKey || DCARE_CATS[0].key, stage || 'early_and_severe', capital == null ? 100000 : capital));
+  // เพิ่มแถวแล้วต้องคิดเบี้ยใหม่ทันที ไม่ต้องรอให้ผู้ใช้ขยับช่องอื่นก่อน
+  if(typeof calcTouched !== 'undefined') calcTouched = true;
+  if(typeof renderAll === 'function') renderAll();
+  return id;
 }
-buildDcareList();
+function dcareRemoveRow(id){
+  const row = document.querySelector(`#dcare_list .dcare-item[data-row="${id}"]`);
+  if(!row) return;
+  row.remove();
+  if(typeof calcTouched !== 'undefined') calcTouched = true;
+  if(typeof renderAll === 'function') renderAll();
+}
+function dcareClearRows(){
+  const wrap = document.getElementById('dcare_list');
+  if(wrap) wrap.innerHTML = '';
+}
 
 // ---- show/hide sub-fields ----
 function bindToggle(selectId, mapping){
@@ -5051,14 +5082,19 @@ function readInputs(){
   const useCancer = document.getElementById('use_cancer').checked;
   const cancerPlan = document.getElementById('cancer_plan').value;
 
-  const dcareSelections = DCARE_CATS
-    .filter(c => document.getElementById('dcare_'+c.key).checked)
-    .map(c => {
-      const raw = document.getElementById('dcare_'+c.key+'_stage')?.value;
-      return {key:c.key, label:c.label,
-              capital: parseFloat(document.getElementById('dcare_'+c.key+'_cap').value)||0,
-              stage: DCARE_STAGES[raw] ? raw : 'early_and_severe'};
-    });
+  /* อ่านทีละรายการตามลำดับบนหน้า ไม่ใช่ไล่ตามกลุ่มโรค
+     เพราะกลุ่มเดียวกันมีได้หลายรายการ คีย์ของคอลัมน์จึงต้องผูกกับรายการ ไม่ใช่ผูกกับกลุ่ม
+     ถ้าใช้ชื่อกลุ่มเป็นคีย์ รายการที่สองของกลุ่มเดิมจะไปทับค่าของรายการแรกทั้งตาราง */
+  const dcareSelections = [...document.querySelectorAll('#dcare_list .dcare-item')].map((row, i) => {
+    const key = row.querySelector('.dcare-cat').value;
+    const cat = DCARE_CATS.find(c => c.key === key) || {key, label:key};
+    const raw = row.querySelector('.dcare-stage').value;
+    const stage = DCARE_STAGES[raw] ? raw : 'early_and_severe';
+    const shortLabel = cat.label.split(' (')[0];
+    return {colKey:'dcare_'+i, key, label:cat.label, stage,
+            capital: parseFloat(row.querySelector('.dcare-cap').value)||0,
+            itemName:`D Care - ${shortLabel} (${DCARE_STAGES[stage].label})`};
+  });
 
   const paPlan = document.getElementById('pa_plan').value;
 
@@ -5118,11 +5154,14 @@ function validateInputs(inp){
   for(const [stageKey, def] of Object.entries(DCARE_STAGES)){
     const sum = dcareSumByStage(inp.dcareSelections, stageKey);
     if(sum > def.maxSum){
-      issues.push(`ทุนประกัน D Care กลุ่มที่เลือกแบบ${def.label} รวมกัน (${fmt(sum)}) เกินเพดาน ${fmt(def.maxSum)} บาท`);
+      issues.push(`ทุนประกัน D Care รายการที่เลือกแบบ${def.label} รวมกัน (${fmt(sum)}) เกินเพดาน ${fmt(def.maxSum)} บาท`);
     }
   }
+  /* โรคยอดฮิตต้องซื้อเดี่ยว คือห้ามรวมกับ "กลุ่มโรคอื่น"
+     ตอนนี้กลุ่มเดียวกันมีได้หลายรายการ จึงต้องนับว่ามีกลุ่มอื่นปนอยู่ไหม
+     ไม่ใช่นับจำนวนรายการ ไม่งั้นโรคยอดฮิตสองแบบจะโดนเตือนทั้งที่ยังเป็นกลุ่มเดียว */
   const hasPopular = inp.dcareSelections.some(d=>d.key==='popular');
-  if(hasPopular && inp.dcareSelections.length>1){
+  if(hasPopular && inp.dcareSelections.some(d=>d.key!=='popular')){
     issues.push('D Care โรคยอดฮิต ต้องซื้อเดี่ยว ห้ามรวมกับกลุ่มโรคอื่น');
   }
 
@@ -5190,7 +5229,7 @@ function renderAll(){
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
-  inp.dcareSelections.forEach(d => cols.push({key:'dcare_'+d.key, label:'D Care - '+d.label.split(' (')[0]}));
+  inp.dcareSelections.forEach(d => cols.push({key:d.colKey, label:d.itemName}));
   if(inp.paPlan !== 'none') cols.push({key:'pa', label:'PA Easy Plan แผน '+inp.paPlan});
   if(inp.useHb) cols.push({key:'hb', label:'HB ชดเชยรายวัน (เบี้ยคงที่)'});
 
@@ -5231,7 +5270,7 @@ function renderAll(){
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
-    inp.dcareSelections.forEach(d => { row.values['dcare_'+d.key] = dcarePremium(d.key, d.capital, gender, age, freq, d.stage); });
+    inp.dcareSelections.forEach(d => { row.values[d.colKey] = dcarePremium(d.key, d.capital, gender, age, freq, d.stage); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
 
@@ -5382,8 +5421,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
   if(colKey === 'pa') return paPremium(inp.paPlan, age, 'annual');
   if(colKey.startsWith('dcare_')){
-    const key = colKey.slice(6);
-    const d = inp.dcareSelections.find(x => x.key === key);
+    const d = inp.dcareSelections.find(x => x.colKey === colKey);
     return d ? dcarePremium(d.key, d.capital, gender, age, 'annual', d.stage) : null;
   }
   if(colKey === 'hb') return inp.useHb ? hbPremium(inp.hbAmount, age, 'annual') : null;
@@ -5426,7 +5464,7 @@ async function exportPremiumTableExcel(){
   if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
-  inp.dcareSelections.forEach(d => riderLabels.push(`D Care — ${d.label.split(' (')[0]}, ทุน ${fmt(d.capital)} บาท`));
+  inp.dcareSelections.forEach(d => riderLabels.push(`${d.itemName}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • ขั้นอาชีพ ${inp.occupationClass} • งวดชำระ ${paymentInfo.label} • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
@@ -5930,9 +5968,8 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     items.push({name:'ความคุ้มครองโรคมะเร็ง (Cancer)', premium:y1.cancer, coverage:`คุ้มครองมะเร็งระยะไม่ลุกลามและลุกลาม ทุนประกัน ${fmt({'300k':300000,'500k':500000,'1m':1000000,'2m':2000000}[inp.cancerPlan])} บาท`});
   }
   inp.dcareSelections.forEach(d => {
-    const key = 'dcare_'+d.key;
-    if(y1[key] !== undefined){
-      items.push({name:'D Care - '+d.label.split(' (')[0], premium:y1[key], coverage:`ทุนประกัน ${fmt(d.capital)} บาท`});
+    if(y1[d.colKey] !== undefined){
+      items.push({name:d.itemName, premium:y1[d.colKey], coverage:`ทุนประกัน ${fmt(d.capital)} บาท`});
     }
   });
   if(inp.paPlan !== 'none' && y1.pa !== undefined){
@@ -6187,23 +6224,23 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   const dcareUsedStages = Object.keys(DCARE_STAGES).filter(k => dcareStageSums[k] > 0);
   const dcareHintFor = k => {
     const def = DCARE_STAGES[k];
-    return `แบบ${def.label} ทุนรวมของกลุ่มที่ใช้แบบนี้ต้องไม่เกิน ${fmt(def.maxSum)} บาท`
+    return `แบบ${def.label} ทุนรวมของรายการที่ใช้แบบนี้ต้องไม่เกิน ${fmt(def.maxSum)} บาท`
       + ` · จ่ายสูงสุด ${def.payPct}% ของทุน คิดเป็น ${fmt(def.maxSum * def.payPct / 100)} บาท`;
   };
   if(hintEl) hintEl.textContent = (dcareUsedStages.length ? dcareUsedStages : ['early_and_severe'])
     .map(dcareHintFor).join(' · ');
-  document.querySelectorAll('.dcare-chk').forEach(chk => {
-    const capInput = document.getElementById(chk.id+'_cap');
-    const stageEl = document.getElementById(chk.id+'_stage');
-    const stage = DCARE_STAGES[stageEl?.value] ? stageEl.value : 'early_and_severe';
-    const isChecked = chk.checked;
-    // ทำเครื่องหมายเฉพาะแถวที่ใช้แบบซึ่งทุนเกินจริง ไม่ใช่ขึ้นแดงทุกแถวทั้งที่อีกแบบยังไม่เต็มเพดาน
-    const rowOverCap = dcareOverStages.some(o => o.k === stage);
-    capInput.classList.toggle('field-error', isChecked && (rowOverCap || dcareOverIssueAge || dcarePremium(chk.dataset.key, parseFloat(capInput.value)||0, gender, entryAge, 'annual', stage)===null));
+  // ทำเครื่องหมายเฉพาะรายการที่ใช้แบบซึ่งทุนเกินจริง ไม่ใช่ขึ้นแดงยกชุดทั้งที่อีกแบบยังไม่เต็มเพดาน
+  inp.dcareSelections.forEach((d, i) => {
+    const row = document.querySelectorAll('#dcare_list .dcare-item')[i];
+    const capInput = row && row.querySelector('.dcare-cap');
+    if(!capInput) return;
+    const rowOverCap = dcareOverStages.some(o => o.k === d.stage);
+    capInput.classList.toggle('field-error',
+      rowOverCap || dcareOverIssueAge || dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage) === null);
   });
   const dcareErrEl = document.getElementById('dcareErr');
   dcareErrEl.textContent = dcareOverCap
-    ? dcareOverStages.map(o => `ทุนประกัน D Care กลุ่มที่เลือกแบบ${o.def.label} รวมกัน (${fmt(o.sum)} บาท) เกินเพดาน ${fmt(o.def.maxSum)} บาท`).join(' · ')
+    ? dcareOverStages.map(o => `ทุนประกัน D Care รายการที่เลือกแบบ${o.def.label} รวมกัน (${fmt(o.sum)} บาท) เกินเพดาน ${fmt(o.def.maxSum)} บาท`).join(' · ')
     : dcareOverIssueAge ? 'D Care รับทำประกันใหม่ถึงอายุ 70 ปีเท่านั้น'
     : dcareUnavailable ? 'มีบางกลุ่มโรคที่ไม่สามารถแนบได้ที่อายุปัจจุบัน' : '';
 
@@ -11213,8 +11250,7 @@ function setValue(id, val){
 }
 function resetCalculatorSelections(){
   ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_hb'].forEach(id=>setChecked(id,false));
-  document.querySelectorAll('.dcare-chk').forEach(chk => { chk.checked=false; chk.disabled=false; });
-  document.querySelectorAll('.dcare-stage').forEach(sel => { sel.value='early_and_severe'; });
+  dcareClearRows();
   setValue('pa_plan','none');
 }
 function applyAiPackage(idx){
@@ -11240,12 +11276,9 @@ function applyAiPackage(idx){
     if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', it.plan === 'ca' ? 'ca' : 'cackd'); }
     if(it.kind==='cipc'){ setChecked('use_cipc', true); setValue('cipc_capital', it.capital); }
     if(it.kind==='dcare'){
-      /* ผู้ช่วยจัดแผนอาจเสนอกลุ่มอื่นนอกจากโรคยอดฮิต และแบบความคุ้มครองเป็นของรายกลุ่ม
-         ถ้าโยนเข้าช่องโรคยอดฮิตอย่างเดียว ชุดที่กดมาจากผู้ช่วยจะไม่ตรงกับที่แสดงไว้ */
-      const cat = it.cat || 'popular';
-      setChecked('dcare_'+cat, true);
-      setValue('dcare_'+cat+'_stage', it.stage || 'early_and_severe');
-      setValue('dcare_'+cat+'_cap', it.capital);
+      /* ผู้ช่วยจัดแผนอาจเสนอหลายกลุ่มและคนละแบบ จึงเพิ่มเป็นรายการตามที่เสนอจริง
+         ถ้าโยนเข้าช่องเดียว ชุดที่กดมาจากผู้ช่วยจะไม่ตรงกับเบี้ยที่แสดงไว้ */
+      dcareAddRow(it.cat || 'popular', it.stage || 'early_and_severe', it.capital);
     }
     if(it.kind==='pa'){ setValue('pa_plan', it.plan); }
   });
