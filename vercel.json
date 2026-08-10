@@ -5,6 +5,14 @@
       "destination": "/public/brochures/:file"
     },
     {
+      "source": "/accident",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/accident/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/plans",
       "destination": "/index.html"
     },
