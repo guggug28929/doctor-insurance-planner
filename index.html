@@ -926,6 +926,43 @@
      ตั้ง tabular-nums ซ้ำที่ตารางด้วย เพราะบางเบราว์เซอร์ไม่สืบทอดค่าจาก body */
   table, .plan-start b, .sum-total, input[type=number]{font-variant-numeric:tabular-nums;}
 
+  /* ---------- แถบสรุปเบี้ยติดขอบล่าง ----------
+     ฟอร์มหน้าคำนวณยาวมาก คนกรอกต้องเลื่อนลงไปแก้ทีละช่อง
+     แล้วเลื่อนกลับขึ้นมาดูว่าเบี้ยรวมขยับเท่าไร ซึ่งเป็นจังหวะที่เสียการตัดสินใจ
+     แถบนี้จึงโผล่มาเฉพาะตอนที่กล่องสรุปด้านบนเลื่อนพ้นจอไปแล้ว */
+  .calc-dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:1100;
+    display:flex;align-items:center;gap:var(--sp-3);
+    padding:10px max(14px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-top:1px solid var(--line-strong);
+    box-shadow:0 -6px 22px rgba(43,29,35,.10);
+    transform:translateY(115%);
+    transition:transform .28s var(--ease);
+  }
+  .calc-dock.show{transform:none;}
+  .calc-dock .cd-k{font-size:var(--fs-xs);color:var(--muted);line-height:1.3;}
+  .calc-dock .cd-v{font-size:1.06rem;font-weight:700;color:var(--pink-deep);line-height:1.3;font-variant-numeric:tabular-nums;}
+  .calc-dock .cd-main{flex:1 1 auto;min-width:0;}
+  .calc-dock .cd-btn{
+    flex:0 0 auto;padding:9px 16px;border-radius:999px;border:none;cursor:pointer;
+    background:linear-gradient(120deg, var(--pink-darker), var(--pink-deep));
+    color:#fff;font-weight:600;font-size:var(--fs-sm);
+    box-shadow:0 4px 14px rgba(143,13,64,.25);
+  }
+  .calc-dock .cd-btn:hover{filter:brightness(1.06);}
+  @media (max-width:520px){ .calc-dock .cd-v{font-size:1rem;} }
+
+  /* ---------- โครงร่างจางระหว่างรอข้อมูล ----------
+     ไฟล์อัตราเบี้ยโหลดแยกจากหน้า ระหว่างนั้นพื้นที่ตารางว่างเปล่า
+     คนที่เน็ตช้าจะเห็นหน้าโล่งแล้วคิดว่าเว็บพัง โครงร่างบอกว่ากำลังโหลดอยู่ */
+  .dg-skel{border-radius:var(--r-sm);background:
+      linear-gradient(90deg, rgba(143,13,64,.06) 25%, rgba(143,13,64,.12) 37%, rgba(143,13,64,.06) 63%);
+    background-size:400% 100%;animation:dgSkel 1.3s ease-in-out infinite;}
+  .dg-skel + .dg-skel{margin-top:10px;}
+  @keyframes dgSkel{0%{background-position:100% 50%;}100%{background-position:0 50%;}}
+
   /* ---------- ตารางที่อ่านง่ายขึ้นตอนเลื่อน ----------
      ตารางเบี้ยของเว็บนี้ยาวหลายสิบแถว พอเลื่อนลงไปกลางตารางแล้วหัวคอลัมน์หายไป
      ผู้อ่านต้องเลื่อนกลับขึ้นไปดูว่าคอลัมน์ไหนคืออะไร จึงตรึงหัวไว้กับกรอบตาราง */
@@ -5507,6 +5544,7 @@ function renderAll(){
   `;
   // ให้ตัวเลขในกล่องสรุปนับขึ้น ผู้ใช้จะเห็นว่าค่าเปลี่ยนหลังแก้ฟอร์ม
   dgAnimateSummary(summaryEl);
+  dgSyncCalcDock();
 
   const totalHeaders = paymentInfo.periods === 1
     ? '<th class="total-col">เบี้ยรวม/ปี</th><th class="total-col">เบี้ยรวมสะสม</th>'
@@ -12781,6 +12819,7 @@ function showPage(name, options = {}){
     if(typeof advSyncGroupField === 'function') advSyncGroupField();
     if(typeof advSyncCiCapital === 'function') advSyncCiCapital();
   }
+  if(typeof dgSyncCalcDock === 'function') dgSyncCalcDock();
   window.scrollTo({top:0, behavior:'auto'});
   dgApplyReveal(target);
   dgPlayPageIn(target);
@@ -12806,6 +12845,46 @@ function dgPlayPageIn(target){
     dgPageInTimer = null;
   }, DG_PAGE_IN_MS + 60);
 }
+
+/* ---------- แถบสรุปเบี้ยติดขอบล่าง ----------
+   ทำหน้าที่เดียวคือทวนยอดล่าสุดให้เห็นตลอดเวลาที่กำลังแก้ฟอร์ม
+   ค่าที่แสดงอ่านจากกล่องสรุปด้านบนโดยตรง ไม่ได้คำนวณซ้ำ
+   จะได้ไม่มีทางที่สองที่นี้บอกตัวเลขคนละอย่างกัน */
+function dgSyncCalcDock(){
+  const dock = document.getElementById('calcDock');
+  const box = document.getElementById('summary');
+  if(!dock || !box) return;
+  const onCalc = document.getElementById('page-calc')?.classList.contains('active');
+  const stats = box.querySelectorAll('.stat');
+  // กล่องที่สามคือเบี้ยงวดแรกรวมทุกสัญญา ซึ่งเป็นตัวเลขที่คนกรอกฟอร์มอยากรู้ตลอดเวลา
+  const target = stats[2];
+  if(!onCalc || !target){ dock.hidden = true; dock.classList.remove('show'); return; }
+  dock.hidden = false;
+  const k = target.querySelector('.k'), v = target.querySelector('.v');
+  document.getElementById('cdLabel').textContent = k ? k.textContent.trim() : 'เบี้ยรวม';
+  document.getElementById('cdValue').textContent = v ? v.textContent.trim() : '—';
+}
+function dgJumpToSummary(){
+  const box = document.getElementById('summary');
+  if(!box) return;
+  box.scrollIntoView({behavior: (typeof dgReducedMotion === 'function' && dgReducedMotion()) ? 'auto' : 'smooth', block:'center'});
+}
+/* โผล่มาเมื่อกล่องสรุปเลื่อนพ้นจอ และหุบกลับเมื่อกล่องกลับเข้ามาในจอ
+   ถ้าโชว์ตลอดเวลาจะกลายเป็นบังเนื้อหาโดยไม่จำเป็นตอนที่ตัวเลขอยู่ตรงหน้าอยู่แล้ว */
+(() => {
+  const start = () => {
+    const box = document.getElementById('summary');
+    const dock = document.getElementById('calcDock');
+    if(!box || !dock || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(entries => {
+      const seen = entries[0].isIntersecting;
+      const onCalc = document.getElementById('page-calc')?.classList.contains('active');
+      dock.classList.toggle('show', !seen && onCalc && !dock.hidden);
+    }, {threshold:0}).observe(box);
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
 
 /* ---------- ตัวเลขนับขึ้นเมื่อผลลัพธ์เปลี่ยน ----------
    จุดประสงค์ไม่ใช่ความสวยอย่างเดียว แต่เพื่อบอกสายตาว่า "ตัวเลขนี้เพิ่งเปลี่ยน"
@@ -17309,6 +17388,14 @@ ssSyncBtnSkin();
   จากเงื่อนไขกรมธรรม์และตารางอัตราเบี้ยของบริษัท<br>
   ยินดีให้อ่านและส่งต่อ หากนำไปเผยแพร่ซ้ำรบกวนอ้างอิงที่มาด้วยครับ ·
   ติดต่อ LINE <b>@doctorguginsurance</b>
+</div>
+<!-- แถบสรุปเบี้ยติดขอบล่าง แสดงเฉพาะหน้าคำนวณเบี้ยและเฉพาะตอนที่กล่องสรุปเลื่อนพ้นจอ -->
+<div class="calc-dock" id="calcDock" hidden>
+  <div class="cd-main">
+    <div class="cd-k" id="cdLabel">เบี้ยปีแรก (รวมทุกสัญญา)</div>
+    <div class="cd-v" id="cdValue">—</div>
+  </div>
+  <button type="button" class="cd-btn" onclick="dgJumpToSummary()">ดูสรุปทั้งหมด</button>
 </div>
 </body>
 </html>
