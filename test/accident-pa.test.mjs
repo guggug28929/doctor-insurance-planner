@@ -142,7 +142,10 @@ test('กลุ่มอุบัติเหตุในหน้าแผน�
 
 test('เส้นทางและเมนูต้องต่อเข้าระบบเดิมครบ', () => {
   assert.match(html, /accident: '\/accident',/, 'ไม่มีเส้นทางในทะเบียนหน้า');
-  assert.match(html, /<button data-page="accident">/, 'ไม่มีปุ่มบนเมนู');
+  /* ปุ่มถูกซ่อนจากแถบเมนูแล้ว ทางเข้าหลักคือแผงกลุ่มใต้ปุ่มแผนทั้งหมดกับการ์ดสะพานในหน้าแผน
+     แต่ปุ่มต้องยังอยู่ใน #navbar เพราะ showPage และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ที่เดียว */
+  assert.match(html, /<button data-page="accident" class="nav-off">/,
+    'ปุ่มหน้าอุบัติเหตุต้องยังอยู่ใน navbar แบบซ่อน');
   assert.match(html, /id="page-accident"/);
   assert.match(html, /id="page-accident-detail"/);
   assert.match(html, /if\(name === 'accident' && typeof renderAccidentPage === 'function'\) renderAccidentPage\(\);/);

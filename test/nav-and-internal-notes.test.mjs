@@ -63,16 +63,40 @@ test('ทุกหน้าหลักต้องยังมีปุ่ม�
 });
 
 test('แถบเมนูต้องเหลือ 7 ปุ่มที่มองเห็น ไม่ใช่ 9 ปุ่มเรียงยาว', () => {
-  // hnw ถูกซ่อนด้วย .nav-off ส่วน knowledge กับ faq ย้ายลงเมนูย่อย
-  assert.ok(/data-page="hnw"[^>]*class="[^"]*nav-off/.test(navbar),
-    'ปุ่ม HNW ต้องมีคลาส nav-off เพื่อซ่อนจากแถบเมนู');
+  // hnw กับ accident ถูกซ่อนด้วย .nav-off ส่วน knowledge กับ faq ย้ายลงเมนูย่อย
+  for(const p of ['hnw','accident'])
+    assert.ok(new RegExp(`data-page="${p}"[^>]*class="[^"]*nav-off`).test(navbar),
+      `ปุ่ม ${p} ต้องมีคลาส nav-off เพื่อซ่อนจากแถบเมนู`);
   assert.match(html, /\.navbar button\.nav-off\{display:none !important;\}/);
 
-  const panel = sliceTag(navbar, '<div class="nav-more-panel"');
+  const panel = sliceTag(navbar, '<div class="nav-more-panel" id="navMorePanel"');
   for(const p of ['knowledge','faq'])
     assert.ok(panel.includes(`data-page="${p}"`), `${p} ต้องอยู่ในเมนูย่อย`);
   // ภาษีเป็นเครื่องมือคำนวณ ไม่ใช่บทความ ต้องอยู่บนแถบหลักไม่ใช่ในเมนูย่อย
   assert.ok(!panel.includes('data-page="tax"'), 'วางแผนภาษีต้องอยู่บนแถบหลัก');
+});
+
+test('ปุ่มแผนทั้งหมดต้องกางกลุ่มให้เลือกได้ โดยที่กดตัวปุ่มยังเข้าหน้ารวมเหมือนเดิม', () => {
+  /* ทางเข้าเรื่องอุบัติเหตุถูกย้ายจากปุ่มบนแถบมาอยู่ในแผงนี้
+     ถ้าแผงหายหรือรายการขาด ลูกค้าจะไม่มีทางไปกลุ่มนั้นนอกจากเลื่อนหาเอง */
+  const panel = sliceTag(navbar, '<div class="nav-more-panel" id="navPlansPanel"');
+  for(const g of ['grp-life','grp-health','grp-ci','grp-pa','grp-pension','grp-guide'])
+    assert.ok(panel.includes(`data-plan-group="${g}"`), `แผงกลุ่มแผนขาด ${g}`);
+  assert.ok(panel.includes('data-nav-page="hnw"'), 'แผงต้องมีทางไปหน้า HNW');
+
+  /* ปุ่มในแผงห้ามเป็น data-page เพราะดัชนีค้นหาทั้งเว็บอ่านทุก button[data-page] ใน #navbar
+     ถ้าใช้ data-page ผลค้นหาจะมีชื่อกลุ่มโผล่ซ้ำกับหน้าแผน และสถานะ active จะติดหลายปุ่มพร้อมกัน */
+  assert.ok(!panel.includes('data-page='), 'ปุ่มในแผงต้องไม่ใช่ data-page');
+
+  assert.match(html, /function navPlansSetOpen\(open\)\{/);
+  assert.match(html, /wrap\.addEventListener\('mouseenter', \(\) => navPlansSetOpen\(true\)\);/);
+  // เปิดด้วยการชี้เมาส์ จอแคบไม่มีเมาส์จึงต้องไม่เปิด และต้องซ่อนแผงไว้
+  assert.match(html, /if\(open && window\.innerWidth < NAV_MORE_FIXED_MIN_W\) return;/);
+  assert.match(html, /\.nav-plans \.nav-more-panel\{display:none !important;\}/);
+  // กดกลุ่มแล้วต้องเข้าหน้าแผนก่อนแล้วค่อยเลื่อน ไม่ใช่เลื่อนบนหน้าที่ยังไม่เปลี่ยน
+  assert.match(html, /showPage\('plans'\);\n\s*\/\/[^\n]*\n\s*setTimeout\(\(\) => jumpToPlanGroup\(grp\.dataset\.planGroup\), 60\);/);
+  // ตัวปุ่มแม่ยังเป็นหน้าแผนเหมือนเดิม ลิงก์และพฤติกรรมเดิมต้องไม่เปลี่ยน
+  assert.ok(navbar.includes('<button data-page="plans" class="nav-plans-btn">แผนทั้งหมด</button>'));
 });
 
 test('ชื่อปุ่มต้องสั้นลงจริง และคำเต็มต้องยังค้นเจอ', () => {
@@ -93,17 +117,26 @@ test('เมนูย่อยต้องเปิดปิดได้ ปิ�
   assert.match(html, /e\.key === 'Escape' && navMoreIsOpen\(\)/);
   assert.match(html, /!e\.target\.closest\('#navMore'\)\) navMoreSetOpen\(false\)/);
   // กดปุ่มในเมนูย่อยแล้วต้องปิดแผงด้วย ไม่ใช่ค้างบังเนื้อหาหน้าใหม่
-  assert.match(html, /if\(btn\)\{ navMoreSetOpen\(false\); showPage\(btn\.dataset\.page\); \}/);
+  assert.match(html, /if\(btn\)\{ navMoreSetOpen\(false\); navPlansSetOpen\(false\); showPage\(btn\.dataset\.page\); \}/);
   assert.match(html, /aria-expanded="false" aria-controls="navMorePanel"/);
 });
 
 /* ---------- ทางเข้า HNW ในหน้าแผน ---------- */
 
-test('หน้าแผนทั้งหมดต้องมีทางเข้าแผน HNW แทนที่ปุ่มบนเมนู', () => {
-  assert.match(html, /<div class="content-card hnw-entry">/);
-  assert.match(html, /onclick="showPage\('hnw'\)"/);
-  assert.match(html, /\.hnw-entry\{/);
-  // เส้นทางเดิมที่เคยส่งให้ลูกค้าต้องยังใช้ได้
+test('ทางเข้าแผน HNW ต้องเป็นชิปในแถวเลือกกลุ่ม ไม่ใช่การ์ดคั่นกลางหน้า', () => {
+  const jump = html.slice(html.indexOf('<nav class="plan-jump"'), html.indexOf('</nav>', html.indexOf('<nav class="plan-jump"')));
+  assert.ok(jump.includes('class="pj-hnw"'), 'ต้องมีชิป HNW ในแถวอยากดูกลุ่มไหน');
+  assert.ok(jump.includes("onclick=\"showPage('hnw'); return false;\""));
+  // การ์ดใหญ่เดิมคั่นกลางหน้าจนรก ต้องไม่กลับมา
+  assert.ok(!html.includes('hnw-entry'), 'ยังเหลือการ์ด HNW แบบเดิม');
+  assert.ok(!html.includes('btn-hnw'), 'ยังเหลือปุ่มการ์ด HNW แบบเดิม');
+
+  /* ชิปตัวอื่นเลื่อนลงในหน้าเดิม ชิปนี้พาไปคนละหน้า
+     ถ้าหน้าตาเหมือนกันหมดลูกค้าจะกดแล้วงงว่าทำไมเด้งไปหน้าอื่น */
+  assert.match(html, /\.plan-jump a\.pj-hnw\{/);
+  assert.ok(jump.includes('แผน HNW &rarr;'), 'ต้องมีลูกศรบอกว่าไปหน้าอื่น');
+  // ลิงก์ที่เคยส่งให้ลูกค้าต้องยังใช้ได้ และ href ต้องเป็นเส้นทางจริงเผื่อเปิดแท็บใหม่
+  assert.ok(jump.includes('href="/hnw"'));
   assert.match(html, /hnw: '\/hnw'/);
 });
 
@@ -111,4 +144,21 @@ test('เมนูย่อยบนจอแคบต้องกางเต�
   const mq = html.slice(html.indexOf('.nav-more-panel{'), html.indexOf('.hnw-entry{'));
   assert.ok(mq.includes('@media (max-width:640px)'), 'ขาดการจัดเมนูย่อยบนจอแคบ');
   assert.ok(mq.includes('position:static'), 'จอแคบต้องไม่ลอยทับเนื้อหา');
+});
+
+/* เคยพลาดมาแล้วบน production แผงกางออกมาแล้วโดนกล่องหัวเว็บตัดครึ่ง กดเมนูข้างในไม่ได้เลย
+   สาเหตุคือ absolute ถูก overflow ของ ancestor ตัด ต้องเป็น fixed แล้ววางตำแหน่งเอง */
+test('เมนูย่อยบนจอกว้างต้องเป็น fixed และคำนวณตำแหน่งเอง ไม่ให้โดนหัวเว็บตัดขอบ', () => {
+  const css = html.slice(html.indexOf('.nav-more-panel{'), html.indexOf('.nav-more-panel[hidden]'));
+  assert.ok(css.includes('position:fixed'), 'แผงต้องเป็น fixed ไม่ใช่ absolute');
+  assert.ok(!css.includes('position:absolute'), 'ยังเหลือ absolute ที่ทำให้โดนตัดขอบ');
+
+  assert.match(html, /panel\.style\.top = Math\.round\(r\.bottom \+ 8\) \+ 'px';/);
+  // ต้องกันแผงล้นขอบขวาจอด้วย ไม่งั้นปุ่มที่อยู่ค่อนไปทางขวาจะดันแผงหลุดจอ
+  assert.match(html, /Math\.max\(8, Math\.min\(Math\.round\(r\.left\), window\.innerWidth - w - 8\)\)/);
+  // ย่อจอหรือเลื่อนหน้าแล้วแผงจะค้างผิดตำแหน่ง ต้องปิดทิ้ง
+  assert.match(html, /addEventListener\('resize', \(\) => navMoreSetOpen\(false\)\);/);
+  assert.match(html, /addEventListener\('scroll', \(\) => \{ if\(navMoreIsOpen\(\)\) navMoreSetOpen\(false\); \}/);
+  // จอแคบไม่ต้องคำนวณตำแหน่ง เพราะแผงกางในสายเนื้อหาปกติ
+  assert.match(html, /if\(!open \|\| window\.innerWidth < NAV_MORE_FIXED_MIN_W\) return;/);
 });
