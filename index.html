@@ -6655,6 +6655,12 @@ function hbLimitSection(){
     </tr>`).join('');
   const maxNoIpd = HB_TIERS.filter(t => t.noIpdMin !== null).slice(-1)[0];
   const maxAll = HB_TIERS.slice(-1)[0];
+  /* ตัวอย่างประกอบต้องคิดสดจากตารางเดียวกัน ไม่ใช่พิมพ์ตัวเลขค้างไว้
+     ไม่งั้นวันที่บริษัทขยับเกณฑ์ ตารางจะเปลี่ยนแต่ตัวอย่างข้างล่างยังบอกเลขเดิม */
+  const exLow = HB_TIERS.find(t => t.amt === 2000) || HB_TIERS[0];
+  const exHigh = maxNoIpd;
+  const ex = HB_TIERS.find(t => t.amt === 4000) || maxNoIpd;
+  const perDayToIncome = a => fmt(a * 360);
   return `<div class="content-card">
     <h2>ทำได้สูงสุดวันละเท่าไร ต้องผ่านสามด่าน</h2>
     <p>สามข้อนี้ต้องผ่าน<b>ครบทุกข้อ</b> วงเงินที่ทำได้จริงคือตัวที่ต่ำที่สุดในสามข้อ ไม่ใช่ตัวที่สูงที่สุด</p>
@@ -6662,7 +6668,8 @@ function hbLimitSection(){
     <div class="def-block">
       <b>ด่านที่ 1 · รายได้ต่อปี ÷ 360</b>
       <p>บริษัทมองว่าเงินชดเชยไม่ควรมากกว่ารายได้ที่หายไปจริง วงเงินสูงสุดจึงคิดจากรายได้ทั้งปีหารด้วย 360 วัน
-        เช่น รายได้ปีละ 720,000 บาท คิดได้ ${fmt(2000)} บาทต่อวัน · รายได้ปีละ 1,800,000 บาท คิดได้ ${fmt(5000)} บาทต่อวัน</p>
+        เช่น รายได้ปีละ ${perDayToIncome(exLow.amt)} บาท คิดได้ ${fmt(exLow.amt)} บาทต่อวัน ·
+        รายได้ปีละ ${perDayToIncome(exHigh.amt)} บาท คิดได้ ${fmt(exHigh.amt)} บาทต่อวัน</p>
     </div>
 
     <div class="def-block">
@@ -6686,9 +6693,9 @@ function hbLimitSection(){
       </div>
     </div>
 
-    <p class="meta">ตัวอย่าง อยากได้วันละ 4,000 บาท ต้องมีรายได้ปีละ 1,440,000 บาทขึ้นไป และถ้าไม่มีสุขภาพเหมาจ่ายแนบอยู่
-      ต้องมีทุนประกันชีวิตอย่างน้อย ${fmt(HB_TIERS.find(t=>t.amt===4000).noIpdMin)} บาท แต่ถ้ามีสุขภาพเหมาจ่ายแนบอยู่
-      ทุนขั้นต่ำลดเหลือ ${fmt(HB_TIERS.find(t=>t.amt===4000).ipdMin)} บาท ·
+    <p class="meta">ตัวอย่าง อยากได้วันละ ${fmt(ex.amt)} บาท ต้องมีรายได้ปีละ ${perDayToIncome(ex.amt)} บาทขึ้นไป
+      และถ้าไม่มีสุขภาพเหมาจ่ายแนบอยู่ ต้องมีทุนประกันชีวิตอย่างน้อย ${fmt(ex.noIpdMin)} บาท
+      แต่ถ้ามีสุขภาพเหมาจ่ายแนบอยู่ ทุนขั้นต่ำลดเหลือ ${fmt(ex.ipdMin)} บาท ·
       เครื่องคำนวณเบี้ยตรวจสามข้อนี้ให้อัตโนมัติ ถ้าเลือกเกินเกณฑ์จะขึ้นเตือนทันที</p>
   </div>`;
 }
@@ -15417,6 +15424,9 @@ function mciDefDiseaseHtml(d){
     + `<span class="stage-badge ${b.cls}">${b.label}</span>`;
   let body = `<p class="def-body">${d.body}</p>`;
   if(d.criteria) body += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  /* ข้อที่แยกเป็นสองกรณี ต้องได้กรอบเหมือนกันทั้งคู่
+     ถ้ากรณีหนึ่งอยู่ในกรอบแล้วอีกกรณีเป็นย่อหน้าลอย ลูกค้าจะอ่านว่าอันหลังเป็นแค่หมายเหตุ */
+  if(d.criteria2) body += `<div class="def-block def-must"><b>${d.criteria2Title}</b>${li(d.criteria2)}</div>`;
   if(d.extra) body += `<p class="def-body def-extra">${d.extra}</p>`;
   if(d.exclusions) body += `<div class="def-block def-not">`
     + `<b>${d.exclusionsTitle} <span class="not-tag">ไม่คุ้มครอง</span></b>${li(d.exclusions)}</div>`;
@@ -15506,6 +15516,7 @@ function ltpDefDiseaseHtml(d){
   h += `<span class="stage-badge ${b.cls}">${b.label}</span>`;
   h += `<p class="def-body">${d.body}</p>`;
   if(d.criteria) h += `<div class="def-block def-must"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  if(d.criteria2) h += `<div class="def-block def-must"><b>${d.criteria2Title}</b>${li(d.criteria2)}</div>`;
   if(d.extra) h += `<p class="def-body def-extra">${d.extra}</p>`;
   if(d.extra2) h += `<p class="def-body def-extra">${d.extra2}</p>`;
   if(d.exclusions) h += `<div class="def-block def-not">`
@@ -15770,6 +15781,7 @@ function cipcStageHtml(s){
     + `<span class="ci-stage-name">${s.th}<span class="def-en">${s.en}</span></span></div>`;
   h += `<p class="def-body">${s.body}</p>`;
   if(s.criteria) h += `<div class="def-block def-must"><b>${s.criteriaTitle}</b>${li(s.criteria)}</div>`;
+  if(s.criteria2) h += `<div class="def-block def-must"><b>${s.criteria2Title}</b>${li(s.criteria2)}</div>`;
   if(s.extra) h += `<p class="def-body def-extra">${s.extra}</p>`;
   /* แผนนี้จ่ายทุกระยะของโรคเดียวกันอยู่แล้ว รายการที่ถูกตัดออกจากระยะหนึ่งจึงมักไปโผล่อีกระยะหนึ่ง
      ถ้าทาแดงว่าไม่คุ้มครอง ลูกค้าจะเข้าใจผิดทั้งที่เงินยังออกอยู่ แค่ออกคนละระยะ */
@@ -15885,6 +15897,9 @@ function dcareDefDiseaseHtml(d){
   /* กล่องเกณฑ์ของโรคระยะเริ่มต้น ต้องเป็นสีเหลืองให้ตรงกับป้ายหัวข้อ
      ถ้าใช้สีเขียวเหมือนโรคที่เคลมได้ทั้งสองแบบ ลูกค้าจะเข้าใจว่าซื้อแบบเฉพาะระยะรุนแรงก็เคลมได้ */
   if(d.criteria) body += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteriaTitle}</b>${li(d.criteria)}</div>`;
+  /* ข้อที่แยกเป็นสองกรณี ต้องได้กรอบเหมือนกันทั้งคู่
+     ถ้ากรณีหนึ่งอยู่ในกรอบแล้วอีกกรณีเป็นย่อหน้าลอย ลูกค้าจะอ่านว่าอันหลังเป็นแค่หมายเหตุ ไม่ใช่เงื่อนไขที่ต้องเข้าให้ครบ */
+  if(d.criteria2) body += `<div class="def-block ${early ? 'def-must-early' : 'def-must'}"><b>${d.criteria2Title}</b>${li(d.criteria2)}</div>`;
   if(d.extra) body += `<p class="def-body def-extra">${d.extra}</p>`;
   /* ข้อความ "ทั้งนี้ไม่รวมถึง" ในกรมธรรม์มีสามความหมายที่ต่างกันคนละเรื่อง
      หนึ่ง ไม่เข้าข้อนี้ แต่ไปเข้าอีกข้อของแผนเดียวกันซึ่งคุ้มครองอยู่ ต้องเป็นสีเหลือง
@@ -17218,7 +17233,7 @@ function ssBuildIndex(){
   // นิยามโรคร้ายแรงของ ดี แคร์ แยกตามกลุ่มโรค
   ((typeof DCARE_DEF === 'object' && DCARE_DEF && DCARE_DEF.groups) || []).forEach(g => {
     (g.diseases || []).forEach(d => {
-      const body = [d.body, (d.criteria || []).join(' '), d.extra,
+      const body = [d.body, (d.criteria || []).join(' '), (d.criteria2 || []).join(' '), d.extra,
                     (d.exclusions || []).join(' '), (d.never || []).join(' '),
                     (d.carveBack || []).join(' '), d.doc].filter(Boolean).join(' ');
       add('นิยามโรค ดี แคร์', d.th, [d.en, g.label].filter(Boolean).join(' · '), d.en, body,
@@ -17230,7 +17245,8 @@ function ssBuildIndex(){
   const cg = (typeof CIPC_DEF === 'object' && CIPC_DEF && CIPC_DEF.groups) || {};
   ((typeof CIPC_DEF === 'object' && CIPC_DEF && CIPC_DEF.diseases) || []).forEach(d => {
     const body = (d.stages || []).map(st => [st.th, st.body, (st.criteria || []).join(' '),
-                  st.extra, (st.exclusions || []).join(' ')].filter(Boolean).join(' '))
+                  (st.criteria2 || []).join(' '), st.extra,
+                  (st.exclusions || []).join(' ')].filter(Boolean).join(' '))
                  .concat(d.doc || '').join(' ');
     add('นิยามโรค ซีไอ เพอร์เฟค แคร์', d.th, [d.en, cg[d.group]].filter(Boolean).join(' · '), d.en, body,
         () => ssOpenDefinition('cipc', 'cipcDefTabs', setCipcDefTab, d.group, d.th));
