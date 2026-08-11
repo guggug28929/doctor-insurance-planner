@@ -1937,6 +1937,8 @@
   .faq-table td{padding:9px 12px;border-bottom:1px solid #f2e3e9;color:#4a3841;vertical-align:top;}
   .faq-table tbody tr:last-child td{border-bottom:none;}
   .faq-table tbody tr:nth-child(even){background:rgba(143,13,64,.022);}
+  .faq-table-wide{table-layout:fixed;}
+  .faq-table-wide th,.faq-table-wide td{overflow-wrap:break-word;}
   /* จุดที่ลูกค้าเข้าใจผิดแล้วเสียเงินจริง ต้องเห็นก่อนอ่านย่อหน้าอื่น */
   .faq-warn{margin:4px 0 13px;background:var(--danger-bg,#fdecea);border:1px solid #f0b8b0;
     border-left:4px solid var(--danger,#c0392b);border-radius:9px;padding:11px 14px;
@@ -13086,7 +13088,10 @@ function faqBodyHtml(txt){
   const flush = () => {
     if(!rows) return;
     const [head, ...body] = rows;
-    out.push(`<div class="table-wrap faq-table-wrap"><table class="faq-table">`
+    /* ตารางสี่คอลัมน์ขึ้นไป ถ้าปล่อยให้เบราว์เซอร์จัดเอง ข้อความไทยจะไม่ยอมตัดบรรทัด
+       ตารางจึงกว้างเกินการ์ดแล้วคอลัมน์สุดท้ายหลุดออกนอกจอ ต้องบังคับความกว้างเท่ากัน */
+    const wide = head.length >= 4 ? ' faq-table-wide' : '';
+    out.push(`<div class="table-wrap faq-table-wrap"><table class="faq-table${wide}">`
       + `<thead><tr>${head.map(c=>`<th>${c}</th>`).join('')}</tr></thead>`
       + `<tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`
       + `</table></div>`);
