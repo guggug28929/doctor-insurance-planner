@@ -68,6 +68,29 @@ test('เกณฑ์ในตารางต้องตรงกับที�
     if(t.noIpdMin !== null) assert.ok(t.ipdMin <= t.noIpdMin, `วงเงิน ${t.amt} เกณฑ์กลับด้าน`);
 });
 
+test('ตารางเบี้ยต้องมีครบทุกวงเงินที่บริษัทรับ ไม่ใช่แค่ต่อ 1,000 บาท', () => {
+  /* เดิมหน้าแผนให้อัตราต่อวงเงิน 1,000 บาทต่อวันอย่างเดียว
+     คนที่อยากได้วันละ 3,000 ต้องคูณเองในหัว ซึ่งไม่มีใครทำ และคนที่คูณก็ถามซ้ำว่าคิดถูกไหม */
+  assert.match(html, /rateTable: \(freq='annual'\) => hbRateTableBlock\(freq\)/);
+  const sec = slice('function hbRateTableBlock(', 'function hbLimitSection()');
+  // ทุกช่องต้องคิดจาก hbPremium ตัวเดียวกับเครื่องคำนวณ ห้ามพิมพ์ตัวเลขเบี้ยไว้
+  assert.ok(sec.includes('hbPremium(t.amt, age, freq)'), 'ต้องคิดเบี้ยจาก hbPremium');
+  assert.ok(sec.includes('HB_TIERS.filter'), 'ต้องอ่านรายการวงเงินจาก HB_TIERS');
+  assert.ok(!/[0-9]{1,3},[0-9]{3}/.test(sec), 'มีตัวเลขพิมพ์ค้างในตารางเบี้ย HB');
+  // ช่วงอายุที่รับทำต้องครบ
+  assert.ok(sec.includes('age=16') && sec.includes('age<=64'), 'ช่วงอายุที่รับทำเปลี่ยนไป');
+});
+
+test('วงเงินที่ต้องมีสุขภาพเหมาจ่ายแนบ ต้องแยกสีและมีหมายเหตุ', () => {
+  const sec = slice('function hbRateTableBlock(', 'function hbLimitSection()');
+  assert.ok(sec.includes("t.noIpdMin===null?' class=\"hb-high\"'"), 'ช่องวงเงินสูงต้องได้คลาสแยกสี');
+  assert.ok(sec.includes('ต้องมีสุขภาพเหมาจ่าย (IPD) แนบอยู่'), 'หัวตารางต้องบอกเงื่อนไขของกลุ่มวงเงินสูง');
+  assert.ok(sec.includes('เลือกได้แม้ไม่มีสุขภาพเหมาจ่าย'), 'หัวตารางต้องแยกสองกลุ่มให้ชัด');
+  assert.ok(/รายได้ต่อปี ÷ 360/.test(sec), 'หมายเหตุต้องเตือนว่ายังต้องผ่านเกณฑ์รายได้ด้วย');
+  // สีต้องมาจากตัวแปรธีม ไม่ใช่สีลอย ๆ
+  assert.match(html, /\.hb-rate-table th\.hb-high\{background:var\(--gold/);
+});
+
 test('เครื่องคำนวณต้องยังเตือนครบทั้งสามด่าน', () => {
   assert.match(html, /const maxByIncome = Math\.floor\(inp\.hbIncome\/360\);/);
   assert.match(html, /ต้องแนบประกันสุขภาพเหมาจ่าย \(IPD\) ด้วย/);
