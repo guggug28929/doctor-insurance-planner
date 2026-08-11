@@ -15,7 +15,7 @@ test("หน้า FAQ ต้องมีครบ ทั้ง route หน้�
 test("ต้องมีครบทุกหมวดทั้งสองแท็บ ไม่มีหมวดร้าง", () => {
   const groups = [...html.matchAll(/\{id:'(\w+)',\s*t:'\w+',\s*icon:/g)].map((m) => m[1]);
   assert.deepEqual(groups, [
-    "prep", "exist", "exclude", "copay", "claim", "premium",
+    "prep", "exist", "exclmean", "exclude", "copay", "claim", "premium",
     "lwhy", "lsum", "lpick", "lapply", "lright", "lheir",
   ]);
   for (const g of groups) {
@@ -27,7 +27,7 @@ test("ต้องมีครบทุกหมวดทั้งสองแ�
 test("ทุกคำถามต้องมีทั้งคำตอบสั้นและคำตอบเต็ม ห้ามมีแต่หัวข้อ", () => {
   // คำถามที่เคยเป็นลิงก์เก่าจะมีฟิลด์ k คั่นอยู่ ตัวแกะจึงต้องยอมให้มีหรือไม่มีก็ได้
   const items = [...html.matchAll(/\{g:'\w+',(?: k:'[\w-]+',)? q:'([^']+)',\s*\n\s*lead:'([^']+)',\s*\n\s*body:`([^`]+)`/g)];
-  assert.equal(items.length, 65, `แกะได้ ${items.length} คำถาม ควรได้ 65`);
+  assert.equal(items.length, 79, `แกะได้ ${items.length} คำถาม ควรได้ 79`);
   for (const [, q, lead, body] of items) {
     assert.ok(lead.length >= 25, `คำตอบสั้นของ "${q}" สั้นเกินไป`);
     assert.ok(body.length >= 120, `คำตอบเต็มของ "${q}" สั้นเกินไป จะกลายเป็นย่อจนไม่ได้สาระ`);
@@ -111,8 +111,8 @@ test("รวมแท็บ FAQ เดิมเข้ามาแล้ว ต�
   assert.ok(!html.includes('id="knowTabBtn-faq"'), "ยังมีปุ่มแท็บเดิมค้างอยู่");
   // ลิงก์เก่าที่เรียก setKnowTab('faq') ต้องยังใช้ได้ โดยเด้งไปหน้าใหม่
   assert.match(html, /if\(tab === 'faq'\)\{ showPage\('faq'\); return; \}/);
-  // กล่องถาม AI ปิดไว้ชั่วคราวจนกว่า backend จะพร้อม จึงไม่ต้องมีบนหน้า
-  assert.match(html, /const FAQ_AI_ENABLED = false;/);
+  // กล่องถาม AI ถูกถอดออกทั้งชุดแล้ว ช่องค้นหาทั้งเว็บทำหน้าที่แทน
+  assert.ok(!html.includes("FAQ_AI_ENABLED"), "ยังมีซากกล่องถาม AI อยู่");
 });
 
 test("เนื้อหาจากแท็บเดิมต้องถูกรวมเข้ามาครบ ไม่ใช่ทิ้ง", () => {
@@ -155,13 +155,11 @@ test("ช่องค้นหาต้องมีปุ่มล้างอ�
   assert.match(html, /#faqSearch::-webkit-search-cancel-button/);
 });
 
-test("CSS กล่องถาม AI ต้องพร้อมใช้ทันทีถ้าเปิดกลับ", () => {
-  // เคยพลาด: ย้าย HTML ไปหน้า faq แต่ CSS ยังผูกกับ #page-knowledge สไตล์เลยหลุดหมด
-  for (const sel of ["#faqChatInput", ".faq-chat-actions button", ".faq-chatbot", "#faqChatAnswer"]) {
-    assert.ok(html.includes("#page-faq " + sel), `CSS ของ ${sel} ยังไม่ตามมาที่หน้า faq`);
+test("ต้องไม่เหลือ CSS ของกล่องถาม AI ที่ถอดออกไปแล้ว", () => {
+  // เคยพลาด: ลบ HTML แต่ลืม CSS ทำให้ไฟล์บวมและคนอ่านโค้ดเข้าใจผิดว่ายังมีฟีเจอร์นี้
+  for (const sel of ["#faqChatInput", ".faq-chat-actions", ".faq-chatbot", "#faqChatAnswer", ".faq-ai"]) {
+    assert.ok(!html.includes(sel), `CSS ของ ${sel} ยังค้างอยู่`);
   }
-  assert.ok(!/#page-knowledge #faqChat/.test(html), "ยังมี CSS กล่อง AI ค้างที่หน้าความรู้");
-  assert.ok(!/#page-knowledge \.faq-chat/.test(html), "ยังมี CSS กล่อง AI ค้างที่หน้าความรู้");
 });
 
 /* เกณฑ์ Simple Diseases คือสิ่งที่ตัดสินว่าเคสนั้นเข้าเกณฑ์ Copayment แบบ 200% หรือ 400%

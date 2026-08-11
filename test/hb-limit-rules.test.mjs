@@ -28,7 +28,7 @@ const TIERS = ctx.T;
 test('ตารางเกณฑ์ต้องอยู่บนหน้าแผน HB จริง', () => {
   assert.match(html, /function hbLimitSection\(\)\{/);
   assert.match(html, /detailSections: \(\) => hbLimitSection\(\)/);
-  const sec = slice('function hbLimitSection()', 'function careplusPathoSection()');
+  const sec = slice('function hbLimitSection()', '\n}\n');
   // สามด่านต้องอยู่ครบ ถ้าขาดด่านใดด่านหนึ่ง ลูกค้าจะคำนวณเองแล้วได้คำตอบสูงเกินจริง
   for(const s of ['รายได้ต่อปี ÷ 360', 'มีประกันสุขภาพเหมาจ่ายคู่กันไหม', 'ทุนประกันชีวิตของสัญญาหลัก'])
     assert.ok(sec.includes(s), `ขาดด่าน ${s}`);
@@ -36,7 +36,7 @@ test('ตารางเกณฑ์ต้องอยู่บนหน้า�
 });
 
 test('ตัวเลขในตารางต้องอ่านจาก HB_TIERS ไม่ใช่พิมพ์ค้างไว้', () => {
-  const sec = slice('function hbLimitSection()', 'function careplusPathoSection()');
+  const sec = slice('function hbLimitSection()', '\n}\n');
   assert.match(sec, /HB_TIERS\.map\(t =>/);
   assert.match(sec, /fmt\(t\.ipdMin\)/);
   assert.match(sec, /t\.noIpdMin === null \?/);
