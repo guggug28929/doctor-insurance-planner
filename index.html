@@ -6291,8 +6291,13 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     : `${fmt(value)} บาท/${paymentUnitLabel}`;
   /* ชื่อ ลิงก์ และเงื่อนไขของสัญญาหลัก ต้องมาจากรหัสแบบที่ลูกค้าเลือก
      เดิมเดาจากชื่อและมีทางออกเดียวเป็นสมาร์ทโพรเทคชั่น 99/99 แบบอื่นทั้งหมดจึงถูกเขียนผิดชื่อ
-     ผิดลิงก์ และถูกเหมาว่าคุ้มครองถึงอายุ 99 ปี ซึ่งผิดกับวัยเก๋า 90/90 และกลุ่มชั่วระยะเวลา */
-  const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
+     ผิดลิงก์ และถูกเหมาว่าคุ้มครองถึงอายุ 99 ปี ซึ่งผิดกับวัยเก๋า 90/90 และกลุ่มชั่วระยะเวลา
+     ชื่อบนหัวตารางเน้นสั้นเพื่อไม่ให้คอลัมน์ล้น แต่ข้อความที่ส่งให้ลูกค้าควรเป็นชื่อเต็มของแบบ */
+  const COPY_NAME_FIX = {
+    'สัญญาหลัก 99/20':'เมืองไทย สมาร์ท โพรเทคชั่น 99/20',
+    'Smart Protection 99/99':'เมืองไทย สมาร์ท โพรเทคชั่น 99/99',
+  };
+  const mainLabel = (n => COPY_NAME_FIX[n] || n)(mainPlanDisplayName(inp.mainPlan, inp.mainCapital));
   const MAIN_ROUTE_KEY = {
     '99_20':'main9920', '99_99':'main9999', '99_7':'main997', '80_10':'main8010',
     flexi_99_5:'flexi995', '15_3':'smartlink153', '15_6':'smartlink156',
