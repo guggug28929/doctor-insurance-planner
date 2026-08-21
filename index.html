@@ -6289,9 +6289,31 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   const displayPremium = value => paymentInfo.periods === 1
     ? `${fmt(value)} บาท/ปี`
     : `${fmt(value)} บาท/${paymentUnitLabel}`;
-  const mainLabel = inp.mainPlan==='99_20'
-    ? 'เมืองไทย สมาร์ท โพรเทคชั่น 99/20'
-    : (inp.mainCapital===50000 ? 'คุ้มครองตลอดชีพ 99/99' : 'สมาร์ทโพรเทคชั่น 99/99');
+  /* ชื่อ ลิงก์ และเงื่อนไขของสัญญาหลัก ต้องมาจากรหัสแบบที่ลูกค้าเลือก
+     เดิมเดาจากชื่อและมีทางออกเดียวเป็นสมาร์ทโพรเทคชั่น 99/99 แบบอื่นทั้งหมดจึงถูกเขียนผิดชื่อ
+     ผิดลิงก์ และถูกเหมาว่าคุ้มครองถึงอายุ 99 ปี ซึ่งผิดกับวัยเก๋า 90/90 และกลุ่มชั่วระยะเวลา */
+  const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
+  const MAIN_ROUTE_KEY = {
+    '99_20':'main9920', '99_99':'main9999', '99_7':'main997', '80_10':'main8010',
+    flexi_99_5:'flexi995', '15_3':'smartlink153', '15_6':'smartlink156',
+    lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
+    happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
+    easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
+    easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
+    premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
+    legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
+    whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash',
+  };
+  // แบบที่ไม่ได้อยู่ใน SPECIAL_MAIN_PLANS ต้องบอกระยะชำระและอายุคุ้มครองไว้ที่นี่แทน
+  const MAIN_TERM_BASE = {
+    '99_20':{payYears:20, coverToAge:99}, '99_99':{payYears:null, coverToAge:99},
+    '99_7':{payYears:7, coverToAge:99},   '80_10':{payYears:10, coverToAge:80},
+    flexi_99_5:{payYears:5, coverToAge:99},
+    '15_3':{payYears:3, coverYears:15},   '15_6':{payYears:6, coverYears:15},
+  };
+  const mainDetailUrl = inp.mainPlan === 'pension'
+    ? 'https://www.doctor-insurance.com/plans/compare-pension'
+    : 'https://www.doctor-insurance.com' + (PLAN_ROUTES[MAIN_ROUTE_KEY[inp.mainPlan]] || '/plans');
   const detailUrlFor = (name, item = {}) => {
     if(name.includes('99/20')) return 'https://www.doctor-insurance.com/plans/smart-protection-99-20';
     if(name.includes('99/99')) return 'https://www.doctor-insurance.com/plans/lifetime-protection-99-99';
@@ -6308,11 +6330,17 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     if(name.startsWith('HB ')) return 'https://www.doctor-insurance.com/plans/hb-rider';
     return 'https://www.doctor-insurance.com/plans';
   };
-  mainItem.detailUrl = detailUrlFor(mainLabel);
+  mainItem.detailUrl = mainDetailUrl;
   items.forEach(it => { it.detailUrl = detailUrlFor(it.name, it); });
-  const mainTerm = inp.mainPlan === '99_20'
-    ? 'จ่ายเบี้ย 20 ปี เบี้ยคงที่ แต่คุ้มครองถึงอายุ 99 ปี'
-    : 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก คุ้มครองถึงอายุ 99 ปี';
+  const mainTerm = (() => {
+    if(inp.mainPlan === 'pension') return 'แบบบำนาญ ชำระเบี้ยตามงวดที่เลือก แล้วรับบำนาญตามเงื่อนไขของแบบที่เลือก';
+    const s = SPECIAL_MAIN_PLANS[inp.mainPlan] || MAIN_TERM_BASE[inp.mainPlan];
+    if(!s) return 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก';
+    const pay = s.payYears ? `จ่ายเบี้ย ${s.payYears} ปี` : 'จ่ายเบี้ยต่อเนื่องตามงวดที่เลือก';
+    const cover = s.coverToAge ? `คุ้มครองถึงอายุ ${s.coverToAge} ปี`
+      : (s.coverYears ? `คุ้มครอง ${s.coverYears} ปี` : '');
+    return cover ? `${pay} ${cover}` : pay;
+  })();
   mainItem.coverage = `${mainItem.coverage} (${mainTerm})`;
   items.forEach(it => {
     if(it.name.startsWith('Care Plus')){
