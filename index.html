@@ -2663,6 +2663,7 @@
           <button type="button" data-plan-group="grp-life">ประกันชีวิต</button>
           <button type="button" data-plan-group="grp-health">สุขภาพ</button>
           <button type="button" data-plan-group="grp-ci">โรคร้ายแรง</button>
+          <button type="button" data-plan-group="grp-tpd">ทุพพลภาพถาวร</button>
           <button type="button" data-plan-group="grp-pa">อุบัติเหตุ</button>
           <button type="button" data-plan-group="grp-pension">บำนาญ</button>
           <button type="button" data-plan-group="grp-guide">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</button>
@@ -2946,6 +2947,22 @@
       </select>
       <div class="hint">เบี้ยปรับตามช่วงอายุที่มีผลบังคับ (16-60 / 61-65 / 66-70 / 71-75 / 76-85 ปี) แผน 4-7 รับทำเฉพาะอายุ 16 ปีขึ้นไป แผน 6 คุ้มครองใหม่ได้ถึงอายุ 75 ปี ส่วนแผน 7 ถึงอายุ 60 ปีเท่านั้น</div>
       <div class="field-err" id="paErr"></div>
+    </div>
+
+    <!-- ทุพพลภาพสิ้นเชิงถาวร แยกเป็นการ์ดของตัวเอง เพราะไม่ใช่สุขภาพ ไม่ใช่โรคร้ายแรง และไม่ใช่อุบัติเหตุ
+         จ่ายเมื่อทำงานทุกอาชีพไม่ได้ถาวร ไม่ว่าต้นเหตุจะเป็นการเจ็บป่วยหรืออุบัติเหตุ -->
+    <div class="card">
+      <h2>ทุพพลภาพสิ้นเชิงถาวร (TPD) <span class="tag">ไม่บังคับ</span></h2>
+      <div class="check-row">
+        <input type="checkbox" id="use_tpd">
+        <label style="margin:0;flex:1;">แนบสัญญาทุพพลภาพสิ้นเชิงถาวร<span class="info-icon">i<span class="tooltip">จ่ายเงินก้อนตามทุนเมื่อทุพพลภาพสิ้นเชิงถาวรต่อเนื่องไม่น้อยกว่า 180 วัน หรือสูญเสียอวัยวะตามเงื่อนไข และยกเว้นเบี้ยของสัญญานี้กับเบี้ยประกันชีวิตที่ครบกำหนดระหว่างทุพพลภาพ · คนละตัวกับ PA ที่คุ้มครองเฉพาะอุบัติเหตุ และคนละตัวกับโรคร้ายแรงที่จ่ายตามชื่อโรค</span></span></label>
+      </div>
+      <div id="tpd_fields" class="sub-fields hidden">
+        <label class="first">ทุนประกัน (บาท)</label>
+        <input type="number" id="tpd_capital" value="1000000" step="100000" min="100000">
+        <div class="hint" id="tpdHint"></div>
+        <div class="field-err" id="tpdErr"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -3299,6 +3316,7 @@
     <a href="#grp-life" onclick="return jumpToPlanGroup('grp-life');">ประกันชีวิต</a>
     <a href="#grp-health" onclick="return jumpToPlanGroup('grp-health');">สุขภาพ</a>
     <a href="#grp-ci" onclick="return jumpToPlanGroup('grp-ci');">โรคร้ายแรง</a>
+    <a href="#grp-tpd" onclick="return jumpToPlanGroup('grp-tpd');">ทุพพลภาพถาวร</a>
     <a href="#grp-pa" onclick="return jumpToPlanGroup('grp-pa');">อุบัติเหตุ</a>
     <a href="#grp-pension" onclick="return jumpToPlanGroup('grp-pension');">บำนาญ</a>
     <a class="pj-unsure" href="#grp-guide" onclick="return jumpToPlanGroup('grp-guide');">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</a>
@@ -3687,6 +3705,22 @@
         <li>กลุ่ม "โรคยอดฮิต" ครอบคลุมโรคจากหลายกลุ่มแบบสรุป แต่ต้องซื้อแยกเดี่ยว ไม่รวมกับกลุ่มอื่น</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('dcare')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <!-- ทุพพลภาพสิ้นเชิงถาวรเป็นหมวดของตัวเอง ไม่ใช่สุขภาพ ไม่ใช่โรคร้ายแรง ไม่ใช่อุบัติเหตุ
+         เพราะจ่ายตามผลลัพธ์คือทำงานไม่ได้ถาวร ไม่ได้จ่ายตามชื่อโรคหรือตามสาเหตุว่าเป็นอุบัติเหตุ -->
+    <div id="grp-tpd" class="group-break"><h2>สัญญาเพิ่มเติมทุพพลภาพสิ้นเชิงถาวร</h2><p>จ่ายเงินก้อนเมื่อไม่สามารถประกอบอาชีพใด ๆ ได้อย่างถาวร ไม่ว่าต้นเหตุจะเป็นการเจ็บป่วยหรืออุบัติเหตุ และยกเว้นเบี้ยที่ครบกำหนดระหว่างทุพพลภาพ — เป็นคนละหมวดกับโรคร้ายแรงที่จ่ายตามชื่อโรค และคนละหมวดกับอุบัติเหตุที่คุ้มครองเฉพาะเหตุจากอุบัติเหตุ</p></div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาเพิ่มเติม · ทุพพลภาพสิ้นเชิงถาวร</div>
+      <h3>ทุพพลภาพสิ้นเชิงถาวร (TPD)</h3>
+      <p class="meta">อายุรับ 18 – 65 ปี • ต่ออายุได้ถึง 69 ปี คุ้มครองถึงอายุ 70 ปี • ทุน 100,000 – 10,000,000 บาท</p>
+      <ul>
+        <li>จ่ายเงินก้อนเต็มทุนเมื่อทุพพลภาพสิ้นเชิงถาวรต่อเนื่องไม่น้อยกว่า 180 วัน หรือสูญเสียอวัยวะตามเงื่อนไข</li>
+        <li>ยกเว้นเบี้ยของสัญญานี้และเบี้ยประกันชีวิตที่ครบกำหนดระหว่างทุพพลภาพ</li>
+        <li>ทุนไม่เกิน 5 เท่าของทุนสัญญาหลัก เบี้ยเปลี่ยนตามช่วงอายุ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('tpd')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
     <div id="grp-pa" class="group-break"><h2>สัญญาเพิ่มเติมอุบัติเหตุ</h2><p>คุ้มครองเหตุฉุกเฉินจากอุบัติเหตุและค่ารักษาจากอุบัติเหตุ ใช้เสริมพอร์ตสุขภาพ · แบบในกลุ่มนี้ต้องแนบกับกรมธรรม์หลัก ถ้าอยากซื้ออุบัติเหตุอย่างเดียวโดยไม่มีประกันชีวิต ดูกลุ่มกรมธรรม์เดี่ยวได้ที่ปุ่มด้านล่าง</p></div>
@@ -4368,6 +4402,11 @@ rebuildDhlOptions();
 document.getElementById('use_hb').addEventListener('change', function(){
   document.getElementById('hb_fields').classList.toggle('hidden', !this.checked);
 });
+document.getElementById('use_tpd').addEventListener('change', function(){
+  document.getElementById('tpd_fields').classList.toggle('hidden', !this.checked);
+  updateTpdHint();
+});
+document.getElementById('tpd_capital').addEventListener('input', updateTpdHint);
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6','smart_link_15_3','smart_link_15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
@@ -5240,6 +5279,60 @@ function hbPremium(amount, age, freq){
   return rate * amount / 1000;
 }
 
+/* ทุพพลภาพสิ้นเชิงถาวร อัตราต่อทุน 1,000 บาท กลุ่มอาชีพ 1, 2 และ 3 ใช้ชุดเดียวกัน
+   เอกสารระบุว่าอัตราเปลี่ยนไปตามช่วงอายุของผู้เอาประกัน จึงต้องเปิดตารางที่อายุของปีนั้น
+   ไม่ใช่ล็อกไว้ที่อายุแรกเข้า และงวดย่อยอ่านจากคอลัมน์ที่ประกาศ ไม่ได้หารมาจากรายปี */
+function tpdRateAt(age, gender, freq){
+  const t = RATES.tpd_rider;
+  if(!t) return null;
+  const a = Number(age);
+  if(!Number.isFinite(a) || a < t.entry_age_min || a > t.renew_age_max) return null;
+  const band = t.bands.find(b => a >= b.from && a <= b.to);
+  if(!band) return null;
+  const set = band[gender === 'f' ? 'f' : 'm'];
+  const rate = set ? set[freq || 'annual'] : null;
+  return typeof rate === 'number' ? rate : null;
+}
+function tpdPremium(capital, age, gender, freq){
+  const rate = tpdRateAt(age, gender, freq || 'annual');
+  if(rate === null) return null;
+  return rate * capital / 1000;
+}
+// เพดานทุนของสัญญานี้มาจากสองด่านพร้อมกัน คือ 5 เท่าของทุนสัญญาหลัก และเพดานสัมบูรณ์ของแบบ
+function tpdMaxCapital(mainCapital){
+  const t = RATES.tpd_rider;
+  if(!t) return 0;
+  return Math.min(t.capital_max, (Number(mainCapital) || 0) * t.max_multiple_of_main);
+}
+function updateTpdHint(){
+  const el = document.getElementById('tpdHint');
+  if(!el) return;
+  const t = RATES.tpd_rider;
+  if(!t){ el.textContent = ''; return; }
+  const mainCap = parseFloat((document.getElementById('mainCapital')||{}).value) || 0;
+  const cap = tpdMaxCapital(mainCap);
+  el.innerHTML = `ทุนขั้นต่ำ ${fmt(t.capital_min)} บาท • ไม่เกิน ${t.max_multiple_of_main} เท่าของทุนสัญญาหลัก`
+    + (mainCap ? ` ซึ่งกรณีนี้คือ ${fmt(cap)} บาท` : '')
+    + ` • เพดานรวมทุกฉบับ ${fmt(t.capital_max)} บาท • อายุรับ ${t.entry_age_min} ถึง ${t.entry_age_max} ปี ต่ออายุได้ถึง ${t.renew_age_max} ปี คุ้มครองถึงอายุ ${t.cover_to_age} ปี • ระยะเวลาที่ไม่คุ้มครอง ${t.waiting_period_days} วัน`;
+}
+
+/* ตารางอัตราบนหน้าแผน อ่านจาก RATES.tpd_rider ที่เดียวกับที่เครื่องคำนวณใช้
+   ถ้ามีใครไปพิมพ์ตัวเลขซ้ำไว้ในหน้าแผน เทสต์จะจับได้ */
+function tpdRateTableBlock(freq){
+  const t = RATES.tpd_rider;
+  if(!t) return '';
+  freq = freq || 'annual';
+  const head = `<thead><tr><th>อายุ (ปี)</th><th>ชาย</th><th>หญิง</th></tr></thead>`;
+  const rows = t.bands.map(b => {
+    const label = b.from === b.to ? String(b.from) : `${b.from} – ${b.to}`;
+    const star = b.from >= t.renewal_only_from ? ' *' : '';
+    return `<tr><td>${label}${star}</td><td>${b.m[freq]}</td><td>${b.f[freq]}</td></tr>`;
+  }).join('');
+  return `<p class="rate-note">อัตราเบี้ยต่อจำนวนเงินเอาประกันภัย 1,000 บาท · กลุ่มอาชีพ 1, 2 และ 3 ใช้อัตราเดียวกัน · แถวที่มีเครื่องหมาย * เป็นอัตราสำหรับต่ออายุเท่านั้น สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปี</p>`
+    + `<div class="table-wrap" style="max-height:420px;"><table>${head}<tbody>${rows}</tbody></table></div>`
+    + `<p class="rate-note">วิธีคิด เบี้ย = อัตราในตาราง × ทุนประกัน ÷ 1,000 เช่น ชายอายุ 40 ปี ทุน 1,000,000 บาท ชำระรายปี = 0.48 × 1,000 = 480 บาทต่อปี</p>`;
+}
+
 function paBandIndex(age){
   if(age<=60) return 0;
   if(age<=65) return 1;
@@ -5389,9 +5482,12 @@ function readInputs(){
   const hbIncome = parseFloat(document.getElementById('hb_income').value) || 0;
   const hbAmount = parseFloat(document.getElementById('hb_amount').value) || 0;
 
+  const useTpd = document.getElementById('use_tpd').checked;
+  const tpdCapital = parseFloat(document.getElementById('tpd_capital').value) || 0;
+
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
-          dcareSelections, paPlan, useHb, hbIncome, hbAmount};
+          dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital};
 }
 
 // ---- validation ----
@@ -5403,7 +5499,7 @@ function validateInputs(inp){
     const product = savingsMainData(inp.mainPlan);
     if(inp.paymentFrequency !== 'annual') issues.push('แผน 15/3 และ 15/6 เปิดรับเฉพาะเบี้ยรายปี');
     if(!product.capitals.includes(inp.mainCapital)) issues.push(`ทุนประกันของ ${mainPlanDisplayName(inp.mainPlan)} ต้องเลือกจากตารางที่เผยแพร่`);
-    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb;
+    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd;
     if(hasRider) issues.push('แผน 15/3 และ 15/6 ไม่สามารถแนบสัญญาเพิ่มเติมได้');
     return issues;
   }
@@ -5486,6 +5582,32 @@ function validateInputs(inp){
     }
   }
 
+  /* ทุพพลภาพสิ้นเชิงถาวร มีเพดานสองชั้นพร้อมกัน คือ 5 เท่าของทุนสัญญาหลัก และเพดานของแบบเอง
+     ถ้าไม่ตรวจทั้งสองชั้น ตัวแทนจะเสนอทุนที่บริษัทไม่รับตั้งแต่ขั้นสิทธิ์การขาย */
+  if(inp.useTpd){
+    const t = RATES.tpd_rider;
+    if(!t){
+      issues.push('ยังไม่มีตารางอัตราเบี้ยของสัญญาทุพพลภาพสิ้นเชิงถาวรในระบบ');
+    } else {
+      if(inp.entryAge < t.entry_age_min || inp.entryAge > t.entry_age_max){
+        issues.push(`สัญญาทุพพลภาพสิ้นเชิงถาวรรับทำอายุ ${t.entry_age_min} ถึง ${t.entry_age_max} ปี (ต่ออายุได้ถึง ${t.renew_age_max} ปี) แต่กรณีนี้อายุ ${inp.entryAge} ปี`);
+      }
+      if(!t.occupation_classes.includes(Number(inp.occupationClass))){
+        issues.push(`สัญญาทุพพลภาพสิ้นเชิงถาวรรับเฉพาะกลุ่มอาชีพ ${t.occupation_classes.join(', ')} แต่กรณีนี้เลือกขั้นอาชีพ ${inp.occupationClass}`);
+      }
+      if(inp.tpdCapital < t.capital_min){
+        issues.push(`ทุนประกันทุพพลภาพสิ้นเชิงถาวรขั้นต่ำ ${fmt(t.capital_min)} บาท แต่กรอกไว้ ${fmt(inp.tpdCapital)} บาท`);
+      }
+      if(inp.tpdCapital > t.capital_max){
+        issues.push(`ทุนประกันทุพพลภาพสิ้นเชิงถาวรรวมทุกฉบับต้องไม่เกิน ${fmt(t.capital_max)} บาท`);
+      }
+      const maxByMain = (inp.mainCapital || 0) * t.max_multiple_of_main;
+      if(inp.tpdCapital > maxByMain){
+        issues.push(`ทุนประกันทุพพลภาพสิ้นเชิงถาวรต้องไม่เกิน ${t.max_multiple_of_main} เท่าของทุนสัญญาหลัก ซึ่งกรณีนี้คือ ${fmt(maxByMain)} บาท แต่กรอกไว้ ${fmt(inp.tpdCapital)} บาท`);
+      }
+    }
+  }
+
   return issues;
 }
 
@@ -5530,6 +5652,7 @@ function renderAll(){
   inp.dcareSelections.forEach(d => cols.push({key:d.colKey, label:d.itemName}));
   if(inp.paPlan !== 'none') cols.push({key:'pa', label:'PA Easy Plan แผน '+inp.paPlan});
   if(inp.useHb) cols.push({key:'hb', label:'HB ชดเชยรายวัน (เบี้ยคงที่)'});
+  if(inp.useTpd) cols.push({key:'tpd', label:'ทุพพลภาพสิ้นเชิงถาวร (TPD)'});
 
   const rows = [];
   let cumulative = 0;
@@ -5571,6 +5694,7 @@ function renderAll(){
     inp.dcareSelections.forEach(d => { row.values[d.colKey] = dcarePremium(d.key, d.capital, gender, age, freq, d.stage); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
+    if(inp.useTpd) row.values.tpd = tpdPremium(inp.tpdCapital, age, gender, freq);
 
     let total = 0;
     cols.forEach(c => {
@@ -5601,6 +5725,7 @@ function renderAll(){
   inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage); if(typeof v === 'number') riderTotalYear1 += v; });
   if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useTpd){ const v = tpdPremium(inp.tpdCapital, entryAge, gender, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   const issues = validateInputs(inp);
   // The additional-rider minimum applies only to Smart Protection 99/99
   // (capital > 50,000 and < 200,000). The legacy 50,000-baht 99/99 plan
@@ -5726,6 +5851,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
     return d ? dcarePremium(d.key, d.capital, gender, age, 'annual', d.stage) : null;
   }
   if(colKey === 'hb') return inp.useHb ? hbPremium(inp.hbAmount, age, 'annual') : null;
+  if(colKey === 'tpd') return inp.useTpd ? tpdPremium(inp.tpdCapital, age, gender, 'annual') : null;
   return null; // main has no occupation dependency here (handled separately above)
 }
 function frequencyOccupationWarnings(inp, cols, row0, gender, entryAge){
@@ -5767,6 +5893,7 @@ async function exportPremiumTableExcel(){
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
   inp.dcareSelections.forEach(d => riderLabels.push(`${d.itemName}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
+  if(inp.useTpd) riderLabels.push(`ทุพพลภาพสิ้นเชิงถาวร (TPD) — ทุน ${fmt(inp.tpdCapital)} บาท`);
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • ขั้นอาชีพ ${inp.occupationClass} • งวดชำระ ${paymentInfo.label} • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
   const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
@@ -6279,6 +6406,10 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useHb && y1.hb !== undefined){
     items.push({name:'HB ชดเชยรายวัน', premium:y1.hb, coverage:`เงินชดเชย ${fmt(inp.hbAmount)} บาท/วัน ระหว่างนอนโรงพยาบาล`});
   }
+  if(inp.useTpd && y1.tpd !== undefined){
+    items.push({name:'ทุพพลภาพสิ้นเชิงถาวร (TPD)', premium:y1.tpd,
+      coverage:`รับเงินก้อน ${fmt(inp.tpdCapital)} บาท เมื่อตกเป็นบุคคลทุพพลภาพสิ้นเชิงถาวร และได้รับยกเว้นการชำระเบี้ยที่ครบกำหนดระหว่างทุพพลภาพ`});
+  }
 
   const mainItem = items.shift(); // main contract stays in its own box
   const totalY1 = (typeof mainItem.premium === 'number' ? mainItem.premium : 0)
@@ -6333,6 +6464,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     if(name.includes('Cancer')) return 'https://www.doctor-insurance.com/plans/cancer-protection';
     if(name.startsWith('PA Easy Plan')) return 'https://www.doctor-insurance.com/plans/pa-easy-plan';
     if(name.startsWith('HB ')) return 'https://www.doctor-insurance.com/plans/hb-rider';
+    if(name.startsWith('ทุพพลภาพสิ้นเชิงถาวร')) return 'https://www.doctor-insurance.com/plans/tpd-rider';
     return 'https://www.doctor-insurance.com/plans';
   };
   mainItem.detailUrl = mainDetailUrl;
@@ -6623,6 +6755,30 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   } else {
     setErr('hb_amount','hbErr', false, '');
   }
+
+  /* ทุนทุพพลภาพถาวรผูกกับทุนสัญญาหลัก ถ้าเปลี่ยนทุนหลักแล้วไม่เตือนตรงนี้
+     ลูกค้าจะเห็นเบี้ยที่บริษัทไม่รับ แล้วไปรู้ตอนยื่นใบคำขอ */
+  if(inp.useTpd){
+    const t = RATES.tpd_rider;
+    let bad = false, msg = '';
+    if(t){
+      const maxCap = tpdMaxCapital(inp.mainCapital);
+      if(inp.tpdCapital < t.capital_min){
+        bad = true; msg = `ทุนขั้นต่ำ ${fmt(t.capital_min)} บาท`;
+      } else if(inp.tpdCapital > maxCap){
+        bad = true; msg = inp.mainCapital * t.max_multiple_of_main < t.capital_max
+          ? `ไม่เกิน ${t.max_multiple_of_main} เท่าของทุนสัญญาหลัก คือ ${fmt(maxCap)} บาท`
+          : `ทุนรวมทุกฉบับไม่เกิน ${fmt(t.capital_max)} บาท`;
+      } else if(tpdPremium(inp.tpdCapital, inp.entryAge, inp.gender, 'annual') === null){
+        bad = true; msg = `อายุที่รับทำคือ ${t.entry_age_min} ถึง ${t.entry_age_max} ปี`;
+      }
+    }
+    setErr('tpd_capital','tpdErr', bad, msg);
+    if(!bad) document.getElementById('tpdErr').textContent = '';
+  } else {
+    setErr('tpd_capital','tpdErr', false, '');
+  }
+  updateTpdHint();
 }
 
 // live validation/recalculation as soon as any field changes — no need to scroll
@@ -8973,6 +9129,39 @@ const PLAN_DETAILS = {
     rateNote: 'เบี้ย HB เป็นเบี้ยคงที่ตลอดสัญญา โดยยึดอายุแรกที่สมัครประกัน (รับทำใหม่อายุ 16-64 ปี); ในเครื่องคำนวณ ตารางสะสมจึงใช้เบี้ยปีแรกเท่ากันทุกปี',
   },
 
+  tpd: {
+    title: 'สัญญาเพิ่มเติมทุพพลภาพสิ้นเชิงถาวร (TPD)', category: 'ทุพพลภาพสิ้นเชิงถาวร',
+    fit: ['เป็นเสาหลักของบ้าน ถ้าทำงานไม่ได้ถาวรแล้วรายได้ของครอบครัวหายไปทั้งก้อน',
+          'อาชีพที่ใช้ร่างกายเป็นเครื่องมือทำมาหากิน และยังผ่อนบ้านหรือผ่อนรถอยู่',
+          'มีประกันสุขภาพและโรคร้ายแรงแล้ว แต่ยังไม่มีอะไรรองรับกรณีรอดชีวิตแต่กลับไปทำงานไม่ได้'],
+    notFit: 'ต้องการเงินค่ารักษาพยาบาล เพราะแบบนี้จ่ายเป็นเงินก้อนตามทุน ไม่ได้จ่ายค่ารักษาตามบิล',
+    overview: 'คุ้มครองกรณีตกเป็นบุคคลทุพพลภาพสิ้นเชิงถาวร คือไม่สามารถประกอบหน้าที่การงานในอาชีพใด ๆ ได้โดยสิ้นเชิงและตลอดไป ไม่ว่าต้นเหตุจะเป็นการเจ็บป่วยหรือการบาดเจ็บ จ่ายเป็นเงินก้อนตามทุนประกัน และยกเว้นเบี้ยที่ครบกำหนดระหว่างทุพพลภาพ เป็นคนละหมวดกับโรคร้ายแรงซึ่งจ่ายตามชื่อโรคที่ระบุ และคนละหมวดกับ PA ซึ่งคุ้มครองเฉพาะเหตุจากอุบัติเหตุ',
+    coverage: [
+      '<b>ทุพพลภาพสิ้นเชิงถาวร</b> จ่ายเงินก้อนเต็มจำนวนเงินเอาประกันภัย เมื่อการบาดเจ็บหรือการเจ็บป่วยทำให้ประกอบหน้าที่การงานในอาชีพใด ๆ ไม่ได้โดยสิ้นเชิง ทุพพลภาพต่อเนื่องไม่น้อยกว่า 180 วันนับแต่วันที่พิสูจน์ได้ และรักษาให้กลับเป็นปกติไม่ได้ โดยยังต้องได้รับการรักษาจากแพทย์อย่างต่อเนื่อง',
+      '<b>สูญเสียอวัยวะ</b> จ่ายเงินก้อนเต็มจำนวนเงินเอาประกันภัย เมื่อสูญเสียสายตาสองข้างและรักษาไม่หาย หรือสูญเสียมือสองข้าง หรือเท้าสองข้าง หรือมือหนึ่งข้างกับเท้าหนึ่งข้าง โดยตัดออกตั้งแต่ข้อมือหรือข้อเท้า หรือสูญเสียสายตาหนึ่งข้างที่รักษาไม่หายร่วมกับสูญเสียมือหรือเท้าหนึ่งข้าง',
+      '<b>ยกเว้นการชำระเบี้ย</b> เมื่อบริษัทได้รับหลักฐานพิสูจน์ครบถ้วนแล้ว จะยกเว้นเบี้ยของสัญญาเพิ่มเติมนี้และเบี้ยประกันชีวิตที่ครบกำหนดชำระระหว่างที่ทุพพลภาพ จนถึงสิ้นสุดระยะเวลาชำระเบี้ยประกันภัย',
+    ],
+    conditions: [
+      'อายุรับประกัน 18 – 65 ปี ต่ออายุได้ถึงอายุ 69 ปี และให้ความคุ้มครองถึงอายุ 70 ปี',
+      'รับเฉพาะกลุ่มอาชีพ 1, 2 และ 3',
+      'จำนวนเงินเอาประกันภัยขั้นต่ำ 100,000 บาท และไม่เกิน 10,000,000 บาท',
+      '<b>ต้องไม่เกิน 5 เท่าของจำนวนเงินเอาประกันภัยของสัญญาหลัก</b> และทุนรวมทุกแบบต่อผู้เอาประกันภัยไม่เกิน 10,000,000 บาท',
+      'ระยะเวลาเอาประกันภัยเท่ากับระยะเวลาชำระเบี้ยของกรมธรรม์หลัก และชำระเบี้ยตามงวดของกรมธรรม์หลัก',
+      'ระยะเวลาที่ไม่คุ้มครอง (Waiting Period) 180 วัน',
+      'อัตราเบี้ยเปลี่ยนไปตามช่วงอายุของผู้เอาประกันภัย จึงขยับขึ้นเมื่ออายุข้ามช่วง',
+      'การตรวจสุขภาพเป็นไปตามกรมธรรม์ประกันภัยหลัก · ซื้อแนบกรมธรรม์ใหม่หรือกรมธรรม์เดิมที่ยังมีผลบังคับอยู่ก็ได้',
+    ],
+    exclusions: [
+      'ทำร้ายร่างกายตนเองหรือพยายามทำร้ายร่างกายตนเอง ไม่ว่าจะกระทำเองหรือยินยอมให้ผู้อื่นกระทำ และไม่ว่าจะอยู่ในระหว่างวิกลจริตหรือไม่',
+      'การตั้งครรภ์',
+      'สงครามไม่ว่าจะประกาศหรือไม่ การรุกรานหรือการกระทำของศัตรูต่างชาติ สงครามกลางเมือง การปฏิวัติ การกบฏ การที่ประชาชนก่อความวุ่นวายถึงขนาดลุกฮือขึ้นต่อต้านรัฐบาล การจลาจล และการนัดหยุดงาน',
+    ],
+    exclusionNote: 'รายการข้อยกเว้นข้างต้นเป็นการสรุปย่อ การพิจารณาจ่ายผลประโยชน์ยึดตามคำนิยามและข้อยกเว้นในสัญญาเพิ่มเติมฉบับจริง',
+    freqSupported: true,
+    rateTable: (freq='annual') => tpdRateTableBlock(freq),
+    rateNote: 'อัตราคัดตรงจากตารางอัตราเบี้ยของสัญญาเพิ่มเติมการประกันภัยทุพพลภาพสิ้นเชิงถาวร กลุ่มอาชีพ 1, 2 และ 3 เก็บครบทั้งสี่งวดชำระตามที่ประกาศ ไม่ได้คิดงวดย่อยจากอัตรารายปีเอง',
+  },
+
   pa: {
     title: 'PA Easy Plan Rider', category: 'อุบัติเหตุ',
     fit: ['ทำงานหรือใช้ชีวิตที่มีความเสี่ยงอุบัติเหตุสูง เช่น ขับขี่มอเตอร์ไซค์เป็นประจำ', 'อยากได้ค่ารักษาจากอุบัติเหตุที่คุ้มครองบางรายการซึ่งสัญญาสุขภาพระบุยกเว้นไว้ เช่น อุปกรณ์ค้ำยันบางชนิดและการได้รับสารพิษ'],
@@ -9051,6 +9240,7 @@ const PLAN_ROUTES = {
   cancer: '/plans/cancer-protection',
   dcare: '/plans/d-care',
   hb: '/plans/hb-rider',
+  tpd: '/plans/tpd-rider',
   pa: '/plans/pa-easy-plan',
 };
 
@@ -9153,6 +9343,7 @@ const PLAN_CARD_EXTRA = {
                calc:(g,a)=>dcarePremium('cancer', 250000, g, a, 'annual', 'early_and_severe')},
   hb:         {note:'ชดเชยวันละ 1,000 บาท', calc:(g,a)=>hbPremium(1000, a, 'annual')},
   pa:         {note:'แผน 1',            calc:(g,a)=>paPremium('1', a, 'annual')},
+  tpd:        {note:'ทุน 1,000,000 บาท', calc:(g,a)=>tpdPremium(1000000, a, g, 'annual')},
   // ตารางฝากครรภ์มีเฉพาะเพศหญิง จึงต้องบอกบนการ์ดว่าเป็นเบี้ยของหญิง ไม่ใช่เคสชายเหมือนแบบอื่น
   maternity:  {note:'หญิง แผน 1',       calc:(g,a)=>maternityPremiumAtEntry('p1', a, PLAN_CARD_CASE.occClass, 'annual')},
   wellbeing:  {note:'แผน 1',            calc:(g,a)=>wellbeingPremiumAtEntry('p1', a, 'annual')},
@@ -9304,6 +9495,12 @@ function showPlanDetail(id, options = {}){
       <h2>เงื่อนไขและข้อควรทราบ</h2>
       <ul>${p.conditions.map(c=>`<li>${c}</li>`).join('')}</ul>
     </div>
+    ${p.exclusions && p.exclusions.length ? `
+    <div class="content-card">
+      <h2>ข้อยกเว้นความคุ้มครอง</h2>
+      <ul>${p.exclusions.map(c=>`<li>${c}</li>`).join('')}</ul>
+      ${p.exclusionNote ? `<p class="meta" style="margin-top:8px;">${p.exclusionNote}</p>` : ''}
+    </div>` : ''}
     ${p.rateTable || !p.pension ? `
     <div class="content-card">
       <h2>ตารางอัตราเบี้ยอ้างอิง</h2>
@@ -17769,6 +17966,7 @@ function pensionAdvisorGoCalc(pid, vk, gender, age, sum, freq){
 buildPensionPlanDetails();
 initPensionMainSelect();
 updateMainCapitalHint();
+updateTpdHint();
 
 routeFromLocation();
 /* =========================================================================
