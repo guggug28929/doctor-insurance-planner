@@ -2661,6 +2661,7 @@
         <button data-page="plans" class="nav-plans-btn">แผนทั้งหมด</button>
         <div class="nav-more-panel" id="navPlansPanel" hidden>
           <button type="button" data-plan-group="grp-life">ประกันชีวิต</button>
+          <button type="button" data-plan-group="grp-term">ชีวิตชั่วระยะเวลา</button>
           <button type="button" data-plan-group="grp-health">สุขภาพ</button>
           <button type="button" data-plan-group="grp-ci">โรคร้ายแรง</button>
           <button type="button" data-plan-group="grp-tpd">ทุพพลภาพถาวร</button>
@@ -2774,6 +2775,36 @@
 
     <div class="notice-box" id="riderLockNotice"><strong>แผน 15/3 และ 15/6 แนบสัญญาเพิ่มเติมไม่ได้</strong><br>ระบบจึงปิดตัวเลือกสุขภาพ OPD โรคร้ายแรง อุบัติเหตุ และ HB ทั้งหมด และใช้ตารางเบี้ยรายปีเท่านั้น</div>
     <div id="ridersPanel">
+
+    <!-- ประกันชีวิตแบบชั่วระยะเวลา แยกเป็นการ์ดของตัวเอง เพราะไม่ใช่สุขภาพ ไม่ใช่โรคร้ายแรง
+         ไม่ใช่ทุพพลภาพ และไม่ใช่อุบัติเหตุ จ่ายเมื่อเสียชีวิตอย่างเดียว ใช้เพิ่มทุนชีวิตชั่วคราว
+         ตารางที่บริษัทเผยแพร่มีเฉพาะอัตรารายปี งวดอื่นจึงยังไม่เปิด -->
+    <div class="card">
+      <h2>ประกันชีวิตแบบชั่วระยะเวลา (Term) <span class="tag">ไม่บังคับ</span></h2>
+      <div class="check-row">
+        <input type="checkbox" id="use_term">
+        <label style="margin:0;flex:1;">แนบสัญญาเพิ่มเติม ภายในระยะเวลา<span class="info-icon">i<span class="tooltip">เพิ่มทุนคุ้มครองชีวิตเฉพาะช่วงที่ภาระยังอยู่ เช่น ระหว่างผ่อนบ้านหรือช่วงที่ลูกยังเล็ก เบี้ยถูกกว่าการเพิ่มทุนสัญญาหลักมาก แต่ครบสัญญาแล้วจบ ไม่มีเงินคืนและไม่มีมูลค่าเวนคืน · แนบได้เฉพาะกรมธรรม์หลักที่เป็นกรมธรรม์ใหม่</span></span></label>
+      </div>
+      <div id="term_fields" class="sub-fields hidden">
+        <label class="first">แผน (ระยะคุ้มครอง / ระยะชำระเบี้ย)</label>
+        <select id="term_plan">
+          <option value="10/5">คุ้มครอง 10 ปี ชำระเบี้ย 5 ปี</option>
+          <option value="10/10">คุ้มครอง 10 ปี ชำระเบี้ย 10 ปี</option>
+          <option value="15/5">คุ้มครอง 15 ปี ชำระเบี้ย 5 ปี</option>
+          <option value="15/15">คุ้มครอง 15 ปี ชำระเบี้ย 15 ปี</option>
+          <option value="19/5">คุ้มครอง 19 ปี ชำระเบี้ย 5 ปี</option>
+          <option value="19/14">คุ้มครอง 19 ปี ชำระเบี้ย 14 ปี</option>
+          <option value="19/15">คุ้มครอง 19 ปี ชำระเบี้ย 15 ปี</option>
+          <option value="19/16">คุ้มครอง 19 ปี ชำระเบี้ย 16 ปี</option>
+          <option value="19/19">คุ้มครอง 19 ปี ชำระเบี้ย 19 ปี</option>
+        </select>
+        <label>ทุนประกัน (บาท)</label>
+        <input type="number" id="term_capital" value="1000000" step="100000" min="100000">
+        <div class="hint" id="termHint"></div>
+        <div class="field-err" id="termErr"></div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>สัญญาเพิ่มเติมสุขภาพ <span class="tag">เลือกได้หลายแผน (แผนต่างกัน)</span></h2>
 
@@ -3314,6 +3345,7 @@
   <nav class="plan-jump" aria-label="ข้ามไปยังกลุ่มแผนประกัน">
     <span class="pj-label">อยากดูกลุ่มไหน</span>
     <a href="#grp-life" onclick="return jumpToPlanGroup('grp-life');">ประกันชีวิต</a>
+    <a href="#grp-term" onclick="return jumpToPlanGroup('grp-term');">ชีวิตชั่วระยะเวลา</a>
     <a href="#grp-health" onclick="return jumpToPlanGroup('grp-health');">สุขภาพ</a>
     <a href="#grp-ci" onclick="return jumpToPlanGroup('grp-ci');">โรคร้ายแรง</a>
     <a href="#grp-tpd" onclick="return jumpToPlanGroup('grp-tpd');">ทุพพลภาพถาวร</a>
@@ -3392,17 +3424,6 @@
         <li>ถ้าใช้เป็นสัญญาหลักแนบสุขภาพ พอครบสัญญาความคุ้มครองสุขภาพจะจบตามไปด้วย</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('easyprotection')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
-    </div>
-
-    <div class="plan-card">
-      <div class="cat">สัญญาเพิ่มเติม · เพิ่มทุนชีวิตชั่วคราว</div>
-      <h3>สัญญาเพิ่มเติม ภายในระยะเวลา (Term)</h3>
-      <p class="meta">อายุรับ 15 – 59 ปี • ทุนขั้นต่ำ 100,000 บาท • 9 แผน คุ้มครอง 10 / 15 / 19 ปี</p>
-      <ul>
-        <li>ใช้ยกทุนคุ้มครองชีวิตรวมขึ้นด้วยเบี้ยที่ถูกกว่าการเพิ่มทุนสัญญาหลักมาก</li>
-        <li>แนบได้เฉพาะกรมธรรม์หลักที่เป็นกรมธรรม์ใหม่ และเฉพาะเคสที่รับประกันมาตรฐาน</li>
-      </ul>
-      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('termrider')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
     <div class="plan-card">
@@ -3542,6 +3563,19 @@
         <li>มีโอกาสรับเงินปันผลซึ่งไม่รับประกัน</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('smartlink156')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div id="grp-term" class="group-break"><h2>สัญญาเพิ่มเติม ประกันชีวิตแบบชั่วระยะเวลา</h2><p>ใช้เพิ่มทุนคุ้มครองชีวิตเฉพาะช่วงที่ภาระยังอยู่ ด้วยเบี้ยที่ถูกกว่าการเพิ่มทุนสัญญาหลักมาก ครบสัญญาแล้วจบ ไม่มีเงินคืนและไม่มีมูลค่าเวนคืน — เป็นคนละหมวดกับสัญญาเพิ่มเติมสุขภาพที่จ่ายค่ารักษา และคนละหมวดกับโรคร้ายแรง ทุพพลภาพ และอุบัติเหตุ ที่จ่ายตามเหตุการณ์ที่ระบุ หมวดนี้จ่ายเมื่อเสียชีวิตเท่านั้น</p></div>
+
+    <div class="plan-card">
+      <div class="cat">สัญญาเพิ่มเติม · เพิ่มทุนชีวิตชั่วคราว</div>
+      <h3>สัญญาเพิ่มเติม ภายในระยะเวลา (Term)</h3>
+      <p class="meta">อายุรับ 15 – 59 ปี • ทุนขั้นต่ำ 100,000 บาท • 9 แผน คุ้มครอง 10 / 15 / 19 ปี</p>
+      <ul>
+        <li>ใช้ยกทุนคุ้มครองชีวิตรวมขึ้นด้วยเบี้ยที่ถูกกว่าการเพิ่มทุนสัญญาหลักมาก</li>
+        <li>แนบได้เฉพาะกรมธรรม์หลักที่เป็นกรมธรรม์ใหม่ และเฉพาะเคสที่รับประกันมาตรฐาน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('termrider')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
     <div id="grp-health" class="group-break"><h2>สัญญาเพิ่มเติมสุขภาพ / ชดเชยรายได้</h2><p>กลุ่มนี้เป็นตัวหลักสำหรับค่ารักษา IPD, OPD และเงินชดเชยรายวัน</p></div>
@@ -4407,6 +4441,11 @@ document.getElementById('use_tpd').addEventListener('change', function(){
   updateTpdHint();
 });
 document.getElementById('tpd_capital').addEventListener('input', updateTpdHint);
+document.getElementById('use_term').addEventListener('change', function(){
+  document.getElementById('term_fields').classList.toggle('hidden', !this.checked);
+  updateTermHint();
+});
+document.getElementById('term_plan').addEventListener('change', updateTermHint);
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6','smart_link_15_3','smart_link_15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
@@ -4860,6 +4899,39 @@ function termRiderPremium(planKey, capital, gender, entryAge, freq){
   const base = rateAtStart(g.plans[planKey].annual[gender], entryAge, g.age_start);
   if(base === null || base === undefined) return null;
   return base * capital / 1000;
+}
+
+/* ระยะคุ้มครองและระยะชำระเบี้ยของแต่ละแผน อ่านจาก plan_meta ที่เดียวกับที่ตารางเบี้ยใช้
+   ถ้าไปฮาร์ดโค้ดไว้ในหน้าคำนวณ วันที่บริษัทเพิ่มแผนใหม่ตารางจะเดินยาวเกินสัญญาจริง */
+function termPlanMeta(planKey){
+  const g = RATES.term_rider;
+  const m = g && g.plan_meta ? g.plan_meta[planKey] : null;
+  return m ? {cover: m.cover, pay: m.pay} : null;
+}
+
+/* เบี้ยของสัญญานี้ล็อกที่อายุแรกเข้า ไม่ขยับตามอายุเหมือนสัญญาสุขภาพ
+   เพราะเป็นแบบชั่วระยะเวลาที่กำหนดจำนวนปีชำระไว้แน่นอนตั้งแต่วันทำสัญญา
+   ปีที่ยังคุ้มครองแต่ชำระเบี้ยครบแล้วคืน 0 ส่วนปีที่พ้นระยะคุ้มครองแล้วคืน null */
+function termPremiumForYear(planKey, capital, gender, entryAge, policyYear, freq){
+  const meta = termPlanMeta(planKey);
+  if(!meta) return null;
+  if(policyYear > meta.cover) return null;
+  if(policyYear > meta.pay) return 0;
+  return termRiderPremium(planKey, capital, gender, entryAge, freq || 'annual');
+}
+
+function updateTermHint(){
+  const el = document.getElementById('termHint');
+  if(!el) return;
+  const g = RATES.term_rider;
+  if(!g){ el.textContent = ''; return; }
+  const planKey = (document.getElementById('term_plan')||{}).value || '10/5';
+  const meta = termPlanMeta(planKey);
+  el.innerHTML = `อายุรับ ${g.age_start} ถึง ${g.age_end} ปี • ทุนขั้นต่ำ ${fmt(g.capital_min)} บาท และเบี้ยรายงวดไม่ต่ำกว่า ${fmt(g.min_modal_premium)} บาท`
+    + (meta ? ` • แผนนี้คุ้มครอง ${meta.cover} ปี ชำระเบี้ย ${meta.pay} ปี` : '')
+    + ' • เบี้ยคงที่ตลอดระยะชำระ ไม่ขยับตามอายุ • ครบสัญญาไม่มีเงินคืนและไม่มีมูลค่าเวนคืน'
+    + ' • แนบได้เฉพาะกรมธรรม์หลักที่เป็นกรมธรรม์ใหม่ และเฉพาะเคสที่รับประกันมาตรฐานหรือต่ำกว่ามาตรฐานจากอาชีพ'
+    + ' • ตารางที่บริษัทเผยแพร่มีเฉพาะอัตรารายปี ระบบจึงคำนวณให้เฉพาะงวดรายปี';
 }
 
 // แบบการันตีเงินคืนรายปี เก็บอัตราที่พิมพ์จริงไว้ครบทุกงวด จึงไม่คำนวณงวดย่อยเอง
@@ -5485,9 +5557,14 @@ function readInputs(){
   const useTpd = document.getElementById('use_tpd').checked;
   const tpdCapital = parseFloat(document.getElementById('tpd_capital').value) || 0;
 
+  const useTerm = document.getElementById('use_term').checked;
+  const termPlan = document.getElementById('term_plan').value;
+  const termCapital = parseFloat(document.getElementById('term_capital').value) || 0;
+
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
-          dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital};
+          dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
+          useTerm, termPlan, termCapital};
 }
 
 // ---- validation ----
@@ -5499,7 +5576,7 @@ function validateInputs(inp){
     const product = savingsMainData(inp.mainPlan);
     if(inp.paymentFrequency !== 'annual') issues.push('แผน 15/3 และ 15/6 เปิดรับเฉพาะเบี้ยรายปี');
     if(!product.capitals.includes(inp.mainCapital)) issues.push(`ทุนประกันของ ${mainPlanDisplayName(inp.mainPlan)} ต้องเลือกจากตารางที่เผยแพร่`);
-    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd;
+    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd || inp.useTerm;
     if(hasRider) issues.push('แผน 15/3 และ 15/6 ไม่สามารถแนบสัญญาเพิ่มเติมได้');
     return issues;
   }
@@ -5608,6 +5685,33 @@ function validateInputs(inp){
     }
   }
 
+  /* สัญญาเพิ่มเติม ภายในระยะเวลา มีเงื่อนไขที่ตัวแทนพลาดบ่อยสองข้อ
+     คือทุนขั้นต่ำ 100,000 บาท และเบี้ยรายงวดต้องไม่ต่ำกว่า 200 บาท
+     ข้อหลังทำให้แผนที่เบี้ยต่อพันต่ำมาก เช่น 19/19 หญิงอายุน้อย ต้องซื้อทุนสูงกว่าขั้นต่ำถึงจะผ่าน */
+  if(inp.useTerm){
+    const g = RATES.term_rider;
+    if(!g){
+      issues.push('ยังไม่มีตารางอัตราเบี้ยของสัญญาเพิ่มเติม ภายในระยะเวลา ในระบบ');
+    } else {
+      if(inp.entryAge < g.age_start || inp.entryAge > g.age_end){
+        issues.push(`สัญญาเพิ่มเติม ภายในระยะเวลา รับทำอายุ ${g.age_start} ถึง ${g.age_end} ปี แต่กรณีนี้อายุ ${inp.entryAge} ปี`);
+      }
+      if(inp.termCapital < g.capital_min){
+        issues.push(`ทุนประกันของสัญญาเพิ่มเติม ภายในระยะเวลา ขั้นต่ำ ${fmt(g.capital_min)} บาท แต่กรอกไว้ ${fmt(inp.termCapital)} บาท`);
+      }
+      if(inp.paymentFrequency !== 'annual'){
+        issues.push('สัญญาเพิ่มเติม ภายในระยะเวลา ยังคำนวณได้เฉพาะงวดรายปี เพราะตารางที่บริษัทเผยแพร่มีเฉพาะอัตรารายปี');
+      } else {
+        const p = termRiderPremium(inp.termPlan, inp.termCapital, inp.gender, inp.entryAge, 'annual');
+        if(p === null){
+          issues.push('ยังไม่มีอัตราเบี้ยของสัญญาเพิ่มเติม ภายในระยะเวลา สำหรับแผนและอายุที่เลือก');
+        } else if(p < (g.min_modal_premium || 0)){
+          issues.push(`เบี้ยรายงวดของสัญญาเพิ่มเติม ภายในระยะเวลา ต้องไม่ต่ำกว่า ${fmt(g.min_modal_premium)} บาท แต่แผนและทุนที่เลือกได้เพียง ${fmt(p)} บาทต่อปี ต้องเพิ่มทุนประกัน`);
+        }
+      }
+    }
+  }
+
   return issues;
 }
 
@@ -5653,6 +5757,7 @@ function renderAll(){
   if(inp.paPlan !== 'none') cols.push({key:'pa', label:'PA Easy Plan แผน '+inp.paPlan});
   if(inp.useHb) cols.push({key:'hb', label:'HB ชดเชยรายวัน (เบี้ยคงที่)'});
   if(inp.useTpd) cols.push({key:'tpd', label:'ทุพพลภาพสิ้นเชิงถาวร (TPD)'});
+  if(inp.useTerm) cols.push({key:'term', label:'ภายในระยะเวลา '+inp.termPlan});
 
   const rows = [];
   let cumulative = 0;
@@ -5695,6 +5800,8 @@ function renderAll(){
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
     if(inp.useTpd) row.values.tpd = tpdPremium(inp.tpdCapital, age, gender, freq);
+    // เบี้ยล็อกที่อายุแรกเข้า และหยุดตามจำนวนปีชำระ/ระยะคุ้มครองของแผนที่เลือก
+    if(inp.useTerm) row.values.term = termPremiumForYear(inp.termPlan, inp.termCapital, gender, entryAge, policyYear, freq);
 
     let total = 0;
     cols.forEach(c => {
@@ -5726,6 +5833,7 @@ function renderAll(){
   if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useTpd){ const v = tpdPremium(inp.tpdCapital, entryAge, gender, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useTerm){ const v = termRiderPremium(inp.termPlan, inp.termCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   const issues = validateInputs(inp);
   // The additional-rider minimum applies only to Smart Protection 99/99
   // (capital > 50,000 and < 200,000). The legacy 50,000-baht 99/99 plan
@@ -5852,6 +5960,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   }
   if(colKey === 'hb') return inp.useHb ? hbPremium(inp.hbAmount, age, 'annual') : null;
   if(colKey === 'tpd') return inp.useTpd ? tpdPremium(inp.tpdCapital, age, gender, 'annual') : null;
+  if(colKey === 'term') return inp.useTerm ? termRiderPremium(inp.termPlan, inp.termCapital, gender, inp.entryAge, 'annual') : null;
   return null; // main has no occupation dependency here (handled separately above)
 }
 function frequencyOccupationWarnings(inp, cols, row0, gender, entryAge){
@@ -5894,6 +6003,7 @@ async function exportPremiumTableExcel(){
   inp.dcareSelections.forEach(d => riderLabels.push(`${d.itemName}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   if(inp.useTpd) riderLabels.push(`ทุพพลภาพสิ้นเชิงถาวร (TPD) — ทุน ${fmt(inp.tpdCapital)} บาท`);
+  if(inp.useTerm) riderLabels.push(`ภายในระยะเวลา แผน ${inp.termPlan} — ทุน ${fmt(inp.termCapital)} บาท`);
   const paymentInfo = paymentFrequencyInfo(inp.paymentFrequency);
   const details = `เพศ${inp.gender === 'm' ? 'ชาย' : 'หญิง'} • อายุเริ่มทำสัญญา ${inp.entryAge} ปี • ขั้นอาชีพ ${inp.occupationClass} • งวดชำระ ${paymentInfo.label} • สร้างเมื่อ ${new Date().toLocaleString('th-TH')}`;
   const selectedSummary = `<h3>รายละเอียดแผนที่ใช้คำนวณ</h3><ul><li><b>แผนหลัก:</b> ${mainLabel}</li><li><b>ทุนประกันสัญญาหลัก:</b> ${fmt(inp.mainCapital)} บาท</li><li><b>แผนสุขภาพ:</b> ${healthLabels.length ? healthLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>แผน OPD:</b> ${opdLabels.length ? opdLabels.join(' • ') : 'ไม่ได้เลือก'}</li><li><b>สัญญาเพิ่มเติม/อุบัติเหตุ:</b> ${riderLabels.length ? riderLabels.join(' • ') : 'ไม่ได้เลือก'}</li></ul>`;
@@ -6411,6 +6521,14 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       coverage:`รับเงินก้อน ${fmt(inp.tpdCapital)} บาท เมื่อตกเป็นบุคคลทุพพลภาพสิ้นเชิงถาวร และได้รับยกเว้นการชำระเบี้ยที่ครบกำหนดระหว่างทุพพลภาพ`});
   }
 
+  if(inp.useTerm && y1.term !== undefined){
+    const meta = termPlanMeta(inp.termPlan);
+    items.push({name:`สัญญาเพิ่มเติม ภายในระยะเวลา ${inp.termPlan}`, premium:y1.term,
+      coverage:`เพิ่มทุนคุ้มครองชีวิตอีก ${fmt(inp.termCapital)} บาท`
+        + (meta ? ` เป็นเวลา ${meta.cover} ปี (ถึงอายุ ${entryAge + meta.cover - 1} ปี) โดยชำระเบี้ย ${meta.pay} ปี` : '')
+        + ' จ่ายเมื่อเสียชีวิตเท่านั้น ครบสัญญาไม่มีเงินคืนและไม่มีมูลค่าเวนคืน'});
+  }
+
   const mainItem = items.shift(); // main contract stays in its own box
   const totalY1 = (typeof mainItem.premium === 'number' ? mainItem.premium : 0)
     + items.reduce((s,it) => s + (typeof it.premium==='number'?it.premium:0), 0);
@@ -6779,6 +6897,34 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
     setErr('tpd_capital','tpdErr', false, '');
   }
   updateTpdHint();
+
+  if(inp.useTerm){
+    const g = RATES.term_rider;
+    let bad = false, msg = '';
+    if(g){
+      if(inp.termCapital < g.capital_min){
+        bad = true; msg = `ทุนขั้นต่ำ ${fmt(g.capital_min)} บาท`;
+      } else if(inp.entryAge < g.age_start || inp.entryAge > g.age_end){
+        bad = true; msg = `อายุที่รับทำคือ ${g.age_start} ถึง ${g.age_end} ปี`;
+      } else if(inp.paymentFrequency !== 'annual'){
+        bad = true; msg = 'ยังคำนวณได้เฉพาะงวดรายปี';
+      } else {
+        const p = termRiderPremium(inp.termPlan, inp.termCapital, inp.gender, inp.entryAge, 'annual');
+        if(p === null){
+          bad = true; msg = 'ยังไม่มีอัตราของแผนและอายุนี้';
+        } else if(p < (g.min_modal_premium || 0)){
+          // เบี้ยรายงวดขั้นต่ำเป็นเงื่อนไขการรับประกัน ไม่ใช่แค่คำแนะนำ
+          // ทุนที่ทำให้เบี้ยต่ำกว่านี้ บริษัทไม่รับตั้งแต่ขั้นออกใบคำขอ
+          bad = true; msg = `เบี้ยรายงวดต้องไม่ต่ำกว่า ${fmt(g.min_modal_premium)} บาท แผนและทุนนี้ได้ ${fmt(p)} บาทต่อปี`;
+        }
+      }
+    }
+    setErr('term_capital','termErr', bad, msg);
+    if(!bad) document.getElementById('termErr').textContent = '';
+  } else {
+    setErr('term_capital','termErr', false, '');
+  }
+  updateTermHint();
 }
 
 // live validation/recalculation as soon as any field changes — no need to scroll
@@ -8201,7 +8347,7 @@ const PLAN_DETAILS = {
       'จำนวนเงินเอาประกันภัยขั้นต่ำ <b>100,000 บาท</b> และเบี้ยรายงวดไม่ต่ำกว่า 200 บาท',
       '<b>ซื้อแนบท้ายได้เฉพาะกรมธรรม์หลักที่เป็นกรมธรรม์ใหม่เท่านั้น</b> — แนบเข้ากรมธรรม์เดิมที่มีผลบังคับอยู่แล้วไม่ได้ ถ้าอยากเพิ่มทุนให้กรมธรรม์เดิม ต้องใช้วิธีอื่น เช่น ทำ อีซี่ โพรเทคชั่น เป็นกรมธรรม์ใหม่แยก',
       '<b>รับเฉพาะกรณีที่กรมธรรม์หลักพิจารณารับประกันแบบมาตรฐาน หรือต่ำกว่ามาตรฐานเนื่องจากอาชีพเท่านั้น</b> — ถ้าลูกค้าถูกเพิ่มเบี้ยหรือรับแบบมีเงื่อนไขเพราะสุขภาพ จะแนบสัญญาเพิ่มเติมนี้ไม่ได้',
-      'การนับทุนเพื่อตรวจสุขภาพ นับทุนสัญญาหลักรวมกับทุนของสัญญาเพิ่มเติมที่มีผลประโยชน์กรณีเสียชีวิต',
+      'การตรวจสุขภาพเป็นไปตามระเบียบบริษัท และการนับทุนเพื่อตรวจสุขภาพ นับทุนสัญญาหลักรวมกับทุนของสัญญาเพิ่มเติมที่มีผลประโยชน์กรณีเสียชีวิต — การเพิ่มทุนด้วยสัญญานี้จึงอาจดันให้ต้องตรวจสุขภาพ ทั้งที่ทุนสัญญาหลักเดิมยังไม่ถึงเกณฑ์',
       '<b>ชำระเบี้ยด้วยบัตรเครดิตไม่ได้</b>',
       '<b>ระบบเปิดคำนวณเฉพาะเบี้ยรายปี</b> — หน้าข้อมูลผลิตภัณฑ์ระบุว่าชำระได้ 4 งวด แต่ตารางที่เผยแพร่มีเฉพาะอัตรารายปี และยังไม่พบตัวคูณงวดของสัญญาเพิ่มเติมนี้ จึงยังไม่เปิดงวดอื่นเพื่อไม่ให้เกิดตัวเลขที่บริษัทไม่ได้ประกาศ',
     ],
@@ -8216,7 +8362,7 @@ const PLAN_DETAILS = {
       {label:'15/15 หญิง', arr: ageSeriesFromFn(15,59, a=>termRiderPremium('15/15',1000000,'f',a,'annual'))},
       {label:'19/19 หญิง', arr: ageSeriesFromFn(15,59, a=>termRiderPremium('19/19',1000000,'f',a,'annual'))},
     ]),
-    rateNote: 'ตารางคิดที่ทุนประกัน 1,000,000 บาท เป็นเบี้ยรายปี แสดง 4 แผนจากทั้งหมด 9 แผนเพื่อให้อ่านง่าย อีก 5 แผน (15/5, 19/5, 19/14, 19/15, 19/16) มีข้อมูลครบในระบบและใช้คำนวณได้ อัตราคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง',
+    rateNote: 'ตารางคิดที่ทุนประกัน 1,000,000 บาท เป็นเบี้ยรายปี แสดง 4 แผนจากทั้งหมด 9 แผนเพื่อให้อ่านง่าย อีก 5 แผน (15/5, 19/5, 19/14, 19/15, 19/16) มีข้อมูลครบในระบบและเลือกได้ครบทั้ง 9 แผนในหน้าคำนวณเบี้ย อัตราคัดลอกตรงจากหน้าข้อมูลผลิตภัณฑ์ ไม่ได้คำนวณเอง · เบี้ยล็อกที่อายุแรกเข้าและคงที่ตลอดระยะชำระ ไม่ขยับตามอายุเหมือนสัญญาเพิ่มเติมสุขภาพ',
   },
 
   premierlegacy991: {
@@ -17967,6 +18113,7 @@ buildPensionPlanDetails();
 initPensionMainSelect();
 updateMainCapitalHint();
 updateTpdHint();
+updateTermHint();
 
 routeFromLocation();
 /* =========================================================================
