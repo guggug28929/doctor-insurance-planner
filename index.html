@@ -2957,6 +2957,51 @@
       </div>
       <div class="field-err" id="cancerErr"></div>
 
+      <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_happy_lady">
+        <label style="margin:0;flex:1;">แฮปปี้ เลดี้ (Happy Lady)<span class="info-icon">i<span class="tooltip">สัญญาเพิ่มเติมสำหรับผู้หญิงเท่านั้น คุ้มครองมะเร็งเฉพาะของผู้หญิง โรคของมดลูก/เต้านมที่ต้องผ่าตัด รับสมัครอายุ 18-50 ปี</span></span></label>
+      </div>
+      <div id="happy_lady_fields" class="sub-fields hidden">
+        <label class="first">ทุนประกัน</label>
+        <select id="happy_lady_capital">
+          <option value="200000">200,000</option>
+          <option value="400000">400,000</option>
+          <option value="600000">600,000</option>
+          <option value="800000">800,000</option>
+          <option value="1000000">1,000,000</option>
+        </select>
+        <div class="hint">รับเฉพาะผู้หญิง อายุ 18 – 50 ปี ต่ออายุได้ถึง 64 ปี คุ้มครองถึงอายุ 65 ปี</div>
+      </div>
+      <div class="field-err" id="happyLadyErr"></div>
+
+      <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_happy_lady_plus">
+        <label style="margin:0;flex:1;">แฮปปี้ เลดี้ พลัส (Happy Lady Plus)<span class="info-icon">i<span class="tooltip">คุ้มครองเหมือนแฮปปี้ เลดี้ บวกภาวะแทรกซ้อนจากการตั้งครรภ์ เหมาะกับผู้หญิงวัยเจริญพันธุ์ที่วางแผนมีบุตร รับสมัครอายุ 18-40 ปี</span></span></label>
+      </div>
+      <div id="happy_lady_plus_fields" class="sub-fields hidden">
+        <label class="first">ทุนประกัน</label>
+        <select id="happy_lady_plus_capital">
+          <option value="200000">200,000</option>
+          <option value="400000">400,000</option>
+          <option value="600000">600,000</option>
+          <option value="800000">800,000</option>
+          <option value="1000000">1,000,000</option>
+        </select>
+        <div class="hint">รับเฉพาะผู้หญิง อายุ 18 – 40 ปี ต่ออายุได้ถึง 44 ปี คุ้มครองถึงอายุ 45 ปี</div>
+      </div>
+      <div class="field-err" id="happyLadyPlusErr"></div>
+
+      <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_diabetes">
+        <label style="margin:0;flex:1;">คุ้มครองโรคเบาหวาน (Diabetes)<span class="info-icon">i<span class="tooltip">จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและภาวะแทรกซ้อนตามเงื่อนไข รับสมัครอายุ 18-60 ปี</span></span></label>
+      </div>
+      <div id="diabetes_fields" class="sub-fields hidden">
+        <label class="first">ทุนประกัน (บาท)</label>
+        <input type="number" id="diabetes_capital" value="100000" step="100000" min="100000">
+        <div class="hint">อัตราเบี้ยต่อทุน 1,000 บาท แยกชาย/หญิง · อายุรับ 18 – 60 ปี ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี · ทุนขั้นต่ำ-สูงสุดที่แน่นอนให้ตรวจกับใบเสนอราคาจริงอีกครั้ง เนื่องจากแหล่งที่ตรวจไม่ได้ระบุตัวเลขนี้ชัดเจน</div>
+      </div>
+      <div class="field-err" id="diabetesErr"></div>
+
       <div class="divider"></div>
 
       <label class="first">D Care <span style="color:var(--muted);font-weight:400;">(เลือกได้หลายกลุ่มโรค ยกเว้น "โรคยอดฮิต" ที่ต้องซื้อเดี่ยว)</span><span class="info-icon">i<span class="tooltip">เลือกทำเฉพาะกลุ่มโรคที่กังวลจริง ประหยัดกว่าซื้อความคุ้มครองกว้างที่ไม่จำเป็น เหมาะกับคนมีประวัติครอบครัวเป็นโรคเฉพาะกลุ่ม</span></span></label>
@@ -3745,6 +3790,39 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">โรคร้ายแรง · เฉพาะผู้หญิง</div>
+      <h3>แฮปปี้ เลดี้ (Happy Lady)</h3>
+      <p class="meta">รับเฉพาะผู้หญิง อายุ 18 – 50 ปี • ทุน 200,000 – 1,000,000 บาท</p>
+      <ul>
+        <li>คุ้มครองมะเร็งเฉพาะของผู้หญิง (เต้านม มดลูก ปากมดลูก รังไข่) และโรคของมดลูก/เต้านมที่ต้องผ่าตัด</li>
+        <li>เบี้ยเป็นจำนวนเงินตรงตามทุนที่เลือก ไม่ใช่อัตราต่อ 1,000 บาท</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('happylady')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">โรคร้ายแรง · เฉพาะผู้หญิง</div>
+      <h3>แฮปปี้ เลดี้ พลัส (Happy Lady Plus)</h3>
+      <p class="meta">รับเฉพาะผู้หญิง อายุ 18 – 40 ปี • ทุน 200,000 – 1,000,000 บาท</p>
+      <ul>
+        <li>คุ้มครองเหมือนแฮปปี้ เลดี้ ทุกข้อ บวกภาวะแทรกซ้อนจากการตั้งครรภ์และการคลอดบุตร</li>
+        <li>เหมาะกับผู้หญิงวัยเจริญพันธุ์ที่วางแผนมีบุตร</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('happyladyplus')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">โรคร้ายแรง</div>
+      <h3>คุ้มครองโรคเบาหวาน (Diabetes)</h3>
+      <p class="meta">อายุรับ 18 – 60 ปี • อัตราต่อทุน 1,000 บาท แยกชาย/หญิง</p>
+      <ul>
+        <li>จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและภาวะแทรกซ้อนตามเงื่อนไขที่กำหนด</li>
+        <li>ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('diabetes')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
       <h3>D Care</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • เลือกทุนได้เองต่อกลุ่มโรค ทุนรวมสูงสุด 2,500,000 บาท</p>
@@ -4422,6 +4500,9 @@ bindCheckboxToggle('use_dhl','dhl_fields');
 bindCheckboxToggle('use_careplus','careplus_fields');
 bindCheckboxToggle('use_cipc','cipc_fields');
 bindCheckboxToggle('use_cancer','cancer_fields');
+bindCheckboxToggle('use_happy_lady','happy_lady_fields');
+bindCheckboxToggle('use_happy_lady_plus','happy_lady_plus_fields');
+bindCheckboxToggle('use_diabetes','diabetes_fields');
 bindCheckboxToggle('use_ehp','ehp_fields');
 bindCheckboxToggle('use_maochai','maochai_fields');
 bindCheckboxToggle('use_ecp','ecp_fields');
@@ -5419,6 +5500,75 @@ function tpdRateTableBlock(freq){
     + `<p class="rate-note">วิธีคิด เบี้ย = อัตราในตาราง × ทุนประกัน ÷ 1,000 เช่น ชายอายุ 40 ปี ทุน 1,000,000 บาท ชำระรายปี = 0.48 × 1,000 = 480 บาทต่อปี</p>`;
 }
 
+/* แฮปปี้ เลดี้ / แฮปปี้ เลดี้ พลัส — สัญญาเพิ่มเติมสำหรับผู้หญิงเท่านั้น เบี้ยเป็นจำนวนเงินตรง
+   ตามแบบผลประโยชน์ที่เลือก (ไม่ใช่อัตราต่อ 1,000) แบ่งเป็นช่วงอายุ (bands) × ทุนประกัน 5 ระดับ
+   variant คือ 'happy_lady' หรือ 'happy_lady_plus' */
+function happyLadyRateAt(variant, capital, age, freq){
+  const t = RATES[variant];
+  if(!t) return null;
+  const a = Number(age);
+  if(!Number.isFinite(a) || a < t.entry_age_min || a > t.renew_age_max) return null;
+  const idx = t.capitals.indexOf(Number(capital));
+  if(idx < 0) return null;
+  const band = t.bands.find(b => a >= b.from && a <= b.to);
+  if(!band) return null;
+  const arr = band[freq || 'annual'];
+  const v = arr ? arr[idx] : null;
+  return (v === null || v === undefined) ? null : v;
+}
+function happyLadyPremium(variant, capital, age, freq){
+  return happyLadyRateAt(variant, capital, age, freq || 'annual');
+}
+function happyLadyRateTableBlock(variant, freq){
+  const t = RATES[variant];
+  if(!t) return '';
+  freq = freq || 'annual';
+  const head = `<thead><tr><th>อายุ (ปี)</th>${t.capitals.map(c=>`<th>${fmt(c)}</th>`).join('')}</tr></thead>`;
+  const rows = t.bands.map(b => {
+    const label = b.from === b.to ? String(b.from) : `${b.from} – ${b.to}`;
+    const star = b.renewal_only ? ' *' : '';
+    const arr = b[freq] || [];
+    return `<tr><td>${label}${star}</td>${arr.map(v=>`<td>${v===null?'-':fmt(v)}</td>`).join('')}</tr>`;
+  }).join('');
+  return `<p class="rate-note">เบี้ยเป็นจำนวนเงินตรงตามทุนประกันที่เลือก (ไม่ใช่อัตราต่อ 1,000) · แถวที่มีเครื่องหมาย * เป็นอัตราสำหรับต่ออายุเท่านั้น สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปี · รับเฉพาะผู้หญิง</p>`
+    + `<div class="table-wrap" style="max-height:420px;"><table>${head}<tbody>${rows}</tbody></table></div>`;
+}
+
+/* คุ้มครองโรคเบาหวาน — อัตราต่อทุน 1,000 บาท แยกชาย/หญิง ต่อเนื่องรายอายุ (ไม่ใช่แบบ band)
+   age_start คืออายุแรกของอาร์เรย์ (18 ปี) */
+function diabetesRateAt(age, gender, freq){
+  const t = RATES.diabetes_rider;
+  if(!t) return null;
+  const a = Number(age);
+  if(!Number.isFinite(a) || a < t.entry_age_min || a > t.renew_age_max) return null;
+  const table = t.payment_schedules?.[freq || 'annual'];
+  const arr = table ? table[gender === 'f' ? 'f' : 'm'] : null;
+  return arr ? rateAtStart(arr, a, t.age_start) : null;
+}
+function diabetesPremium(capital, age, gender, freq){
+  const rate = diabetesRateAt(age, gender, freq || 'annual');
+  if(rate === null) return null;
+  return rate * capital / 1000;
+}
+function diabetesRateTableBlock(freq){
+  const t = RATES.diabetes_rider;
+  if(!t) return '';
+  freq = freq || 'annual';
+  const table = t.payment_schedules?.[freq];
+  if(!table) return '';
+  const head = `<thead><tr><th>อายุ (ปี)</th><th>ชาย</th><th>หญิง</th></tr></thead>`;
+  let rows = '';
+  for(let age = t.entry_age_min; age <= t.renew_age_max; age++){
+    const star = age >= t.renewal_only_from ? ' *' : '';
+    const m = rateAtStart(table.m, age, t.age_start);
+    const f = rateAtStart(table.f, age, t.age_start);
+    rows += `<tr><td>${age}${star}</td><td>${m===null?'-':m}</td><td>${f===null?'-':f}</td></tr>`;
+  }
+  return `<p class="rate-note">อัตราเบี้ยต่อจำนวนเงินเอาประกันภัย 1,000 บาท · กลุ่มอาชีพ 1 และ 2 ใช้อัตราเดียวกัน · แถวที่มีเครื่องหมาย * เป็นอัตราสำหรับต่ออายุเท่านั้น สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปี</p>`
+    + `<div class="table-wrap" style="max-height:420px;"><table>${head}<tbody>${rows}</tbody></table></div>`
+    + `<p class="rate-note">วิธีคิด เบี้ย = อัตราในตาราง × ทุนประกัน ÷ 1,000</p>`;
+}
+
 function paBandIndex(age){
   if(age<=60) return 0;
   if(age<=65) return 1;
@@ -5548,6 +5698,15 @@ function readInputs(){
   const useCancer = document.getElementById('use_cancer').checked;
   const cancerPlan = document.getElementById('cancer_plan').value;
 
+  const useHappyLady = document.getElementById('use_happy_lady').checked;
+  const happyLadyCapital = parseFloat(document.getElementById('happy_lady_capital').value) || 0;
+
+  const useHappyLadyPlus = document.getElementById('use_happy_lady_plus').checked;
+  const happyLadyPlusCapital = parseFloat(document.getElementById('happy_lady_plus_capital').value) || 0;
+
+  const useDiabetes = document.getElementById('use_diabetes').checked;
+  const diabetesCapital = parseFloat(document.getElementById('diabetes_capital').value) || 0;
+
   /* อ่านทีละรายการตามลำดับบนหน้า ไม่ใช่ไล่ตามกลุ่มโรค
      เพราะกลุ่มเดียวกันมีได้หลายรายการ คีย์ของคอลัมน์จึงต้องผูกกับรายการ ไม่ใช่ผูกกับกลุ่ม
      ถ้าใช้ชื่อกลุ่มเป็นคีย์ รายการที่สองของกลุ่มเดิมจะไปทับค่าของรายการแรกทั้งตาราง */
@@ -5577,6 +5736,7 @@ function readInputs(){
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
+          useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
           useTerm, termPlan, termCapital};
 }
@@ -5590,7 +5750,7 @@ function validateInputs(inp){
     const product = savingsMainData(inp.mainPlan);
     if(inp.paymentFrequency !== 'annual') issues.push('แผน 15/3 และ 15/6 เปิดรับเฉพาะเบี้ยรายปี');
     if(!product.capitals.includes(inp.mainCapital)) issues.push(`ทุนประกันของ ${mainPlanDisplayName(inp.mainPlan)} ต้องเลือกจากตารางที่เผยแพร่`);
-    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd || inp.useTerm;
+    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd || inp.useTerm;
     if(hasRider) issues.push('แผน 15/3 และ 15/6 ไม่สามารถแนบสัญญาเพิ่มเติมได้');
     return issues;
   }
@@ -5605,7 +5765,7 @@ function validateInputs(inp){
 
   // 99/20 <1M requires at least 1 critical-illness/PA rider
   if(inp.mainPlan === '99_20' && inp.mainCapital < 1000000){
-    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length>0;
+    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
     const hasPA = inp.paPlan !== 'none';
     if(!hasCI && !hasPA){
       issues.push('แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน');
@@ -5767,6 +5927,9 @@ function renderAll(){
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
+  if(inp.useHappyLady) cols.push({key:'happy_lady', label:'แฮปปี้ เลดี้ (Happy Lady)'});
+  if(inp.useHappyLadyPlus) cols.push({key:'happy_lady_plus', label:'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)'});
+  if(inp.useDiabetes) cols.push({key:'diabetes', label:'คุ้มครองโรคเบาหวาน (Diabetes)'});
   inp.dcareSelections.forEach(d => cols.push({key:d.colKey, label:d.itemName}));
   if(inp.paPlan !== 'none') cols.push({key:'pa', label:'PA Easy Plan แผน '+inp.paPlan});
   if(inp.useHb) cols.push({key:'hb', label:'HB ชดเชยรายวัน (เบี้ยคงที่)'});
@@ -5810,6 +5973,9 @@ function renderAll(){
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
+    if(inp.useHappyLady) row.values.happy_lady = happyLadyPremium('happy_lady', inp.happyLadyCapital, age, freq);
+    if(inp.useHappyLadyPlus) row.values.happy_lady_plus = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, freq);
+    if(inp.useDiabetes) row.values.diabetes = diabetesPremium(inp.diabetesCapital, age, gender, freq);
     inp.dcareSelections.forEach(d => { row.values[d.colKey] = dcarePremium(d.key, d.capital, gender, age, freq, d.stage); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
@@ -5843,6 +6009,9 @@ function renderAll(){
   if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useHappyLady){ const v = happyLadyPremium('happy_lady', inp.happyLadyCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useHappyLadyPlus){ const v = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useDiabetes){ const v = diabetesPremium(inp.diabetesCapital, entryAge, gender, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage); if(typeof v === 'number') riderTotalYear1 += v; });
   if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -5967,6 +6136,9 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey === 'careplus') return careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, '1', 'annual');
   if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
+  if(colKey === 'happy_lady') return inp.useHappyLady ? happyLadyPremium('happy_lady', inp.happyLadyCapital, age, 'annual') : null;
+  if(colKey === 'happy_lady_plus') return inp.useHappyLadyPlus ? happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, 'annual') : null;
+  if(colKey === 'diabetes') return inp.useDiabetes ? diabetesPremium(inp.diabetesCapital, age, gender, 'annual') : null;
   if(colKey === 'pa') return paPremium(inp.paPlan, age, 'annual');
   if(colKey.startsWith('dcare_')){
     const d = inp.dcareSelections.find(x => x.colKey === colKey);
@@ -6014,6 +6186,9 @@ async function exportPremiumTableExcel(){
   if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
+  if(inp.useHappyLady) riderLabels.push(`แฮปปี้ เลดี้ — ทุน ${fmt(inp.happyLadyCapital)} บาท`);
+  if(inp.useHappyLadyPlus) riderLabels.push(`แฮปปี้ เลดี้ พลัส — ทุน ${fmt(inp.happyLadyPlusCapital)} บาท`);
+  if(inp.useDiabetes) riderLabels.push(`คุ้มครองโรคเบาหวาน — ทุน ${fmt(inp.diabetesCapital)} บาท`);
   inp.dcareSelections.forEach(d => riderLabels.push(`${d.itemName}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   if(inp.useTpd) riderLabels.push(`ทุพพลภาพสิ้นเชิงถาวร (TPD) — ทุน ${fmt(inp.tpdCapital)} บาท`);
@@ -6519,6 +6694,15 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useCancer && y1.cancer !== undefined){
     items.push({name:'ความคุ้มครองโรคมะเร็ง (Cancer)', premium:y1.cancer, coverage:`คุ้มครองมะเร็งระยะไม่ลุกลามและลุกลาม ทุนประกัน ${fmt({'300k':300000,'500k':500000,'1m':1000000,'2m':2000000}[inp.cancerPlan])} บาท`});
   }
+  if(inp.useHappyLady && y1.happy_lady !== undefined){
+    items.push({name:'แฮปปี้ เลดี้ (Happy Lady)', premium:y1.happy_lady, coverage:`คุ้มครองมะเร็งเฉพาะของผู้หญิงและโรคของมดลูก/เต้านมที่ต้องผ่าตัด ทุนประกัน ${fmt(inp.happyLadyCapital)} บาท (รับเฉพาะผู้หญิง)`});
+  }
+  if(inp.useHappyLadyPlus && y1.happy_lady_plus !== undefined){
+    items.push({name:'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)', premium:y1.happy_lady_plus, coverage:`คุ้มครองเหมือนแฮปปี้ เลดี้ บวกภาวะแทรกซ้อนจากการตั้งครรภ์ ทุนประกัน ${fmt(inp.happyLadyPlusCapital)} บาท (รับเฉพาะผู้หญิง)`});
+  }
+  if(inp.useDiabetes && y1.diabetes !== undefined){
+    items.push({name:'คุ้มครองโรคเบาหวาน (Diabetes)', premium:y1.diabetes, coverage:`จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและภาวะแทรกซ้อนตามเงื่อนไข ทุนประกัน ${fmt(inp.diabetesCapital)} บาท`});
+  }
   inp.dcareSelections.forEach(d => {
     if(y1[d.colKey] !== undefined){
       items.push({name:d.itemName, premium:y1[d.colKey], coverage:`ทุนประกัน ${fmt(d.capital)} บาท`});
@@ -6659,6 +6843,9 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useCareplus) ciLines.push(careplusPlanNames2[inp.careplusPlan]+' (Care Plus)');
   if(inp.useCipc) ciLines.push('36 โรคร้ายแรงทุกระยะ (CI Perfect Care)');
   if(inp.useCancer) ciLines.push('มะเร็งทุกระยะ (Cancer)');
+  if(inp.useHappyLady) ciLines.push('มะเร็งผู้หญิง/โรคมดลูก-เต้านม (Happy Lady)');
+  if(inp.useHappyLadyPlus) ciLines.push('มะเร็งผู้หญิง/โรคมดลูก-เต้านม/ภาวะแทรกซ้อนจากการตั้งครรภ์ (Happy Lady Plus)');
+  if(inp.useDiabetes) ciLines.push('โรคเบาหวานและภาวะแทรกซ้อน (Diabetes)');
   inp.dcareSelections.forEach(d => ciLines.push(d.label + ' (D Care)'));
 
   el.innerHTML = `
@@ -6731,7 +6918,7 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   // 99/20 <1M requires at least one CI/PA rider
   const ciBox = document.getElementById('ciRequirementErr');
   if(inp.mainPlan === '99_20' && inp.mainCapital < 1000000){
-    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.dcareSelections.length>0;
+    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
     const hasPA = inp.paPlan !== 'none';
     ciBox.classList.toggle('show', !(hasCI || hasPA));
   } else {
@@ -6800,6 +6987,44 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
       underMinAge ? 'Cancer รับทำประกันตั้งแต่อายุ 18 ปีขึ้นไป' : 'ไม่สามารถแนบ Cancer แผนนี้ได้ที่อายุปัจจุบัน');
   } else {
     setErr('cancer_plan','cancerErr', false, '');
+  }
+
+  // Happy Lady / Happy Lady Plus: รับเฉพาะผู้หญิง สมัครใหม่ได้ถึงอายุ 50 / 40 ปีตามลำดับ
+  if(inp.useHappyLady){
+    const notFemale = gender !== 'f';
+    const t = RATES.happy_lady;
+    const overAge = t && entryAge > t.entry_age_max;
+    const v = happyLadyRateAt('happy_lady', inp.happyLadyCapital, entryAge, 'annual');
+    setErr('happy_lady_capital','happyLadyErr', notFemale || overAge || v===null,
+      notFemale ? 'แฮปปี้ เลดี้ รับทำประกันเฉพาะผู้หญิงเท่านั้น'
+      : overAge ? `แฮปปี้ เลดี้ สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปีเท่านั้น`
+      : 'ไม่สามารถแนบแฮปปี้ เลดี้ ที่ทุนนี้ได้ที่อายุปัจจุบัน');
+  } else {
+    setErr('happy_lady_capital','happyLadyErr', false, '');
+  }
+  if(inp.useHappyLadyPlus){
+    const notFemale = gender !== 'f';
+    const t = RATES.happy_lady_plus;
+    const overAge = t && entryAge > t.entry_age_max;
+    const v = happyLadyRateAt('happy_lady_plus', inp.happyLadyPlusCapital, entryAge, 'annual');
+    setErr('happy_lady_plus_capital','happyLadyPlusErr', notFemale || overAge || v===null,
+      notFemale ? 'แฮปปี้ เลดี้ พลัส รับทำประกันเฉพาะผู้หญิงเท่านั้น'
+      : overAge ? `แฮปปี้ เลดี้ พลัส สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปีเท่านั้น`
+      : 'ไม่สามารถแนบแฮปปี้ เลดี้ พลัส ที่ทุนนี้ได้ที่อายุปัจจุบัน');
+  } else {
+    setErr('happy_lady_plus_capital','happyLadyPlusErr', false, '');
+  }
+
+  // Diabetes: สมัครใหม่ได้ถึงอายุ 60 ปี (61-70 เป็นอัตราต่ออายุเท่านั้น)
+  if(inp.useDiabetes){
+    const t = RATES.diabetes_rider;
+    const overAge = t && entryAge > t.entry_age_max;
+    const v = diabetesRateAt(entryAge, gender, 'annual');
+    setErr('diabetes_capital','diabetesErr', v===null || overAge,
+      overAge ? `คุ้มครองโรคเบาหวาน สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปีเท่านั้น`
+      : 'ไม่สามารถแนบคุ้มครองโรคเบาหวานได้ที่อายุปัจจุบัน');
+  } else {
+    setErr('diabetes_capital','diabetesErr', false, '');
   }
 
   // D Care: total capital cap + availability + issue-age max (70; renewal data extends to 81)
@@ -9021,6 +9246,7 @@ const PLAN_DETAILS = {
       'ระยะเวลารอคอย 30 วันทั่วไป, 120 วันสำหรับเนื้องอก/นิ่ว/ริดสีดวงและกลุ่มโรคที่สะสมอาการมานาน',
       'หมวด 7 อุบัติเหตุ OPD คุ้มครองเฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ให้ใช้สิทธิ PA หรือ OPD',
       'หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กตามหมวด 13 ไม่สามารถใช้ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD',
+      'อยากรู้ว่าแต่ละหมวดคุ้มครองอะไรบ้างแบบละเอียด พร้อมตัวอย่างค่าใช้จ่ายจริง ดูได้ที่ <span class="mini-link" onclick="openLegacyDest({page:\'faq\',group:\'coverage\',key:\'cov-dialysis-chemo\'})">FAQ หมวด 13 หมวดคุ้มครอง</span>',
     ],
     freqSupported: true,
     rateTable: (freq='annual') => renderDhlPremiumTables(freq),
@@ -9052,6 +9278,7 @@ const PLAN_DETAILS = {
       'แพ็กเกจแนะนำหลักในเว็บนี้ใช้ Elite 20 ล้านสำหรับ Size L และ Elite 75 ล้านสำหรับ Size XL โดยไม่ดัน 40 ล้านเป็นค่าเริ่มต้น เพราะความคุ้มค่าเบี้ย/วงเงินมักไม่เด่นเท่า 20 หรือ 75 ล้าน',
       'หมวด 7 อุบัติเหตุ OPD คุ้มครองเฉพาะการรักษาภายใน 24 ชั่วโมงแรก หากต้องล้างแผลต่อเนื่องหรือฉีดวัคซีนเข็มกระตุ้น ให้ใช้สิทธิ PA หรือ OPD',
       'หัตถการที่นอน รพ. หรือ Day Surgery ตามหมวด 5 สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ แต่ผ่าตัดเล็กตามหมวด 13 ไม่สามารถใช้ Follow-up หมวด 6.1/6.2 ต้องใช้ OPD',
+      'อยากรู้ว่าแต่ละหมวดและผลประโยชน์ส่วนขยายคุ้มครองอะไรบ้างแบบละเอียด พร้อมตัวอย่างค่าใช้จ่ายจริง ดูได้ที่ <span class="mini-link" onclick="openLegacyDest({page:\'faq\',group:\'coverage\',key:\'cov-extensions\'})">FAQ หมวด 13 หมวดคุ้มครอง</span>',
     ],
     detailSections: () => ehpRegionSection(),
     freqSupported: true,
@@ -9145,6 +9372,7 @@ const PLAN_DETAILS = {
       'มี 3 แผนย่อยแยกตามค่าห้องและวงเงินต่อครั้งตามระดับ',
       'ระยะเวลารอคอย 30/120 วัน เช่นเดียวกับสัญญาสุขภาพมาตรฐาน',
       'อาณาเขตความคุ้มครอง: เอกสารที่มีอยู่ระบุแค่คำว่า "ทั่วโลก" ไม่มีท้ายกรมธรรม์แนบมาให้ดูเงื่อนไข ระยะเวลาต่อทริป หรือข้อยกเว้นเพิ่มเติมแบบที่ Elite Health Plus มี ก่อนยืนยันกับลูกค้าให้เช็คกับบริษัทก่อนทุกครั้ง',
+      'แผนนี้ไม่คุ้มครองหมวด 6-11 และ 13 อยากรู้รายละเอียดว่าแต่ละหมวดคุ้มครองอะไรบ้าง ดูได้ที่ <span class="mini-link" onclick="openLegacyDest({page:\'faq\',group:\'coverage\',key:\'cov-daysurg-followup\'})">FAQ หมวด 13 หมวดคุ้มครอง</span>',
     ],
     freqSupported: true,
     rateTable: (freq='annual') => renderAgeTable(11, 90, [
@@ -9172,6 +9400,7 @@ const PLAN_DETAILS = {
       'มี Deductible 20,000 บาท ทุกแผน (ไม่มีตัวเลือก D0)',
       'ระยะเวลารอคอย 30/120 วัน',
       'อาณาเขตความคุ้มครอง: เอกสารที่มีอยู่ระบุแค่คำว่า "ทั่วโลก" ไม่มีท้ายกรมธรรม์แนบมาให้ดูเงื่อนไข ระยะเวลาต่อทริป หรือข้อยกเว้นเพิ่มเติมแบบที่ Elite Health Plus มี ก่อนยืนยันกับลูกค้าให้เช็คกับบริษัทก่อนทุกครั้ง',
+      'แผนนี้ไม่คุ้มครองหมวด 6-11 และ 13 อยากรู้รายละเอียดว่าแต่ละหมวดคุ้มครองอะไรบ้าง ดูได้ที่ <span class="mini-link" onclick="openLegacyDest({page:\'faq\',group:\'coverage\',key:\'cov-daysurg-followup\'})">FAQ หมวด 13 หมวดคุ้มครอง</span>',
     ],
     freqSupported: true,
     rateTable: (freq='annual') => renderAgeTable(11, 90, [
@@ -9471,6 +9700,65 @@ const PLAN_DETAILS = {
     ]),
   },
 
+  happylady: {
+    title: 'แฮปปี้ เลดี้ (Happy Lady)', category: 'โรคร้ายแรง (เฉพาะผู้หญิง)',
+    fit: ['เป็นผู้หญิงอายุ 18 – 50 ปี และอยากได้ความคุ้มครองเฉพาะโรคที่พบบ่อยในผู้หญิง เช่น มะเร็งเต้านม มะเร็งปากมดลูก', 'อยากได้เบี้ยที่ถูกกว่าโรคร้ายแรงแบบกว้าง เพราะคุ้มครองเฉพาะกลุ่มโรคผู้หญิง'],
+    notFit: 'เป็นผู้ชาย เพราะแบบนี้รับทำประกันเฉพาะผู้หญิงเท่านั้น',
+    overview: 'สัญญาเพิ่มเติมสำหรับผู้หญิงโดยเฉพาะ คุ้มครองมะเร็งที่พบบ่อยในผู้หญิงและโรคของมดลูก/เต้านมที่ต้องผ่าตัด จ่ายเงินก้อนตามแบบผลประโยชน์ที่เลือก',
+    images: [],
+    coverage: [
+      'มะเร็งเฉพาะของผู้หญิง เช่น มะเร็งเต้านม มะเร็งปากมดลูก มะเร็งมดลูก มะเร็งรังไข่ ตามเงื่อนไขที่กำหนด',
+      'โรคของมดลูกหรือเต้านมที่ต้องได้รับการผ่าตัด ตามเงื่อนไขที่กำหนด',
+    ],
+    conditions: [
+      'รับทำประกันเฉพาะผู้หญิง อายุ 18 – 50 ปีเท่านั้น ต่ออายุได้ถึง 64 ปี คุ้มครองถึงอายุ 65 ปี',
+      'ทุนประกันเลือกได้ 200,000 / 400,000 / 600,000 / 800,000 / 1,000,000 บาท',
+      'เบี้ยเป็นจำนวนเงินตรงตามแบบผลประโยชน์ที่เลือก ไม่ใช่อัตราต่อทุน 1,000 บาทเหมือนสัญญาเพิ่มเติมส่วนใหญ่',
+      'กลุ่มอาชีพที่รับทำ 1 และ 2',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => happyLadyRateTableBlock('happy_lady', freq),
+  },
+
+  happyladyplus: {
+    title: 'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)', category: 'โรคร้ายแรง (เฉพาะผู้หญิง)',
+    fit: ['เป็นผู้หญิงอายุ 18 – 40 ปี ที่วางแผนมีบุตร และอยากได้ความคุ้มครองภาวะแทรกซ้อนจากการตั้งครรภ์เพิ่มจากแฮปปี้ เลดี้ ปกติ', 'อยากได้ความคุ้มครองโรคผู้หญิงครบพร้อมภาวะแทรกซ้อนจากการตั้งครรภ์ในสัญญาเดียว'],
+    notFit: 'อายุเกิน 40 ปีแล้ว หรือไม่ต้องการความคุ้มครองภาวะแทรกซ้อนจากการตั้งครรภ์ เพราะจ่ายเบี้ยแพงกว่าแฮปปี้ เลดี้ ปกติมาก ควรเลือกแฮปปี้ เลดี้ ธรรมดาแทน',
+    overview: 'รุ่นอัปเกรดของแฮปปี้ เลดี้ คุ้มครองทุกอย่างเหมือนแบบปกติ บวกภาวะแทรกซ้อนจากการตั้งครรภ์และการคลอดบุตรตามเงื่อนไขที่กำหนด',
+    images: [],
+    coverage: [
+      'มะเร็งเฉพาะของผู้หญิง และโรคของมดลูก/เต้านมที่ต้องผ่าตัด เหมือนแฮปปี้ เลดี้ ทุกข้อ',
+      'ภาวะแทรกซ้อนจากการตั้งครรภ์และการคลอดบุตรตามเงื่อนไขที่กำหนด (จุดต่างจากแฮปปี้ เลดี้ ปกติ)',
+    ],
+    conditions: [
+      'รับทำประกันเฉพาะผู้หญิง อายุ 18 – 40 ปีเท่านั้น (แคบกว่าแฮปปี้ เลดี้ ปกติ) ต่ออายุได้ถึง 44 ปี คุ้มครองถึงอายุ 45 ปี',
+      'ทุนประกันเลือกได้ 200,000 / 400,000 / 600,000 / 800,000 / 1,000,000 บาท',
+      'เบี้ยเป็นจำนวนเงินตรงตามแบบผลประโยชน์ที่เลือก ไม่ใช่อัตราต่อทุน 1,000 บาท และแพงกว่าแฮปปี้ เลดี้ ปกติมาก เพราะเพิ่มความคุ้มครองภาวะแทรกซ้อนจากการตั้งครรภ์',
+      'กลุ่มอาชีพที่รับทำ 1 และ 2',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => happyLadyRateTableBlock('happy_lady_plus', freq),
+  },
+
+  diabetes: {
+    title: 'คุ้มครองโรคเบาหวาน (Diabetes)', category: 'โรคร้ายแรง (เฉพาะโรคเบาหวาน)',
+    fit: ['มีประวัติครอบครัวเป็นโรคเบาหวาน หรือกังวลภาวะแทรกซ้อนจากโรคเบาหวานโดยเฉพาะ', 'อายุ 18 – 60 ปี และอยากได้ความคุ้มครองเฉพาะทางที่เบี้ยไม่แพงเทียบกับโรคร้ายแรงแบบกว้าง'],
+    notFit: 'กังวลโรคร้ายแรงอื่นด้วย เพราะแบบนี้คุ้มครองเฉพาะโรคเบาหวานและภาวะแทรกซ้อนของโรคเบาหวานเท่านั้น',
+    overview: 'สัญญาเพิ่มเติมเฉพาะทางที่จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและภาวะแทรกซ้อนตามเงื่อนไขที่กำหนด รับทำได้ทั้งชายและหญิง',
+    images: [],
+    coverage: [
+      'จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและ/หรือภาวะแทรกซ้อนของโรคเบาหวานตามเงื่อนไขที่กำหนด',
+    ],
+    conditions: [
+      'อายุรับประกันใหม่ 18 – 60 ปี ต่ออายุได้ถึง 70 ปี (อายุ 61-70 ปี เป็นอัตราสำหรับต่ออายุเท่านั้น) คุ้มครองถึงอายุ 71 ปี',
+      'อัตราเบี้ยต่อจำนวนเงินเอาประกันภัย 1,000 บาท แยกอัตราชาย/หญิง',
+      'กลุ่มอาชีพที่รับทำ 1 และ 2',
+      'ทุนประกันขั้นต่ำ-สูงสุดที่แน่นอนไม่พบระบุชัดเจนในแหล่งที่ตรวจ ให้ยืนยันกับใบเสนอราคาจริงอีกครั้งก่อนเสนอขาย',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => diabetesRateTableBlock(freq),
+  },
+
   dcare: {
     title: 'D Care', category: 'โรคร้ายแรง (เลือกกลุ่มโรคเองได้)',
     fit: ['กังวลโรคเฉพาะกลุ่มชัดเจน เช่น ครอบครัวมีประวัติมะเร็ง จะได้ไม่ต้องจ่ายเบี้ยส่วนที่ไม่ต้องการ', 'อยากคุมงบให้แน่นอนโดยเลือกทั้งกลุ่มโรคและทุนประกันเองทีละกลุ่ม', 'อยากได้เงินก้อนตั้งแต่ระยะเริ่มต้น ไม่ต้องรอให้ลุกลาม จึงเลือกโหมดสองระยะ'],
@@ -9629,6 +9917,9 @@ const PLAN_ROUTES = {
   cipc: '/plans/ci-perfect-care',
   multipleci: '/plans/multiple-ci',
   cancer: '/plans/cancer-protection',
+  happylady: '/plans/happy-lady',
+  happyladyplus: '/plans/happy-lady-plus',
+  diabetes: '/plans/diabetes-protection',
   dcare: '/plans/d-care',
   hb: '/plans/hb-rider',
   tpd: '/plans/tpd-rider',
@@ -9730,6 +10021,10 @@ const PLAN_CARD_EXTRA = {
   cipc:       {note:'ทุน 500,000 บาท',  calc:(g,a)=>cipcPremium(500000, g, a, 'annual')},
   multipleci: {note:'ทุน 500,000 บาท',  calc:(g,a)=>multipleCiPremium(500000, g, a, 'annual')},
   cancer:     {note:'ทุน 300,000 บาท',  calc:(g,a)=>cancerPremium('300k', g, a, 'annual')},
+  // แฮปปี้ เลดี้ / แฮปปี้ เลดี้ พลัส รับเฉพาะผู้หญิง จึงบังคับเพศหญิงในการคำนวณเสมอ ไม่อิงเพศของเคสอ้างอิง
+  happylady:     {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady', 200000, a, 'annual')},
+  happyladyplus: {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady_plus', 200000, a, 'annual')},
+  diabetes:      {note:'ทุน 100,000 บาท', calc:(g,a)=>diabetesPremium(100000, a, g, 'annual')},
   dcare:      {note:'กลุ่มมะเร็ง ทุน 250,000 บาท แบบระยะเริ่มต้น+รุนแรง',
                calc:(g,a)=>dcarePremium('cancer', 250000, g, a, 'annual', 'early_and_severe')},
   hb:         {note:'ชดเชยวันละ 1,000 บาท', calc:(g,a)=>hbPremium(1000, a, 'annual')},
@@ -9838,7 +10133,8 @@ function planCardPremiumHtml(id){
   const info = planCardPremiumInfo(id);
   if(!info) return '';
   // เพศระบุเฉพาะแบบที่เบี้ยขึ้นกับเพศจริง ฝากครรภ์เป็นตารางหญิงล้วนจึงบอกไว้ใน note แล้ว
-  const who = id === 'maternity' ? `อายุ ${info.age} ปี` : `ชาย อายุ ${info.age} ปี`;
+  // แฮปปี้ เลดี้ / แฮปปี้ เลดี้ พลัส เป็นแบบหญิงล้วนเหมือนฝากครรภ์ note จึงมีคำว่า "(หญิง)" กำกับไว้แล้ว ไม่ต้องขึ้น "ชาย" ซ้ำ
+  const who = (id === 'maternity' || id === 'happylady' || id === 'happyladyplus') ? `อายุ ${info.age} ปี` : `ชาย อายุ ${info.age} ปี`;
   return `<p class="plan-start"><b>เริ่มต้น ${fmt(Math.round(info.premium))} บาท</b> ${info.unit}`
     + `<span>${who} · ${info.note}</span></p>`;
 }
@@ -12580,6 +12876,7 @@ function opdBreakEvenHtml(){
    หลักการเขียน: บรรทัดแรกตอบให้จบก่อน แล้วค่อยขยาย คนรีบอ่านแค่บรรทัดแรกก็ใช้ได้
    doc = มุมที่หมอเห็นจากฝั่งเวชระเบียนและห้องตรวจ ซึ่งตัวแทนทั่วไปอธิบายไม่ได้ */
 const FAQ_GROUPS = [
+  {id:'coverage', t:'health', icon:'\u{1F4D6}', label:'13 หมวดคุ้มครอง', desc:'แต่ละหมวดจ่ายอะไร ไม่จ่ายอะไร อธิบายทีละหมวดแบบละเอียด'},
   {id:'prep', t:'health',   icon:'\u{1F4CB}', label:'ก่อนสมัคร',        desc:'เตรียมตัวยังไงให้ผ่านง่ายและเคลมได้จริง'},
   {id:'exist', t:'health',  icon:'\u{1FA7A}', label:'มีโรคอยู่แล้ว',    desc:'ยังทำได้ไหม โดนยกเว้นแล้วทำยังไงต่อ'},
   {id:'exclmean', t:'health',icon:'\u{1F50D}', label:'โดนยกเว้นโรคนี้', desc:'สลักหลังยกเว้นโรคหนึ่ง กระทบถึงไหน ไม่ควรลามถึงอะไร'},
@@ -12590,6 +12887,158 @@ const FAQ_GROUPS = [
 ];
 
 const FAQ_ITEMS = [
+  /* ===== 13 หมวดคุ้มครอง ===== */
+  {g:'coverage', k:'cov-room', q:'ค่าห้อง ค่าอาหาร ค่าบริการโรงพยาบาล (หมวด 1) จริง ๆ คุ้มครองอะไรบ้าง ต่างจากค่าบริการพยาบาลยังไง',
+   lead:'คนทั่วไปพูดว่า “ค่าห้อง” เป็นก้อนเดียว แต่ในกรมธรรม์ หมวด 1 ไม่ได้รวมค่าบริการพยาบาลไว้ด้วย',
+   body:`เวลาโรงพยาบาลออกใบเสร็จ สิ่งที่คนไข้เห็นเป็นก้อนเดียวว่า “ค่าห้อง” จริง ๆ มักรวม 4 อย่างเข้าด้วยกัน คือ <b>ค่าห้องพัก + ค่าอาหารผู้ป่วย + ค่าบริการทั่วไปของโรงพยาบาล (ไฟฟ้า น้ำ เครื่องมือใช้ร่วม ทำความสะอาด) + ค่าบริการพยาบาลที่มาดูแลตลอดการนอน</b> ใบเสร็จจึงมักตั้งชื่อบรรทัดรวมกันว่า “ค่าห้องและค่าบริการ”
+แต่พอมาเป็น<b>ผลประโยชน์หมวด 1 ตามกรมธรรม์สุขภาพมาตรฐานใหม่</b> ตัวที่ถูกแยกออกไปคือ<b>ค่าบริการพยาบาล</b> ซึ่งกรมธรรม์จัดให้ไปอยู่ในหมวด 2 (ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ ฯลฯ) แทน หมวด 1 จึงเหลือครอบคลุมจริง ๆ แค่ 3 อย่าง คือ<b>ค่าห้องพัก ค่าอาหารผู้ป่วย และค่าบริการทั่วไปของโรงพยาบาล</b>
+ในทางปฏิบัติเรื่องนี้ไม่ทำให้ลูกค้าเสียประโยชน์ เพราะแผนสุขภาพยุคใหม่ส่วนใหญ่ (D Health Lite, Elite Health Plus) จ่ายหมวด 2 แบบ<b>เหมาจ่ายตามจริงไม่มีเพดาน</b> อยู่แล้ว ค่าบริการพยาบาลจึงยังได้รับความคุ้มครองเต็ม เพียงแต่ย้ายไปโผล่คนละบรรทัดในตารางผลประโยชน์ ไม่ได้หายไปไหน
+สิ่งที่ต้องระวังจริงคือ<b>ตัวเลขวงเงินค่าห้อง/วัน ที่หมวด 1 กำหนดไว้ตายตัวเป็นบาทต่อวัน</b> เพราะนี่คือหนึ่งในไม่กี่หมวดที่ยังมีเพดานชัดเจน ไม่ใช่จ่ายตามจริงทั้งหมดเหมือนหมวดอื่น ถ้าราคาห้องจริงของโรงพยาบาลสูงกว่าสิทธิที่กรมธรรม์ให้ ส่วนต่างนั้นคนไข้ต้องจ่ายเอง
+!ถ้าเลือกนอนห้องที่ราคาสูงกว่าสิทธิที่กรมธรรม์ระบุ โดยไม่ใช่เหตุจำเป็นทางการแพทย์หรือห้องตามสิทธิเต็ม บริษัทมีสิทธิจ่ายค่าห้องเท่าที่กำหนดไว้ และ<b>ปรับลดค่ารักษาพยาบาลอื่นทั้งหมดตามสัดส่วน</b>ของค่าห้องที่จ่ายจริงเทียบกับค่าห้องที่เกิดขึ้นจริง (เงื่อนไข Pro-rata) ไม่ใช่ตัดเฉพาะส่วนต่างค่าห้องอย่างเดียว จุดนี้เป็นเงื่อนไขมาตรฐานที่หลายคนไม่รู้จนกว่าจะเจอตอนเคลม
+ตัวอย่างค่าห้องเดี่ยวมาตรฐานของโรงพยาบาลเอกชนในกรุงเทพฯ ปัจจุบัน (ข้อมูลสืบค้นวันที่ 27 กันยายน 2569 อ้างอิงบทความเผยแพร่ 27 เม.ย. 2569) เพื่อใช้ประกอบการเทียบกับวงเงินหมวด 1 ของแผนที่ถืออยู่
+|โรงพยาบาล|ห้องเดี่ยวมาตรฐาน/คืน|ห้องระดับสูงสุด/คืน
+|บำรุงราษฎร์|14,700 บาท|78,300 บาท
+|กรุงเทพ (สุขุมวิท)|11,300 บาท|150,000 บาท
+|บีเอ็นเอช (BNH)|9,500 บาท|16,000 บาท
+|นวเวช|8,200 บาท|12,700 บาท
+|นนทเวช|7,860 บาท|11,960 บาท
+|เกษมราษฎร์ ประชาชื่น|7,000 บาท|11,200 บาท
+|ธนบุรี|6,020 บาท|17,530 บาท
+|บางปะกอก 9 อินเตอร์เนชั่นแนล|5,900 บาท|19,500 บาท
+|กรุงเทพคริสเตียน|5,900 บาท|9,000 บาท
+|ธนบุรี ทวีวัฒนา|5,550 บาท|7,730 บาท
+|บี.แคร์ เมดิคอลเซ็นเตอร์|5,450 บาท|7,450 บาท
+|สมิติเวช สุขุมวิท|5,200 บาท|20,000 บาท
+|ซีจีเอช พหลโยธิน|5,070 บาท|11,590 บาท
+|คามิลเลียน|4,400 บาท|5,300 บาท
+|นวมินทร์ 9|4,210 บาท|5,710 บาท
+|วิภาวดี|2,200 บาท|8,000 บาท
+ราคาข้างต้นบางโรงพยาบาลรวมค่าอาหารและค่าบริการทั่วไปไว้ในราคาห้องแล้ว บางแห่งแยกคิดเพิ่ม ควรสอบถามโรงพยาบาลตรงก่อนเข้าพักทุกครั้ง เพราะราคาเปลี่ยนได้ตามรอบปี`,
+   doc:'ผมเจอเคสบ่อยที่ลูกค้าเข้าใจว่าซื้อแผนวงเงินค่าห้อง 4,000 บาท/วันแล้วจะพอทุกโรงพยาบาล พอไปนอนโรงพยาบาลระดับพรีเมียมที่ห้องเดี่ยวเริ่มต้น 8,000-11,000 บาท ส่วนต่างวันละ 4,000-7,000 บาทคือเงินที่ต้องจ่ายเองล้วน ๆ ยังไม่นับเงื่อนไข Pro-rata ที่บางทีลดค่ารักษาอื่นตามไปด้วย จุดนี้ต้องคุยกับลูกค้าตั้งแต่ก่อนปิดการขาย ไม่ใช่ตอนแอดมิดแล้ว'},
+
+  {g:'coverage', k:'cov-med2', q:'ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล (หมวด 2) ครอบคลุมแค่ไหน เวชภัณฑ์ 2 คุ้มครองไหม แผนไหนคุ้มครองบ้าง',
+   lead:'หมวด 2 คือหมวดที่มีมูลค่าสูงสุดในบิลแทบทุกครั้ง แต่คำว่า “จ่ายตามจริง” ไม่ได้แปลว่าจ่ายทุกชิ้น เวชภัณฑ์ที่เอากลับบ้านได้ส่วนใหญ่ไม่รวมอยู่ในนั้น',
+   body:`หมวด 2 ครอบคลุม<b>ค่าบริการทางการแพทย์ระหว่างนอนโรงพยาบาล ค่าพยาบาล ค่ายาที่ใช้รักษา และเวชภัณฑ์ที่ใช้ในการรักษาโดยตรง</b> รวมถึงย่อยหมวด 2.4 คือค่ายา/เวชภัณฑ์ให้ถือกลับบ้าน แผนยุคใหม่อย่าง D Health Lite และ Elite Health Plus จ่ายหมวดนี้แบบ<b>เหมาจ่ายตามจริงไม่มีเพดาน</b>
+ตัวตัดสินว่าเบิกได้หรือไม่ ไม่ใช่ว่าหมอสั่งหรือเปล่า แต่คือของชิ้นนั้นถูกจัดอยู่ใน<b>เวชภัณฑ์กลุ่มไหนในสามกลุ่ม</b>
+· <b>เวชภัณฑ์ 1 — ของใช้แล้วทิ้ง ใช้กับการรักษาโดยตรง</b> เช่น เข็มฉีดยา สายน้ำเกลือ ผ้าก๊อซ สายสวนปัสสาวะ <b>กลุ่มนี้จ่ายตามจริงปกติ</b> เพราะนับเป็นส่วนหนึ่งของหมวด 2 ตรง ๆ
+· <b>เวชภัณฑ์ 2 — อุปกรณ์ใช้ภายนอกร่างกาย เอากลับบ้านได้ ใช้ซ้ำกับคนอื่นได้</b> เช่น ไม้ค้ำยัน วอล์กเกอร์ รถเข็นผู้ป่วย เฝือกอ่อน แขนขาเทียม เครื่องผลิตออกซิเจน เครื่องช่วยหายใจที่บ้าน <b>กลุ่มนี้ไม่ถูกนับรวมในคำว่า “จ่ายตามจริง” ของหมวด 2 เลย ไม่ว่าแผนจะจ่ายหมวด 2 แบบไม่มีเพดานแค่ไหนก็ตาม</b> ต้องมีผลประโยชน์เสริมเฉพาะเจาะจงมารองรับเท่านั้นถึงจะเบิกได้
+· <b>เวชภัณฑ์ 3 — ของที่ใส่ค้างไว้ในตัวผู้ป่วย</b> เช่น เหล็กดามกระดูก ข้อเข่าเทียม ลิ้นหัวใจเทียม <b>กลุ่มนี้ปกติจ่าย</b> เพราะถือเป็นส่วนหนึ่งของการผ่าตัด/หัตถการนั้น (ดูรายละเอียดเต็มทุกชิ้นได้ในคำถาม “อุปกรณ์อะไรบ้างที่เบิกไม่ได้ ทั้งที่หมอเป็นคนสั่ง” หมวดอะไรที่ไม่จ่าย)
+ผลประโยชน์เฉพาะที่จะมาปิดช่องว่างเวชภัณฑ์ 2 คือ<b>“ค่าเครื่องมือทางการแพทย์ และอุปกรณ์เทียม”</b> ซึ่งเป็นผลประโยชน์ส่วนขยาย ไม่ใช่หมวด 2 ตรง ๆ และมีเฉพาะบางแผนเท่านั้น
+|แผน|ค่าเครื่องมือทางการแพทย์และอุปกรณ์เทียม (เวชภัณฑ์ 2)
+|D Health Lite (ทุกแผน)|ไม่คุ้มครอง — ไม่มีผลประโยชน์ส่วนขยายนี้เลย
+|เหมาจ่าย Extra (ทุกแผน)|ไม่คุ้มครอง — ไม่มีผลประโยชน์ส่วนขยายนี้เลย
+|Elite Health Plus 20 ล้าน|ไม่คุ้มครอง
+|Elite Health Plus 40 ล้าน|จ่ายตามจริง สูงสุด 100,000 บาทตลอดชีวิต
+|Elite Health Plus 75 ล้าน|จ่ายตามจริง สูงสุด 150,000 บาทตลอดชีวิต
+|Elite Health Plus 100 ล้าน|จ่ายตามจริง สูงสุด 200,000 บาทตลอดชีวิต
+!นี่คือเหตุผลที่ไม่แนะนำให้ลูกค้าเลือกแผนเพราะเบี้ยถูกอย่างเดียวโดยไม่ดูหมวดนี้ เพราะอุปกรณ์กลุ่มเวชภัณฑ์ 2 มักโผล่มาพร้อมเคสหนักที่สุดพอดี เช่น หลังผ่าตัดสมอง/หลอดเลือดสมองที่ต้องใช้รถเข็นและเครื่องช่วยหายใจที่บ้าน หรือหลังอุบัติเหตุที่ต้องใส่ขาเทียม ค่าใช้จ่ายจริงมักอยู่ที่หลักหมื่นถึงหลักแสนบาท ถ้าถือ D Health Lite หรือเหมาจ่าย Extra จะต้องออกเองทั้งหมด ในขณะที่ Elite ตั้งแต่ 40 ล้านขึ้นไปมีวงเงินมารองรับส่วนนี้โดยเฉพาะ`,
+   doc:'จุดนี้ผมเจอบ่อยตอนคนไข้เป็นอัมพาตครึ่งซีกหรือขาขาดจากอุบัติเหตุ ค่ารักษาตัวในโรงพยาบาลเคลมได้หมด แต่พอออกจากโรงพยาบาลแล้วต้องซื้อรถเข็นเอง เครื่องช่วยหายใจที่บ้านเอง ญาติมาถามผมว่าทำไมเคลมไม่ได้ทั้งที่ซื้อแผน "จ่ายตามจริง" ไปแล้ว คำตอบคือหมวด 2 จ่ายตามจริงจริง แต่เฉพาะของที่นับเป็นเวชภัณฑ์ 1 กับ 3 เท่านั้น ของกลับบ้านอย่างเวชภัณฑ์ 2 ต้องดูผลประโยชน์ส่วนขยายแยกต่างหาก'},
+
+  {g:'coverage', k:'cov-doctorfee', q:'ค่าแพทย์ตรวจรักษา (หมวด 3) ทำไม consult หลายแผนกพร้อมกันถึงเสี่ยงจ่ายส่วนต่างเอง',
+   lead:'หมวด 3 ไม่ได้ “จ่ายตามจริงไม่มีเพดาน” ทุกแผน บางแผนกำหนดเป็นวงเงินตายตัวต่อวัน ยิ่งมีแพทย์มาตรวจหลายคนในวันเดียว ยิ่งชนเพดานเร็ว',
+   body:`หมวด 3 คือค่าตรวจของ<b>แพทย์เจ้าของไข้ที่มาราวด์ดูอาการระหว่างนอนโรงพยาบาลทุกวัน</b> รวมถึงค่าปรึกษาแพทย์เฉพาะทางอื่นที่ถูกขอเข้ามาช่วยดูเพิ่ม (consult) เช่น เคสปอดบวมที่อายุรแพทย์เจ้าของไข้ขอให้แพทย์โรคหัวใจมาดูคลื่นไฟฟ้าหัวใจที่ผิดปกติร่วมด้วย
+ปัญหาอยู่ที่<b>แผนแต่ละแบบกำหนดหมวดนี้ไม่เหมือนกัน</b> บางแผนเป็นวงเงินตายตัวต่อวัน ไม่ใช่จ่ายตามจริงไม่มีเพดานอย่างที่หลายคนเข้าใจ
+|แผน|หมวด 3 ค่าแพทย์ตรวจรักษา|เงื่อนไขเพิ่มเติม
+|D Health Lite แผน 1 (1 ล้าน/ครั้ง)|เพดาน 2,000 บาทต่อวัน|รวมค่าแพทย์ทุกคนที่มาตรวจในวันนั้นเข้าด้วยกัน ไม่ได้แยกคนละก้อน
+|D Health Lite แผน 2 (5 ล้าน/ครั้ง)|เพดาน 4,000 บาทต่อวัน|รวมค่าแพทย์ทุกคนที่มาตรวจในวันนั้นเข้าด้วยกัน ไม่ได้แยกคนละก้อน
+|Elite Health Plus (ทุกทุน)|จ่ายตามจริง ไม่มีเพดานต่อวัน|ค่าปรึกษาแพทย์เฉพาะทางเพิ่มเติม เมื่อรวมกับหมวด 3 แล้วจำกัดสูงสุด 365 วันต่อการแอดมิดครั้งนั้น (ในทางปฏิบัติแทบไม่มีเคสไหนนอนเกิน)
+|เหมาจ่าย Extra (ทุกแผน)|จ่ายตามจริง|แต่รวมอยู่ในผลประโยชน์สูงสุดต่อครั้ง 200,000-500,000 บาท ที่นับรวมทุกหมวดเข้าด้วยกัน ไม่ได้แยกวงเงินหมวด 3 ต่างหาก
+ลองดูตัวอย่างเคสที่ consult หลายแผนกในวันเดียว คนไข้นอนรักษาปอดบวมรุนแรง วันหนึ่งมี<b>อายุรแพทย์เจ้าของไข้มาราวด์ 1,200 บาท + แพทย์โรคหัวใจมา consult ดู EKG 1,500 บาท + แพทย์ไตมาดูค่าไตที่เริ่มผิดปกติ 1,800 บาท</b> รวมวันนั้นวันเดียว 4,500 บาท ถ้าถือ D Health Lite แผน 1 ซึ่งเพดานอยู่ที่ 2,000 บาท/วัน<b>ส่วนเกิน 2,500 บาทวันนั้นต้องจ่ายเอง</b> และจะเกิดซ้ำทุกวันที่มีการ consult หลายคนพร้อมกัน ในขณะที่ Elite Health Plus จ่ายเต็มทั้ง 4,500 บาทเพราะไม่มีเพดานรายวัน
+!เคสที่เสี่ยงชนเพดานบ่อยคือเคสซับซ้อนหลายระบบพร้อมกัน เช่น ผู้สูงอายุที่มีทั้งเบาหวาน หัวใจ ไต ร่วมด้วยตอนแอดมิด เพราะมักต้องมีแพทย์มากกว่า 1 สาขามาดูพร้อมกันเกือบทุกวัน ควรแจ้งลูกค้ากลุ่มนี้ให้เข้าใจข้อจำกัดของแผนที่มีเพดานรายวันตั้งแต่ก่อนตัดสินใจซื้อ`,
+   doc:'ผมเจอบ่อยว่าคนไข้เข้าใจผิดว่า D Health Lite "จ่ายตามจริง" ทุกหมวดเหมือนที่เขียนไว้ในโฆษณา ทั้งที่จริงมีแค่บางหมวดเท่านั้นที่ไม่มีเพดาน ส่วนค่าห้องกับค่าแพทย์ตรวจรักษายังเป็นวงเงินตายตัวต่อวันอยู่ ต้องอธิบายให้ชัดตั้งแต่วันขาย ไม่งั้นลูกค้าจะงงตอนเห็นบิลส่วนเกินตอนออกจากโรงพยาบาล'},
+
+  {g:'coverage', k:'cov-surgery', q:'ค่าผ่าตัดและหัตถการ (หมวด 4) ครอบคลุมแค่ไหน มีตัวอย่างค่าธรรมเนียมแพทย์จริงไหม',
+   lead:'หมวด 4 คือค่าแพทย์ผ่าตัด ค่าห้องผ่าตัด และค่าวิสัญญีแพทย์รวมกัน ทุกแผนหลักในเว็บนี้จ่ายแบบตามจริงเหมือนกัน แต่ “ตามจริง” ของแต่ละหัตถการอยู่ในช่วงราคาเท่าไหร่ ต้องดูตัวเลขอ้างอิงจริงประกอบ',
+   body:`หมวด 4 ครอบคลุม<b>ค่าแพทย์ผ่าตัดหรือหัตถการ + ค่าห้องผ่าตัด + ค่าวิสัญญีแพทย์ (ยาสลบ/ยาชาระงับความรู้สึก)</b> และในแผน Elite Health Plus ยังรวมผ่าตัดเปลี่ยนอวัยวะไว้ในหมวดนี้ด้วย (นับสิทธิ 1 ครั้งตลอดชีวิตกรมธรรม์) ทั้ง D Health Lite, Elite Health Plus และเหมาจ่าย Extra จ่ายหมวดนี้แบบ<b>ตามจริง</b>เหมือนกันทั้งหมด ต่างกันแค่เหมาจ่าย Extra ยังถูกกันไว้ใต้เพดานรวมสูงสุดต่อครั้ง (200,000-500,000 บาท) ส่วน D Health Lite และ Elite ไม่มีเพดานรวมแบบนั้น
+คำถามที่ตามมาคือ “ตามจริง” ของแต่ละหัตถการอยู่ที่เท่าไหร่ ตัวเลขอ้างอิงที่ใช้กันทั้งวงการคือ<b>คู่มือแนวทางการกำหนดค่าธรรมเนียมแพทย์ พ.ศ. 2563</b> จัดทำโดยแพทยสภาร่วมกับราชวิทยาลัยทุกสาขา สำนักงานประกันสังคม และสมาคมประกันชีวิตไทย โดยสำรวจอัตราที่แพทย์เรียกเก็บจริงทั่วประเทศแล้วสรุปเป็น 2 ค่าต่อหัตถการหนึ่งรายการ คือ<b>Mean (ค่าเฉลี่ยที่แพทย์ส่วนใหญ่เรียกเก็บ)</b> และ<b>Percentile 90 (เพดานที่แพทย์ 90% เรียกเก็บไม่เกิน)</b>
+!ตัวเลขในตารางนี้คือ<b>“ค่าแพทย์ผ่าตัด” อย่างเดียว</b> ไม่รวมค่าห้องผ่าตัด ค่ายาสลบ ค่าเวชภัณฑ์/อุปกรณ์ที่ใช้ระหว่างผ่าตัด และค่าห้องพักฟื้น ซึ่งเมื่อรวมทุกอย่างแล้วยอดในใบเสร็จจริงจากโรงพยาบาลจะสูงกว่าตัวเลขนี้อีกหลายเท่าตัว
+|หัตถการ|ค่าแพทย์ผ่าตัด เฉลี่ย (Mean)|เพดานที่พบบ่อย (Percentile 90)
+|ผ่าตัดไส้ติ่งอักเสบ (เปิดหน้าท้อง)|18,000 บาท|40,000 บาท
+|ผ่าตัดไส้ติ่งอักเสบ (ส่องกล้อง)|19,500 บาท|42,000 บาท
+|ผ่าตัดถุงน้ำดี (เปิดหน้าท้อง)|25,500 บาท|56,000 บาท
+|ผ่าตัดถุงน้ำดี (ส่องกล้อง)|27,000 บาท|58,000 บาท
+|ผ่าตัดไส้เลื่อนขาหนีบข้างเดียว|18,000 บาท|40,000 บาท
+|ผ่าตัดต้อกระจก (สลายต้อด้วยคลื่นเสียง)|29,700 บาท|52,800 บาท
+|ผ่าตัดต่อมทอนซิลพร้อมอะดีนอยด์|15,000 บาท|25,000 บาท
+|ผ่าคลอดบุตรทางหน้าท้อง (ค่าแพทย์ผ่าตัดเท่านั้น)|15,000 บาท|40,000 บาท
+คู่มือฉบับนี้ยังวางกฎการเรียกเก็บเวลามีแพทย์หรือหัตถการมากกว่า 1 อย่างในการผ่าตัดครั้งเดียว ซึ่งอธิบายว่าทำไมยอดรวมจึงไม่ได้บวกกันตรง ๆ แบบเอาราคาทุกหัตถการมาบวกกันทั้งหมด
+· <b>แพทย์ร่วมผ่าตัดมากกว่า 1 คน (Multiple Physicians)</b> แพทย์ผู้ทำการร่วมแต่ละคนเรียกเก็บได้ไม่เกิน 75% ของอัตรากำหนด ส่วนแพทย์ผู้ช่วยเรียกเก็บเพิ่มได้อีกไม่เกิน 30% ของค่าแพทย์หลัก
+· <b>ผ่าตัดมากกว่า 1 ประเภทในครั้งเดียว (Multiple Procedures)</b> หัตถการหลักเรียกเก็บเต็มอัตรา ส่วนหัตถการรองที่ทำร่วมกันเรียกเก็บได้ไม่เกิน 50% ของอัตรากำหนดสำหรับหัตถการนั้น ไม่ใช่เต็มราคาทุกรายการ
+ตัวเลข Mean/Percentile 90 นี้ยังถูกใช้เป็น<b>เกณฑ์อ้างอิงความสมเหตุสมผล</b>เวลาบริษัทประกันตรวจสอบบิลที่โรงพยาบาลเรียกเก็บสูงผิดปกติ ถ้าลูกค้าเจอใบแจ้งค่าแพทย์ที่สูงกว่า Percentile 90 มาก ควรขอใบแจ้งราคาก่อนผ่าตัดและสอบถามเหตุผลจากโรงพยาบาลตรง ๆ`,
+   doc:'ตัวเลขพวกนี้ผมใช้คุยกับคนไข้บ่อยตอนอธิบายว่าทำไมแผนที่ "จ่ายตามจริง" ถึงสำคัญกว่าแผนที่มีเพดานตายตัวแบบ 50,000/100,000 บาทต่อครั้ง เพราะแค่ผ่าตัดถุงน้ำดีส่องกล้องเคสเดียว ค่าแพทย์อย่างเดียวก็ไปแตะเกือบ 60,000 บาทได้แล้ว ยังไม่นับค่าห้องผ่าตัดกับค่ายาสลบที่ตามมาอีก'},
+
+  {g:'coverage', k:'cov-daysurg-followup', q:'Day Surgery ตรวจก่อน-หลังนอนโรงพยาบาล อุบัติเหตุ OPD เวชศาสตร์ฟื้นฟู (หมวด 5-8) จ่ายอะไร ไม่จ่ายอะไร',
+   lead:'สี่หมวดนี้ดูเหมือนจะเป็นเรื่องเดียวกันแต่จริง ๆ มีเงื่อนไขคนละแบบ และเป็นจุดที่เหมาจ่าย Extra ไม่คุ้มครองเลยทั้งสี่หมวด',
+   body:`<b>หมวด 5 — Day Surgery</b> คือผ่าตัดใหญ่ที่เดี๋ยวนี้เทคโนโลยีทำให้ไม่ต้องนอนโรงพยาบาลข้ามคืน กลับบ้านได้ในวันเดียวกัน เช่น ผ่าตัดต้อกระจก ส่องกล้องข้อเข่าบางกรณี จ่ายเหมือนกับกรณีนอนโรงพยาบาลทุกประการ ไม่ได้ลดสิทธิลงเพราะไม่ได้นอนค้างคืน
+<b>หมวด 6 — ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน</b> แบ่งเป็นสองช่วง คือ<b>6.1 ก่อนแอดมิด</b> (ตรวจแล็บ เอกซเรย์ ที่นำไปสู่การตัดสินใจแอดมิดครั้งนั้นจริง) และ<b>6.2 หลังแอดมิด</b> (นัดตรวจติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วัน สำหรับโรคเดียวกับที่แอดมิด) ทั้งสองช่วงผูกกับการแอดมิดครั้งนั้นเท่านั้น ไม่ใช่วงเงิน OPD ทั่วไป
+· <b>จ่าย</b> ตรวจเลือด เอกซเรย์ อัลตราซาวด์ ที่แพทย์สั่งก่อนแอดมิดแล้วผลนำไปสู่การนอนโรงพยาบาลจริง และนัดติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วันสำหรับโรคเดียวกัน
+· <b>ไม่จ่าย</b> ตรวจแล้วสุดท้ายไม่ได้แอดมิดจริง (ตรวจแล้วให้กลับบ้าน) มักไม่เข้าเงื่อนไข 6.1 เพราะเงื่อนไขกำหนดให้ต้องนำไปสู่การแอดมิดจริง และการตรวจที่ไม่เกี่ยวกับโรคที่แอดมิดครั้งนั้นก็ไม่เข้าเงื่อนไขเช่นกัน
+!ผ่าตัดเล็กตามหมวด 13 ที่ทำด้วยยาชาเฉพาะที่ ไม่สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ ต้องใช้สิทธิ OPD แทน เพราะหมวด 6 ผูกกับการนอนโรงพยาบาลหรือ Day Surgery เท่านั้น
+<b>หมวด 7 — อุบัติเหตุ OPD ภายใน 24 ชั่วโมง</b> คุ้มครองเฉพาะการรักษาที่เกิดขึ้นภายใน 24 ชั่วโมงแรกหลังอุบัติเหตุเท่านั้น ถ้าต้องกลับมาล้างแผลต่อเนื่อง ตัดไหม หรือฉีดวัคซีนบาดทะยักเข็มกระตุ้นในภายหลัง ต้องใช้สิทธิ PA (ประกันอุบัติเหตุ) หรือ OPD แยกต่างหาก ไม่ใช่หมวด 7 อีกต่อไป
+<b>หมวด 8 — เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล</b> คือกายภาพบำบัดที่ต่อเนื่องจากการแอดมิดครั้งนั้น เช่น หลังผ่าตัดเปลี่ยนข้อเข่าต้องทำกายภาพฝึกเดิน ผลประโยชน์นี้<b>รวมอยู่ในวงเงินการแอดมิดครั้งนั้น</b> ไม่ใช่วงเงินแยกต่างหาก และคนละรายการกับ “ค่ากายภาพบำบัด” แบบผู้ป่วยนอกทั่วไปที่มีเฉพาะ Elite Health Plus ทุน 75 และ 100 ล้าน (ในผลประโยชน์ส่วนขยาย 4)
+เทียบทั้งสี่หมวดระหว่างแผนหลักที่ใช้บ่อย
+|หมวด|D Health Lite|Elite Health Plus|เหมาจ่าย Extra
+|5. Day Surgery|จ่ายตามจริง|จ่ายตามจริง|จ่ายตามจริง
+|6. ตรวจก่อน-หลังนอน รพ. 30 วัน|จ่ายตามจริง|จ่ายตามจริง|ไม่คุ้มครองในแผนนี้
+|7. อุบัติเหตุ OPD ภายใน 24 ชม.|จ่ายตามจริง เฉพาะ 24 ชม.แรก|จ่ายตามจริง เฉพาะ 24 ชม.แรก|ไม่คุ้มครองในแผนนี้
+|8. เวชศาสตร์ฟื้นฟูหลังนอน รพ.|จ่ายตามจริง|จ่ายตามจริง|ไม่คุ้มครองในแผนนี้
+จะเห็นว่าเหมาจ่าย Extra ไม่คุ้มครองทั้งสามหมวดหลัง (6, 7, 8) เลย เพราะออกแบบมาให้เป็นตัวจ่ายก้อนใหญ่ตอนแอดมิดเป็นหลัก ถ้าลูกค้าเลือกเหมาจ่าย Extra เป็นแผนเดียว ควรแจ้งให้รู้ว่าอุบัติเหตุเล็กน้อยที่รักษาแบบ OPD หรือกายภาพบำบัดหลังผ่าตัดจะไม่มีสัญญาไหนรองรับ ต้องพึ่งประกันอุบัติเหตุ (PA) หรือ OPD rider แยกต่างหาก`,
+   doc:'จุดที่คนไข้เข้าใจผิดบ่อยที่สุดคือหมวด 6 กับ OPD ทั่วไป คิดว่าไปตรวจติดตามอาการกี่ครั้งก็เบิกได้ไม่จำกัดถ้าซื้อ Elite ทั้งที่จริงต้องเป็นโรคเดียวกับที่แอดมิดและอยู่ในกรอบ 30 วันเท่านั้น พ้นจากนั้นต้องใช้สิทธิ OPD ปกติ (ถ้ามี) ซึ่งวงเงินคนละก้อนกันเลย'},
+
+  {g:'coverage', k:'cov-dialysis-chemo', q:'ล้างไต รังสีรักษา เคมีบำบัด รถพยาบาลฉุกเฉิน (หมวด 9-12) คุ้มครองแค่ไหน ทำไมบางแผนต้องพ่วง Care Plus',
+   lead:'สามหมวดแรก (ล้างไต รังสีรักษา เคมีบำบัด) คือค่าใช้จ่ายระยะยาวที่แพงที่สุดในบรรดา 13 หมวด และเป็นหมวดที่ D Health Lite ไม่คุ้มครองเองเลย ต้องพ่วง Care Plus',
+   body:`<b>หมวด 9 ล้างไตผ่านทางเส้นเลือด</b> คือการฟอกเลือดด้วยเครื่องไตเทียม (hemodialysis) สำหรับผู้ป่วยไตวายเรื้อรังระยะสุดท้าย ต้องทำต่อเนื่อง 2-3 ครั้งต่อสัปดาห์ไปตลอดชีวิตหรือจนกว่าจะได้ปลูกถ่ายไต ค่าใช้จ่ายรวมมักอยู่ที่หลักแสนถึงหลักล้านบาทต่อปี
+<b>หมวด 10 รังสีรักษา/รังสีร่วมรักษา/เวชศาสตร์นิวเคลียร์รักษา</b> คือการฉายแสงและการรักษาด้วยรังสีสำหรับผู้ป่วยมะเร็ง
+<b>หมวด 11 เคมีบำบัด</b> รวมถึงการรักษาแบบออกฤทธิ์จำเพาะเจาะจงต่อเซลล์มะเร็ง (Targeted Therapy) และภูมิคุ้มกันบำบัดรุ่นใหม่ ซึ่งยาต่อคอร์สอาจสูงถึงหลักแสนถึงหลักล้านบาท
+สามหมวดนี้คือใจกลางของค่าใช้จ่ายก้อนใหญ่ที่สุดเวลาป่วยเป็นมะเร็งหรือไตวาย และ<b>แผนแต่ละแบบคุ้มครองไม่เท่ากันเลย</b>
+|แผน|หมวด 9-11 (ล้างไต/รังสีรักษา/เคมีบำบัด)|หมวด 12 (รถพยาบาลฉุกเฉิน)
+|D Health Lite (ทุกแผน)|ไม่คุ้มครองเอง ต้องซื้อ Care Plus เสริมจึงจะมีความคุ้มครองสามหมวดนี้|จ่ายตามจริง
+|Elite Health Plus (ทุกทุน)|จ่ายตามจริง ไม่มีเพดาน คุ้มครองในตัวอยู่แล้ว|จ่ายตามจริง
+|เหมาจ่าย Extra (ทุกแผน)|ไม่คุ้มครองในแผนนี้|มีเพดานเท่ากับค่าห้องต่อวัน (2,000-4,000 บาท)
+!เหตุผลที่ D Health Lite ทุกแผนบังคับพ่วง Care Plus เสมอ เพราะตัวสัญญา D Health Lite เองไม่มีผลประโยชน์หมวด 9-11 อยู่เลย ถ้าไม่มี Care Plus แล้วป่วยเป็นมะเร็งหรือไตวายเรื้อรัง ต้องออกค่าล้างไต ค่าฉายแสง หรือค่ายาเคมีบำบัดเองทั้งหมด ซึ่งเป็นค่าใช้จ่ายก้อนใหญ่ที่สุดในบรรดาโรคร้ายแรงที่พบบ่อย
+ส่วน Elite Health Plus ไม่ต้องพ่วง Care Plus เพราะคุ้มครองสามหมวดนี้แบบตามจริงในตัวสัญญาอยู่แล้ว การซ้อน Care Plus เข้าไปอีกจะเป็นการจ่ายเบี้ยซ้ำซ้อนโดยไม่จำเป็น`,
+   doc:'เวลาลูกค้าถามว่าทำไมแนะนำให้ซื้อ Care Plus พ่วงด้วยทั้งที่เบี้ย D Health Lite ก็ไม่ถูกอยู่แล้ว ผมจะอธิบายตรง ๆ ว่านี่ไม่ใช่การขายพ่วงเพื่อเพิ่มยอด แต่เพราะ D Health Lite เว้นสามหมวดที่แพงที่สุดไว้เฉย ๆ ถ้าไม่มี Care Plus รองรับ วันที่เจอมะเร็งหรือไตวายจริงจะไม่มีอะไรจ่ายให้เลยในสามหมวดนี้'},
+
+  {g:'coverage', k:'cov-minor-surgery', q:'ผ่าตัดเล็ก (หมวด 13) คืออะไร ต่างจากผ่าตัดใหญ่หมวด 4 ตรงไหน มีตัวอย่างค่าธรรมเนียมไหม',
+   lead:'ผ่าตัดเล็กคือหัตถการที่ทำด้วยยาชาเฉพาะที่ ไม่ต้องเข้าห้องผ่าตัดปลอดเชื้อเต็มรูปแบบ ไม่ต้องมีวิสัญญีแพทย์ดมยาสลบเหมือนหมวด 4',
+   body:`หมวด 13 คือ<b>ผ่าตัดเล็กที่ทำด้วยยาชาเฉพาะที่ (local anesthesia)</b> แพทย์เจ้าของไข้ทำเองได้ในห้องหัตถการหรือห้องตรวจ OPD ไม่ต้องจองคิวห้องผ่าตัด ไม่ต้องมีวิสัญญีแพทย์มาระงับความรู้สึกเหมือนผ่าตัดใหญ่ในหมวด 4 ระยะเวลาทำสั้นและกลับบ้านได้ทันทีหลังทำเสร็จ
+D Health Lite และ Elite Health Plus จ่ายหมวดนี้แบบ<b>ตามจริง</b>เหมือนกัน ส่วนเหมาจ่าย Extra<b>ไม่คุ้มครองหมวดนี้เลย</b> เช่นเดียวกับหมวด 6-8 ที่ไม่คุ้มครองเหมือนกัน
+ตัวอย่างค่าธรรมเนียมแพทย์จริงจากคู่มือแนวทางการกำหนดค่าธรรมเนียมแพทย์ พ.ศ. 2563 (ค่าแพทย์อย่างเดียว ไม่รวมค่าเวชภัณฑ์และค่าห้องหัตถการ)
+|หัตถการผ่าตัดเล็ก|ค่าแพทย์ เฉลี่ย (Mean)|เพดานที่พบบ่อย (Percentile 90)
+|เย็บแผลฉีกขาดที่ผิวหนังแขน/ขา|1,500 บาท|5,600 บาท
+|ตัดก้อน/ชิ้นเนื้อเล็กใต้ผิวหนัง|1,200 บาท|2,000 บาท
+|กรีดระบายฝีหนองรอบทวารหนัก|4,500 บาท|10,000 บาท
+|ตัดติ่งเนื้อรอบทวารหนัก|1,500 บาท|4,000 บาท
+|เจาะระบายเล็บขบ (นิ้วมือ/เท้า)|750 บาท|3,000 บาท
+|ถอดเล็บที่อักเสบ/เล็บขบรุนแรง|2,250 บาท|4,000 บาท
+จะเห็นว่าผ่าตัดเล็กส่วนใหญ่อยู่ในหลักพันถึงหลักหมื่นต้น ๆ ต่ำกว่าผ่าตัดใหญ่ในหมวด 4 มาก แต่ก็ยังเป็นค่าใช้จ่ายที่เกิดขึ้นบ่อยในชีวิตประจำวัน เช่น เล็บขบ แผลถูกของมีคมบาด หรือฝีที่เกิดจากการติดเชื้อผิวหนัง
+!ผ่าตัดเล็กหมวด 13 ที่ทำด้วยยาชาเฉพาะที่ ไม่สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ ต้องใช้สิทธิ OPD แทน เพราะหมวด 6 ผูกอยู่กับการนอนโรงพยาบาลหรือ Day Surgery เท่านั้น ถ้าลูกค้าไม่มี OPD rider ค่าตัดไหมหรือนัดดูแผลครั้งต่อไปจะไม่มีสิทธิเบิกต่อ`,
+   doc:'เคสผ่าตัดเล็กที่เจอบ่อยที่สุดในห้องฉุกเฉินคือแผลฉีกขาดกับฝีที่ต้องกรีดระบาย ราคาไม่ได้สูงมากเทียบกับผ่าตัดใหญ่ แต่เป็นเหตุการณ์ที่เกิดบ่อยมาก คนไข้ที่ไม่มีประกันสุขภาพเลยมักคิดว่าเรื่องเล็กแบบนี้ไม่คุ้มจะเคลม ทั้งที่จริงถ้ามีแผน OPD ควบด้วยก็เบิกได้สบาย ๆ'},
+
+  {g:'coverage', k:'cov-extensions', q:'หมวดเสริม/ผลประโยชน์ส่วนขยาย 1-4 คืออะไร มีอะไรบ้าง ต้องซื้อเพิ่มไหม',
+   lead:'นอกจาก 13 หมวดหลัก Elite Health Plus ยังมี “ผลประโยชน์ส่วนขยาย” แถมมาในกรมธรรม์เดียวกัน ไม่ต้องซื้อเพิ่ม แต่มีให้ไม่เท่ากันตามทุนที่เลือก ส่วน D Health Lite ไม่มีส่วนขยายพวกนี้เลย',
+   body:`ผลประโยชน์ส่วนขยายเป็นของแถมที่มีเฉพาะใน<b>Elite Health Plus</b> เท่านั้น ไม่ใช่ผลประโยชน์แยกที่ต้องจ่ายเบี้ยเพิ่ม แต่<b>มีให้ไม่เท่ากันตามทุนที่เลือก</b> ยิ่งทุนสูง (75-100 ล้าน) ยิ่งได้ครบ ทุนต่ำสุด 20 ล้านแทบไม่มีส่วนขยายเลย D Health Lite และเหมาจ่าย Extra ไม่มีผลประโยชน์กลุ่มนี้เลยแม้แต่ข้อเดียว
+<b>ส่วนขยาย 1 — กรณีผู้ป่วยใน</b>
+· ค่าปรึกษาแพทย์เฉพาะทางเพิ่มเติม เมื่อรวมกับหมวด 3 แล้วสูงสุด 365 วันต่อการแอดมิด (ทุกทุน)
+· ค่าห้องพักบิดา/มารดาเฝ้าไข้ (เตียงเสริม) 5,000 บาท/วัน (ไม่มีในทุน 20 ล้าน)
+· ค่าฟื้นฟูสภาพผู้ป่วยใน สูงสุด 28 วันต่อโรคต่อปี (ไม่มีในทุน 20 ล้าน)
+· ค่าเครื่องมือทางการแพทย์และอุปกรณ์เทียม (เวชภัณฑ์ 2) 100,000-200,000 บาทตลอดชีวิต ตามทุน 40/75/100 ล้าน (ไม่มีในทุน 20 ล้าน — ดูรายละเอียดเต็มในคำถามหมวด 2)
+· ค่ารักษาทางจิตเวชแบบผู้ป่วยใน 75,000-100,000 บาทต่อโรค สูงสุด 300,000-400,000 บาทตลอดชีวิต (มีเฉพาะทุน 75 และ 100 ล้าน)
+<b>ส่วนขยาย 2 — หลังการรักษาตัวในโรงพยาบาล</b>
+· ค่าพยาบาลส่วนตัวตามคำแนะนำแพทย์ หลังออกจากโรงพยาบาล สูงสุด 40 วันต่อปีกรมธรรม์ 3,000-5,000 บาทต่อวันตามทุน (ไม่มีในทุน 20 ล้าน)
+<b>ส่วนขยาย 3 — การรักษาพยาบาลแบบฉุกเฉิน</b>
+· ค่าทันตกรรมจากอุบัติเหตุ และค่าบริการช่วยเหลือฉุกเฉินทางการแพทย์ (เช่น การเคลื่อนย้ายฉุกเฉิน) จ่ายตามจริงทุกทุนเท่ากันหมด
+<b>ส่วนขยาย 4 — กรณีผู้ป่วยนอก (ไม่ต้องแอดมิด)</b>
+· ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET) กรณีไม่ต้องแอดมิด แยกวงเงินจาก OPD ทั่วไปและจากหมวด 6 จ่ายตามจริงทุกทุน
+· ค่าธรรมเนียมปรึกษาแพทย์ทั่วไป/เฉพาะทาง OPD สูงสุด 2 ครั้ง/วัน ไม่คุ้มครองในทุน 20 ล้าน, 20,000 บาท/ปีในทุน 40 ล้าน, 40,000 บาท/ปีในทุน 75 ล้าน, จ่ายตามจริงสูงสุด 360 ครั้ง/ปีในทุน 100 ล้าน
+· ค่ากายภาพบำบัด และการฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก มีเฉพาะทุน 75 และ 100 ล้านเท่านั้น
+<b>ความคุ้มครองเสริมที่ต้องเลือกซื้อเพิ่มต่างหาก (ไม่ได้แถมมาในกรมธรรม์)</b>
+· <b>Maternity Plus</b> คุ้มครองค่าคลอดบุตร อายุ 15-49 ปี ทุนเลือกได้ 2 หรือ 4 ล้านบาทต่อครั้ง
+· <b>Well-Being Plus</b> คุ้มครองค่าตรวจสุขภาพประจำปี วัคซีน ทันตกรรม และตรวจสายตา อายุ 11-90 ปี
+· <b>OPD rider แยกต่างหาก</b> ทั้งแบบรายครั้งและแบบเหมาจ่าย ดูรายละเอียดเต็มและตารางเบี้ยได้ที่หน้า <span class="mini-link" onclick="showPlanDetail('opd')">ผู้ป่วยนอก (OPD)</span>
+ทั้งสามตัวนี้ต้องดูรายละเอียดเงื่อนไขและตารางเบี้ยเป็นรายแบบจากหน้ารายการแผนทั้งหมด เพราะเบี้ยและเงื่อนไขแยกจากกรมธรรม์หลักโดยสิ้นเชิง`,
+   doc:'ผมมักอธิบายลูกค้าว่าส่วนขยายพวกนี้คือ "ของแถมตามทุน" ไม่ใช่สิ่งที่เลือกซื้อเองได้ ถ้าอยากได้ค่าเครื่องมือแพทย์หรือค่าห้องพักญาติ ต้องขยับทุนขึ้นไปที่ 40 ล้านขึ้นไป ไม่ใช่จ่ายเบี้ยเพิ่มแยกต่างหากในทุนเดิม ส่วน Maternity Plus, Well-Being Plus และ OPD ถึงจะเป็นของที่ซื้อเพิ่มได้จริง ต้องคุยเงื่อนไขอายุและทุนแยกทุกครั้ง'},
+
   /* ===== ก่อนสมัคร ===== */
   {g:'prep', q:'แถลงสุขภาพคืออะไร ทำไมสำคัญกว่าที่คิดมาก',
    lead:'คือการบอกประวัติสุขภาพตัวเองในใบคำขอ และเป็นจุดที่ตัดสินว่าตอนเคลมจริงจะได้เงินหรือไม่ได้',
