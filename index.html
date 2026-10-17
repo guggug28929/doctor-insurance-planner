@@ -3018,6 +3018,44 @@
       </div>
       <div class="field-err" id="diabetesErr"></div>
 
+      <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_smart_silver">
+        <label style="margin:0;flex:1;">สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส<span class="info-icon">i<span class="tooltip">สัญญาเพิ่มเติมสำหรับวัย 40-80 ปี เลือกซื้อได้ทีละความคุ้มครอง: โรคอัลไซเมอร์และหลอดเลือดสมองแตก/อุดตัน, ทุพพลภาพถาวรสิ้นเชิง, กระดูกแตกหักจากอุบัติเหตุ · ซิลเวอร์ จ่ายเงินก้อน ซิลเวอร์ พลัส จ่ายรายเดือน 120 เดือน เบี้ยเท่ากัน</span></span></label>
+      </div>
+      <div id="smart_silver_fields" class="sub-fields hidden">
+        <label class="first">รูปแบบรับผลประโยชน์</label>
+        <select id="smart_silver_variant">
+          <option value="lump">สมาร์ท ซิลเวอร์ (รับเงินก้อน)</option>
+          <option value="monthly">สมาร์ท ซิลเวอร์ พลัส (รับรายเดือน 120 เดือน)</option>
+        </select>
+        <label>อัลไซเมอร์ และหลอดเลือดสมองแตก/อุดตัน</label>
+        <select id="smart_silver_alz">
+          <option value="0">ไม่เลือก</option>
+          <option value="1000000">แผน 1,000,000</option>
+          <option value="2000000">แผน 2,000,000</option>
+          <option value="3000000">แผน 3,000,000</option>
+          <option value="4000000">แผน 4,000,000</option>
+          <option value="5000000">แผน 5,000,000</option>
+        </select>
+        <label>ทุพพลภาพถาวรสิ้นเชิง</label>
+        <select id="smart_silver_tpd">
+          <option value="0">ไม่เลือก</option>
+          <option value="1000000">แผน 1,000,000</option>
+          <option value="2000000">แผน 2,000,000</option>
+          <option value="3000000">แผน 3,000,000</option>
+          <option value="4000000">แผน 4,000,000</option>
+          <option value="5000000">แผน 5,000,000</option>
+        </select>
+        <label>กระดูกแตกหัก (ค่ารักษาตามจริง)</label>
+        <select id="smart_silver_fx">
+          <option value="0">ไม่เลือก</option>
+          <option value="250000">แผน 250,000</option>
+          <option value="500000">แผน 500,000</option>
+        </select>
+        <div class="hint">อายุรับ 40 – 80 ปี คุ้มครองถึงอายุ 81 ปี · กลุ่มอาชีพ 1-3 · เอกสารของบริษัทมีเฉพาะเบี้ยรายปี</div>
+      </div>
+      <div class="field-err" id="smartSilverErr"></div>
+
       <div class="divider"></div>
 
       <label class="first">D Care <span style="color:var(--muted);font-weight:400;">(เลือกได้หลายกลุ่มโรค ยกเว้น "โรคยอดฮิต" ที่ต้องซื้อเดี่ยว)</span><span class="info-icon">i<span class="tooltip">เลือกทำเฉพาะกลุ่มโรคที่กังวลจริง ประหยัดกว่าซื้อความคุ้มครองกว้างที่ไม่จำเป็น เหมาะกับคนมีประวัติครอบครัวเป็นโรคเฉพาะกลุ่ม</span></span></label>
@@ -3850,6 +3888,17 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">ผู้สูงวัย · อายุ 40-80 ปี</div>
+      <h3>สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส</h3>
+      <p class="meta">อายุรับ 40 – 80 ปี • เลือกซื้อแยกได้ 3 ความคุ้มครอง</p>
+      <ul>
+        <li>อัลไซเมอร์ และหลอดเลือดสมองแตก/อุดตัน · ทุพพลภาพถาวรสิ้นเชิง · กระดูกแตกหักจากอุบัติเหตุ</li>
+        <li>ซิลเวอร์รับเงินก้อน ซิลเวอร์ พลัสรับรายเดือน 120 เดือน (รวม 180% ของทุน) เบี้ยเท่ากัน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('smartsilver')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
       <h3>D Care</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • เลือกทุนได้เองต่อกลุ่มโรค ทุนรวมสูงสุด 2,500,000 บาท</p>
@@ -4381,7 +4430,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-10-17a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-10-17b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4528,6 +4577,7 @@ bindCheckboxToggle('use_careplus','careplus_fields');
 bindCheckboxToggle('use_cipc','cipc_fields');
 bindCheckboxToggle('use_cancer','cancer_fields');
 bindCheckboxToggle('use_pure_cancer','pure_cancer_fields');
+bindCheckboxToggle('use_smart_silver','smart_silver_fields');
 bindCheckboxToggle('use_happy_lady','happy_lady_fields');
 bindCheckboxToggle('use_happy_lady_plus','happy_lady_plus_fields');
 bindCheckboxToggle('use_diabetes','diabetes_fields');
@@ -5699,6 +5749,88 @@ function pureCancerVsCancerSection(){
   </div>`;
 }
 
+/* สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส (สัญญาเพิ่มเติมสมาร์ท แคร์ / สมาร์ท แคร์ พลัส)
+   เลือกซื้อแยกได้ 3 ข้อตกลงคุ้มครอง เบี้ยรวม = ผลรวมของข้อที่เลือก สองโครงการใช้อัตราเดียวกัน
+   เอกสารของบริษัทมีเฉพาะเบี้ยรายปี งวดอื่นคืน null ให้ระบบขึ้นคำเตือน ไม่หารเอง
+   กระดูกแตกหักใช้อัตราตามกลุ่มอาชีพ (1-2 / 3) ไม่แยกเพศ */
+const SMART_SILVER_CAPS = {alz:[1000000,2000000,3000000,4000000,5000000], tpd:[1000000,2000000,3000000,4000000,5000000], fx:[250000,500000]};
+function smartSilverPartPremium(part, capital, gender, age, occupationClass, freq){
+  const t = RATES.smart_care;
+  if(!t || !capital) return null;
+  if((freq || 'annual') !== 'annual') return null;
+  const a = Number(age);
+  if(!Number.isFinite(a) || a < t.entry_age_min || a > t.entry_age_max) return null;
+  const i = a - t.age_start;
+  const idx = SMART_SILVER_CAPS[part].indexOf(Number(capital));
+  if(idx < 0) return null;
+  let row;
+  if(part === 'fx'){
+    const occ = String(occupationClass || '1');
+    if(occ === '4') return null;
+    row = (occ === '3' ? t.fracture.occ_3 : t.fracture.occ_1_2)[i];
+  } else {
+    const tbl = part === 'alz' ? t.alz_stroke : t.tpd;
+    row = tbl[gender === 'f' ? 'f' : 'm'][i];
+  }
+  const v = row ? row[idx] : null;
+  return (typeof v === 'number') ? v : null;
+}
+function smartSilverPremium(sel, gender, age, occupationClass, freq){
+  if(!sel) return null;
+  const parts = ['alz','tpd','fx'].filter(k => Number(sel[k]) > 0);
+  if(!parts.length) return null;
+  let total = 0;
+  for(const k of parts){
+    const v = smartSilverPartPremium(k, sel[k], gender, age, occupationClass, freq);
+    if(v === null) return null;
+    total += v;
+  }
+  return total;
+}
+function smartSilverBenefitTable(){
+  const f = n => n.toLocaleString('en-US');
+  const caps = [1000000,2000000,3000000,4000000,5000000];
+  const head = `<thead><tr><th>โรคสมอง (อัลไซเมอร์/หลอดเลือดสมอง) และ ทุพพลภาพถาวรสิ้นเชิง</th>${caps.map(c=>`<th>แผน ${f(c)}</th>`).join('')}</tr></thead>`;
+  const rows = `<tr><td>สมาร์ท ซิลเวอร์ — เงินก้อน</td>${caps.map(c=>`<td>${f(c)}</td>`).join('')}</tr>`
+    + `<tr><td>สมาร์ท ซิลเวอร์ พลัส — รายเดือน (สูงสุด 120 เดือน)</td>${caps.map(c=>`<td>${f(Math.round(c*0.015))}/เดือน</td>`).join('')}</tr>`
+    + `<tr><td>สมาร์ท ซิลเวอร์ พลัส — รวมสูงสุด</td>${caps.map(c=>`<td>${f(Math.round(c*1.8))}</td>`).join('')}</tr>`;
+  const fx = `<thead><tr><th>กระดูกแตกหัก (ทั้งสองโครงการเหมือนกัน)</th><th>แผน 250,000</th><th>แผน 500,000</th></tr></thead><tbody>`
+    + `<tr><td>1.1 สะโพก เชิงกราน หรือกระดูกสันหลัง (ยกเว้นกระดูกต้นขา ก้นกบ) ค่ารักษาตามจริง สูงสุด</td><td>250,000</td><td>500,000</td></tr>`
+    + `<tr><td>1.2 กระดูกส่วนอื่น ค่ารักษาตามจริง สูงสุด</td><td>125,000</td><td>250,000</td></tr>`
+    + `<tr><td>ข้อ 1.1 + 1.2 รวมกันต่อปีกรมธรรม์ ไม่เกิน</td><td>250,000</td><td>500,000</td></tr>`
+    + `<tr><td>2. ค่าพยาบาล/ผู้ดูแลมืออาชีพที่บ้าน ตามจริง ต่อวันไม่เกิน</td><td>1,000</td><td>2,000</td></tr>`
+    + `<tr><td>ข้อ 2 รวมต่อปีกรมธรรม์ไม่เกิน (30 วัน)</td><td>30,000</td><td>60,000</td></tr></tbody>`;
+  return `<div class="table-wrap"><table>${head}<tbody>${rows}</tbody></table></div>`
+    + `<div class="table-wrap" style="margin-top:12px;"><table>${fx}</table></div>`
+    + `<p class="rate-note">ที่มา: โบรชัวร์ MTL_2-02-04-0484_15/03/2567 และแบบข้อความสัญญาเพิ่มเติมสมาร์ท แคร์ ของบมจ.เมืองไทยประกันชีวิต</p>`;
+}
+function smartSilverPartsText(ss){
+  const out = [];
+  if(ss.alz > 0) out.push(`อัลไซเมอร์/หลอดเลือดสมอง ${fmt(ss.alz)}`);
+  if(ss.tpd > 0) out.push(`ทุพพลภาพถาวรสิ้นเชิง ${fmt(ss.tpd)}`);
+  if(ss.fx > 0) out.push(`กระดูกแตกหัก ${fmt(ss.fx)}`);
+  return out.join(' · ') || 'ยังไม่เลือกความคุ้มครอง';
+}
+function smartSilverRateTableBlock(){
+  const t = RATES.smart_care;
+  if(!t) return '';
+  const f = v => (typeof v === 'number') ? v.toLocaleString('en-US') : 'ตรวจกับใบเสนอราคา *';
+  const ages = t.alz_stroke.m.map((_, i) => t.age_start + i);
+  const caps = ['1 ล้าน','2 ล้าน','3 ล้าน','4 ล้าน','5 ล้าน'];
+  const tbl = (title, data) => {
+    const head = `<thead><tr><th rowspan="2">อายุ (ปี)</th>${caps.map(c=>`<th colspan="2">แผน ${c}</th>`).join('')}</tr><tr>${caps.map(()=>'<th>ชาย</th><th>หญิง</th>').join('')}</tr></thead>`;
+    const rows = ages.map((a,i)=>`<tr><td>${a}</td>${caps.map((_,k)=>`<td>${f(data.m[i][k])}</td><td>${f(data.f[i][k])}</td>`).join('')}</tr>`).join('');
+    return `<h3 style="margin-top:14px;">${title}</h3><div class="table-wrap" style="max-height:420px;"><table>${head}<tbody>${rows}</tbody></table></div>`;
+  };
+  const fxHead = `<thead><tr><th rowspan="2">อายุ (ปี)</th><th colspan="2">กลุ่มอาชีพ 1 และ 2</th><th colspan="2">กลุ่มอาชีพ 3</th></tr><tr><th>แผน 250,000</th><th>แผน 500,000</th><th>แผน 250,000</th><th>แผน 500,000</th></tr></thead>`;
+  const fxRows = ages.map((a,i)=>`<tr><td>${a}</td><td>${f(t.fracture.occ_1_2[i][0])}</td><td>${f(t.fracture.occ_1_2[i][1])}</td><td>${f(t.fracture.occ_3[i][0])}</td><td>${f(t.fracture.occ_3[i][1])}</td></tr>`).join('');
+  return `<p class="rate-note">เบี้ยรายปี (บาท) · สมาร์ท ซิลเวอร์ และ สมาร์ท ซิลเวอร์ พลัส ใช้อัตราเดียวกัน · เลือกซื้อข้อไหนจ่ายเบี้ยข้อนั้น เบี้ยรวม = ผลรวมของข้อที่เลือก · โรคสมองและทุพพลภาพ กลุ่มอาชีพ 1-3 อัตราเดียวกัน</p>`
+    + tbl('1) ความคุ้มครองโรคสมองเสื่อมชนิดอัลไซเมอร์ และโรคหลอดเลือดสมองแตกหรืออุดตัน', t.alz_stroke)
+    + tbl('2) ความคุ้มครองทุพพลภาพถาวรสิ้นเชิง', t.tpd)
+    + `<h3 style="margin-top:14px;">3) ความคุ้มครองกระดูกแตกหัก (ชายและหญิงอัตราเดียวกัน)</h3><div class="table-wrap" style="max-height:420px;"><table>${fxHead}<tbody>${fxRows}</tbody></table></div>`
+    + `<p class="rate-note">ที่มา: เอกสารอัตราเบี้ยประกันภัยของบริษัท (Update 07.05.67) · ช่องโรคสมอง แผน 2 ล้าน หญิงอายุ 75 ปี เอกสารพิมพ์ไว้ 61,880 บาท ซึ่งไม่ตรงกับรูปแบบของช่องอื่นทั้งหมด (แผน 2 ล้าน = 2 เท่าของแผน 1 ล้านพอดี) จึงไม่นำมาแสดง ต้องตรวจกับใบเสนอราคาจริงก่อน</p>`;
+}
+
 function paPremium(plan, age, freq){
   freq = freq || 'annual';
   if(plan === 'none') return null;
@@ -5830,6 +5962,14 @@ function readInputs(){
   const useHappyLadyPlus = document.getElementById('use_happy_lady_plus').checked;
   const happyLadyPlusCapital = parseFloat(document.getElementById('happy_lady_plus_capital').value) || 0;
 
+  const useSmartSilver = document.getElementById('use_smart_silver').checked;
+  const smartSilver = {
+    variant: document.getElementById('smart_silver_variant').value,
+    alz: parseFloat(document.getElementById('smart_silver_alz').value) || 0,
+    tpd: parseFloat(document.getElementById('smart_silver_tpd').value) || 0,
+    fx: parseFloat(document.getElementById('smart_silver_fx').value) || 0,
+  };
+
   const useDiabetes = document.getElementById('use_diabetes').checked;
   const diabetesCapital = parseFloat(document.getElementById('diabetes_capital').value) || 0;
 
@@ -5862,7 +6002,7 @@ function readInputs(){
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
           useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
-          useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital,
+          useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital, useSmartSilver, smartSilver,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
           useTerm, termPlan, termCapital};
 }
@@ -6057,6 +6197,7 @@ function renderAll(){
   if(inp.useHappyLady) cols.push({key:'happy_lady', label:'แฮปปี้ เลดี้ (Happy Lady)'});
   if(inp.useHappyLadyPlus) cols.push({key:'happy_lady_plus', label:'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)'});
   if(inp.useDiabetes) cols.push({key:'diabetes', label:'คุ้มครองโรคเบาหวาน (Diabetes)'});
+  if(inp.useSmartSilver) cols.push({key:'smart_silver', label: inp.smartSilver.variant === 'monthly' ? 'สมาร์ท ซิลเวอร์ พลัส' : 'สมาร์ท ซิลเวอร์'});
   inp.dcareSelections.forEach(d => cols.push({key:d.colKey, label:d.itemName}));
   if(inp.paPlan !== 'none') cols.push({key:'pa', label:'PA Easy Plan แผน '+inp.paPlan});
   if(inp.useHb) cols.push({key:'hb', label:'HB ชดเชยรายวัน (เบี้ยคงที่)'});
@@ -6104,6 +6245,7 @@ function renderAll(){
     if(inp.useHappyLady) row.values.happy_lady = happyLadyPremium('happy_lady', inp.happyLadyCapital, age, freq);
     if(inp.useHappyLadyPlus) row.values.happy_lady_plus = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, freq);
     if(inp.useDiabetes) row.values.diabetes = diabetesPremium(inp.diabetesCapital, age, gender, freq);
+    if(inp.useSmartSilver) row.values.smart_silver = smartSilverPremium(inp.smartSilver, gender, age, occupationClass, freq);
     inp.dcareSelections.forEach(d => { row.values[d.colKey] = dcarePremium(d.key, d.capital, gender, age, freq, d.stage); });
     if(inp.paPlan !== 'none') row.values.pa = paPremium(inp.paPlan, age, freq);
     if(inp.useHb) row.values.hb = hbPremium(inp.hbAmount, entryAge, freq);
@@ -6141,6 +6283,7 @@ function renderAll(){
   if(inp.useHappyLady){ const v = happyLadyPremium('happy_lady', inp.happyLadyCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHappyLadyPlus){ const v = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useDiabetes){ const v = diabetesPremium(inp.diabetesCapital, entryAge, gender, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useSmartSilver){ const v = smartSilverPremium(inp.smartSilver, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   inp.dcareSelections.forEach(d => { const v = dcarePremium(d.key, d.capital, gender, entryAge, 'annual', d.stage); if(typeof v === 'number') riderTotalYear1 += v; });
   if(inp.paPlan !== 'none'){ const v = paPremium(inp.paPlan, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHb){ const v = hbPremium(inp.hbAmount, entryAge); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -6269,6 +6412,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey === 'happy_lady') return inp.useHappyLady ? happyLadyPremium('happy_lady', inp.happyLadyCapital, age, 'annual') : null;
   if(colKey === 'happy_lady_plus') return inp.useHappyLadyPlus ? happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, 'annual') : null;
   if(colKey === 'diabetes') return inp.useDiabetes ? diabetesPremium(inp.diabetesCapital, age, gender, 'annual') : null;
+  if(colKey === 'smart_silver') return inp.useSmartSilver ? smartSilverPremium(inp.smartSilver, gender, age, '1', 'annual') : null;
   if(colKey === 'pa') return paPremium(inp.paPlan, age, 'annual');
   if(colKey.startsWith('dcare_')){
     const d = inp.dcareSelections.find(x => x.colKey === colKey);
@@ -6320,6 +6464,7 @@ async function exportPremiumTableExcel(){
   if(inp.useHappyLady) riderLabels.push(`แฮปปี้ เลดี้ — ทุน ${fmt(inp.happyLadyCapital)} บาท`);
   if(inp.useHappyLadyPlus) riderLabels.push(`แฮปปี้ เลดี้ พลัส — ทุน ${fmt(inp.happyLadyPlusCapital)} บาท`);
   if(inp.useDiabetes) riderLabels.push(`คุ้มครองโรคเบาหวาน — ทุน ${fmt(inp.diabetesCapital)} บาท`);
+  if(inp.useSmartSilver) riderLabels.push(`${inp.smartSilver.variant === 'monthly' ? 'สมาร์ท ซิลเวอร์ พลัส' : 'สมาร์ท ซิลเวอร์'} — ${smartSilverPartsText(inp.smartSilver)}`);
   inp.dcareSelections.forEach(d => riderLabels.push(`${d.itemName}, ทุน ${fmt(d.capital)} บาท`));
   if(inp.useHb) riderLabels.push(`HB ชดเชยรายวัน — ${fmt(inp.hbAmount)} บาท/วัน`);
   if(inp.useTpd) riderLabels.push(`ทุพพลภาพสิ้นเชิงถาวร (TPD) — ทุน ${fmt(inp.tpdCapital)} บาท`);
@@ -6835,6 +6980,11 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useHappyLadyPlus && y1.happy_lady_plus !== undefined){
     items.push({name:'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)', premium:y1.happy_lady_plus, coverage:`คุ้มครองเหมือนแฮปปี้ เลดี้ บวกภาวะแทรกซ้อนจากการตั้งครรภ์ ทุนประกัน ${fmt(inp.happyLadyPlusCapital)} บาท (รับเฉพาะผู้หญิง)`});
   }
+  if(inp.useSmartSilver && y1.smart_silver !== undefined){
+    const monthly = inp.smartSilver.variant === 'monthly';
+    items.push({name: monthly ? 'สมาร์ท ซิลเวอร์ พลัส' : 'สมาร์ท ซิลเวอร์', premium:y1.smart_silver,
+      coverage: `${smartSilverPartsText(inp.smartSilver)} · ${monthly ? 'โรคสมองและทุพพลภาพจ่ายรายเดือน 1.5% ของทุน นาน 120 เดือน' : 'โรคสมองและทุพพลภาพจ่ายเงินก้อน 100% ของทุน'}`});
+  }
   if(inp.useDiabetes && y1.diabetes !== undefined){
     items.push({name:'คุ้มครองโรคเบาหวาน (Diabetes)', premium:y1.diabetes, coverage:`จ่ายเงินก้อนเมื่อตรวจพบโรคเบาหวานและภาวะแทรกซ้อนตามเงื่อนไข ทุนประกัน ${fmt(inp.diabetesCapital)} บาท`});
   }
@@ -7165,6 +7315,23 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
       : 'ไม่สามารถแนบแฮปปี้ เลดี้ พลัส ที่ทุนนี้ได้ที่อายุปัจจุบัน');
   } else {
     setErr('happy_lady_plus_capital','happyLadyPlusErr', false, '');
+  }
+
+  // Smart Silver: อายุ 40-80 · กลุ่มอาชีพ 1-3 · ต้องเลือกอย่างน้อย 1 ความคุ้มครอง
+  if(inp.useSmartSilver){
+    const ss = inp.smartSilver;
+    const none = !(ss.alz > 0 || ss.tpd > 0 || ss.fx > 0);
+    const badAge = entryAge < 40 || entryAge > 80;
+    const badOcc = String(inp.occupationClass) === '4';
+    const v = smartSilverPremium(ss, gender, entryAge, inp.occupationClass, 'annual');
+    const dataGap = !none && !badAge && !badOcc && v === null;
+    setErr('smart_silver_alz','smartSilverErr', none || badAge || badOcc || dataGap,
+      none ? 'เลือกความคุ้มครองอย่างน้อย 1 ข้อ'
+      : badAge ? 'สมาร์ท ซิลเวอร์ รับทำประกันอายุ 40 – 80 ปี'
+      : badOcc ? 'สมาร์ท ซิลเวอร์ รับกลุ่มอาชีพ 1 – 3 เท่านั้น'
+      : 'ช่องเบี้ยนี้ในเอกสารของบริษัทพิมพ์ผิดรูปแบบ (โรคสมอง แผน 2 ล้าน หญิงอายุ 75) ต้องตรวจกับใบเสนอราคาจริง');
+  } else {
+    setErr('smart_silver_alz','smartSilverErr', false, '');
   }
 
   // Diabetes: สมัครใหม่ได้ถึงอายุ 60 ปี (61-70 เป็นอัตราต่ออายุเท่านั้น)
@@ -8616,6 +8783,7 @@ const PLAN_COVER_IMAGES = {
   multipleci: {src:'/public/plan-covers/multiple-ci.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ Multiple CI'},
   cancer: {src:'/public/plan-covers/cancer.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ ความคุ้มครองโรคมะเร็ง'},
   purecancer: {src:'/public/plan-covers/pure-cancer.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เพียว แคนเซอร์ (Pure Cancer)'},
+  smartsilver: {src:'/public/plan-covers/smart-silver.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ โครงการสมาร์ท ซิลเวอร์ และสมาร์ท ซิลเวอร์ พลัส'},
   dcare: {src:'/public/plan-covers/d-care.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ D Care'},
   hb: {src:'/public/plan-covers/hb-rider.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ HB'},
   pa: {src:'/public/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
@@ -8649,6 +8817,7 @@ const PLAN_BROCHURES = {
   cipc: [{file:'ci-perfect-care.pdf', label:'โบรชัวร์ CI Perfect Care'}],
   multipleci: [{file:'multiple-ci.pdf', label:'โบรชัวร์ Multiple CI'}],
   cancer: [{file:'cancer.pdf', label:'โบรชัวร์ ความคุ้มครองโรคมะเร็ง'}],
+  smartsilver: [{file:'smart-silver.pdf', label:'โบรชัวร์ โครงการสมาร์ท ซิลเวอร์ และสมาร์ท ซิลเวอร์ พลัส'}],
   purecancer: [{file:'pure-cancer.pdf', label:'โบรชัวร์ เพียว แคนเซอร์ และ ความคุ้มครองโรคมะเร็ง (ฉบับ 01/10/2568)'}],
   dcare: [{file:'d-care.pdf', label:'โบรชัวร์ D Care'}],
   hb: [{file:'hb-rider.pdf', label:'โบรชัวร์ HB'}],
@@ -9988,6 +10157,49 @@ const PLAN_DETAILS = {
     rateTable: (freq='annual') => diabetesRateTableBlock(freq),
   },
 
+  smartsilver: {
+    title: 'สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส', category: 'ผู้สูงวัย (อัลไซเมอร์ · หลอดเลือดสมอง · ทุพพลภาพ · กระดูกหัก)',
+    fit: [
+      'อายุ 40 – 80 ปี และกังวลโรคที่ทำให้ต้องพึ่งพิงคนอื่นระยะยาว เช่น อัลไซเมอร์ หรืออัมพาตจากหลอดเลือดสมอง',
+      'ผู้สูงวัยที่เสี่ยงหกล้ม อยากได้ค่ารักษากระดูกหักตามจริง และค่าผู้ดูแลที่บ้านหลังออกจากโรงพยาบาล',
+      'อยากได้เงินรายเดือนไว้จ่ายค่าผู้ดูแลหรือสถานดูแลผู้สูงอายุ (เลือกซิลเวอร์ พลัส) แทนเงินก้อนครั้งเดียว',
+    ],
+    notFit: 'อายุต่ำกว่า 40 ปีหรือเกิน 80 ปี (รับสมัครไม่ได้) · กลุ่มอาชีพ 4 · ถ้ากระดูกหักจากโรคกระดูกพรุนหรือกระดูกที่มีพยาธิสภาพอยู่แล้ว ความคุ้มครองกระดูกแตกหักไม่จ่าย',
+    overview: 'สัญญาเพิ่มเติมสำหรับวัย 40 – 80 ปี เลือกซื้อแยกได้ทีละความคุ้มครอง 3 แบบ คือ โรคสมองเสื่อมชนิดอัลไซเมอร์และโรคหลอดเลือดสมองแตกหรืออุดตัน, ทุพพลภาพถาวรสิ้นเชิง และกระดูกแตกหัก · โครงการสมาร์ท ซิลเวอร์ (ชื่อตามกรมธรรม์: สัญญาเพิ่มเติมสมาร์ท แคร์) จ่ายเงินก้อน ส่วนโครงการสมาร์ท ซิลเวอร์ พลัส (สัญญาเพิ่มเติมสมาร์ท แคร์ พลัส) จ่ายเป็นรายเดือน เบี้ยเท่ากันทั้งสองโครงการ',
+    images: [PLAN_COVER_IMAGES.smartsilver],
+    benefitTitle: 'ตารางผลประโยชน์ (บาท)',
+    benefitTable: () => smartSilverBenefitTable(),
+    coverage: [
+      '<b>โรคสมองเสื่อมชนิดอัลไซเมอร์</b>: อายุรแพทย์ประสาทวิทยาวินิจฉัยว่าเป็นอัลไซเมอร์ ร่วมกับทำกิจวัตรประจำวันเองไม่ได้อย่างถาวรตั้งแต่ 3 ใน 6 อย่าง (เคลื่อนย้าย เดิน แต่งตัว อาบน้ำ กินอาหาร ขับถ่าย) ไม่รวมสมองเสื่อมจากยา แอลกอฮอล์ หรือสภาวะทางจิต',
+      '<b>โรคหลอดเลือดสมองแตกหรืออุดตัน (Major Stroke)</b>: ความบกพร่องทางระบบประสาทเฉียบพลันจากหลอดเลือดสมองอุดตัน แตก หรือลิ่มเลือดอุดตัน มีความพิการทางระบบประสาทต่อเนื่องอย่างน้อย 45 วันนับจากวันวินิจฉัย (ไม่นับอาการชา) ยืนยันด้วย CT หรือ MRI · ไม่รวม TIA/RIND และเลือดออกในกะโหลกศีรษะจากการบาดเจ็บ',
+      '<b>ทุพพลภาพถาวรสิ้นเชิง</b>: ทำกิจวัตรประจำวันเองไม่ได้ถาวรตั้งแต่ 3 อย่าง หรือทำงานใด ๆ เพื่อหารายได้ไม่ได้ ต่อเนื่องอย่างน้อย 180 วัน รวมถึงสูญเสียสายตาสองข้าง มือ/เท้าสองข้าง หรือสายตาหนึ่งข้างกับมือหรือเท้าหนึ่งข้าง',
+      '<b>สมาร์ท ซิลเวอร์</b> จ่ายโรคสมองหรือทุพพลภาพเป็นเงินก้อน 100% ของทุน · <b>สมาร์ท ซิลเวอร์ พลัส</b> จ่ายรายเดือน 1.5% ของทุน (เช่น ทุน 1 ล้าน เดือนละ 15,000 บาท) สูงสุด 120 เดือน รวมสูงสุด 180% ของทุน ถ้าเสียชีวิตระหว่างรับรายเดือน ผู้รับประโยชน์ได้ทุนประกันหักรายเดือนที่รับไปแล้ว',
+      'ระบุผู้รับประโยชน์เป็นสถานดูแลผู้มีภาวะพึ่งพิงหรือโรงพยาบาลผู้สูงอายุที่เป็นพันธมิตรกับบริษัทได้ (ตรวจรายชื่อที่ muangthai.co.th)',
+      'จ่ายโรคสมองหรือทุพพลภาพแล้ว ความคุ้มครองข้อนั้นสิ้นสุด และไม่ต้องจ่ายเบี้ยข้อนั้นอีก ส่วนข้ออื่นที่ซื้อไว้ยังคุ้มครองต่อถ้าจ่ายเบี้ยต่อ',
+      '<b>กระดูกแตกหักจากอุบัติเหตุ</b> (ร้าว หักสมบูรณ์ ทิ่มทะลุ ยุบตัว หรือหักมากกว่า 1 แห่ง): จ่ายค่ารักษาตามจริงที่เกิดภายใน 52 สัปดาห์หลังอุบัติเหตุ สะโพก เชิงกราน หรือกระดูกสันหลัง (ยกเว้นกระดูกต้นขาและก้นกบ) สูงสุด 100% ของทุน กระดูกส่วนอื่นสูงสุด 50% ของทุน รวมกันไม่เกิน 100% ของทุนต่อปีกรมธรรม์ และจ่ายกระดูกชิ้นเดียวกันได้ครั้งเดียวต่อปีกรมธรรม์',
+      'กระดูกแตกหัก: ค่าพยาบาล ผู้ช่วยพยาบาล หรือผู้ดูแลมืออาชีพที่บ้านตามคำแนะนำแพทย์ จ่ายตามจริง วันละไม่เกิน 1,000 / 2,000 บาท (แผน 250,000 / 500,000) รวมไม่เกิน 30 วันต่อปีกรมธรรม์ · ไม่คุ้มครองอุปกรณ์ค้ำยัน (ยกเว้นไม้ค้ำยัน) รถเข็น อวัยวะเทียมภายนอก แพทย์ทางเลือก และการฝังเข็ม',
+    ],
+    conditions: [
+      'อายุรับประกัน 40 – 80 ปี ชำระเบี้ยได้ถึงอายุ 80 ปี คุ้มครองถึงอายุ 81 ปี (ไม่เกินระยะเวลาของกรมธรรม์หลัก) สัญญาปีต่อปี เบี้ยปรับตามอายุ',
+      'ซื้อแนบได้ทั้งกรมธรรม์ใหม่และกรมธรรม์ที่มีผลบังคับอยู่แล้ว · รับกลุ่มอาชีพ 1, 2 และ 3',
+      'โรคสมอง และทุพพลภาพ: เลือกแผน 1 / 2 / 3 / 4 / 5 ล้านบาท · กระดูกแตกหัก: แผน 250,000 / 500,000 บาท',
+      'เบี้ยโรคสมองและทุพพลภาพแยกชาย/หญิง กลุ่มอาชีพ 1-3 อัตราเดียวกัน · เบี้ยกระดูกแตกหักชายหญิงเท่ากัน แต่กลุ่มอาชีพ 3 แพงกว่ากลุ่ม 1-2',
+      'ระยะเวลาที่ไม่คุ้มครอง (Waiting Period) 90 วัน สำหรับโรคสมองและทุพพลภาพ นับจากวันเริ่มคุ้มครอง วันต่ออายุสัญญาที่ขาดผลบังคับ หรือวันที่อนุมัติเพิ่มทุน (เฉพาะส่วนที่เพิ่ม)',
+      'การตรวจสุขภาพเป็นไปตามเกณฑ์ของบริษัท',
+      'บริษัทอาจปรับเบี้ย ณ วันครบรอบปีกรมธรรม์ ตามอายุ ชั้นอาชีพ ค่ารักษาที่สูงขึ้น หรือประสบการณ์สินไหมของพอร์ต โดยแจ้งล่วงหน้าไม่น้อยกว่า 30 วัน',
+      'เบี้ยนำไปใช้สิทธิลดหย่อนภาษีได้ ตามหลักเกณฑ์ของกรมสรรพากร',
+      'เอกสารอัตราเบี้ยของบริษัทมีเฉพาะเบี้ยรายปี ถ้าจะผ่อนรายงวดให้ตรวจยอดกับใบเสนอราคาจริง',
+    ],
+    exclusions: [
+      '<b>โรคสมอง (6 ข้อ)</b>: โรคหรือความผิดปกติที่เกิดก่อนวันเริ่มคุ้มครอง · ฆ่าตัวตายหรือทำร้ายตัวเอง · สารมีพิษเข้าร่างกาย · ปฏิเสธการรักษาหรือไม่ทำตามคำแนะนำแพทย์ · แพทย์รักษาตัวเองหรือรักษาโดยแพทย์ที่เป็นบิดา มารดา คู่สมรส บุตร · HIV/AIDS',
+      '<b>ทุพพลภาพ (9 ข้อ)</b>: ฆ่าตัวตายหรือทำร้ายตัวเอง · ก่ออาชญากรรมร้ายแรงหรือหลบหนีการจับกุม · สงคราม การจลาจล การก่อการร้าย · โดยสารอากาศยานที่ไม่ใช่สายการบินพาณิชย์ · เป็นนักบินหรือลูกเรือ · ทหาร ตำรวจ อาสาสมัครขณะปฏิบัติการสงคราม/ปราบปราม · ภาวะที่รู้อยู่แล้วแต่ไม่แจ้ง · ขณะเมาสุรา (แอลกอฮอล์ในเลือดตั้งแต่ 150 มก.%) หรือใช้สารเสพติด · แพทย์รักษาตัวเองหรือครอบครัว',
+      '<b>กระดูกแตกหัก (24 ข้อ)</b> เช่น <b>โรคกระดูกพรุน (Osteoporosis) หรือกระดูกหักจากพยาธิสภาพ</b> · การบาดเจ็บหรือการป่วยที่เป็นมาก่อน · กระดูกที่มีพยาธิสภาพหรือโรคแต่กำเนิด · ขณะเมาสุราหรือใช้สารเสพติด · ฆ่าตัวตายหรือทำร้ายตัวเอง',
+    ],
+    exclusionNote: 'ข้อยกเว้นสรุปจากโบรชัวร์และแบบข้อความสัญญาเพิ่มเติมของบริษัท ข้อยกเว้นกระดูกแตกหักฉบับเต็มมี 24 ข้อ · จุดที่ควรบอกลูกค้าผู้สูงวัยทุกครั้ง: กระดูกหักที่แพทย์สรุปว่าเกิดจากกระดูกพรุน (เช่น สะโพกหักจากล้มเบา ๆ ในคนกระดูกพรุน) อาจถูกพิจารณาตามข้อยกเว้นนี้',
+    freqSupported: false,
+    rateTable: () => smartSilverRateTableBlock(),
+  },
+
   dcare: {
     title: 'D Care', category: 'โรคร้ายแรง (เลือกกลุ่มโรคเองได้)',
     fit: ['กังวลโรคเฉพาะกลุ่มชัดเจน เช่น ครอบครัวมีประวัติมะเร็ง จะได้ไม่ต้องจ่ายเบี้ยส่วนที่ไม่ต้องการ', 'อยากคุมงบให้แน่นอนโดยเลือกทั้งกลุ่มโรคและทุนประกันเองทีละกลุ่ม', 'อยากได้เงินก้อนตั้งแต่ระยะเริ่มต้น ไม่ต้องรอให้ลุกลาม จึงเลือกโหมดสองระยะ'],
@@ -10147,6 +10359,7 @@ const PLAN_ROUTES = {
   multipleci: '/plans/multiple-ci',
   cancer: '/plans/cancer-protection',
   purecancer: '/plans/pure-cancer',
+  smartsilver: '/plans/smart-silver',
   happylady: '/plans/happy-lady',
   happyladyplus: '/plans/happy-lady-plus',
   diabetes: '/plans/diabetes-protection',
@@ -10252,6 +10465,7 @@ const PLAN_CARD_EXTRA = {
   multipleci: {note:'ทุน 500,000 บาท',  calc:(g,a)=>multipleCiPremium(500000, g, a, 'annual')},
   cancer:     {note:'ทุน 300,000 บาท',  calc:(g,a)=>cancerPremium('300k', g, a, 'annual')},
   purecancer: {note:'ทุน 300,000 บาท',  calc:(g,a)=>pureCancerPremium('300k', g, a, 'annual')},
+  smartsilver: {note:'เฉพาะอัลไซเมอร์/หลอดเลือดสมอง แผน 1 ล้าน (อายุ 40-80)', calc:(g,a)=>smartSilverPremium({alz:1000000}, g, a, '1', 'annual')},
   // แฮปปี้ เลดี้ / แฮปปี้ เลดี้ พลัส รับเฉพาะผู้หญิง จึงบังคับเพศหญิงในการคำนวณเสมอ ไม่อิงเพศของเคสอ้างอิง
   happylady:     {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady', 200000, a, 'annual')},
   happyladyplus: {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady_plus', 200000, a, 'annual')},
@@ -12845,7 +13059,7 @@ function setValue(id, val){
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
 function resetCalculatorSelections(){
-  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_pure_cancer','use_hb'].forEach(id=>setChecked(id,false));
+  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_pure_cancer','use_smart_silver','use_hb'].forEach(id=>setChecked(id,false));
   dcareClearRows();
   setValue('pa_plan','none');
 }
