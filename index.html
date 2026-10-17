@@ -2958,6 +2958,22 @@
       <div class="field-err" id="cancerErr"></div>
 
       <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_pure_cancer">
+        <label style="margin:0;flex:1;">เพียว แคนเซอร์ (Pure Cancer)<span class="info-icon">i<span class="tooltip">คุ้มครองมะเร็งแบบเงินก้อนอย่างเดียว ตรวจพบระยะไม่ลุกลามรับ 15% ของทุน ระยะลุกลามรับ 100% ของทุน ไม่มีเงินชดเชยรายวัน เบี้ยจึงถูกกว่าความคุ้มครองโรคมะเร็ง (Cancer) รับสมัครอายุ 18-60 ปี</span></span></label>
+      </div>
+      <div id="pure_cancer_fields" class="sub-fields hidden">
+        <label class="first">แผน (ทุนประกัน)</label>
+        <select id="pure_cancer_plan" style="width:130px;">
+          <option value="300k">300,000</option>
+          <option value="500k">500,000</option>
+          <option value="1m">1,000,000</option>
+          <option value="2m">2,000,000</option>
+        </select>
+        <div class="hint">อายุรับ 18 – 60 ปี ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี · ทุนไม่เกิน 10 เท่าของทุนสัญญาหลัก</div>
+      </div>
+      <div class="field-err" id="pureCancerErr"></div>
+
+      <div class="check-row" style="margin-top:10px;">
         <input type="checkbox" id="use_happy_lady">
         <label style="margin:0;flex:1;">แฮปปี้ เลดี้ (Happy Lady)<span class="info-icon">i<span class="tooltip">สัญญาเพิ่มเติมสำหรับผู้หญิงเท่านั้น คุ้มครองมะเร็งเฉพาะของผู้หญิง โรคของมดลูก/เต้านมที่ต้องผ่าตัด รับสมัครอายุ 18-50 ปี</span></span></label>
       </div>
@@ -3790,6 +3806,17 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">โรคร้ายแรง · เฉพาะมะเร็ง</div>
+      <h3>เพียว แคนเซอร์ (Pure Cancer)</h3>
+      <p class="meta">อายุรับ 18 – 60 ปี • ทุน 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท</p>
+      <ul>
+        <li>ระยะไม่ลุกลามรับ 15% ของทุน ระยะลุกลามรับอีก 100% รวมสูงสุด 115%</li>
+        <li>เงินก้อนอย่างเดียว ไม่มีเงินชดเชยรายวัน เบี้ยจึงถูกกว่าความคุ้มครองโรคมะเร็ง (Cancer)</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('purecancer')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">โรคร้ายแรง · เฉพาะผู้หญิง</div>
       <h3>แฮปปี้ เลดี้ (Happy Lady)</h3>
       <p class="meta">รับเฉพาะผู้หญิง อายุ 18 – 50 ปี • ทุน 200,000 – 1,000,000 บาท</p>
@@ -4354,7 +4381,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-08-09a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-10-17a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4500,6 +4527,7 @@ bindCheckboxToggle('use_dhl','dhl_fields');
 bindCheckboxToggle('use_careplus','careplus_fields');
 bindCheckboxToggle('use_cipc','cipc_fields');
 bindCheckboxToggle('use_cancer','cancer_fields');
+bindCheckboxToggle('use_pure_cancer','pure_cancer_fields');
 bindCheckboxToggle('use_happy_lady','happy_lady_fields');
 bindCheckboxToggle('use_happy_lady_plus','happy_lady_plus_fields');
 bindCheckboxToggle('use_diabetes','diabetes_fields');
@@ -5576,6 +5604,101 @@ function paBandIndex(age){
   if(age<=75) return 3;
   return 4;
 }
+/* เพียว แคนเซอร์ (Pure Cancer) — เบี้ยเป็นจำนวนเงินตรงตามแบบ ไม่ใช่อัตราต่อทุน 1,000 บาท
+   แบ่งช่วงอายุ (bands) แยกชาย/หญิง มี 4 แบบ 300,000 / 500,000 / 1,000,000 / 2,000,000
+   ที่มา เอกสารรายละเอียดแบบประกันของบริษัท ฉบับ 12.11.67 */
+function pureCancerPremium(plan, gender, age, freq){
+  const t = RATES.pure_cancer;
+  if(!t) return null;
+  const a = Number(age);
+  if(!Number.isFinite(a) || a < t.entry_age_min || a > t.renew_age_max) return null;
+  const idx = t.plans.indexOf(plan);
+  if(idx < 0) return null;
+  const band = t.bands.find(b => a >= b.from && a <= b.to);
+  const row = band ? band[freq || 'annual']?.[gender === 'f' ? 'f' : 'm'] : null;
+  const v = row ? row[idx] : null;
+  return (typeof v === 'number') ? v : null;
+}
+function pureCancerCapitalOf(plan){
+  return ({'300k':300000,'500k':500000,'1m':1000000,'2m':2000000})[plan] || 0;
+}
+function pureCancerRateTableBlock(freq){
+  const t = RATES.pure_cancer;
+  if(!t) return '';
+  freq = freq || 'annual';
+  const labels = ['300,000','500,000','1,000,000','2,000,000'];
+  const head = `<thead><tr><th rowspan="2">อายุ (ปี)</th>${labels.map(l=>`<th colspan="2">แบบ ${l}</th>`).join('')}</tr>`
+    + `<tr>${labels.map(()=>'<th>ชาย</th><th>หญิง</th>').join('')}</tr></thead>`;
+  const f2 = v => (typeof v === 'number') ? v.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}) : '-';
+  let rows = '';
+  for(const b of t.bands){
+    const r = b[freq];
+    if(!r) continue;
+    const star = b.renewal_only ? ' *' : '';
+    rows += `<tr><td>${b.from} – ${b.to}${star}</td>${t.plans.map((_,i)=>`<td>${f2(r.m[i])}</td><td>${f2(r.f[i])}</td>`).join('')}</tr>`;
+  }
+  return `<p class="rate-note">เบี้ยเป็นจำนวนเงินตรงตามแบบที่เลือก (ไม่ใช่อัตราต่อทุน 1,000 บาท) · กลุ่มอาชีพ 1 และ 2 · แถวที่มีเครื่องหมาย * เป็นอัตราสำหรับต่ออายุเท่านั้น สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปี</p>`
+    + `<div class="table-wrap" style="max-height:460px;"><table>${head}<tbody>${rows}</tbody></table></div>`
+    + `<p class="rate-note">ที่มา: เอกสารรายละเอียดแบบประกัน สัญญาเพิ่มเติม เพียว แคนเซอร์ ของบริษัท (ฉบับ 12.11.67)</p>`;
+}
+
+function pureCancerBenefitTable(withDaily){
+  const caps = [300000,500000,1000000,2000000];
+  const daily = [1000,2000,5000,10000];
+  const f = n => n.toLocaleString('en-US');
+  const head = `<thead><tr><th>ความคุ้มครอง</th>${caps.map(c=>`<th>แบบ ${f(c)}</th>`).join('')}</tr></thead>`;
+  let rows = `<tr><td>1. โรคมะเร็งระยะไม่ลุกลาม (15% ของทุน)</td>${caps.map(c=>`<td>${f(c*0.15)}</td>`).join('')}</tr>`
+    + `<tr><td>2. โรคมะเร็งระยะลุกลาม (100% ของทุน)</td>${caps.map(c=>`<td>${f(c)}</td>`).join('')}</tr>`
+    + `<tr><td><b>รวมเงินก้อนสูงสุด (115%)</b></td>${caps.map(c=>`<td><b>${f(c*1.15)}</b></td>`).join('')}</tr>`;
+  if(withDaily) rows += `<tr><td>3. ผลประโยชน์รายวัน กรณีนอนโรงพยาบาลจากโรคมะเร็ง (บาท/วัน)</td>${daily.map(d=>`<td>${f(d)}</td>`).join('')}</tr>`
+    + `<tr><td>นอน ICU หรือโรงพยาบาลต่างประเทศ (บาท/วัน สูงสุด 30 วันต่อการเจ็บป่วยครั้งหนึ่ง)</td>${daily.map(d=>`<td>${f(d*2)}</td>`).join('')}</tr>`;
+  else rows += `<tr><td>ผลประโยชน์รายวัน กรณีนอนโรงพยาบาล</td><td colspan="4">ไม่มี</td></tr>`;
+  return `<div class="table-wrap"><table>${head}<tbody>${rows}</tbody></table></div>`
+    + `<p class="rate-note">ที่มา: โบรชัวร์และเอกสารรายละเอียดแบบประกันของบมจ.เมืองไทยประกันชีวิต</p>`;
+}
+/* เทียบเพียว แคนเซอร์ กับความคุ้มครองโรคมะเร็ง (Cancer Rider) ทุกข้อมาจากโบรชัวร์ชุดเดียวกันของบริษัท
+   ตัวเลขเบี้ยคำนวณสดจากตารางเบี้ยของทั้งสองแบบ ไม่พิมพ์ค่าตายตัว */
+function pureCancerVsCancerSection(){
+  const f = n => (typeof n === 'number') ? n.toLocaleString('en-US',{maximumFractionDigits:2}) : '-';
+  const ages = [30, 40, 50];
+  let premRows = '';
+  for(const a of ages){
+    for(const g of ['m','f']){
+      const pc = pureCancerPremium('1m', g, a, 'annual');
+      const cr = cancerPremium('1m', g, a, 'annual');
+      const diff = (typeof pc === 'number' && typeof cr === 'number') ? cr - pc : null;
+      premRows += `<tr><td>${g==='m'?'ชาย':'หญิง'} อายุ ${a} ปี</td><td>${f(pc)}</td><td>${f(cr)}</td><td>${diff===null?'-':f(diff)}</td></tr>`;
+    }
+  }
+  const cmp = [
+    ['ชื่อตามกรมธรรม์', 'สัญญาเพิ่มเติม เพียว แคนเซอร์', 'สัญญาเพิ่มเติมความคุ้มครองมะเร็ง (Cancer Rider)'],
+    ['เงินก้อนระยะไม่ลุกลาม', '15% ของทุน', '15% ของทุน (เท่ากัน)'],
+    ['เงินก้อนระยะลุกลาม', '100% ของทุน', '100% ของทุน (เท่ากัน)'],
+    ['รวมเงินก้อนสูงสุด', '115% ของทุน', '115% ของทุน (เท่ากัน)'],
+    ['เงินชดเชยรายวันนอนโรงพยาบาลจากมะเร็ง', '<b>ไม่มี</b>', '<b>มี</b> 1,000 / 2,000 / 5,000 / 10,000 บาทต่อวันตามแบบ · ICU หรือ รพ.ต่างประเทศรับ 2 เท่า สูงสุด 30 วัน · รวมไม่เกิน 180 วันต่อครั้ง'],
+    ['ทุนประกันให้เลือก', '300,000 / 500,000 / 1,000,000 / 2,000,000', '300,000 / 500,000 / 1,000,000 / 2,000,000 (เหมือนกัน)'],
+    ['อายุรับ / ต่ออายุ / คุ้มครองถึง', '18 – 60 / ถึง 70 / อายุ 71 ปี', '18 – 60 / ถึง 70 / อายุ 71 ปี (เหมือนกัน)'],
+    ['ระยะเวลาที่ไม่คุ้มครอง', '60 วัน', '60 วัน (เหมือนกัน)'],
+    ['ข้อยกเว้น', '6 ข้อ', 'เงินก้อน 6 ข้อ + เงินชดเชยรายวันอีก 8 ข้อ'],
+    ['เบี้ย', '<b>ถูกกว่า</b> เพราะไม่มีเงินชดเชยรายวัน', 'แพงกว่า เพราะจ่ายเงินชดเชยรายวันเพิ่ม'],
+  ];
+  const cmpTable = `<div class="table-wrap"><table><thead><tr><th>หัวข้อ</th><th>เพียว แคนเซอร์ (Pure Cancer)</th><th>ความคุ้มครองโรคมะเร็ง (Cancer Rider)</th></tr></thead><tbody>${cmp.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div>`;
+  const premTable = `<div class="table-wrap"><table><thead><tr><th>ตัวอย่าง แบบ 1,000,000 บาท</th><th>เพียว แคนเซอร์ (บาท/ปี)</th><th>Cancer Rider (บาท/ปี)</th><th>Cancer Rider แพงกว่า (บาท/ปี)</th></tr></thead><tbody>${premRows}</tbody></table></div>`;
+  return `<div class="content-card"><h2>เพียว แคนเซอร์ ต่างจาก ความคุ้มครองโรคมะเร็ง (Cancer Rider) ยังไง</h2>
+    <p>สองแบบนี้จ่าย<b>เงินก้อนเท่ากันทุกบาท</b> ทั้งระยะไม่ลุกลาม 15% และระยะลุกลาม 100% อายุรับ ระยะรอคอย และทุนให้เลือกก็เหมือนกัน จุดต่างมีข้อเดียวคือ <b>Cancer Rider มีเงินชดเชยรายวันเมื่อนอนโรงพยาบาลจากมะเร็ง ส่วนเพียว แคนเซอร์ไม่มี</b> เบี้ยเพียว แคนเซอร์จึงถูกกว่า</p>
+    ${cmpTable}
+    <h3 style="margin-top:16px;">เทียบเบี้ยรายปี (คำนวณจากตารางเบี้ยของทั้งสองแบบ)</h3>
+    ${premTable}
+    <h3 style="margin-top:16px;">ตัวอย่างจากโบรชัวร์ของบริษัท แบบ 2,000,000 บาท</h3>
+    <ul>
+      <li><b>เลือกเพียว แคนเซอร์</b> ตรวจพบมะเร็งปอดระยะไม่ลุกลาม รับ 300,000 บาท ต่อมาเป็นระยะลุกลาม รับอีก 2,000,000 บาท <b>รวม 2,300,000 บาท</b></li>
+      <li><b>เลือก Cancer Rider</b> ตรวจพบมะเร็งตับระยะไม่ลุกลาม รับ 300,000 บาท ผ่าตัดและนอนโรงพยาบาล 4 วัน รับวันละ 10,000 บาท และนอน ICU อีก 1 วัน รับ 20,000 บาท รวมเงินชดเชย 60,000 บาท ต่อมาเป็นระยะลุกลาม รับอีก 2,000,000 บาท <b>รวม 2,360,000 บาท</b></li>
+    </ul>
+    <p><b>เลือกยังไง</b> · มีประกันสุขภาพค่ารักษาครอบคลุมดีอยู่แล้ว และอยากได้เงินก้อนไว้ใช้จ่ายอิสระในเบี้ยที่ต่ำที่สุด เลือก<b>เพียว แคนเซอร์</b> · ถ้ากังวลรายได้ที่หายไปช่วงนอนโรงพยาบาลบ่อย ๆ ระหว่างรักษามะเร็ง เช่น ให้เคมีบำบัดหรือผ่าตัดหลายรอบ เลือก<b>Cancer Rider</b></p>
+    <p class="meta">ที่มา: โบรชัวร์ สัญญาเพิ่มเติมความคุ้มครองโรคมะเร็ง & สัญญาเพิ่มเติม เพียว แคนเซอร์ ของบมจ.เมืองไทยประกันชีวิต (MTL_2-02-04-0843_01/10/2568)</p>
+  </div>`;
+}
+
 function paPremium(plan, age, freq){
   freq = freq || 'annual';
   if(plan === 'none') return null;
@@ -5698,6 +5821,9 @@ function readInputs(){
   const useCancer = document.getElementById('use_cancer').checked;
   const cancerPlan = document.getElementById('cancer_plan').value;
 
+  const usePureCancer = document.getElementById('use_pure_cancer').checked;
+  const pureCancerPlan = document.getElementById('pure_cancer_plan').value;
+
   const useHappyLady = document.getElementById('use_happy_lady').checked;
   const happyLadyCapital = parseFloat(document.getElementById('happy_lady_capital').value) || 0;
 
@@ -5735,7 +5861,7 @@ function readInputs(){
   const termCapital = parseFloat(document.getElementById('term_capital').value) || 0;
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
-          useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan,
+          useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
           useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
           useTerm, termPlan, termCapital};
@@ -5927,6 +6053,7 @@ function renderAll(){
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
+  if(inp.usePureCancer) cols.push({key:'pure_cancer', label:'เพียว แคนเซอร์ (Pure Cancer)'});
   if(inp.useHappyLady) cols.push({key:'happy_lady', label:'แฮปปี้ เลดี้ (Happy Lady)'});
   if(inp.useHappyLadyPlus) cols.push({key:'happy_lady_plus', label:'แฮปปี้ เลดี้ พลัส (Happy Lady Plus)'});
   if(inp.useDiabetes) cols.push({key:'diabetes', label:'คุ้มครองโรคเบาหวาน (Diabetes)'});
@@ -5973,6 +6100,7 @@ function renderAll(){
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
+    if(inp.usePureCancer) row.values.pure_cancer = pureCancerPremium(inp.pureCancerPlan, gender, age, freq);
     if(inp.useHappyLady) row.values.happy_lady = happyLadyPremium('happy_lady', inp.happyLadyCapital, age, freq);
     if(inp.useHappyLadyPlus) row.values.happy_lady_plus = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, freq);
     if(inp.useDiabetes) row.values.diabetes = diabetesPremium(inp.diabetesCapital, age, gender, freq);
@@ -6009,6 +6137,7 @@ function renderAll(){
   if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.usePureCancer){ const v = pureCancerPremium(inp.pureCancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHappyLady){ const v = happyLadyPremium('happy_lady', inp.happyLadyCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHappyLadyPlus){ const v = happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useDiabetes){ const v = diabetesPremium(inp.diabetesCapital, entryAge, gender, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -6136,6 +6265,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   if(colKey === 'careplus') return careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, '1', 'annual');
   if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
+  if(colKey === 'pure_cancer') return inp.usePureCancer ? pureCancerPremium(inp.pureCancerPlan, gender, age, 'annual') : null;
   if(colKey === 'happy_lady') return inp.useHappyLady ? happyLadyPremium('happy_lady', inp.happyLadyCapital, age, 'annual') : null;
   if(colKey === 'happy_lady_plus') return inp.useHappyLadyPlus ? happyLadyPremium('happy_lady_plus', inp.happyLadyPlusCapital, age, 'annual') : null;
   if(colKey === 'diabetes') return inp.useDiabetes ? diabetesPremium(inp.diabetesCapital, age, gender, 'annual') : null;
@@ -6186,6 +6316,7 @@ async function exportPremiumTableExcel(){
   if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
+  if(inp.usePureCancer) riderLabels.push(`เพียว แคนเซอร์ — ทุน ${fmt(pureCancerCapitalOf(inp.pureCancerPlan))} บาท`);
   if(inp.useHappyLady) riderLabels.push(`แฮปปี้ เลดี้ — ทุน ${fmt(inp.happyLadyCapital)} บาท`);
   if(inp.useHappyLadyPlus) riderLabels.push(`แฮปปี้ เลดี้ พลัส — ทุน ${fmt(inp.happyLadyPlusCapital)} บาท`);
   if(inp.useDiabetes) riderLabels.push(`คุ้มครองโรคเบาหวาน — ทุน ${fmt(inp.diabetesCapital)} บาท`);
@@ -6694,6 +6825,10 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useCancer && y1.cancer !== undefined){
     items.push({name:'ความคุ้มครองโรคมะเร็ง (Cancer)', premium:y1.cancer, coverage:`คุ้มครองมะเร็งระยะไม่ลุกลามและลุกลาม ทุนประกัน ${fmt({'300k':300000,'500k':500000,'1m':1000000,'2m':2000000}[inp.cancerPlan])} บาท`});
   }
+  if(inp.usePureCancer && y1.pure_cancer !== undefined){
+    const cap = pureCancerCapitalOf(inp.pureCancerPlan);
+    items.push({name:'เพียว แคนเซอร์ (Pure Cancer)', premium:y1.pure_cancer, coverage:`เงินก้อนเมื่อตรวจพบมะเร็ง ระยะไม่ลุกลามรับ ${fmt(cap*0.15)} บาท ระยะลุกลามรับ ${fmt(cap)} บาท (ไม่มีเงินชดเชยรายวัน)`});
+  }
   if(inp.useHappyLady && y1.happy_lady !== undefined){
     items.push({name:'แฮปปี้ เลดี้ (Happy Lady)', premium:y1.happy_lady, coverage:`คุ้มครองมะเร็งเฉพาะของผู้หญิงและโรคของมดลูก/เต้านมที่ต้องผ่าตัด ทุนประกัน ${fmt(inp.happyLadyCapital)} บาท (รับเฉพาะผู้หญิง)`});
   }
@@ -6987,6 +7122,23 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
       underMinAge ? 'Cancer รับทำประกันตั้งแต่อายุ 18 ปีขึ้นไป' : 'ไม่สามารถแนบ Cancer แผนนี้ได้ที่อายุปัจจุบัน');
   } else {
     setErr('cancer_plan','cancerErr', false, '');
+  }
+
+  // Pure Cancer: สมัครใหม่อายุ 18-60 ปี (61-70 เป็นอัตราต่ออายุ) · ทุนไม่เกิน 10 เท่าของทุนหลัก และไม่เกิน 5 ล้านบาทต่อคน
+  if(inp.usePureCancer){
+    const t = RATES.pure_cancer;
+    const cap = pureCancerCapitalOf(inp.pureCancerPlan);
+    const underAge = entryAge < 18;
+    const overAge = t && entryAge > t.entry_age_max;
+    const overCap = inp.mainCapital > 0 && cap > inp.mainCapital*10;
+    const v = pureCancerPremium(inp.pureCancerPlan, gender, entryAge, 'annual');
+    setErr('pure_cancer_plan','pureCancerErr', underAge || overAge || overCap || v===null,
+      underAge ? 'เพียว แคนเซอร์ รับทำประกันตั้งแต่อายุ 18 ปีขึ้นไป'
+      : overAge ? `เพียว แคนเซอร์ สมัครใหม่ได้ถึงอายุ ${t.entry_age_max} ปีเท่านั้น`
+      : overCap ? `ทุนเกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)} บาท)`
+      : 'ไม่สามารถแนบเพียว แคนเซอร์ แบบนี้ได้ที่อายุปัจจุบัน');
+  } else {
+    setErr('pure_cancer_plan','pureCancerErr', false, '');
   }
 
   // Happy Lady / Happy Lady Plus: รับเฉพาะผู้หญิง สมัครใหม่ได้ถึงอายุ 50 / 40 ปีตามลำดับ
@@ -7685,12 +7837,22 @@ const CI_PLANS = [
   {
     key:'cancer', name:'คุ้มครองโรคมะเร็ง', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
     premiumType:'ขึ้นตามช่วงอายุ', premiumTag:'rise',
-    diseases:'มะเร็งอย่างเดียว', pay:'ระยะไม่ลุกลามรับส่วนหนึ่ง ระยะลุกลามรับจนครบ 100% ของทุน',
-    times:'จ่ายไล่ระยะจนครบ 100%',
-    endsAfterClaim:'จบเมื่อจ่ายครบ', maxBenefit:'100% ของทุน บวกชดเชยรายวันสูงสุด 10,000 บาทต่อวัน',
-    wait:'90 วัน', entry:'18 – 60 ปี (แคบที่สุดในกลุ่ม)', renew:'ต่ออายุได้ถึง 80 ปี',
+    diseases:'มะเร็งอย่างเดียว', pay:'ระยะไม่ลุกลามรับ 15% ของทุน ระยะลุกลามรับอีก 100% ของทุน',
+    times:'จ่ายได้ 2 ระยะ ระยะลุกลามจ่ายครั้งเดียว',
+    endsAfterClaim:'จบเมื่อจ่ายระยะลุกลาม', maxBenefit:'115% ของทุน บวกชดเชยรายวัน 1,000 – 10,000 บาทต่อวันตามแบบ',
+    wait:'60 วัน', entry:'18 – 60 ปี (แคบที่สุดในกลุ่ม)', renew:'ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี',
     minSum:'เลือกทุนได้ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
-    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'งบจำกัดและกังวลมะเร็งเป็นหลัก ซึ่งเป็นโรคที่เคลมบ่อยที่สุด',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'กังวลมะเร็งเป็นหลัก และอยากได้ทั้งเงินก้อนและเงินชดเชยรายวันระหว่างนอนโรงพยาบาล',
+  },
+  {
+    key:'purecancer', name:'เพียว แคนเซอร์ (Pure Cancer)', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
+    premiumType:'ขึ้นตามช่วงอายุ', premiumTag:'rise',
+    diseases:'มะเร็งอย่างเดียว', pay:'ระยะไม่ลุกลามรับ 15% ของทุน ระยะลุกลามรับอีก 100% ของทุน',
+    times:'จ่ายได้ 2 ระยะ ระยะลุกลามจ่ายครั้งเดียว',
+    endsAfterClaim:'จบเมื่อจ่ายระยะลุกลาม', maxBenefit:'115% ของทุน (ไม่มีเงินชดเชยรายวัน)',
+    wait:'60 วัน', entry:'18 – 60 ปี', renew:'ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี',
+    minSum:'เลือกทุนได้ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท ไม่เกิน 10 เท่าของทุนหลัก', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    cashValue:'ไม่มีมูลค่าเวนคืน', fit:'อยากได้เงินก้อนมะเร็งด้วยเบี้ยต่ำสุด และมีประกันสุขภาพค่ารักษาอยู่แล้ว',
   },
   {
     key:'careplus', name:'Care Plus', kind:'สัญญาเพิ่มเติม', kindTag:'rider',
@@ -7737,6 +7899,7 @@ const CI_NEW_BUSINESS_AGE = {
   dcare: [0, 70],
   multipleci: [7, 69],
   cancer: [18, 60],
+  purecancer: [18, 60],
   careplus: [0, 80],
 };
 function ciAgeAllowed(key, age){
@@ -7783,6 +7946,11 @@ function ciAnnualPremiums(age, sex, sum){
     const map = {500000:'500k', 1000000:'1m', 2000000:'2m'};
     return map[sum] ? cancerPremium(map[sum], sex, age, 'annual') : null;
   })();
+  out.purecancer = (function(){
+    if(!ciAgeAllowed('purecancer', age)) return null;
+    const map = {300000:'300k', 500000:'500k', 1000000:'1m', 2000000:'2m'};
+    return map[sum] ? pureCancerPremium(map[sum], sex, age, 'annual') : null;
+  })();
   out.multipleci = ciAgeAllowed('multipleci', age) ? multipleCiPremium(sum, sex, age, 'annual') : null;
   out.careplus = (function(){
     if(!ciAgeAllowed('careplus', age)) return null;
@@ -7808,6 +7976,7 @@ function renderCiAdvisor(){
     const v = pr[p.key];
     const note = v === null || v === undefined
       ? (p.key === 'cancer' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
+        : p.key === 'purecancer' && ![300000,500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
         : p.key === 'multipleci' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
         : 'อายุนี้ทำไม่ได้')
       : '';
@@ -8446,6 +8615,7 @@ const PLAN_COVER_IMAGES = {
   cipc: {src:'/public/plan-covers/ci-perfect-care.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ CI Perfect Care'},
   multipleci: {src:'/public/plan-covers/multiple-ci.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ Multiple CI'},
   cancer: {src:'/public/plan-covers/cancer.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ ความคุ้มครองโรคมะเร็ง'},
+  purecancer: {src:'/public/plan-covers/pure-cancer.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ เพียว แคนเซอร์ (Pure Cancer)'},
   dcare: {src:'/public/plan-covers/d-care.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ D Care'},
   hb: {src:'/public/plan-covers/hb-rider.jpg', format:'portrait', caption:'ภาพหน้าแรกโบรชัวร์ HB'},
   pa: {src:'/public/plan-covers/pa-easy.jpg', format:'landscape', caption:'ภาพหน้าแรกโบรชัวร์ PA Easy Plan'},
@@ -8479,6 +8649,7 @@ const PLAN_BROCHURES = {
   cipc: [{file:'ci-perfect-care.pdf', label:'โบรชัวร์ CI Perfect Care'}],
   multipleci: [{file:'multiple-ci.pdf', label:'โบรชัวร์ Multiple CI'}],
   cancer: [{file:'cancer.pdf', label:'โบรชัวร์ ความคุ้มครองโรคมะเร็ง'}],
+  purecancer: [{file:'pure-cancer.pdf', label:'โบรชัวร์ เพียว แคนเซอร์ และ ความคุ้มครองโรคมะเร็ง (ฉบับ 01/10/2568)'}],
   dcare: [{file:'d-care.pdf', label:'โบรชัวร์ D Care'}],
   hb: [{file:'hb-rider.pdf', label:'โบรชัวร์ HB'}],
   pa: [{file:'pa-easy.pdf', label:'โบรชัวร์ PA Easy Plan'}],
@@ -9675,20 +9846,33 @@ const PLAN_DETAILS = {
 
   cancer: {
     title: 'ความคุ้มครองโรคมะเร็ง (Cancer)', category: 'โรคร้ายแรง (เฉพาะมะเร็ง)',
-    fit: ['งบจำกัดและอยากปิดความเสี่ยงโรคที่เคลมบ่อยที่สุดก่อน', 'อายุ 18 ถึง 60 ปี และต้องการเงินก้อนสำหรับมะเร็งโดยเฉพาะ'],
-    notFit: 'กังวลโรคหัวใจหรือหลอดเลือดสมองด้วย เพราะแบบนี้คุ้มครองมะเร็งอย่างเดียว',
-    overview: 'ประกันคุ้มครองโรคมะเร็งเฉพาะทาง จ่ายเงินก้อนทันทีเมื่อตรวจพบ ทั้งระยะไม่ลุกลามและระยะลุกลาม พร้อมเงินชดเชยรายวันระหว่างรักษา',
+    fit: ['กังวลมะเร็งเป็นหลัก และอยากได้ทั้งเงินก้อนตั้งแต่ระยะไม่ลุกลาม และเงินชดเชยรายวันระหว่างนอนโรงพยาบาล', 'อายุ 18 ถึง 60 ปี และกังวลรายได้ที่หายไประหว่างนอนรักษาตัว'],
+    notFit: 'กังวลโรคหัวใจหรือหลอดเลือดสมองด้วย เพราะแบบนี้คุ้มครองมะเร็งอย่างเดียว · ถ้ามีประกันสุขภาพค่ารักษาเพียงพอแล้วและต้องการแค่เงินก้อน ดูเพียว แคนเซอร์ (Pure Cancer) ซึ่งเบี้ยถูกกว่า',
+    overview: 'สัญญาเพิ่มเติมคุ้มครองโรคมะเร็ง จ่ายเงินก้อนเมื่อตรวจพบระยะไม่ลุกลาม 15% ของทุน และระยะลุกลามอีก 100% ของทุน พร้อมเงินชดเชยรายวันเมื่อนอนโรงพยาบาลจากโรคมะเร็ง (ชื่อทางการตลาด Cancer Rider)',
     images: [PLAN_COVER_IMAGES.cancer],
+    benefitTitle: 'ตารางผลประโยชน์ (บาท)',
+    benefitTable: () => pureCancerBenefitTable(true),
     coverage: [
-      'ตรวจพบมะเร็งระยะไม่ลุกลาม (Carcinoma in Situ) รับเงินก้อนตามสัดส่วนของทุนประกัน',
-      'ตรวจพบมะเร็งระยะลุกลาม รับเงินก้อนเพิ่มจนครบ 100% ของทุนประกัน',
-      'เงินชดเชยรายวันระหว่างนอนรักษาโรคมะเร็งสูงสุด 10,000 บาท/วัน',
+      'ตรวจพบมะเร็งระยะไม่ลุกลาม (มะเร็งที่ยังไม่แพร่กระจายถึงเยื่อบุฐาน) รับ 15% ของทุน คุ้มครองหลังจาก 60 วันนับจากวันที่สัญญาเพิ่มเติมมีผลบังคับ',
+      'ตรวจพบมะเร็งระยะลุกลาม รับ 100% ของทุน (ไม่หักส่วนที่รับระยะไม่ลุกลามไปแล้ว) รวมเงินก้อนสูงสุด 115% ของทุน ระยะลุกลามจ่ายครั้งเดียวแล้วสัญญาสิ้นสุด และคุ้มครองหลังจาก 60 วันนับจากวันที่วินิจฉัยระยะไม่ลุกลาม หรือวันเริ่มมีผลคุ้มครอง',
+      'เงินชดเชยรายวันเมื่อนอนโรงพยาบาลเป็นผู้ป่วยใน ซึ่งเป็นผลโดยตรงจากโรคมะเร็ง 1,000 / 2,000 / 5,000 / 10,000 บาทต่อวันตามแบบ',
+      'นอนห้องผู้ป่วยหนัก (ICU) หรือรักษาในโรงพยาบาลต่างประเทศ รับเพิ่มอีก 1 เท่าของเงินชดเชยรายวัน รวมไม่เกินวันละ 2 เท่า และสูงสุดไม่เกิน 30 วันต่อการเจ็บป่วยครั้งหนึ่ง',
+      'เงินชดเชยรายวันสูงสุดรวมไม่เกิน 180 วัน ต่อการเข้าพักรักษาตัวครั้งหนึ่งจากโรคมะเร็งเดียวกัน',
     ],
     conditions: [
-      'อายุรับประกัน 18 – 60 ปี เท่านั้น (แคบกว่าโรคร้ายแรงตัวอื่น)',
+      'อายุรับประกัน 18 – 60 ปี ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี หรือจนกว่าแบบประกันภัยหลักสิ้นผลบังคับ',
       'ทุนประกันเลือกได้ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท',
-      'ระยะเวลารอคอยเฉพาะโรคมะเร็ง 90 วันหลังกรมธรรม์อนุมัติ',
+      'ระยะเวลาที่ไม่คุ้มครอง (Waiting Period) 60 วัน นับแต่วันเริ่มมีผลคุ้มครอง หรือวันต่ออายุสัญญาที่ขาดผลบังคับ (Reinstatement) ครั้งสุดท้าย',
+      'ต้องซื้อแนบท้ายกรมธรรม์ที่มีผลบังคับอยู่ ความคุ้มครองไม่เกินระยะเวลาของกรมธรรม์หลัก',
+      'การตรวจสุขภาพเป็นไปตามเกณฑ์ที่บริษัทกำหนด',
+      'บริษัทอาจปรับเบี้ยในรอบปีกรมธรรม์ตามอายุ อาชีพ หรือประสบการณ์สินไหมโดยรวมของพอร์ต โดยแจ้งล่วงหน้าเป็นหนังสือไม่น้อยกว่า 30 วัน',
     ],
+    exclusions: [
+      'เงินก้อน (ข้อยกเว้น 6 ข้อ) เช่น ความผิดปกติที่เกิดก่อนวันเริ่มคุ้มครองหรือก่อนวันต่ออายุ (Reinstatement) · ผู้เอาประกันปฏิเสธการรักษาหรือไม่ปฏิบัติตามคำแนะนำแพทย์ · ผู้เอาประกันที่เป็นแพทย์รักษาตัวเอง หรือรักษาโดยแพทย์ที่เป็นบิดา มารดา คู่สมรส หรือบุตร',
+      'เงินชดเชยรายวัน (ข้อยกเว้น 8 ข้อ) เช่น นอนโรงพยาบาลด้วยสาเหตุที่ไม่ใช่ผลโดยตรงจากโรคมะเร็งที่คุ้มครอง · นอนโรงพยาบาลโดยไม่มีความจำเป็นทางการแพทย์',
+    ],
+    exclusionNote: 'ข้อยกเว้นข้างต้นเป็นตัวอย่างตามโบรชัวร์ของบริษัท ฉบับเต็มเป็นไปตามที่ระบุในกรมธรรม์',
+    detailSections: () => pureCancerVsCancerSection(),
     freqSupported: true,
     rateTable: (freq='annual') => renderAgeTable(18, 60, [
       {label:'ชาย 300,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('300k','m',age,freq))},
@@ -9698,6 +9882,51 @@ const PLAN_DETAILS = {
       {label:'ชาย 2,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('2m','m',age,freq))},
       {label:'หญิง 2,000,000', arr: ageSeriesFromFn(18,60, age=>cancerPremium('2m','f',age,freq))},
     ]),
+  },
+
+  purecancer: {
+    title: 'เพียว แคนเซอร์ (Pure Cancer)', category: 'โรคร้ายแรง (เฉพาะมะเร็ง)',
+    fit: [
+      'มีคนในครอบครัวหรือคนรอบข้างเป็นมะเร็ง หรือมีปัจจัยเสี่ยง เช่น สิ่งแวดล้อมมีมลพิษ ทำงานใกล้สารเคมี ความเครียด',
+      'มีประกันสุขภาพค่ารักษาพยาบาลอยู่แล้ว และอยากได้เงินก้อนแยกต่างหากไว้ใช้ระหว่างรักษา เช่น ค่าเดินทาง ค่าใช้จ่ายในบ้าน รายได้ที่หายไป',
+      'อยากได้เงินก้อนมะเร็งตั้งแต่ระยะไม่ลุกลาม ด้วยเบี้ยต่ำกว่าแบบที่มีเงินชดเชยรายวัน',
+    ],
+    notFit: 'ต้องการเงินชดเชยรายวันระหว่างนอนโรงพยาบาลด้วย ควรเลือกความคุ้มครองโรคมะเร็ง (Cancer Rider) แทน · กังวลโรคหัวใจหรือหลอดเลือดสมองด้วย เพราะแบบนี้คุ้มครองมะเร็งอย่างเดียว',
+    overview: 'สัญญาเพิ่มเติมคุ้มครองโรคมะเร็งแบบเงินก้อนอย่างเดียว ตรวจพบระยะไม่ลุกลามรับ 15% ของทุน ตรวจพบระยะลุกลามรับอีก 100% ของทุน รวมสูงสุด 115% ของทุน เงินก้อนนำไปใช้ได้อิสระ ไม่ต้องเป็นค่ารักษา',
+    images: [PLAN_COVER_IMAGES.purecancer],
+    benefitTitle: 'ตารางผลประโยชน์ (บาท)',
+    benefitTable: () => pureCancerBenefitTable(false),
+    coverage: [
+      'ตรวจพบโรคมะเร็งระยะไม่ลุกลาม (มะเร็งที่ยังไม่แพร่กระจายถึงเยื่อบุฐาน) รับ 15% ของทุน คือ 45,000 / 75,000 / 150,000 / 300,000 บาท ตามแบบ คุ้มครองหลังจาก 60 วันนับจากวันที่สัญญาเพิ่มเติมมีผลบังคับ หรือวันต่ออายุเนื่องจากสัญญาขาดผลบังคับครั้งสุดท้าย',
+      'ตรวจพบโรคมะเร็งระยะลุกลาม รับ 100% ของทุน คือ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท ตามแบบ ไม่หักส่วนที่รับระยะไม่ลุกลามไปแล้ว คุ้มครองหลังจาก 60 วันนับจากวันที่วินิจฉัยระยะไม่ลุกลาม หรือวันที่กรมธรรม์มีผลบังคับ',
+      'รวมเงินก้อนสูงสุด 115% ของทุน เช่น แบบ 2,000,000 บาท รับรวมสูงสุด 2,300,000 บาท',
+      'ผลประโยชน์ระยะลุกลามจ่ายครั้งเดียว แล้วสัญญาเพิ่มเติมเพียว แคนเซอร์ สิ้นสุดลง',
+      'ไม่มีเงินชดเชยรายวันระหว่างนอนโรงพยาบาล (จุดต่างหลักจากความคุ้มครองโรคมะเร็ง Cancer Rider)',
+    ],
+    conditions: [
+      'อายุรับประกัน 18 – 60 ปี ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี หรือจนกว่าแบบประกันภัยหลักสิ้นผลบังคับ',
+      'รับกลุ่มอาชีพ 1 และ 2',
+      'ทุนประกันขั้นต่ำ 300,000 บาท เลือกได้ 4 แบบ 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท',
+      'ทุนประกันซื้อได้ไม่เกิน 10 เท่าของทุนประกันสัญญาหลัก และไม่เกิน 5,000,000 บาทต่อคน · ทุนประกันรวมของสัญญาเพิ่มเติมกลุ่มโรคร้ายแรง (อายุ 16 ปีขึ้นไป) ไม่เกิน 20,000,000 บาทต่อคน',
+      'ระยะเวลาเอาประกันภัยไม่เกินระยะเวลาของกรมธรรม์หลัก ซื้อแนบได้ทั้งกรมธรรม์ใหม่และกรมธรรม์ที่มีผลบังคับอยู่แล้ว',
+      'ชำระเบี้ยรายปี ราย 6 เดือน ราย 3 เดือน และรายเดือน ตามกรมธรรม์หลัก · อัตราเบี้ยเปลี่ยนตามช่วงอายุของผู้เอาประกัน',
+      'ระยะเวลาที่ไม่คุ้มครอง (Waiting Period) 60 วัน นับแต่วันเริ่มมีผลคุ้มครอง หรือวันต่ออายุสัญญาที่ขาดผลบังคับ (Reinstatement) ครั้งสุดท้าย',
+      'การตรวจสุขภาพเป็นไปตามเกณฑ์ที่บริษัทกำหนด',
+      'บริษัทอาจปรับเบี้ยในรอบปีกรมธรรม์ตามอายุ อาชีพ หรือประสบการณ์สินไหมโดยรวมของพอร์ต โดยแจ้งล่วงหน้าเป็นหนังสือไม่น้อยกว่า 30 วัน',
+      'เบี้ยประกันนำไปใช้สิทธิลดหย่อนภาษีได้บางส่วน ตามหลักเกณฑ์ของกรมสรรพากร',
+    ],
+    exclusions: [
+      'โรคมะเร็งหรือความผิดปกติที่เกิดขึ้นก่อนวันเริ่มคุ้มครอง หรือก่อนวันต่ออายุ (Reinstatement) ครั้งสุดท้าย ซึ่งเคยได้รับการรักษาหรือคำแนะนำจากแพทย์ มีอาการ ทราบ หรือควรจะทราบถึงการเจ็บป่วยนั้น เว้นแต่ได้แถลงให้บริษัททราบและบริษัทยินยอมรับความเสี่ยงโดยไม่มีเงื่อนไขยกเว้น',
+      'การฆ่าตัวตาย หรือการทำร้ายร่างกายตนเอง หรือพยายามกระทำเช่นนั้น',
+      'การสูดดม กิน ดื่ม ฉีด หรือนำสารมีพิษเข้าร่างกาย ไม่ว่าด้วยวิธีใด ในขณะที่รู้สึกผิดชอบ หรือวิกลจริตหรือไม่ก็ตาม',
+      'ผู้เอาประกันภัยปฏิเสธไม่ยอมรับการรักษา แนะนำ หรือปฏิบัติตามคำแนะนำของแพทย์',
+      'การตรวจรักษาที่ผู้เอาประกันภัยซึ่งเป็นแพทย์สั่งให้แก่ตัวเอง รวมทั้งการรักษาจากแพทย์ผู้ซึ่งเป็นบิดา มารดา คู่สมรส หรือบุตรของผู้เอาประกันภัย',
+      'โรคเอดส์ (AIDS) หรือภาวะภูมิคุ้มกันบกพร่องที่เกิดจากการติดเชื้อ HIV',
+    ],
+    exclusionNote: 'ข้อยกเว้นรวม 6 ข้อ สรุปจากโบรชัวร์และเอกสารรายละเอียดแบบประกันของบริษัท การพิจารณาจ่ายจริงเป็นไปตามเงื่อนไข คำนิยาม และข้อยกเว้นในสัญญาเพิ่มเติมเพียว แคนเซอร์',
+    detailSections: () => pureCancerVsCancerSection(),
+    freqSupported: true,
+    rateTable: (freq='annual') => pureCancerRateTableBlock(freq),
   },
 
   happylady: {
@@ -9917,6 +10146,7 @@ const PLAN_ROUTES = {
   cipc: '/plans/ci-perfect-care',
   multipleci: '/plans/multiple-ci',
   cancer: '/plans/cancer-protection',
+  purecancer: '/plans/pure-cancer',
   happylady: '/plans/happy-lady',
   happyladyplus: '/plans/happy-lady-plus',
   diabetes: '/plans/diabetes-protection',
@@ -10021,6 +10251,7 @@ const PLAN_CARD_EXTRA = {
   cipc:       {note:'ทุน 500,000 บาท',  calc:(g,a)=>cipcPremium(500000, g, a, 'annual')},
   multipleci: {note:'ทุน 500,000 บาท',  calc:(g,a)=>multipleCiPremium(500000, g, a, 'annual')},
   cancer:     {note:'ทุน 300,000 บาท',  calc:(g,a)=>cancerPremium('300k', g, a, 'annual')},
+  purecancer: {note:'ทุน 300,000 บาท',  calc:(g,a)=>pureCancerPremium('300k', g, a, 'annual')},
   // แฮปปี้ เลดี้ / แฮปปี้ เลดี้ พลัส รับเฉพาะผู้หญิง จึงบังคับเพศหญิงในการคำนวณเสมอ ไม่อิงเพศของเคสอ้างอิง
   happylady:     {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady', 200000, a, 'annual')},
   happyladyplus: {note:'ทุน 200,000 บาท (หญิง)', calc:(g,a)=>happyLadyPremium('happy_lady_plus', 200000, a, 'annual')},
@@ -12614,7 +12845,7 @@ function setValue(id, val){
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
 function resetCalculatorSelections(){
-  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_hb'].forEach(id=>setChecked(id,false));
+  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_pure_cancer','use_hb'].forEach(id=>setChecked(id,false));
   dcareClearRows();
   setValue('pa_plan','none');
 }
