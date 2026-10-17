@@ -46,6 +46,7 @@ vm.runInContext(
     extract("function lifetimeProtectionPremium("),
     extract("function cipcPremium("),
     extract("function cancerPremium("),
+    extract("function pureCancerPremium("),
     extract("function dcareRateArray("),
     extract("function dcareRate("),
     extract("function dcarePremium("),
@@ -84,9 +85,9 @@ test("หน้าใหม่ถูกต่อเข้าระบบคร�
 });
 
 test("ตารางเกณฑ์ครบทุกแบบ และสองแถวแรกคือเรื่องที่เข้าใจผิดบ่อยที่สุด", () => {
-  assert.equal(CI_PLANS.length, 6);
+  assert.equal(CI_PLANS.length, 7);
   const keys = CI_PLANS.map((p) => p.key).join(",");
-  assert.equal(keys, "lifetimeprotection,cipc,dcare,multipleci,cancer,careplus");
+  assert.equal(keys, "lifetimeprotection,cipc,dcare,multipleci,cancer,purecancer,careplus");
   for (const p of CI_PLANS) {
     for (const f of ["times", "endsAfterClaim", "wait", "entry", "renew", "minSum", "cashValue", "fit"]) {
       assert.ok(p[f] && p[f].length > 3, `${p.key} ขาดข้อมูล ${f}`);
@@ -116,11 +117,15 @@ test("เบี้ยที่หน้าเทียบดึงมา ตร�
   assert.ok(pr.cipc > 0 && pr.cipc < pr.lifetimeprotection);
   assert.ok(pr.dcare > 0);
   assert.ok(pr.cancer > 0);
+  // เพียว แคนเซอร์ ชาย 35 ทุน 1 ล้าน = 1,067 บาท ตามตารางของบริษัท และต้องถูกกว่าแบบที่มีเงินชดเชยรายวัน
+  assert.equal(pr.purecancer, 1067);
+  assert.ok(pr.purecancer < pr.cancer);
   assert.ok(pr.multipleci > 0);
   assert.ok(pr.careplus > 0);
   // ทุนที่ไม่มีในตารางของแบบนั้น ต้องคืนค่าว่าง ไม่ใช่เดาด้วยการเทียบสัดส่วน
   const pr3m = premiums(35, "m", 3000000);
   assert.equal(pr3m.cancer, null);
+  assert.equal(pr3m.purecancer, null);
   assert.equal(pr3m.multipleci, null);
   assert.ok(pr3m.lifetimeprotection > 0);
 });
