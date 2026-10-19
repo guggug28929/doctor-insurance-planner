@@ -149,3 +149,20 @@ test('ชุดสิ่งที่ลูกค้าเห็น: หน้า
 test('หน้ารายละเอียดต้องคงเงื่อนไขแสดงตารางเบี้ยของแผนบำนาญ (p.rateTable || !p.pension)', () => {
   assert.ok(html.includes('${p.rateTable || !p.pension ? `'));
 });
+
+/* เฟล็กซี่ รีไทร์ 90/1 (รุ่นเดิม) ปิดการขายแล้ว: ซ่อนจากเว็บและเครื่องคำนวณ แต่ต้องไม่ลบข้อมูล */
+test('รุ่นเดิม flexi_retire_90_1 ถูกซ่อนจากทุกจุดที่ลูกค้าเห็น แต่ข้อมูลยังอยู่', () => {
+  assert.ok(PENSION.plans.flexi_retire_90_1, 'ข้อมูลรุ่นเดิมต้องยังอยู่ใน pension-plans.json');
+  const ids = /const PENSION_IDS = \[([^\]]*)\]/.exec(html)[1];
+  assert.doesNotMatch(ids, /flexi_retire_90_1'/, 'PENSION_IDS ต้องไม่มีรุ่นเดิม');
+  assert.match(ids, /flexi_retire_next_90_1/);
+  assert.match(ids, /flexi_retire_pro_90_1/);
+  assert.doesNotMatch(html, /showPlanDetail\('flexi_retire_90_1'\)/, 'การ์ดแผนรุ่นเดิมต้องถูกเอาออก');
+  assert.match(html, /PEN_STRAT_FAMILY = \{single: 'flexi_retire_next_90_1'/, 'ตารางเทียบรูปแบบชำระเบี้ยต้องใช้รุ่นที่ขายอยู่');
+  assert.match(html, /path === '\/plans\/flexi-retire-90-1'/, 'ลิงก์เก่าต้องพาไปหน้ารวมแผน');
+  // จำนวนแบบที่แสดงต้องตรงกับรายการจริง
+  const n = ids.split(',').filter(s => s.trim()).length;
+  assert.equal(n, 9);
+  assert.match(html, /ประกันชีวิตแบบบำนาญ \(9 แบบ\)/);
+  assert.match(html, /จากทั้ง 9 แบบ/);
+});
