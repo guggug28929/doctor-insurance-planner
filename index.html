@@ -2500,6 +2500,9 @@
   body:not(.hnw) .navbar button:nth-child(4){border-color:rgba(158,198,242,.65);}
   body:not(.hnw) .navbar button:nth-child(6){border-color:rgba(246,182,164,.65);}
   body:not(.hnw) .navbar button:nth-child(7){border-color:rgba(255,194,218,.7);}
+  /* ค้นหา รพ. อยู่หลังเมนูความรู้ ลำดับ nth-child จึงเปลี่ยน ล็อกสีน้ำเงินไว้ตามเดิม */
+  body:not(.hnw) .navbar > button[data-page="hospitals"]::before{background:#9ec6f2;}
+  body:not(.hnw) .navbar > button[data-page="hospitals"]{border-color:rgba(158,198,242,.65);}
   body:not(.hnw) .navbar button.active::before{background:var(--pink) !important;}
   /* เดิมป้ายบอกประเภทถูกไล่สีรุ้งห้าสีวนตามลำดับการ์ด
      ผลคือการ์ดที่เขียนคำเดียวกันว่าสัญญาหลักกลับมีป้ายคนละสี สีไม่ได้สื่ออะไรเลย
@@ -2671,7 +2674,6 @@
       <button data-page="home" class="active">หน้าแรก</button>
       <button data-page="ai">จัดแผนให้</button>
       <button data-page="calc">คำนวณเบี้ย</button>
-      <button data-page="hospitals">ค้นหา รพ.</button>
       <!-- แผนทั้งหมด · ชี้เมาส์แล้วกางกลุ่มให้เลือก กดที่ตัวปุ่มยังเข้าหน้ารวมเหมือนเดิม
            กลุ่มในแผงตรงกับชิปที่อยู่บนหน้าแผน จอแคบไม่มีการชี้เมาส์ จึงกดเข้าหน้าแล้วใช้ชิปแทน -->
       <div class="nav-more nav-plans" id="navPlans">
@@ -2699,6 +2701,7 @@
           <button data-page="faq">คำถามที่พบบ่อย</button>
         </div>
       </div>
+      <button data-page="hospitals">ค้นหา รพ.</button>
       <button data-page="tax">วางแผนภาษี</button>
       <button data-page="contact">ติดต่อหมอกึ๊ก</button>
       <!-- แผน HNW ย้ายไปเป็นทางเข้าในหน้าแผนทั้งหมด แต่ยังต้องอยู่ใน #navbar
