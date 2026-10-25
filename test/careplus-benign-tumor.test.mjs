@@ -5,3 +5,6 @@ test('Care Plus ระบุเนื้องอกที่ไม่ใช่�
   assert.ok(h.includes('"เนื้องอกหรือมะเร็ง"'));
   assert.ok(h.includes('ต้องเบิกในหมวด 10 ของสัญญาหลัก'));
 });
+test('Care Plus: Elite หมวด 10 ไม่ต้องมีผลพยาธิ',()=>{
+  assert.ok(h.includes('แผน Elite ไม่ติดเรื่องนี้ในหมวดรังสีรักษา'));
+});
