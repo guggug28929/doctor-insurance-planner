@@ -4,7 +4,7 @@ const meta=JSON.parse(fs.readFileSync(new URL('meta.json',dir),'utf8'));
 const rows=meta.companies.flatMap(c=>JSON.parse(fs.readFileSync(new URL(c.id+'.json',dir),'utf8')));
 test('ข้อมูลครบทุกแถวและทุกบริษัท',()=>{
   assert.equal(meta.companies.length,10);
-  assert.equal(rows.length,7351);
+  assert.equal(rows.length,7377);
 });
 test('ศรีนครินทร์ มข. รวมเป็นที่เดียวครบ 10 บริษัท',()=>{
   const keys=new Set(rows.filter(r=>r.province==='ขอนแก่น'&&/ศรีนครินทร์|srinagarind/i.test(r.name)).map(r=>r.entity_key));
