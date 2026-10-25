@@ -45,6 +45,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/hospitals",
+      "destination": "/index.html"
+    },
+    {
       "source": "/contact",
       "destination": "/index.html"
     },
