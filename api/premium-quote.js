@@ -894,14 +894,14 @@ function criticalOptions(rates, profile, mainCapital = 200000) {
   const cancer = rateAtPublishedAge(rates.cancer?.[cancerKey], profile.age);
 
   if (cipcBase !== null && profile.age <= 65) {
-    const ciCapital = Math.min(capital, mainCapital * 10);
+    const ciCapital = Math.min(capital, 10000000); // CI Perfect Care ทุนสูงสุด 10 ล้าน ไม่ผูกกับทุนสัญญาหลัก
     options.push({
       product: "CI Perfect Care",
       capital: ciCapital,
       premium: cipcBase * (ciCapital / 500000),
       detail:
         ciCapital < capital
-          ? "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน (จำกัดตาม 10 เท่าของทุนสัญญาหลัก)"
+          ? "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน (จำกัดทุนสูงสุด 10 ล้านบาท)"
           : "คุ้มครองโรคร้ายแรง 36 โรค หลายระยะ รวมสูงสุด 100% ของทุน",
     });
   }
@@ -967,7 +967,7 @@ function buildCriticalComparison(rates, profile) {
     notes: [
       mainId === "99_20_200k"
         ? "Smart Protection 99/20 ต้องแนบอุบัติเหตุหรือโรคร้ายแรง; ชุดนี้ใช้สัญญาโรคร้ายแรงเป็นสัญญาแนบครับ"
-        : "99/99 ต้องแนบ PA และ CI Perfect Care ทำได้ไม่เกิน 10 เท่าของทุนสัญญาหลักครับ",
+        : "99/99 ต้องแนบ PA ครับ CI Perfect Care ทำทุนได้สูงสุด 10 ล้านบาท",
     ],
     profileUsed: profile,
   };
