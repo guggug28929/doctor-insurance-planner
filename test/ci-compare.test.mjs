@@ -54,6 +54,9 @@ vm.runInContext(
     extract("function occKeyFor("),
     extractConst("CI_PLANS"),
     extract("const MCI_CAPITAL_COL = "),
+    extract("const MCI_LIMITS = "),
+    extract("function mciCapitalValid("),
+    extract("function mciBaseColumn("),
     extract("function multipleCiPremium("),
     extract("const CI_NEW_BUSINESS_AGE = "),
     extract("function ciAgeAllowed("),
@@ -126,7 +129,10 @@ test("เบี้ยที่หน้าเทียบดึงมา ตร�
   const pr3m = premiums(35, "m", 3000000);
   assert.equal(pr3m.cancer, null);
   assert.equal(pr3m.purecancer, null);
-  assert.equal(pr3m.multipleci, null);
+  // Multiple CI ทุนทวีคูณของ 500,000 (สูงสุด 20 ล้าน) ใช้อัตราต่อทุน 1,000 บาทของตาราง
+  const row35 = RATES.multiple_ci.m.find((b) => b[0] <= 35 && 35 <= b[1]);
+  assert.equal(pr3m.multipleci, row35[2] * 6);
+  assert.equal(premiums(35, "m", 750000).multipleci, null, "ไม่ใช่ทวีคูณของ 500,000");
   assert.ok(pr3m.lifetimeprotection > 0);
 });
 

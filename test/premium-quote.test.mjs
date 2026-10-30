@@ -174,7 +174,7 @@ test("Flexi 99/20 เลือกทุนสูงสุดที่อยู�
   assert.equal(result.body.totalPremium, 35500);
 });
 
-test("Smart Link 15/3 และ 15/6 แนะนำทุนตามงบ", async () => {
+test("เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท ลิงค์ 15/6 (Global) แนะนำทุนตามงบ", async () => {
   const result = await quote({
     age: 35,
     annualBudget: 100000,
@@ -253,7 +253,7 @@ test("ลูกค้าที่ระบุ OPD เหมาจ่ายได
   assert.doesNotMatch(result.body.text, /Elite Health Plus/);
 });
 
-test("99/99 หนึ่งแสนจำกัด CI Perfect Care ไม่เกินหนึ่งล้าน", async () => {
+test("99/99 หนึ่งแสน CI Perfect Care ไม่ถูกจำกัดตามทุนสัญญาหลักแล้ว", async () => {
   const result = await quote({
     age: 40,
     gender: "m",
@@ -265,7 +265,7 @@ test("99/99 หนึ่งแสนจำกัด CI Perfect Care ไม่เ
   });
   const cipc = result.body.alternatives.find((item) => item.product === "CI Perfect Care");
   assert.equal(result.body.ok, true);
-  assert.equal(cipc.capital, 1000000);
+  assert.equal(cipc.capital, 2000000);
   assert.match(result.body.text, /99\/99/);
   assert.doesNotMatch(result.body.text, /PA Easy Plan 1/);
 });

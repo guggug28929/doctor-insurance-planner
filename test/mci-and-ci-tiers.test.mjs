@@ -138,6 +138,9 @@ test('หน้าแผนต้องแสดงนิยามจริง �
 const ctx = vm.createContext({RATES, Math, Number, Object});
 vm.runInContext([
   grab('const MCI_CAPITAL_COL = '),
+  grab('const MCI_LIMITS = '),
+  grab('function mciCapitalValid('),
+  grab('function mciBaseColumn('),
   grab('function multipleCiPremium('),
   grab('function multipleCiNearestCapital('),
   'this.p = multipleCiPremium; this.near = multipleCiNearestCapital;',
@@ -159,9 +162,12 @@ test('เบี้ยต้องตรงกับตารางของบ�
   }
 });
 
-test('ทุนที่บริษัทไม่เปิดขาย ต้องคืนค่าว่าง ห้ามเทียบบัญญัติไตรยางศ์', () => {
-  for(const cap of [300000, 750000, 1500000, 3000000, 5000000])
-    assert.equal(ctx.p(cap, 'm', 35, 'annual'), null, `ทุน ${cap} ไม่มีในตาราง ต้องคืน null`);
+test('ทุนที่ไม่ใช่ทวีคูณของ 500,000 หรือเกิน 20 ล้าน ต้องคืนค่าว่าง ทุนทวีคูณใช้อัตราต่อทุน 1,000 บาทของตาราง', () => {
+  for(const cap of [300000, 750000, 1250000, 20500000, 25000000])
+    assert.equal(ctx.p(cap, 'm', 35, 'annual'), null, `ทุน ${cap} ไม่ถูกกติกา ต้องคืน null`);
+  const row = RATES.multiple_ci.m.find(b => b[0] <= 35 && 35 <= b[1]);
+  assert.equal(ctx.p(3000000, 'm', 35, 'annual'), row[2] * 6);
+  assert.equal(ctx.p(20000000, 'm', 35, 'annual'), row[2] * 40);
   assert.deepEqual(RATES.multiple_ci.allowed_capitals, [500000, 1000000, 2000000]);
 });
 

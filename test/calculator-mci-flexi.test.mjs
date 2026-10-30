@@ -23,12 +23,21 @@ function grab(marker){
   throw new Error(`วงเล็บไม่ครบสำหรับ ${marker}`);
 }
 
-test('หน้าคำนวณต้องมีช่องติ๊ก Multiple CI และมีทุนเฉพาะ 3 ระดับที่บริษัทเปิดขาย', () => {
+test('หน้าคำนวณต้องมีช่องติ๊ก Multiple CI ทุน 500,000 – 20,000,000 เพิ่มทีละ 500,000', () => {
   assert.match(html, /<input type="checkbox" id="use_mci">/);
-  const sel = html.slice(html.indexOf('<select id="mci_capital">'));
-  const opts = [...sel.slice(0, sel.indexOf('</select>')).matchAll(/<option value="(\d+)"/g)].map(m => Number(m[1]));
-  assert.deepEqual(opts, RATES.multiple_ci.allowed_capitals);
+  assert.match(html, /<input type="number" id="mci_capital" value="1000000" step="500000" min="500000" max="20000000">/);
+  assert.match(html, /<input type="number" id="cipc_capital" value="500000" step="500000" min="500000" max="10000000">/);
   assert.match(html, /bindCheckboxToggle\('use_mci','mci_fields'\)/);
+});
+
+test('ทุน CI Perfect Care / Multiple CI ไม่ผูกกับทุนสัญญาหลัก (เลิกกฎ 10 เท่า) แต่มีเพดาน 10 ล้าน / 20 ล้าน', () => {
+  assert.doesNotMatch(html, /inp\.cipcCapital > inp\.mainCapital\*10/);
+  assert.doesNotMatch(html, /inp\.mciCapital > inp\.mainCapital\*10/);
+  assert.match(html, /const CIPC_MAX_CAPITAL = 10000000/);
+  assert.match(html, /const MCI_LIMITS = \{min: 500000, max: 20000000, step: 500000\}/);
+  assert.match(html, /inp\.cipcCapital > CIPC_MAX_CAPITAL/);
+  assert.match(html, /!mciCapitalValid\(inp\.mciCapital\)/);
+  assert.doesNotMatch(html, /ไม่เกิน 10 เท่าของทุนสัญญาหลัก · จ่าย 100% ต่อกลุ่ม/);
 });
 
 test('Multiple CI ต้องต่อครบทุกจุดที่ CI Perfect Care ถูกต่ออยู่', () => {
@@ -55,15 +64,25 @@ test('ตารางเบี้ยรายปีต้องไม่ลา�
   assert.match(html, /colKey === 'mci'\) return inp\.useMci && age <= 79/);
 });
 
-test('เบี้ย Multiple CI ในเครื่องคำนวณต้องตรงกับตารางดิบ', () => {
-  const ctx = { RATES };
+test('เบี้ย Multiple CI ในเครื่องคำนวณต้องตรงกับตารางดิบ และทุนนอกคอลัมน์ใช้อัตราส่วนเดียวกัน', () => {
+  const ctx = { RATES, Math, Number };
   vm.createContext(ctx);
-  vm.runInContext('const MCI_CAPITAL_COL = {500000: 2, 1000000: 3, 2000000: 4};\n' + grab('function multipleCiPremium') + '\nthis.f = multipleCiPremium;', ctx);
+  vm.runInContext(['const MCI_CAPITAL_COL = {500000: 2, 1000000: 3, 2000000: 4};', grab('const MCI_LIMITS = '), grab('function mciCapitalValid'), grab('function mciBaseColumn'), grab('function multipleCiPremium'), 'this.f = multipleCiPremium; this.ok = mciCapitalValid;'].join('\n'), ctx);
   for(const sex of ['m', 'f']) for(const [cap, col] of [[500000, 2], [1000000, 3], [2000000, 4]]) for(const age of [7, 30, 45, 65]){
     const row = RATES.multiple_ci[sex].find(b => b[0] <= age && age <= b[1]);
     assert.equal(ctx.f(cap, sex, age, 'annual'), row[col], `${sex} ${cap} อายุ ${age}`);
   }
-  assert.equal(ctx.f(750000, 'm', 30, 'annual'), null, 'ทุนนอกตารางต้องคืน null');
+  // ทุนนอกคอลัมน์ (เช่น 3 ล้าน 5 ล้าน 20 ล้าน) ต้องเท่ากับอัตราต่อทุน 1,000 บาทของตารางคูณทุน รายปีตรงเป๊ะ
+  for(const sex of ['m', 'f']) for(const age of [7, 30, 45, 65]) for(const cap of [1500000, 3000000, 5000000, 20000000]){
+    const row = RATES.multiple_ci[sex].find(b => b[0] <= age && age <= b[1]);
+    assert.equal(ctx.f(cap, sex, age, 'annual'), row[2] * cap / 500000, `${sex} ${cap} อายุ ${age}`);
+  }
+  assert.equal(ctx.f(750000, 'm', 30, 'annual'), null, 'ทุนที่ไม่ใช่ทวีคูณของ 500,000 ต้องคืน null');
+  assert.equal(ctx.f(20500000, 'm', 30, 'annual'), null, 'เกิน 20 ล้านต้องคืน null');
+  assert.equal(ctx.f(0, 'm', 30, 'annual'), null);
+  assert.equal(ctx.ok(20000000), true);
+  assert.equal(ctx.ok(500000), true);
+  assert.equal(ctx.ok(250000), false);
   assert.equal(ctx.f(1000000, 'm', 5, 'annual'), null, 'อายุต่ำกว่า 7 รับไม่ได้');
 });
 
