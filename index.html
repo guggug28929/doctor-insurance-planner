@@ -2958,8 +2958,8 @@
       </div>
       <div id="cipc_fields" class="sub-fields hidden">
         <label class="first">ทุนประกัน</label>
-        <input type="number" id="cipc_capital" value="500000" step="500000" min="500000">
-        <div class="hint" id="cipcHint">ทำทุนได้สูงสุด 10 เท่าของทุนประกันสัญญาหลัก</div>
+        <input type="number" id="cipc_capital" value="500000" step="500000" min="500000" max="10000000">
+        <div class="hint" id="cipcHint">ทุนสูงสุด 10,000,000 บาท · ไม่จำกัดตามทุนสัญญาหลัก</div>
       </div>
       <div class="field-err" id="cipcErr"></div>
 
@@ -2969,12 +2969,8 @@
       </div>
       <div id="mci_fields" class="sub-fields hidden">
         <label class="first">ทุนประกัน</label>
-        <select id="mci_capital">
-          <option value="500000">500,000</option>
-          <option value="1000000" selected>1,000,000</option>
-          <option value="2000000">2,000,000</option>
-        </select>
-        <div class="hint" id="mciHint">รับอายุ 7 – 65 ปี ต่ออายุได้ถึง 79 ปี · กลุ่มอาชีพ 1-2 เท่านั้น · ทุนไม่เกิน 10 เท่าของทุนสัญญาหลัก · จ่าย 100% ต่อกลุ่ม กลุ่มละครั้ง</div>
+        <input type="number" id="mci_capital" value="1000000" step="500000" min="500000" max="20000000">
+        <div class="hint" id="mciHint">รับอายุ 7 – 65 ปี ต่ออายุได้ถึง 79 ปี · กลุ่มอาชีพ 1-2 เท่านั้น · ทุน 500,000 – 20,000,000 บาท (เพิ่มทีละ 500,000) ไม่จำกัดตามทุนสัญญาหลัก · จ่าย 100% ต่อกลุ่ม กลุ่มละครั้ง</div>
       </div>
       <div class="field-err" id="mciErr"></div>
 
@@ -3849,7 +3845,7 @@
     <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
       <h3>CI Perfect Care</h3>
-      <p class="meta">อายุรับ 30 วัน – 65 ปี • ทุนขั้นต่ำ 100,000 บาท • สูงสุด 10 เท่าของทุนสัญญาหลัก</p>
+      <p class="meta">อายุรับ 30 วัน – 65 ปี • ทุนขั้นต่ำ 100,000 บาท • สูงสุด 10,000,000 บาท</p>
       <ul>
         <li>คุ้มครอง 36 โรคร้ายแรง ตั้งแต่ระยะเริ่มต้นถึงรุนแรง จ่ายรวมสูงสุด 100% ของทุน</li>
         <li>คุ้มครองการเสียชีวิตทุกกรณีด้วย เมื่อจ่ายครบ 100% สัญญาสิ้นสุด</li>
@@ -6117,15 +6113,14 @@ function validateInputs(inp){
   // 200,000 has its own total-rider-premium rule below, while 200,000+ has
   // no mandatory rider requirement at all.
 
-  // CIPC capital <= 10x main capital
-  if(inp.useCipc && inp.cipcCapital > inp.mainCapital*10){
-    issues.push(`ทุนประกัน CI Perfect Care (${fmt(inp.cipcCapital)}) เกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)})`);
+  // CI Perfect Care: ทุนสูงสุด 10 ล้านบาท ไม่ผูกกับทุนสัญญาหลักแล้ว
+  if(inp.useCipc && inp.cipcCapital > CIPC_MAX_CAPITAL){
+    issues.push(`ทุนประกัน CI Perfect Care (${fmt(inp.cipcCapital)}) เกินทุนสูงสุด ${fmt(CIPC_MAX_CAPITAL)} บาท`);
   }
 
-  // Multiple CI: ทุน 500k/1m/2m เท่านั้น · ไม่เกิน 10 เท่าของทุนหลัก · อายุรับใหม่ 7-65 · อาชีพ 1-2
+  // Multiple CI: ทุน 500,000 – 20,000,000 บาท เพิ่มทีละ 500,000 · ไม่ผูกกับทุนสัญญาหลัก · อายุรับใหม่ 7-65 · อาชีพ 1-2
   if(inp.useMci){
-    if(![500000,1000000,2000000].includes(inp.mciCapital)) issues.push('ทุนประกัน Multiple CI ต้องเป็น 500,000 / 1,000,000 / 2,000,000 บาท');
-    if(inp.mciCapital > inp.mainCapital*10) issues.push(`ทุนประกัน Multiple CI (${fmt(inp.mciCapital)}) เกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)})`);
+    if(!mciCapitalValid(inp.mciCapital)) issues.push(`ทุนประกัน Multiple CI ต้องอยู่ระหว่าง ${fmt(MCI_LIMITS.min)} – ${fmt(MCI_LIMITS.max)} บาท และเพิ่มทีละ ${fmt(MCI_LIMITS.step)} บาท`);
     if(inp.entryAge < 7 || inp.entryAge > 65) issues.push('Multiple CI รับทำประกันใหม่อายุ 7 – 65 ปีเท่านั้น');
     if(Number(inp.occupationClass) > 2) issues.push('Multiple CI รับเฉพาะกลุ่มอาชีพ 1 และ 2');
   }
@@ -6474,7 +6469,7 @@ function renderAll(){
   const frequencyNote = warnLabels.length
     ? `<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;color:var(--danger);">หมายเหตุ: ยังไม่มีตารางเบี้ยที่เผยแพร่สำหรับ "${warnLabels.join(', ')}" ที่งวดชำระ/ขั้นอาชีพนี้ ระบบจึงแสดง "-" แทนแทนที่จะเดาตัวเลข กรุณาเลือก "รายปี" และ/หรือขั้นอาชีพ 1-3 สำหรับแผนดังกล่าว หรือตรวจอัตราที่แท้จริงจาก SmartWeb ก่อนออกใบเสนอราคา</p>`
     : '';
-  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเพื่อส่งให้ลูกค้า ทั้งสองแบบจัดหน้าแนวนอนให้พอดีกระดาษ A4 แล้ว</p><div class="export-btns"><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button><button type="button" class="btn btn-export-pdf" onclick="exportPremiumTablePdf()">ดาวน์โหลด PDF</button></div></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${benefitNote}${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p>`;
+  tableWrap.innerHTML = `<div class="table-export-actions"><p class="meta">ดาวน์โหลดตารางเบี้ยที่คำนวณแล้วเพื่อส่งให้ลูกค้า ทั้งสองแบบจัดหน้าแนวนอนให้พอดีกระดาษ A4 แล้ว</p><div class="export-btns"><button type="button" class="btn btn-export-excel" onclick="exportPremiumTableExcel()">ดาวน์โหลด Excel</button><button type="button" class="btn btn-export-pdf" onclick="exportPremiumTablePdf()">ดาวน์โหลด PDF</button></div></div><table><thead>${thead}</thead><tbody>${tbody}</tbody></table>${benefitNote}${frequencyNote}<p class="meta" style="padding:10px 12px;margin:0;background:#fffafc;">หมายเหตุ: ตารางแสดงถึงอายุ 98 ปีเท่านั้น เพราะเบี้ยอายุ 98 คือปีกรมธรรม์ที่คุ้มครองไปจนถึงปีที่จะอายุ 99 ก่อนสิ้นสุดความคุ้มครอง</p><p class="meta rider-adjust-note" style="padding:10px 12px;margin:0;background:#fffafc;border-top:1px solid var(--line);">${plannerEscapeHtml(RIDER_PREMIUM_ADJUST_NOTE)}</p>`;
 
   renderContractSummary(inp, rows, cols, entryAge, gender);
 }
@@ -6643,6 +6638,18 @@ function xlsxStylesXml(){
   + '</styleSheet>';
 }
 
+/* ตัดข้อความยาวเป็นหลายบรรทัดสำหรับเซลล์ Excel ตัดที่ช่องว่างหรือรอยต่อวลีไทย ไม่ตัดกลางคำ */
+function xlsxWrapNote(text, max){
+  const parts = String(text).split(/(?<=[ ])/);   // ข้อความไทยของเราใช้ช่องว่างคั่นวลี จึงตัดที่ช่องว่าง
+  const lines = []; let cur = '';
+  for(const w of parts){
+    if(cur && (cur + w).length > max){ lines.push(cur.trim()); cur = ''; }
+    cur += w;
+  }
+  if(cur.trim()) lines.push(cur.trim());
+  return lines;
+}
+
 function dgDownloadXlsx(fileName, data){
   const {title, details, meta, head, body} = data;
   const colCount = Math.max(...head.map(r => r.length), ...body.map(r => r.length), 2);
@@ -6670,6 +6677,9 @@ function dgDownloadXlsx(fileName, data){
     r++;
     rows.push(`<row r="${r}">` + br.map((c, i) => xlsxCell(xlsxColName(i) + r, c, XLSX_STYLE.TEXT)).join('') + '</row>');
   }
+  // หมายเหตุการปรับเบี้ยสัญญาเพิ่มเติม แบ่งบรรทัดให้อ่านได้ในหน้าจอ ไม่ล้นไปไกลเกินไป
+  push('');
+  for(const line of xlsxWrapNote(RIDER_PREMIUM_ADJUST_NOTE, 120)) push(xlsxCell('A' + (r + 1), line, XLSX_STYLE.NOTE, true));
 
   /* ความกว้างคอลัมน์คิดจากข้อความที่ยาวที่สุดจริง ๆ ของคอลัมน์นั้น
      ของเดิมไม่ได้ตั้งเลย Excel จึงใช้ความกว้างมาตรฐาน ตัวเลขล้นเป็น ##### */
@@ -6853,6 +6863,7 @@ function exportPremiumTablePdf(){
   }).join('');
 
   host.innerHTML = `<div class="print-doc">${sections}
+      <div class="print-foot print-adjust-note">${plannerEscapeHtml(RIDER_PREMIUM_ADJUST_NOTE)}</div>
       <div class="print-foot">${plannerEscapeHtml(CONTENT_CREDIT)} ·
         สร้างเมื่อ ${new Date().toLocaleString('th-TH')} ·
         ตัวเลขคำนวณจากตารางอัตราเบี้ยของบริษัท ใช้ประกอบการตัดสินใจเบื้องต้น</div>
@@ -7200,6 +7211,8 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     '',
     'หมายเหตุ: สัญญาเพิ่มเติม เบี้ยอาจเพิ่มขึ้นตามอายุของผู้เอาประกัน (ตามความเสี่ยงและเงินเฟ้อ) และต้องชำระเบี้ยต่อเนื่องตราบเท่าที่ยังต้องการความคุ้มครอง',
     '',
+    RIDER_PREMIUM_ADJUST_NOTE,
+    '',
     '━━━━━━━━━━━━━━━━',
     paymentInfo.periods === 1
       ? `💳 เบี้ยประกัน ${fmt(totalY1)} บาท/ปี (เฉลี่ยวันละ ${fmt(Math.round(totalY1 / 365))} บาท)`
@@ -7349,31 +7362,31 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
     setErr('careplus_plan','careplusErr', false, '');
   }
 
-  // CIPC: availability + issue-age max (65) + 10x cap
+  // CIPC: availability + issue-age max (65) + ทุนสูงสุด 10 ล้าน
   // (rate table itself extends to age 84 for in-force renewal, so a null lookup
   // alone won't catch someone starting past the real new-business cutoff of 65)
   if(inp.useCipc){
     const v = cipcPremium(inp.cipcCapital, gender, entryAge);
-    const overCap = inp.cipcCapital > inp.mainCapital*10;
+    const overCap = inp.cipcCapital > CIPC_MAX_CAPITAL;
     const overIssueAge = entryAge > 65;
     setErr('cipc_capital','cipcErr', v===null || overCap || overIssueAge,
       v===null ? 'ไม่สามารถแนบ CI Perfect Care ได้ที่อายุปัจจุบัน'
       : overIssueAge ? 'CI Perfect Care รับทำประกันใหม่ถึงอายุ 65 ปีเท่านั้น'
-      : `ทุนเกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)} บาท)`);
+      : `ทุน CI Perfect Care สูงสุด ${fmt(CIPC_MAX_CAPITAL)} บาท`);
   } else {
     setErr('cipc_capital','cipcErr', false, '');
   }
 
-  // Multiple CI: สมัครใหม่อายุ 7-65 ปี (66-79 เป็นอัตราต่ออายุ) · ทุนไม่เกิน 10 เท่าของทุนหลัก · อาชีพ 1-2
+  // Multiple CI: สมัครใหม่อายุ 7-65 ปี (66-79 เป็นอัตราต่ออายุ) · ทุน 500k-20 ล้าน · อาชีพ 1-2
   if(inp.useMci){
     const v = multipleCiPremium(inp.mciCapital, gender, entryAge, 'annual');
-    const overCap = inp.mainCapital > 0 && inp.mciCapital > inp.mainCapital*10;
+    const overCap = !mciCapitalValid(inp.mciCapital);
     const badAge = entryAge < 7 || entryAge > 65;
     const badOcc = Number(inp.occupationClass) > 2;
     setErr('mci_capital','mciErr', v===null || overCap || badAge || badOcc,
       badAge ? 'Multiple CI รับทำประกันใหม่อายุ 7 – 65 ปีเท่านั้น'
       : badOcc ? 'Multiple CI รับเฉพาะกลุ่มอาชีพ 1 และ 2'
-      : overCap ? `ทุนเกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)} บาท)`
+      : overCap ? `ทุน Multiple CI ต้องอยู่ระหว่าง ${fmt(MCI_LIMITS.min)} – ${fmt(MCI_LIMITS.max)} บาท และเพิ่มทีละ ${fmt(MCI_LIMITS.step)} บาท`
       : 'ไม่สามารถแนบ Multiple CI ได้ที่อายุปัจจุบัน');
   } else {
     setErr('mci_capital','mciErr', false, '');
@@ -8096,7 +8109,7 @@ const CI_PLANS = [
     times:'จ่ายไล่ระยะได้ จนครบ 100% ของทุน',
     endsAfterClaim:'จบเมื่อจ่ายครบระยะรุนแรง', maxBenefit:'รวมโรคร้ายแรงและเสียชีวิต 100% ของทุน',
     wait:'90 วัน', entry:'30 วัน – 65 ปี', renew:'ต่ออายุได้ถึง 84 ปี',
-    minSum:'100,000 บาท และไม่เกิน 10 เท่าของทุนสัญญาหลัก', death:'จ่าย 100% หักที่เคยรับ',
+    minSum:'100,000 บาท สูงสุด 10,000,000 บาท', death:'จ่าย 100% หักที่เคยรับ',
     cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่อยากได้ทุนสูงด้วยเบี้ยต่ำในช่วงอายุน้อยถึงกลางคน',
   },
   {
@@ -8117,7 +8130,7 @@ const CI_PLANS = [
     endsAfterClaim:'เคลมกลุ่มแรกแล้ว อีก 3 กลุ่มยังคุ้มครองต่ออีก 10 ปีโดยไม่ต้องชำระเบี้ย',
     maxBenefit:'รวมสูงสุด 400% ของทุน',
     wait:'90 วัน', entry:'7 – 65 ปี', renew:'ต่ออายุได้ถึง 79 ปี',
-    minSum:'100,000 บาท และไม่เกิน 10 เท่าของทุนชีวิต', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
+    minSum:'500,000 บาท สูงสุด 20,000,000 บาท (เพิ่มทีละ 500,000)', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
     cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่กลัวเป็นซ้ำหรือเป็นหลายโรค เช่น มีประวัติครอบครัวหลายกลุ่มโรค',
   },
   {
@@ -8194,15 +8207,30 @@ function ciAgeAllowed(key, age){
 }
 
 /* ---------- เบี้ย มัลติเพิล ซีไอ ----------
-   ตารางของแบบนี้เป็นช่วงอายุ ไม่ใช่รายปี และมีเฉพาะ 3 ระดับทุนที่บริษัทเปิดขาย
-   ทุนอื่นห้ามเทียบบัญญัติไตรยางศ์ ต้องคืน null เพราะไม่มีอัตราจริงรองรับ */
+   ตารางของแบบนี้เป็นช่วงอายุ ไม่ใช่รายปี และเผยแพร่ 3 คอลัมน์ทุน (500k / 1m / 2m) */
 const MCI_CAPITAL_COL = {500000: 2, 1000000: 3, 2000000: 4};
+/* ทุนที่ทำได้: 500,000 – 20,000,000 บาท เพิ่มทีละ 500,000 ไม่ผูกกับทุนสัญญาหลัก
+   ตารางเผยแพร่มี 3 คอลัมน์ (500k / 1m / 2m) คิดจากอัตราต่อทุน 1,000 บาทเดียวกัน
+   ทุนอื่นใช้คอลัมน์ที่ใหญ่ที่สุดที่หารทุนลงตัว แล้วคูณตามสัดส่วน ไม่ใช่ประมาณค่าระหว่างจุด */
+const MCI_LIMITS = {min: 500000, max: 20000000, step: 500000};
+const CIPC_MAX_CAPITAL = 10000000;
+function mciCapitalValid(capital){
+  const c = Number(capital);
+  return Number.isFinite(c) && c >= MCI_LIMITS.min && c <= MCI_LIMITS.max && c % MCI_LIMITS.step === 0;
+}
+function mciBaseColumn(capital){
+  if(capital % 2000000 === 0) return {col: 4, base: 2000000};
+  if(capital % 1000000 === 0) return {col: 3, base: 1000000};
+  return {col: 2, base: 500000};
+}
 function multipleCiPremium(capital, gender, age, freq){
   freq = freq || 'annual';
   const g = RATES.multiple_ci;
   if(!g) return null;
-  const col = MCI_CAPITAL_COL[capital];
-  if(col === undefined) return null;
+  if(!mciCapitalValid(capital)) return null;
+  const direct = MCI_CAPITAL_COL[capital] !== undefined;
+  const bc = direct ? {col: MCI_CAPITAL_COL[capital], base: capital} : mciBaseColumn(capital);
+  const col = bc.col;
   if(!Number.isFinite(Number(age))) return null;
   const table = freq === 'annual' ? g : (g.payment_schedules && g.payment_schedules[freq]);
   const rows = table && table[gender];
@@ -8211,7 +8239,8 @@ function multipleCiPremium(capital, gender, age, freq){
   if(age < rows[0][0]) return null;
   const band = rows.find(b => age >= b[0] && age <= b[1]) || rows[rows.length - 1];
   const v = band[col];
-  return (v === null || v === undefined) ? null : v;
+  if(v === null || v === undefined) return null;
+  return bc.base === capital ? v : Math.round(v * capital / bc.base);
 }
 /* ทุนที่ใกล้เคียงที่สุดซึ่งบริษัทเปิดขายจริง ใช้ตอนผู้ช่วยจัดแผนอยากได้ทุนที่ไม่มีในตาราง */
 function multipleCiNearestCapital(want){
@@ -8263,7 +8292,7 @@ function renderCiAdvisor(){
     const note = v === null || v === undefined
       ? (p.key === 'cancer' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
         : p.key === 'purecancer' && ![300000,500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
-        : p.key === 'multipleci' && ![500000,1000000,2000000].includes(sum) ? 'แบบนี้ไม่มีทุนขนาดนี้'
+        : p.key === 'multipleci' && !mciCapitalValid(sum) ? 'Multiple CI ทุน 500,000 – 20,000,000 บาท เพิ่มทีละ 500,000'
         : 'อายุนี้ทำไม่ได้')
       : '';
     const within = budget !== null && v !== null && v !== undefined && v <= budget;
@@ -10097,7 +10126,7 @@ const PLAN_DETAILS = {
     ],
     conditions: [
       'อายุรับประกันใหม่ 30 วัน – 65 ปี (ต่ออายุได้ถึง 84 ปี)',
-      'ทุนประกันขั้นต่ำ 100,000 บาท สูงสุดไม่เกิน 10 เท่าของทุนประกันสัญญาหลัก',
+      'ทุนประกันขั้นต่ำ 100,000 บาท สูงสุด 10,000,000 บาท ไม่จำกัดตามทุนประกันสัญญาหลัก',
       'โรคร้ายแรงต้องแสดงอาการหลังพ้น 90 วันนับจากวันเริ่มคุ้มครอง หรือวันต่ออายุ/เพิ่มทุนล่าสุด แล้วแต่วันใดหลังสุด',
       'หากเหตุการณ์เดียวเข้าเกณฑ์มากกว่าหนึ่งโรค บริษัทจ่ายเพียงรายการที่มีผลประโยชน์สูงสุดรายการเดียว',
       'เงื่อนไขและคำนิยามจริงให้ยึดตามสัญญาเพิ่มเติม CI Perfect Care; หน้านี้สรุปเพื่ออ่านง่าย ไม่แทนกรมธรรม์',
@@ -10132,7 +10161,7 @@ const PLAN_DETAILS = {
       'อายุรับประกันใหม่ 7–65 ปี ต่ออายุได้ถึงอายุ 79 ปี และให้ความคุ้มครองจนถึงอายุ 80 ปี',
       'รับเฉพาะกลุ่มอาชีพ 1 และ 2 เท่านั้น',
       'เป็นสัญญาเพิ่มเติม ต้องแนบท้ายประกันชีวิต และมีระยะเวลาเอาประกันภัยไม่เกินกรมธรรม์หลัก',
-      'ทุนประกันขั้นต่ำตามข้อมูลผลิตภัณฑ์ 100,000 บาท และสูงสุดไม่เกิน 10 เท่าของทุนประกันชีวิต',
+      'ทุนประกัน 500,000 – 20,000,000 บาท (เพิ่มทีละ 500,000) ไม่จำกัดตามทุนประกันสัญญาหลัก',
       'ระยะรอคอย 90 วัน · ไม่คุ้มครองโรคที่วินิจฉัยหรือมีอาการที่เกี่ยวข้องภายใน 90 วันแรก และไม่คุ้มครองโรคที่เป็นมาก่อนวันทำสัญญา',
       'ไม่คุ้มครองการเจ็บป่วยหรือการผ่าตัดที่เป็นผลโดยตรงหรือโดยอ้อมจากภาวะภูมิคุ้มกันบกพร่อง (AIDS and HIV)',
       'อัตราเบี้ยสำหรับอายุ 66–79 ปี เป็นอัตราสำหรับการต่ออายุเท่านั้น ไม่ใช่การสมัครใหม่',
@@ -11872,7 +11901,7 @@ function renderLifeAdvisorResultOnly(){
 const ADV_NO_40M_REASON = 'Elite 75 ล้าน แพงกว่า Elite 40 ล้านเพียงประมาณ 2–5% แต่ได้วงเงินเกือบสองเท่า ค่าห้องสูงกว่า วงเงิน OPD เป็นสองเท่า และปลดล็อกกายภาพบำบัด ฝังเข็ม และจิตเวชที่แผน 40 ล้านไม่คุ้มครองเลย แผน 40 ล้านจึงไม่มีข้อไหนชนะแผน 75 ล้าน ระบบจึงไม่เสนอ';
 
 /* เรียงจากทุนมากไปน้อย บันไดการตัดเดินจากบนลงล่าง
-   สามขั้นบนเพิ่มเข้ามาเพื่อรองรับกฎ CI Perfect Care ห้ามเกิน 10 เท่าของทุนสัญญาหลัก
+   สามขั้นบนเพิ่มเข้ามาตอนที่ยังมีกฎ CI Perfect Care ห้ามเกิน 10 เท่าของทุนสัญญาหลัก (ปัจจุบันเลิกกฎนี้แล้ว คงขั้นไว้เป็นตัวเลือกทุนหลัก)
    ถ้าไม่มีขั้นเหล่านี้ ระบบจะเสนอ CI 1-5 ล้านคู่กับทุนหลัก 200,000 ซึ่งยื่นไม่ผ่าน */
 const ADV_MAIN_LEVELS = [
   {plan:'99_20', capital:500000, label:'Smart Protection 99/20 ทุน 500,000 บาท'},
@@ -11882,8 +11911,8 @@ const ADV_MAIN_LEVELS = [
   {plan:'99_99', capital:50000,  label:'Whole Life 99/99 ทุน 50,000 บาท'},
 ];
 
-/* CI Perfect Care ทำทุนได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก
-   หน้าคำนวณเบี้ยบังคับกฎนี้อยู่แล้ว ผู้ช่วยจัดแผนต้องใช้กฎเดียวกัน
+/* (เลิกใช้แล้ว) เดิม CI Perfect Care ทำทุนได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก ปัจจุบันสูงสุด 10 ล้านบาท ไม่ผูกทุนหลัก
+   ค่านี้คงไว้เพื่อความเข้ากันได้ ไม่ได้ใช้บังคับ ผู้ช่วยจัดแผนต้องใช้กฎเดียวกัน
    ไม่งั้นตัวแทนได้ใบเสนอที่บริษัทตีกลับ */
 const ADV_CIPC_MAIN_RATIO = 10;
 
@@ -11915,11 +11944,11 @@ function advFixMainRiderRule(state){
 }
 
 /* ทุนสัญญาหลักขั้นต่ำที่ชุดโรคร้ายแรงชุดนี้ต้องการ */
-/* สัญญาที่บริษัทจำกัดทุนไว้ไม่เกิน 10 เท่าของทุนสัญญาหลัก
+/* (เลิกใช้แล้ว) สัญญาที่เคยจำกัดทุนไม่เกิน 10 เท่าของทุนสัญญาหลัก ปัจจุบันรายการว่าง ฟังก์ชันด้านล่างจึงไม่บังคับอะไร
    เดิมรายการนี้มีแต่ CI Perfect Care ทำให้ มัลติเพิล ซีไอ หลุดกฎ
    แล้วระบบเสนอ MCI 1 ล้านคู่กับทุนหลัก 50,000 ซึ่งเป็น 20 เท่า ยื่นจริงโดนตีกลับ
    เพิ่มสัญญาตัวใหม่ที่มีกฎเดียวกันเข้าลิสต์นี้เสมอ อย่าไปเพิ่มเงื่อนไขกระจายในโค้ด */
-const ADV_MAIN_RATIO_KINDS = ['cipc', 'mci'];
+const ADV_MAIN_RATIO_KINDS = [];   // เลิกกฎ 10 เท่าแล้ว: CI Perfect Care สูงสุด 10 ล้าน, Multiple CI สูงสุด 20 ล้าน ไม่ผูกทุนสัญญาหลัก
 function advRequiredMainCapital(ciItems){
   let need = 0;
   (ciItems || []).forEach(c => {
@@ -12241,8 +12270,8 @@ function advSetTap(selectId, value){
 }
 
 /* เพดานทุนที่แต่ละสไตล์ทำได้จริง ห้ามให้กฎงบดันทุนเกินเพดานของผลิตภัณฑ์
-   D Care 2.5 ล้านคือเพดานโหมดสองระยะ · Multiple CI 2 ล้านคือทุนสูงสุดที่บริษัทเปิดขาย
-   ส่วน CI Perfect Care ยังมีกฎ 10 เท่าของทุนสัญญาหลักคุมอีกชั้นในเครื่องจัดแผน */
+   D Care 2.5 ล้านคือเพดานโหมดสองระยะ · Multiple CI 2 ล้านคือเพดานที่ผู้ช่วยจัดแผนเสนอ (ทำได้จริงสูงสุด 20 ล้านที่หน้าคำนวณ)
+   ส่วน CI Perfect Care สูงสุด 10 ล้าน และ Multiple CI สูงสุด 20 ล้านตามกติกาจริง ไม่ผูกทุนสัญญาหลักแล้ว */
 const ADV_CI_MAX_BY_STYLE = {
   balanced:  3000000,
   broad:     3000000,
@@ -12318,7 +12347,7 @@ function advNextConcession(state){
       const m = ADV_MAIN_LEVELS[i];
       if(!state.input || advCanPrice({kind:'main', plan:m.plan, capital:m.capital}, state.input)) {
         state.mainLevel = i;
-        // ลดทุนหลักแล้วเพดาน 10 เท่าของ CI ลดตาม ต้องหั่นทุน CI ตามทันที ไม่ใช่ปล่อยให้เกิน
+        // เดิมลดทุนหลักแล้วต้องหั่นทุน CI ตาม ตอนนี้ไม่ผูกกันแล้ว advClampCiToMain จึงไม่ทำอะไร (คงไว้เผื่อกติกากลับมา)
         const cut = advClampCiToMain(state);
         return `ลดสัญญาหลักเป็น ${m.label} เพื่อกันงบไว้ให้ค่ารักษา ทุนชีวิตขนาดนี้ควรแยกเล่มทำต่างหากเมื่อพร้อม`
              + (cut ? ` · ${cut}` : '');
@@ -15645,6 +15674,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPlanCardPremiums();
 });
 
+/* ข้อความเตือนเรื่องการปรับเบี้ยสัญญาเพิ่มเติม อ้างอิงเงื่อนไข "การปรับเบี้ยประกันภัย" ของสัญญาเพิ่มเติม
+   ใช้ร่วมกันทั้งหน้าคำนวณ ข้อความสรุปสำหรับลูกค้า PDF และ Excel เพื่อไม่ให้แต่ละที่เขียนคนละแบบ */
+const RIDER_PREMIUM_ADJUST_NOTE = 'หมายเหตุสำคัญ: เบี้ยประกันภัยของสัญญาเพิ่มเติมมิใช่อัตราคงที่ตลอดอายุสัญญา บริษัทอาจปรับเบี้ยประกันภัย ณ วันครบรอบปีกรมธรรม์ประกันภัย อันเนื่องมาจากอายุและชั้นอาชีพของผู้เอาประกันภัยแต่ละราย รวมถึงค่าใช้จ่ายในการรักษาพยาบาลที่สูงขึ้น หรือประสบการณ์การจ่ายค่าสินไหมทดแทนโดยรวมของพอร์ตโฟลิโอ (Portfolio) ของสัญญาเพิ่มเติมนั้น ซึ่งอาจส่งผลให้มีการปรับเบี้ยประกันภัยยกพอร์ต ทั้งนี้ บริษัทจะแจ้งให้ผู้เอาประกันภัยทราบล่วงหน้าเป็นลายลักษณ์อักษรไม่น้อยกว่า 30 วัน และเบี้ยประกันภัยที่ปรับจะต้องอยู่ในอัตราที่ได้รับความเห็นชอบจากนายทะเบียนแล้ว';
 const CONTENT_CREDIT = 'ที่มา doctor-insurance.com · หมอกึ๊ก ตัวแทนเมืองไทยประกันชีวิต · LINE @doctorguginsurance';
 /* ก๊อปสั้น ๆ เช่น เบอร์โทรหรือตัวเลขเบี้ย ไม่ต้องพ่วงเครดิต จะได้ไม่กวนลูกค้า
    พ่วงเฉพาะตอนที่ยกเนื้อหาเป็นย่อหน้าไป ซึ่งคือกรณีที่เราห่วงจริง */
