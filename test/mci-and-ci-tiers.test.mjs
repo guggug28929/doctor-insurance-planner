@@ -210,7 +210,9 @@ vm.runInContext([
   grab('function advDcareItems(target)'),
   grab('const MCI_CAPITAL_COL = '),
   grab('function multipleCiNearestCapital('),
-  grab('function advPushMci(out, target)'),
+  // เพิ่มพารามิเตอร์ input เข้ามาเพื่อกันเสนอ MCI ในอายุที่บริษัทยังไม่รับ
+  'function advCanPrice(){ return true; }',
+  grab('function advPushMci(out, target, input)'),
   'this.dcare = advDcareItems; this.push = advPushMci; this.CATS = ADV_DCARE_FULL_CATS;',
 ].join('\n').replace("const ADV_DCARE_STAGE = 'early_and_severe';", "var ADV_DCARE_STAGE = 'early_and_severe';"), advCtx);
 
@@ -255,7 +257,7 @@ test('ชั้นที่ 3 ต้องใส่ทุนที่ขาย�
 });
 
 test('ตัวคิดเบี้ยของแพ็กเกจต้องรู้จักรายการใหม่ทั้งสองแบบ', () => {
-  assert.match(html, /if\(item\.kind==='mci'\) return multipleCiPremium\(item\.capital, gender, age, 'annual'\)/);
+  assert.match(html, /if\(item\.kind==='mci'\) return age > 65 \? null : multipleCiPremium\(item\.capital, gender, age, 'annual'\)/);
   // D Care ต้องส่งกลุ่มโรคและโหมดต่อไปด้วย ไม่ใช่ล็อกไว้ที่ยอดฮิตเหมือนเดิม
   assert.match(html, /dcarePremium\(item\.cat \|\| 'popular', item\.capital, gender, age, 'annual', item\.stage \|\| 'early_and_severe'\)/);
   // ป้ายชื่อรายการต้องบอกเพดานจ่ายจริง ไม่ใช่บอกแค่ทุน

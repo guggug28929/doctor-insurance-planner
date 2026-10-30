@@ -21,11 +21,12 @@ test('ท้าย mainPremiumAtEntry ต้องไม่เป็น catch-al
 });
 
 test('เฟล็กซี่ 99/20 ต้องมีสาขาของตัวเอง และห้ามเทียบบัญญัติไตรยางศ์', () => {
-  assert.match(html, /if\(plan === 'flexi_99_20'\)\{/,
+  const fnStart = html.indexOf('function mainPremiumAtEntry(');
+  assert.match(html.slice(fnStart), /if\(plan === 'flexi_99_20'\)\{/,
     'ไม่มีสาขาของ flexi_99_20 จะตกไปใช้ตารางแบบอื่น');
   // ตารางนี้เป็นเบี้ยจริงรายระดับทุน ไม่ใช่อัตราต่อ 1,000 จึงคูณหารไม่ได้
   // ต้องตัดด้วยวงเล็บปีกกาด้วย เพราะ flexi_99_5 โผล่ในฟังก์ชันชื่อแผนก่อนหน้าอีกที่
-  const from = html.indexOf("if(plan === 'flexi_99_20'){");
+  const from = html.indexOf("if(plan === 'flexi_99_20'){", fnStart);
   const seg = html.slice(from, html.indexOf("if(plan === 'flexi_99_5'){", from));
   assert.ok(seg.length > 0 && seg.length < 800, 'ตัดช่วงโค้ดของ flexi_99_20 ไม่ได้');
   assert.ok(!/capital \/ 1000/.test(seg), 'ห้ามคูณหารทุนกับตารางที่เป็นเบี้ยจริง');
