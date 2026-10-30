@@ -2756,6 +2756,7 @@
         <div class="plan-group-label">แบบตลอดชีพและชั่วระยะเวลาอื่น</div>
         <label><input type="radio" name="mainPlan" value="80_10"> 80/10 (จ่าย 10 ปี คุ้มครองถึง 80)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี ตั้งแต่ปีกรมธรรม์ที่ 6 ทุนคุ้มครองเพิ่มเป็น 150% และอยู่ครบสัญญาที่อายุ 80 ปี รับเงินก้อน 150% ของทุนประกัน อายุ 20–59 ปี รวมสิทธิยกเว้นเบี้ยกรณีทุพพลภาพสิ้นเชิงถาวรมาให้แล้ว</span></span></label>
         <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
+        <label><input type="radio" name="mainPlan" value="flexi_99_20"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">เตรียมค่ารักษาหลังเกษียณ ชำระเบี้ย 20 ปี เบี้ยคงที่ คุ้มครองถึงอายุ 99 ปี รับอายุ 30 วัน – 45 ปี ตั้งแต่อายุ 65 ปีใช้ทุนที่เหลือเบิกค่ารักษา IPD/OPD ได้ ทุนมีให้เลือก 500,000 / 1,000,000 / 5,000,000 บาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="lifetime_protection"> เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">สัญญาหลักที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัว ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ตลอดสัญญา อายุรับ 1-65 ปี ทุนขั้นต่ำ 150,000 บาท ระยะเวลาที่ไม่คุ้มครองโรคร้ายแรง 90 วัน</span></span></label>
@@ -2935,7 +2936,7 @@
     <div class="card">
       <h2>โรคร้ายแรง &amp; อุบัติเหตุ</h2>
 
-      <div class="notice-box" id="ciRequirementErr">แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน<button type="button" class="fix-btn" onclick="fixCiRequirement()">ปรับทุนเป็น 1 ล้าน ให้อัตโนมัติ</button></div>
+      <div class="notice-box" id="ciRequirementErr">แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Multiple CI / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน<button type="button" class="fix-btn" onclick="fixCiRequirement()">ปรับทุนเป็น 1 ล้าน ให้อัตโนมัติ</button></div>
 
       <div class="check-row">
         <input type="checkbox" id="use_careplus">
@@ -2961,6 +2962,21 @@
         <div class="hint" id="cipcHint">ทำทุนได้สูงสุด 10 เท่าของทุนประกันสัญญาหลัก</div>
       </div>
       <div class="field-err" id="cipcErr"></div>
+
+      <div class="check-row" style="margin-top:10px;">
+        <input type="checkbox" id="use_mci">
+        <label style="margin:0;flex:1;">Multiple CI (มัลติเพิล ซีไอ)<span class="info-icon">i<span class="tooltip">โรคร้ายแรง 35 โรค แบ่ง 4 กลุ่ม จ่าย 100% ของทุนต่อกลุ่ม เคลมได้กลุ่มละครั้ง สูงสุด 4 ครั้ง เหมาะกับคนที่กลัวเป็นหลายโรคในชีวิตเดียว</span></span></label>
+      </div>
+      <div id="mci_fields" class="sub-fields hidden">
+        <label class="first">ทุนประกัน</label>
+        <select id="mci_capital">
+          <option value="500000">500,000</option>
+          <option value="1000000" selected>1,000,000</option>
+          <option value="2000000">2,000,000</option>
+        </select>
+        <div class="hint" id="mciHint">รับอายุ 7 – 65 ปี ต่ออายุได้ถึง 79 ปี · กลุ่มอาชีพ 1-2 เท่านั้น · ทุนไม่เกิน 10 เท่าของทุนสัญญาหลัก · จ่าย 100% ต่อกลุ่ม กลุ่มละครั้ง</div>
+      </div>
+      <div class="field-err" id="mciErr"></div>
 
       <div class="check-row" style="margin-top:10px;">
         <input type="checkbox" id="use_cancer">
@@ -3844,7 +3860,7 @@
     <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
       <h3>Multiple CI</h3>
-      <p class="meta">อายุรับ 7–69 ปี • ทุนตัวอย่าง 500,000 / 1 / 2 ล้านบาท</p>
+      <p class="meta">อายุรับ 7–65 ปี • ทุนตัวอย่าง 500,000 / 1 / 2 ล้านบาท</p>
       <ul>
         <li>คุ้มครอง 4 กลุ่ม รวม 35 โรคร้ายแรง จ่ายได้สูงสุดรวม 400% ของทุน</li>
         <li>หลังรับผลประโยชน์ครั้งแรก คุ้มครองกลุ่มโรคอื่นต่ออีก 10 ปีโดยไม่ต้องชำระเบี้ย</li>
@@ -4617,6 +4633,7 @@ function bindCheckboxToggle(checkboxId, fieldsId){
 bindCheckboxToggle('use_dhl','dhl_fields');
 bindCheckboxToggle('use_careplus','careplus_fields');
 bindCheckboxToggle('use_cipc','cipc_fields');
+bindCheckboxToggle('use_mci','mci_fields');
 bindCheckboxToggle('use_cancer','cancer_fields');
 bindCheckboxToggle('use_pure_cancer','pure_cancer_fields');
 bindCheckboxToggle('use_smart_silver','smart_silver_fields');
@@ -4925,6 +4942,7 @@ function mainPlanDisplayName(plan, capital){
   }
   if(SPECIAL_MAIN_PLANS[plan]) return SPECIAL_MAIN_PLANS[plan].label;
   if(plan === 'flexi_99_5') return 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5';
+  if(plan === 'flexi_99_20') return 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20';
   if(plan === '80_10') return 'สมาร์ท โพรเทคชั่น 80/10';
   if(plan === '99_7') return 'สมาร์ท โพรเทคชั่น 99/7';
   if(plan === '99_20') return 'สัญญาหลัก 99/20';
@@ -5017,6 +5035,13 @@ function updateMainCapitalHint(){
     document.getElementById('mainCapitalHint').innerHTML =
       'ทุนประกันขั้นต่ำแผน เฟล็กซี่ โพรเทคชั่น 99/5 คือ 500,000 บาท • ชำระเบี้ยเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี • '
       + '<b>ส่วนลดตามระดับทุน:</b> ต่ำกว่า 2 ล้าน ไม่มีส่วนลด · ตั้งแต่ 2 ล้านถึงต่ำกว่า 5 ล้าน ลด 5 บาทต่อทุน 1,000 · ตั้งแต่ 5 ล้าน ลด 10 บาทต่อทุน 1,000';
+  } else if(plan === 'flexi_99_20'){
+    capitalInput.min = 500000;
+    capitalInput.step = 500000;
+    const okCaps = (RATES.flexi_99_20 && RATES.flexi_99_20.allowed_capitals) || [500000,1000000,5000000];
+    if(!okCaps.includes(Number(capitalInput.value))) capitalInput.value = 1000000;
+    document.getElementById('mainCapitalHint').textContent =
+      'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20: เลือกทุนได้ 500,000 / 1,000,000 / 5,000,000 บาท ตามตารางที่เปิดขาย • รับอายุ 30 วัน – 45 ปี • ชำระเบี้ย 20 ปี เบี้ยคงที่';
   } else if(plan === '80_10'){
     capitalInput.min = 100000;
     capitalInput.step = 10000;
@@ -5886,10 +5911,8 @@ function paPremium(plan, age, freq){
   return (v===null || v===undefined) ? null : v;
 }
 
-// เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20 is reference-table only (not wired into the
-// interactive calculator's main-plan selector), but its payment_schedules were
-// scraped from SmartWeb this session, so the plan-detail reference table can
-// still show real instalment premiums per frequency.
+// เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20: ตารางเบี้ยจริงรายงวด (payment_schedules) จาก SmartWeb
+// ใช้ทั้งในตารางหน้ารายละเอียดและในตัวเลือกสัญญาหลักของเครื่องคำนวณ
 function flexiPremiumAtEntry(capKey, gender, age, freq){
   freq = freq || 'annual';
   const g = RATES.flexi_99_20;
@@ -5992,6 +6015,9 @@ function readInputs(){
   const useCipc = document.getElementById('use_cipc').checked;
   const cipcCapital = parseFloat(document.getElementById('cipc_capital').value) || 0;
 
+  const useMci = document.getElementById('use_mci').checked;
+  const mciCapital = parseFloat(document.getElementById('mci_capital').value) || 0;
+
   const useCancer = document.getElementById('use_cancer').checked;
   const cancerPlan = document.getElementById('cancer_plan').value;
 
@@ -6043,7 +6069,7 @@ function readInputs(){
   const termCapital = parseFloat(document.getElementById('term_capital').value) || 0;
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
-          useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
+          useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useMci, mciCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
           useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital, useSmartSilver, smartSilver,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
           useTerm, termPlan, termCapital};
@@ -6058,7 +6084,7 @@ function validateInputs(inp){
     const product = savingsMainData(inp.mainPlan);
     if(inp.paymentFrequency !== 'annual') issues.push('แผน 15/3 และ 15/6 เปิดรับเฉพาะเบี้ยรายปี');
     if(!product.capitals.includes(inp.mainCapital)) issues.push(`ทุนประกันของ ${mainPlanDisplayName(inp.mainPlan)} ต้องเลือกจากตารางที่เผยแพร่`);
-    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd || inp.useTerm;
+    const hasRider = inp.healthList.length || inp.opdList.length || inp.useCareplus || inp.useCipc || inp.useMci || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length || inp.paPlan !== 'none' || inp.useHb || inp.useTpd || inp.useTerm;
     if(hasRider) issues.push('แผน 15/3 และ 15/6 ไม่สามารถแนบสัญญาเพิ่มเติมได้');
     return issues;
   }
@@ -6071,12 +6097,19 @@ function validateInputs(inp){
     issues.push('ทุนประกันสัญญาหลักแผน 99/99 ต่ำกว่าขั้นต่ำ (ต้อง ≥ 50,000 บาท)');
   }
 
+  // เฟล็กซี่ 99/20: ทุนมีเฉพาะ 3 ระดับตามตารางที่เปิดขาย และรับอายุ 30 วัน – 45 ปี (ห้ามเทียบบัญญัติไตรยางศ์)
+  if(inp.mainPlan === 'flexi_99_20'){
+    const okCaps = (RATES.flexi_99_20 && RATES.flexi_99_20.allowed_capitals) || [500000,1000000,5000000];
+    if(!okCaps.includes(inp.mainCapital)) issues.push(`ทุนประกัน เฟล็กซี่ โพรเทคชั่น 99/20 ต้องเลือกจาก ${okCaps.map(fmt).join(' / ')} บาท`);
+    if(inp.entryAge > 45) issues.push('เฟล็กซี่ โพรเทคชั่น 99/20 รับทำประกันอายุ 30 วัน – 45 ปีเท่านั้น');
+  }
+
   // 99/20 <1M requires at least 1 critical-illness/PA rider
   if(inp.mainPlan === '99_20' && inp.mainCapital < 1000000){
-    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
+    const hasCI = inp.useCareplus || inp.useCipc || inp.useMci || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
     const hasPA = inp.paPlan !== 'none';
     if(!hasCI && !hasPA){
-      issues.push('แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน');
+      issues.push('แผน 99/20 ทุนประกันต่ำกว่า 1 ล้านบาท ต้องแนบโรคร้ายแรง (Care Plus / D Care / CI Perfect Care / Multiple CI / Cancer) หรืออุบัติเหตุ (PA) อย่างน้อย 1 แผน');
     }
   }
 
@@ -6087,6 +6120,14 @@ function validateInputs(inp){
   // CIPC capital <= 10x main capital
   if(inp.useCipc && inp.cipcCapital > inp.mainCapital*10){
     issues.push(`ทุนประกัน CI Perfect Care (${fmt(inp.cipcCapital)}) เกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)})`);
+  }
+
+  // Multiple CI: ทุน 500k/1m/2m เท่านั้น · ไม่เกิน 10 เท่าของทุนหลัก · อายุรับใหม่ 7-65 · อาชีพ 1-2
+  if(inp.useMci){
+    if(![500000,1000000,2000000].includes(inp.mciCapital)) issues.push('ทุนประกัน Multiple CI ต้องเป็น 500,000 / 1,000,000 / 2,000,000 บาท');
+    if(inp.mciCapital > inp.mainCapital*10) issues.push(`ทุนประกัน Multiple CI (${fmt(inp.mciCapital)}) เกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)})`);
+    if(inp.entryAge < 7 || inp.entryAge > 65) issues.push('Multiple CI รับทำประกันใหม่อายุ 7 – 65 ปีเท่านั้น');
+    if(Number(inp.occupationClass) > 2) issues.push('Multiple CI รับเฉพาะกลุ่มอาชีพ 1 และ 2');
   }
 
   /* เพดานทุน D Care นับแยกตามแบบความคุ้มครอง ไม่ใช่ยอดรวมทั้งกรมธรรม์
@@ -6234,6 +6275,7 @@ function renderAll(){
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) cols.push({key:'opd_'+i, label:opdLabels[i]}); });
   if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
+  if(inp.useMci) cols.push({key:'mci', label:'Multiple CI'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
   if(inp.usePureCancer) cols.push({key:'pure_cancer', label:'เพียว แคนเซอร์ (Pure Cancer)'});
   if(inp.useHappyLady) cols.push({key:'happy_lady', label:'แฮปปี้ เลดี้ (Happy Lady)'});
@@ -6282,6 +6324,8 @@ function renderAll(){
     inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age, freq, occupationClass).premium; });
     if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
+    // Multiple CI ต่ออายุได้ถึง 79 ปี คุ้มครองถึง 80 ปี หลังจากนั้นไม่มีเบี้ย (ห้ามลากอัตราช่วงสุดท้ายต่อ)
+    if(inp.useMci) row.values.mci = age <= 79 ? multipleCiPremium(inp.mciCapital, gender, age, freq) : null;
     if(inp.useCancer) row.values.cancer = cancerPremium(inp.cancerPlan, gender, age, freq);
     if(inp.usePureCancer) row.values.pure_cancer = pureCancerPremium(inp.pureCancerPlan, gender, age, freq);
     if(inp.useHappyLady) row.values.happy_lady = happyLadyPremium('happy_lady', inp.happyLadyCapital, age, freq);
@@ -6320,6 +6364,7 @@ function renderAll(){
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]){ const v = opdPremium(cfg, gender, entryAge, 'annual', occupationClass).premium; if(typeof v === 'number') riderTotalYear1 += v; } });
   if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useMci){ const v = multipleCiPremium(inp.mciCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.usePureCancer){ const v = pureCancerPremium(inp.pureCancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useHappyLady){ const v = happyLadyPremium('happy_lady', inp.happyLadyCapital, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -6449,6 +6494,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
   }
   if(colKey === 'careplus') return careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, '1', 'annual');
   if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
+  if(colKey === 'mci') return inp.useMci && age <= 79 ? multipleCiPremium(inp.mciCapital, gender, age, 'annual') : null;
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
   if(colKey === 'pure_cancer') return inp.usePureCancer ? pureCancerPremium(inp.pureCancerPlan, gender, age, 'annual') : null;
   if(colKey === 'happy_lady') return inp.useHappyLady ? happyLadyPremium('happy_lady', inp.happyLadyCapital, age, 'annual') : null;
@@ -6501,6 +6547,7 @@ async function exportPremiumTableExcel(){
   if(inp.paPlan !== 'none') riderLabels.push(`PA Easy Plan แผน ${inp.paPlan}`);
   if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
+  if(inp.useMci) riderLabels.push(`Multiple CI — ทุน ${fmt(inp.mciCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
   if(inp.usePureCancer) riderLabels.push(`เพียว แคนเซอร์ — ทุน ${fmt(pureCancerCapitalOf(inp.pureCancerPlan))} บาท`);
   if(inp.useHappyLady) riderLabels.push(`แฮปปี้ เลดี้ — ทุน ${fmt(inp.happyLadyCapital)} บาท`);
@@ -7009,6 +7056,9 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   if(inp.useCipc && y1.cipc !== undefined){
     items.push({name:'CI Perfect Care', premium:y1.cipc, coverage:`คุ้มครอง 36 โรคร้ายแรงทุกระยะ ทุนประกัน ${fmt(inp.cipcCapital)} บาท (จ่ายสูงสุด 100% ของทุน รวมกรณีเสียชีวิต)`});
   }
+  if(inp.useMci && y1.mci !== undefined){
+    items.push({name:'Multiple CI', premium:y1.mci, coverage:`คุ้มครอง 35 โรคร้ายแรง 4 กลุ่ม จ่าย 100% ของทุนต่อกลุ่ม กลุ่มละครั้ง ทุนประกัน ${fmt(inp.mciCapital)} บาท (รับผลประโยชน์รวมได้สูงสุด 400% ของทุน)`});
+  }
   if(inp.useCancer && y1.cancer !== undefined){
     items.push({name:'ความคุ้มครองโรคมะเร็ง (Cancer)', premium:y1.cancer, coverage:`คุ้มครองมะเร็งระยะไม่ลุกลามและลุกลาม ทุนประกัน ${fmt({'300k':300000,'500k':500000,'1m':1000000,'2m':2000000}[inp.cancerPlan])} บาท`});
   }
@@ -7074,7 +7124,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   const mainLabel = (n => COPY_NAME_FIX[n] || n)(mainPlanDisplayName(inp.mainPlan, inp.mainCapital));
   const MAIN_ROUTE_KEY = {
     '99_20':'main9920', '99_99':'main9999', '99_7':'main997', '80_10':'main8010',
-    flexi_99_5:'flexi995', '15_3':'smartlink153', '15_6':'smartlink156',
+    flexi_99_5:'flexi995', flexi_99_20:'flexi9920', '15_3':'smartlink153', '15_6':'smartlink156',
     lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
     happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
     easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
@@ -7087,7 +7137,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   const MAIN_TERM_BASE = {
     '99_20':{payYears:20, coverToAge:99}, '99_99':{payYears:null, coverToAge:99},
     '99_7':{payYears:7, coverToAge:99},   '80_10':{payYears:10, coverToAge:80},
-    flexi_99_5:{payYears:5, coverToAge:99},
+    flexi_99_5:{payYears:5, coverToAge:99}, flexi_99_20:{payYears:20, coverToAge:99},
     '15_3':{payYears:3, coverYears:15},   '15_6':{payYears:6, coverYears:15},
   };
   const mainDetailUrl = inp.mainPlan === 'pension'
@@ -7169,6 +7219,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   const ciLines = [];
   if(inp.useCareplus) ciLines.push(careplusPlanNames2[inp.careplusPlan]+' (Care Plus)');
   if(inp.useCipc) ciLines.push('36 โรคร้ายแรงทุกระยะ (CI Perfect Care)');
+  if(inp.useMci) ciLines.push('35 โรคร้ายแรง 4 กลุ่ม เคลมได้กลุ่มละครั้ง (Multiple CI)');
   if(inp.useCancer) ciLines.push('มะเร็งทุกระยะ (Cancer)');
   if(inp.useHappyLady) ciLines.push('มะเร็งผู้หญิง/โรคมดลูก-เต้านม (Happy Lady)');
   if(inp.useHappyLadyPlus) ciLines.push('มะเร็งผู้หญิง/โรคมดลูก-เต้านม/ภาวะแทรกซ้อนจากการตั้งครรภ์ (Happy Lady Plus)');
@@ -7241,11 +7292,18 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   const minCap = inp.mainPlan === '99_20' ? 200000 : 50000;
   setErr('mainCapital','mainCapitalErr', inp.mainCapital < minCap,
     `ทุนประกันต่ำกว่าขั้นต่ำ (ต้อง ≥ ${fmt(minCap)} บาท)`);
+  if(inp.mainPlan === 'flexi_99_20'){
+    const okCaps = (RATES.flexi_99_20 && RATES.flexi_99_20.allowed_capitals) || [500000,1000000,5000000];
+    const badCap = !okCaps.includes(inp.mainCapital), badAge = entryAge > 45;
+    setErr('mainCapital','mainCapitalErr', badCap || badAge,
+      badAge ? 'เฟล็กซี่ โพรเทคชั่น 99/20 รับทำประกันอายุ 30 วัน – 45 ปีเท่านั้น'
+      : `ทุนต้องเป็น ${okCaps.map(fmt).join(' / ')} บาท ตามตารางที่เปิดขาย`);
+  }
 
   // 99/20 <1M requires at least one CI/PA rider
   const ciBox = document.getElementById('ciRequirementErr');
   if(inp.mainPlan === '99_20' && inp.mainCapital < 1000000){
-    const hasCI = inp.useCareplus || inp.useCipc || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
+    const hasCI = inp.useCareplus || inp.useCipc || inp.useMci || inp.useCancer || inp.useHappyLady || inp.useHappyLadyPlus || inp.useDiabetes || inp.dcareSelections.length>0;
     const hasPA = inp.paPlan !== 'none';
     ciBox.classList.toggle('show', !(hasCI || hasPA));
   } else {
@@ -7304,6 +7362,21 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
       : `ทุนเกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)} บาท)`);
   } else {
     setErr('cipc_capital','cipcErr', false, '');
+  }
+
+  // Multiple CI: สมัครใหม่อายุ 7-65 ปี (66-79 เป็นอัตราต่ออายุ) · ทุนไม่เกิน 10 เท่าของทุนหลัก · อาชีพ 1-2
+  if(inp.useMci){
+    const v = multipleCiPremium(inp.mciCapital, gender, entryAge, 'annual');
+    const overCap = inp.mainCapital > 0 && inp.mciCapital > inp.mainCapital*10;
+    const badAge = entryAge < 7 || entryAge > 65;
+    const badOcc = Number(inp.occupationClass) > 2;
+    setErr('mci_capital','mciErr', v===null || overCap || badAge || badOcc,
+      badAge ? 'Multiple CI รับทำประกันใหม่อายุ 7 – 65 ปีเท่านั้น'
+      : badOcc ? 'Multiple CI รับเฉพาะกลุ่มอาชีพ 1 และ 2'
+      : overCap ? `ทุนเกิน 10 เท่าของทุนสัญญาหลัก (สูงสุด ${fmt(inp.mainCapital*10)} บาท)`
+      : 'ไม่สามารถแนบ Multiple CI ได้ที่อายุปัจจุบัน');
+  } else {
+    setErr('mci_capital','mciErr', false, '');
   }
 
   // Cancer: real product min entry age is 18 (excel table technically starts at 11)
@@ -8043,7 +8116,7 @@ const CI_PLANS = [
     times:'จ่ายได้หลายครั้ง กลุ่มละครั้ง',
     endsAfterClaim:'เคลมกลุ่มแรกแล้ว อีก 3 กลุ่มยังคุ้มครองต่ออีก 10 ปีโดยไม่ต้องชำระเบี้ย',
     maxBenefit:'รวมสูงสุด 400% ของทุน',
-    wait:'90 วัน', entry:'7 – 69 ปี', renew:'ต่ออายุได้ถึง 79 ปี',
+    wait:'90 วัน', entry:'7 – 65 ปี', renew:'ต่ออายุได้ถึง 79 ปี',
     minSum:'100,000 บาท และไม่เกิน 10 เท่าของทุนชีวิต', death:'ไม่มีผลประโยชน์เสียชีวิตในตัว',
     cashValue:'ไม่มีมูลค่าเวนคืน', fit:'คนที่กลัวเป็นซ้ำหรือเป็นหลายโรค เช่น มีประวัติครอบครัวหลายกลุ่มโรค',
   },
@@ -8110,7 +8183,7 @@ const CI_NEW_BUSINESS_AGE = {
   lifetimeprotection: [1, 65],
   cipc: [0, 65],
   dcare: [0, 70],
-  multipleci: [7, 69],
+  multipleci: [7, 65],
   cancer: [18, 60],
   purecancer: [18, 60],
   careplus: [0, 80],
@@ -10797,7 +10870,8 @@ function premiumOfItem(item, gender, age){
   if(item.kind==='careplus') return careplusPremium('5m', item.plan === 'ca' ? 'ca' : 'cackd', gender, age);
   if(item.kind==='cipc') return cipcPremium(item.capital, gender, age);
   if(item.kind==='dcare') return dcarePremium(item.cat || 'popular', item.capital, gender, age, 'annual', item.stage || 'early_and_severe');
-  if(item.kind==='mci') return multipleCiPremium(item.capital, gender, age, 'annual');
+  // รับทำใหม่ถึง 65 ปี (66-79 เป็นอัตราต่ออายุ) ห้ามเสนอราคาเป็นแผนใหม่
+  if(item.kind==='mci') return age > 65 ? null : multipleCiPremium(item.capital, gender, age, 'annual');
   if(item.kind==='pa') return paPremium(item.plan, age);
   return null;
 }
@@ -13117,7 +13191,7 @@ function setValue(id, val){
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
 function resetCalculatorSelections(){
-  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_cancer','use_pure_cancer','use_smart_silver','use_hb'].forEach(id=>setChecked(id,false));
+  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_mci','use_cancer','use_pure_cancer','use_smart_silver','use_hb'].forEach(id=>setChecked(id,false));
   dcareClearRows();
   setValue('pa_plan','none');
 }
@@ -13143,6 +13217,7 @@ function applyAiPackage(idx){
     if(it.kind==='opd_krang'){ setChecked('use_opd_krang', true); setValue('opd_krang_plan', it.plan); }
     if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', it.plan === 'ca' ? 'ca' : 'cackd'); }
     if(it.kind==='cipc'){ setChecked('use_cipc', true); setValue('cipc_capital', it.capital); }
+    if(it.kind==='mci'){ setChecked('use_mci', true); setValue('mci_capital', it.capital); }
     if(it.kind==='dcare'){
       /* ผู้ช่วยจัดแผนอาจเสนอหลายกลุ่มและคนละแบบ จึงเพิ่มเป็นรายการตามที่เสนอจริง
          ถ้าโยนเข้าช่องเดียว ชุดที่กดมาจากผู้ช่วยจะไม่ตรงกับเบี้ยที่แสดงไว้ */
