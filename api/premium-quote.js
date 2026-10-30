@@ -881,7 +881,10 @@ function criticalOptions(rates, profile, mainCapital = 200000) {
   const capital = normalizeCriticalCapital(profile.criticalIllnessSumInsured);
   const options = [];
   const cipcBase = rateAtStart(rates.cipc?.[profile.gender], profile.age, rates.cipc?.age_start || 0);
-  const multiple = bandPremium(rates.multiple_ci, profile.gender, profile.age, [500000, 1000000, 2000000].indexOf(capital));
+  // Multiple CI รับทำใหม่อายุ 7-65 ปี (66-79 เป็นอัตราต่ออายุ ไม่ใช่การสมัครใหม่) ตามโบรชัวร์
+  const multiple = profile.age <= 65
+    ? bandPremium(rates.multiple_ci, profile.gender, profile.age, [500000, 1000000, 2000000].indexOf(capital))
+    : null;
   const dcareRate = rateAtStart(
     rates.dcare?.[`${profile.gender}_popular`],
     profile.age,
