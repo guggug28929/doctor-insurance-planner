@@ -8,9 +8,9 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 test('เปิดหน้าคำนวณมาต้องไม่เจอกล่องแดงทันที', () => {
-  // ต้นเหตุเดิมคือทุนเริ่มต้น 200,000 ไปชนกฎ 99/20 ที่ต่ำกว่า 1 ล้านต้องแนบ CI หรือ PA
-  assert.match(html, /<input type="number" id="mainCapital" value="1000000"/);
-  assert.ok(!html.includes('id="mainCapital" value="200000"'), 'ยังใช้ทุนเริ่มต้นที่ทำให้ขึ้นแดง');
+  // ตัวแทนต้องการทุนเริ่มต้น 99/20 = 200,000 และ 99/99 = 50,000 กล่องแดงจึงกันด้วย calcTouched แทน
+  assert.match(html, /<input type="number" id="mainCapital" value="200000"/);
+  assert.match(html, /const MAIN_PLAN_DEFAULT_CAPITAL = \{'99_20': 200000, '99_99': 50000\};/);
   // และต้องมีตัวกันไว้อีกชั้น เผื่อกฎอื่นในอนาคตมาชนตอนเปิดหน้า
   assert.match(html, /let calcTouched = false;/);
   assert.match(html, /if\(issues\.length && !calcTouched\)\{/);
