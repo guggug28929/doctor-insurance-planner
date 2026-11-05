@@ -4675,12 +4675,15 @@ document.getElementById('use_term').addEventListener('change', function(){
 });
 document.getElementById('term_plan').addEventListener('change', updateTermHint);
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
-/* ทุนเริ่มต้นเมื่อเลือกแผนหลัก: 99/20 = 200,000 · 99/99 = 50,000 (ขั้นต่ำของแต่ละแผน)
+/* ทุนเริ่มต้นเมื่อเลือกแผนหลัก = ทุนขั้นต่ำของแผนนั้น (อ่านจาก min ที่ updateMainCapitalHint ตั้งไว้ให้แล้ว)
    ตั้งเฉพาะตอนผู้ใช้เปลี่ยนแผน ส่วนตัวจัดแผน/ผู้ช่วยจะตั้งทุนทับทีหลังเองอยู่แล้ว */
-const MAIN_PLAN_DEFAULT_CAPITAL = {'99_20': 200000, '99_99': 50000};
+function setMainCapitalToPlanMinimum(){
+  const el = document.getElementById('mainCapital');
+  const m = Number(el.min);
+  if(Number.isFinite(m) && m > 0) el.value = m;
+}
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', () => {
-  const d = MAIN_PLAN_DEFAULT_CAPITAL[r.value];
-  if(r.checked && d) document.getElementById('mainCapital').value = d;
+  if(r.checked) setMainCapitalToPlanMinimum();
 }));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6','smart_link_15_3','smart_link_15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
@@ -4926,6 +4929,7 @@ function onPensionMainChange(){
   const [pid, vk] = sel.value.split('|');
   currentPensionMain = {pid, vk};
   updateMainCapitalHint();
+  setMainCapitalToPlanMinimum();
   try{ if(typeof calculate === 'function') calculate(); }catch(e){}
 }
 /** แบบบำนาญนี้แนบสัญญาเพิ่มเติมได้ไหม (null = ยังไม่ยืนยัน ให้ถือว่าไม่ได้ไว้ก่อนเพื่อความปลอดภัย) */
