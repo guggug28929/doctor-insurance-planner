@@ -33,9 +33,9 @@ test('ข้อความต้องครบประเด็นตาม�
   ]) assert.ok(NOTE.includes(part), `ขาด: ${part}`);
 });
 
-test('ข้อความอยู่ครบทั้งหน้าคำนวณ ข้อความสรุปลูกค้า PDF และ Excel', () => {
+test('ข้อความอยู่ในหน้าคำนวณ PDF และ Excel (ไม่ใส่ในข้อความสรุปที่คัดลอก)', () => {
   assert.match(html, /<p class="meta rider-adjust-note"[^>]*>\$\{plannerEscapeHtml\(RIDER_PREMIUM_ADJUST_NOTE\)\}<\/p>/);
-  assert.match(html, /^\s*RIDER_PREMIUM_ADJUST_NOTE,$/m, 'ข้อความสรุปสำหรับคัดลอกส่งลูกค้า');
+  assert.doesNotMatch(html, /^\s*RIDER_PREMIUM_ADJUST_NOTE,$/m, 'ข้อความสรุปสำหรับคัดลอกยาวเกินไป ไม่ต้องใส่');
   assert.match(html, /<div class="print-foot print-adjust-note">\$\{plannerEscapeHtml\(RIDER_PREMIUM_ADJUST_NOTE\)\}<\/div>/);
   assert.match(html, /xlsxWrapNote\(RIDER_PREMIUM_ADJUST_NOTE, 120\)/);
 });
