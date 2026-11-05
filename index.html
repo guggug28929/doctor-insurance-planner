@@ -2787,7 +2787,7 @@
         <div class="hint" id="pensionMainHint"></div>
       </div>
       <label>ทุนประกัน (บาท)</label>
-      <input type="number" id="mainCapital" value="1000000" step="10000" min="50000">
+      <input type="number" id="mainCapital" value="200000" step="10000" min="50000">
       <div class="hint" id="mainCapitalHint">ทุนประกันขั้นต่ำแผน 99/20 คือ 200,000 บาท</div>
       <div class="field-err" id="mainCapitalErr"></div>
       <div class="field-err" id="paRequiredErr"></div>
@@ -4675,6 +4675,13 @@ document.getElementById('use_term').addEventListener('change', function(){
 });
 document.getElementById('term_plan').addEventListener('change', updateTermHint);
 document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', updateMainCapitalHint));
+/* ทุนเริ่มต้นเมื่อเลือกแผนหลัก: 99/20 = 200,000 · 99/99 = 50,000 (ขั้นต่ำของแต่ละแผน)
+   ตั้งเฉพาะตอนผู้ใช้เปลี่ยนแผน ส่วนตัวจัดแผน/ผู้ช่วยจะตั้งทุนทับทีหลังเองอยู่แล้ว */
+const MAIN_PLAN_DEFAULT_CAPITAL = {'99_20': 200000, '99_99': 50000};
+document.querySelectorAll('input[name=mainPlan]').forEach(r => r.addEventListener('change', () => {
+  const d = MAIN_PLAN_DEFAULT_CAPITAL[r.value];
+  if(r.checked && d) document.getElementById('mainCapital').value = d;
+}));
 const SAVINGS_MAIN_PLANS = new Set(['15_3','15_6','smart_link_15_3','smart_link_15_6']);
 function isSavingsMainPlan(plan){ return SAVINGS_MAIN_PLANS.has(plan); }
 /* ---- สัญญาหลักที่มีข้อจำกัดเฉพาะตัว รวมกฎไว้ที่เดียวเพื่อไม่ให้กระจายไปทั่วไฟล์ ----
