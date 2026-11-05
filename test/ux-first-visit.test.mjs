@@ -8,9 +8,10 @@ import { readFileSync } from 'node:fs';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 test('เปิดหน้าคำนวณมาต้องไม่เจอกล่องแดงทันที', () => {
-  // ตัวแทนต้องการทุนเริ่มต้น 99/20 = 200,000 และ 99/99 = 50,000 กล่องแดงจึงกันด้วย calcTouched แทน
+  // ตัวแทนต้องการให้ทุนเริ่มต้นของทุกแผน = ทุนขั้นต่ำของแผนนั้น (99/20 = 200,000) กล่องแดงจึงกันด้วย calcTouched แทน
   assert.match(html, /<input type="number" id="mainCapital" value="200000"/);
-  assert.match(html, /const MAIN_PLAN_DEFAULT_CAPITAL = \{'99_20': 200000, '99_99': 50000\};/);
+  assert.match(html, /function setMainCapitalToPlanMinimum\(\)\{/);
+  assert.match(html, /if\(r\.checked\) setMainCapitalToPlanMinimum\(\);/);
   // และต้องมีตัวกันไว้อีกชั้น เผื่อกฎอื่นในอนาคตมาชนตอนเปิดหน้า
   assert.match(html, /let calcTouched = false;/);
   assert.match(html, /if\(issues\.length && !calcTouched\)\{/);
