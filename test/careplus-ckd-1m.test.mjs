@@ -54,7 +54,9 @@ test('ค่าตัวอย่างตรงกับภาพในตา�
 });
 
 test('หน้าคำนวณเลือกได้ทั้ง 3 แบบ และวงเงิน 1 ล้าน / 5 ล้าน', () => {
-  assert.match(html, /<option value="ca">มะเร็ง<\/option>\s*<option value="ckd">ไตวายเรื้อรัง<\/option>\s*<option value="cackd" selected>/);
+  assert.match(html, /<input type="checkbox" id="cp_ca" value="ca">/);
+  assert.match(html, /<input type="checkbox" id="cp_ckd" value="ckd">/);
+  assert.match(html, /<input type="checkbox" id="cp_cackd" value="cackd" checked>/);
   assert.match(html, /<select id="careplus_sum">\s*<option value="1m">1,000,000 บาท\/ปี<\/option>\s*<option value="5m" selected>/);
   assert.match(html, /const careplusSum = \(document\.getElementById\('careplus_sum'\) \|\| \{\}\)\.value === '1m' \? '1m' : '5m';/);
   assert.doesNotMatch(html, /const careplusSum = '5m';/);
@@ -65,4 +67,27 @@ test('หน้าแบบประกันแสดงตารางคร�
   assert.match(html, /rateTable: \(freq='annual'\) => careplusRateTableBlock\(freq\),/);
   assert.match(html, /\[\['ca','มะเร็ง'\],\['ckd','ไต'\],\['cackd','มะเร็ง\+ไต'\]\]/);
   assert.match(html, /<select id="careplusTableSum"/);
+});
+
+test('ติ๊กแยกมะเร็ง/ไตพร้อมกันได้ แต่ถ้าติ๊กแบบพ่วงแล้ว แบบแยกต้องถูกปิด', () => {
+  const start = html.indexOf('function syncCareplusPlanChecks(){');
+  const end = html.indexOf('\n}', start) + 2;
+  const fn = html.slice(start, end);
+  const mk = checked => ({checked, disabled:false, closest(){ return {style:{}}; }});
+  const els = {cp_ca: mk(true), cp_ckd: mk(true), cp_cackd: mk(false)};
+  const document = {getElementById: id => els[id]};
+  new Function('document', fn + '\nsyncCareplusPlanChecks();')(document);
+  assert.equal(els.cp_ca.checked && els.cp_ckd.checked, true, 'มะเร็งกับไตแยกเลือกพร้อมกันได้');
+  assert.equal(els.cp_cackd.disabled, true, 'เลือกแยกแล้ว แบบพ่วงต้องถูกปิด');
+  els.cp_ca.checked = false; els.cp_ckd.checked = false; els.cp_cackd.checked = true;
+  new Function('document', fn + '\nsyncCareplusPlanChecks();')(document);
+  assert.equal(els.cp_ca.disabled && els.cp_ckd.disabled, true, 'เลือกพ่วงแล้ว แบบแยกต้องถูกปิด');
+  assert.equal(els.cp_ca.checked || els.cp_ckd.checked, false);
+});
+
+test('ทุกจุดคิดเบี้ยแยกคอลัมน์ตามแบบที่ติ๊ก ไม่ใช่ค่าเดียว', () => {
+  assert.match(html, /inp\.careplusPlans\.forEach\(pl => cols\.push\(\{key:'careplus_'\+pl/);
+  assert.match(html, /row\.values\['careplus_'\+pl\] = careplusPremium\(inp\.careplusSum, pl,/);
+  assert.match(html, /if\(colKey\.startsWith\('careplus_'\)\) return careplusPremium\(inp\.careplusSum, colKey\.slice\(9\)/);
+  assert.match(html, /const useCareplus = document\.getElementById\('use_careplus'\)\.checked && careplusPlans\.length > 0;/);
 });
