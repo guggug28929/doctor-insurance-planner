@@ -2943,12 +2943,13 @@
         <label style="margin:0;flex:1;">Care Plus<span class="info-icon">i<span class="tooltip">เหมาะกับคนที่กังวลเฉพาะมะเร็ง/ไตวายเรื้อรังเป็นพิเศษ อยากได้วงเงินเฉพาะทางสูงในราคาที่คุ้มกว่า CI ทั่วไป ซื้อทั้งสองโรครวมกันเบี้ยถูกกว่าซื้อแยก</span></span></label>
       </div>
       <div id="careplus_fields" class="sub-fields hidden">
-        <label class="first">แผน</label>
-        <select id="careplus_plan">
-          <option value="ca">มะเร็ง</option>
-          <option value="ckd">ไตวายเรื้อรัง</option>
-          <option value="cackd" selected>มะเร็งและไตวายเรื้อรัง</option>
-        </select>
+        <label class="first">แผน (ติ๊กได้มากกว่า 1)</label>
+        <div id="careplus_plan" class="careplus-plan-checks" style="display:flex;flex-direction:column;gap:6px;">
+          <label class="check-row"><input type="checkbox" id="cp_ca" value="ca"> มะเร็ง</label>
+          <label class="check-row"><input type="checkbox" id="cp_ckd" value="ckd"> ไตวายเรื้อรัง</label>
+          <label class="check-row"><input type="checkbox" id="cp_cackd" value="cackd" checked> มะเร็งและไตวายเรื้อรัง (ซื้อคู่ เบี้ยถูกกว่าแยก 10%)</label>
+        </div>
+        <div class="hint" id="careplusPlanHint">เลือกมะเร็ง และ/หรือ ไตวายเรื้อรัง แยกกันได้ · ถ้าเลือกแบบพ่วงมะเร็งและไตแล้ว จะเลือกแบบแยกไม่ได้</div>
         <label>วงเงินคุ้มครอง</label>
         <select id="careplus_sum">
           <option value="1m">1,000,000 บาท/ปี</option>
@@ -4634,6 +4635,20 @@ function bindCheckboxToggle(checkboxId, fieldsId){
 }
 bindCheckboxToggle('use_dhl','dhl_fields');
 bindCheckboxToggle('use_careplus','careplus_fields');
+/* Care Plus ติ๊กได้: มะเร็ง และ/หรือ ไต แยกกันได้ แต่ถ้าเลือกแบบพ่วง (cackd) แบบแยกทั้งสองต้องถูกปิด */
+function syncCareplusPlanChecks(){
+  const ca = document.getElementById('cp_ca'), ckd = document.getElementById('cp_ckd'), both = document.getElementById('cp_cackd');
+  if(!ca || !ckd || !both) return;
+  if(both.checked){ ca.checked = false; ckd.checked = false; }
+  ca.disabled = both.checked; ckd.disabled = both.checked;
+  both.disabled = ca.checked || ckd.checked;
+  [ca, ckd, both].forEach(el => { const l = el.closest('label'); if(l) l.style.opacity = el.disabled ? '.45' : ''; });
+}
+['cp_ca','cp_ckd','cp_cackd'].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('change', syncCareplusPlanChecks); });
+syncCareplusPlanChecks();
+function careplusSelectedPlans(){
+  return ['cackd','ca','ckd'].filter(p => { const el = document.getElementById('cp_' + p); return el && el.checked; });
+}
 bindCheckboxToggle('use_cipc','cipc_fields');
 bindCheckboxToggle('use_mci','mci_fields');
 bindCheckboxToggle('use_cancer','cancer_fields');
@@ -6023,9 +6038,10 @@ function readInputs(){
     opdList.push({type:'mao', plan: document.getElementById('opd_mao_plan').value});
   }
 
-  const useCareplus = document.getElementById('use_careplus').checked;
+  const careplusPlans = careplusSelectedPlans();
+  const useCareplus = document.getElementById('use_careplus').checked && careplusPlans.length > 0;
   const careplusSum = (document.getElementById('careplus_sum') || {}).value === '1m' ? '1m' : '5m';
-  const careplusPlan = document.getElementById('careplus_plan').value;
+  const careplusPlan = careplusPlans[0] || 'cackd';   // แบบแรกที่เลือก (ใช้กับจุดที่ต้องการค่าเดียว)
 
   const useCipc = document.getElementById('use_cipc').checked;
   const cipcCapital = parseFloat(document.getElementById('cipc_capital').value) || 0;
@@ -6084,7 +6100,7 @@ function readInputs(){
   const termCapital = parseFloat(document.getElementById('term_capital').value) || 0;
 
   return {gender, birthYear, entryAge, occupationClass, paymentFrequency, mainPlan, mainCapital, healthList, opdList,
-          useCareplus, careplusSum, careplusPlan, useCipc, cipcCapital, useMci, mciCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
+          useCareplus, careplusSum, careplusPlan, careplusPlans, useCipc, cipcCapital, useMci, mciCapital, useCancer, cancerPlan, usePureCancer, pureCancerPlan,
           useHappyLady, happyLadyCapital, useHappyLadyPlus, happyLadyPlusCapital, useDiabetes, diabetesCapital, useSmartSilver, smartSilver,
           dcareSelections, paPlan, useHb, hbIncome, hbAmount, useTpd, tpdCapital,
           useTerm, termPlan, termCapital};
@@ -6287,7 +6303,7 @@ function renderAll(){
   cols.push({key:'main', label: mainPlanDisplayName(inp.mainPlan, inp.mainCapital)});
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) cols.push({key:'health_'+i, label:healthLabels[i]}); });
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) cols.push({key:'opd_'+i, label:opdLabels[i]}); });
-  if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]+' '+CAREPLUS_SUM_LABEL[inp.careplusSum]});
+  if(inp.useCareplus) inp.careplusPlans.forEach(pl => cols.push({key:'careplus_'+pl, label:'Care Plus - '+careplusPlanNames[pl]+' '+CAREPLUS_SUM_LABEL[inp.careplusSum]}));
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
   if(inp.useMci) cols.push({key:'mci', label:'Multiple CI'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
@@ -6336,7 +6352,7 @@ function renderAll(){
     // never a division/multiplication of the annual rate.
     inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) row.values['health_'+i] = healthRiderPremium(cfg, gender, age, occupationClass, freq).premium; });
     inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) row.values['opd_'+i] = opdPremium(cfg, gender, age, freq, occupationClass).premium; });
-    if(inp.useCareplus) row.values.careplus = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, occupationClass, freq);
+    if(inp.useCareplus) inp.careplusPlans.forEach(pl => { row.values['careplus_'+pl] = careplusPremium(inp.careplusSum, pl, gender, age, occupationClass, freq); });
     if(inp.useCipc) row.values.cipc = cipcPremium(inp.cipcCapital, gender, age, freq);
     // Multiple CI ต่ออายุได้ถึง 79 ปี คุ้มครองถึง 80 ปี หลังจากนั้นไม่มีเบี้ย (ห้ามลากอัตราช่วงสุดท้ายต่อ)
     if(inp.useMci) row.values.mci = age <= 79 ? multipleCiPremium(inp.mciCapital, gender, age, freq) : null;
@@ -6376,7 +6392,7 @@ function renderAll(){
   let riderTotalYear1 = 0;
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]){ const v = healthRiderPremium(cfg, gender, entryAge, occupationClass, 'annual').premium; if(typeof v === 'number') riderTotalYear1 += v; } });
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]){ const v = opdPremium(cfg, gender, entryAge, 'annual', occupationClass).premium; if(typeof v === 'number') riderTotalYear1 += v; } });
-  if(inp.useCareplus){ const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
+  if(inp.useCareplus) inp.careplusPlans.forEach(pl => { const v = careplusPremium(inp.careplusSum, pl, gender, entryAge, occupationClass, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; });
   if(inp.useCipc){ const v = cipcPremium(inp.cipcCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useMci){ const v = multipleCiPremium(inp.mciCapital, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
   if(inp.useCancer){ const v = cancerPremium(inp.cancerPlan, gender, entryAge, 'annual'); if(typeof v === 'number') riderTotalYear1 += v; }
@@ -6506,7 +6522,7 @@ function referenceAnnualValue(colKey, inp, gender, age){
     const cfg = inp.opdList[parseInt(colKey.slice(4),10)];
     return cfg ? opdPremium(cfg, gender, age, 'annual').premium : null;
   }
-  if(colKey === 'careplus') return careplusPremium(inp.careplusSum, inp.careplusPlan, gender, age, '1', 'annual');
+  if(colKey.startsWith('careplus_')) return careplusPremium(inp.careplusSum, colKey.slice(9), gender, age, '1', 'annual');
   if(colKey === 'cipc') return cipcPremium(inp.cipcCapital, gender, age, 'annual');
   if(colKey === 'mci') return inp.useMci && age <= 79 ? multipleCiPremium(inp.mciCapital, gender, age, 'annual') : null;
   if(colKey === 'cancer') return cancerPremium(inp.cancerPlan, gender, age, 'annual');
@@ -6559,7 +6575,7 @@ async function exportPremiumTableExcel(){
   const opdLabels = inp.opdList.map(cfg => cfg.type === 'krang' ? `OPD รายครั้ง — ${fmt(cfg.plan)} บาท/ครั้ง` : `OPD เหมาจ่ายรายปี — ${fmt(cfg.plan)} บาท/ปี`);
   const riderLabels = [];
   if(inp.paPlan !== 'none') riderLabels.push(`PA Easy Plan แผน ${inp.paPlan}`);
-  if(inp.useCareplus) riderLabels.push(`Care Plus — ${CAREPLUS_PLAN_NAMES[inp.careplusPlan]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`);
+  if(inp.useCareplus) inp.careplusPlans.forEach(pl => riderLabels.push(`Care Plus — ${CAREPLUS_PLAN_NAMES[pl]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`));
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
   if(inp.useMci) riderLabels.push(`Multiple CI — ทุน ${fmt(inp.mciCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
@@ -7080,9 +7096,10 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   });
 
   const careplusPlanNames2 = CAREPLUS_PLAN_NAMES;
-  if(inp.useCareplus && y1.careplus !== undefined){
-    items.push({name:'Care Plus - '+careplusPlanNames2[inp.careplusPlan], premium:y1.careplus, coverage:`คุ้มครอง ${careplusPlanNames2[inp.careplusPlan]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`});
-  }
+  if(inp.useCareplus) inp.careplusPlans.forEach(pl => {
+    if(y1['careplus_'+pl] === undefined) return;
+    items.push({name:'Care Plus - '+careplusPlanNames2[pl], premium:y1['careplus_'+pl], coverage:`คุ้มครอง ${careplusPlanNames2[pl]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`});
+  });
   if(inp.useCipc && y1.cipc !== undefined){
     items.push({name:'CI Perfect Care', premium:y1.cipc, coverage:`คุ้มครอง 36 โรคร้ายแรงทุกระยะ ทุนประกัน ${fmt(inp.cipcCapital)} บาท (จ่ายสูงสุด 100% ของทุน รวมกรณีเสียชีวิต)`});
   }
@@ -7247,7 +7264,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
 
   // combined critical-illness coverage across every CI-related rider chosen
   const ciLines = [];
-  if(inp.useCareplus) ciLines.push(careplusPlanNames2[inp.careplusPlan]+' (Care Plus)');
+  if(inp.useCareplus) ciLines.push(inp.careplusPlans.map(pl => careplusPlanNames2[pl]).join(' + ')+' (Care Plus)');
   if(inp.useCipc) ciLines.push('36 โรคร้ายแรงทุกระยะ (CI Perfect Care)');
   if(inp.useMci) ciLines.push('35 โรคร้ายแรง 4 กลุ่ม เคลมได้กลุ่มละครั้ง (Multiple CI)');
   if(inp.useCancer) ciLines.push('มะเร็งทุกระยะ (Cancer)');
@@ -7372,7 +7389,7 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   // Care Plus: issue-age max is 80 (renewal continues to 99, but new business stops at 80)
   if(inp.useCareplus){
     const overIssueAge = entryAge > 80;
-    const v = careplusPremium(inp.careplusSum, inp.careplusPlan, gender, entryAge);
+    const v = inp.careplusPlans.some(pl => careplusPremium(inp.careplusSum, pl, gender, entryAge, inp.occupationClass) === null) ? null : 0;
     setErr('careplus_plan','careplusErr', v===null || overIssueAge,
       overIssueAge ? 'ทำประกัน Care Plus ไม่ได้แล้ว (รับทำประกันใหม่ถึงอายุ 80 ปีเท่านั้น)' : 'ไม่สามารถแนบ Care Plus ได้ที่อายุปัจจุบัน');
   } else {
@@ -13272,7 +13289,7 @@ function applyAiPackage(idx){
     if(it.kind==='ecp'){ setChecked('use_ecp', true); setValue('ecp_plan', it.plan); }
     if(it.kind==='opd_mao'){ setChecked('use_opd_mao', true); setValue('opd_mao_plan', it.plan); }
     if(it.kind==='opd_krang'){ setChecked('use_opd_krang', true); setValue('opd_krang_plan', it.plan); }
-    if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', ['ca','ckd','cackd'].includes(it.plan) ? it.plan : 'cackd'); setValue('careplus_sum', it.sum === '1m' ? '1m' : '5m'); }
+    if(it.kind==='careplus'){ setChecked('use_careplus', true); ['ca','ckd','cackd'].forEach(pl => { const el = document.getElementById('cp_'+pl); if(el){ el.disabled = false; el.checked = (it.plan === pl) || (pl === 'cackd' && !['ca','ckd'].includes(it.plan)); } }); syncCareplusPlanChecks(); setValue('careplus_sum', it.sum === '1m' ? '1m' : '5m'); }
     if(it.kind==='cipc'){ setChecked('use_cipc', true); setValue('cipc_capital', it.capital); }
     if(it.kind==='mci'){ setChecked('use_mci', true); setValue('mci_capital', it.capital); }
     if(it.kind==='dcare'){
