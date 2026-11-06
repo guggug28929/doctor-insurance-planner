@@ -2946,9 +2946,15 @@
         <label class="first">แผน</label>
         <select id="careplus_plan">
           <option value="ca">มะเร็ง</option>
+          <option value="ckd">ไตวายเรื้อรัง</option>
           <option value="cackd" selected>มะเร็งและไตวายเรื้อรัง</option>
         </select>
-        <div class="hint">วงเงินคุ้มครอง 5,000,000 บาท/ปี (ตัดตัวเลือกทุน 1 ล้านออกแล้ว เนื่องจากไม่ค่อยมีลูกค้าเลือกและตารางเบี้ยยังไม่ครบทุกช่วงอายุ)</div>
+        <label>วงเงินคุ้มครอง</label>
+        <select id="careplus_sum">
+          <option value="1m">1,000,000 บาท/ปี</option>
+          <option value="5m" selected>5,000,000 บาท/ปี</option>
+        </select>
+        <div class="hint">เลือกวงเงิน 1 ล้าน หรือ 5 ล้านบาทต่อปี · เบี้ยตามตารางของบริษัททุกงวดชำระ แยกกลุ่มอาชีพ 1-2 และ 3</div>
       </div>
       <div class="field-err" id="careplusErr"></div>
 
@@ -3834,7 +3840,7 @@
     <div class="plan-card">
       <div class="cat">โรคร้ายแรง</div>
       <h3>Care Plus</h3>
-      <p class="meta">อายุรับ 30 วัน – 80 ปี • วงเงิน 5 ล้านบาทต่อปี</p>
+      <p class="meta">อายุรับ 30 วัน – 80 ปี • วงเงิน 1 ล้าน หรือ 5 ล้านบาทต่อปี</p>
       <ul>
         <li>เลือกคุ้มครองมะเร็ง หรือไตวายเรื้อรัง หรือทั้งสองโรค (ซื้อคู่กันเบี้ยถูกลง 10%)</li>
         <li>ดูแลทั้งผู้ป่วยในและผู้ป่วยนอกในวงเงินเดียวกัน</li>
@@ -4484,7 +4490,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-10-25h';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-06a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -5489,6 +5495,8 @@ function healthRiderPremium(cfg, gender, age, occupationClass, freq){
   return {label:null, premium:null};
 }
 
+const CAREPLUS_PLAN_NAMES = {ca:'มะเร็ง', ckd:'ไตวายเรื้อรัง', cackd:'มะเร็งและไตวายเรื้อรัง'};
+const CAREPLUS_SUM_LABEL = {'1m':'1,000,000', '5m':'5,000,000'};
 function careplusPremium(sum, plan, gender, age, occupationClass, freq){
   freq = freq || 'annual';
   const occ = occKeyFor(occupationClass);
@@ -6016,7 +6024,7 @@ function readInputs(){
   }
 
   const useCareplus = document.getElementById('use_careplus').checked;
-  const careplusSum = '5m';
+  const careplusSum = (document.getElementById('careplus_sum') || {}).value === '1m' ? '1m' : '5m';
   const careplusPlan = document.getElementById('careplus_plan').value;
 
   const useCipc = document.getElementById('use_cipc').checked;
@@ -6273,13 +6281,13 @@ function renderAll(){
   // Main whole-life and HB are level premiums fixed at entry age; HB does not step up each year.
   const healthLabels = inp.healthList.map(cfg => healthRiderPremium(cfg, gender, entryAge, occupationClass, freq).label);
   const opdLabels = inp.opdList.map(cfg => opdPremium(cfg, gender, entryAge, freq, occupationClass).label);
-  const careplusPlanNames = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
+  const careplusPlanNames = CAREPLUS_PLAN_NAMES;
 
   const cols = [];
   cols.push({key:'main', label: mainPlanDisplayName(inp.mainPlan, inp.mainCapital)});
   inp.healthList.forEach((cfg, i) => { if(healthLabels[i]) cols.push({key:'health_'+i, label:healthLabels[i]}); });
   inp.opdList.forEach((cfg, i) => { if(opdLabels[i]) cols.push({key:'opd_'+i, label:opdLabels[i]}); });
-  if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]});
+  if(inp.useCareplus) cols.push({key:'careplus', label:'Care Plus - '+careplusPlanNames[inp.careplusPlan]+' '+CAREPLUS_SUM_LABEL[inp.careplusSum]});
   if(inp.useCipc) cols.push({key:'cipc', label:'CI Perfect Care'});
   if(inp.useMci) cols.push({key:'mci', label:'Multiple CI'});
   if(inp.useCancer) cols.push({key:'cancer', label:'ความคุ้มครองโรคมะเร็ง (Cancer)'});
@@ -6551,7 +6559,7 @@ async function exportPremiumTableExcel(){
   const opdLabels = inp.opdList.map(cfg => cfg.type === 'krang' ? `OPD รายครั้ง — ${fmt(cfg.plan)} บาท/ครั้ง` : `OPD เหมาจ่ายรายปี — ${fmt(cfg.plan)} บาท/ปี`);
   const riderLabels = [];
   if(inp.paPlan !== 'none') riderLabels.push(`PA Easy Plan แผน ${inp.paPlan}`);
-  if(inp.useCareplus) riderLabels.push(`Care Plus — ${inp.careplusPlan === 'cackd' ? 'มะเร็งและไตวายเรื้อรัง' : 'มะเร็ง'}`);
+  if(inp.useCareplus) riderLabels.push(`Care Plus — ${CAREPLUS_PLAN_NAMES[inp.careplusPlan]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`);
   if(inp.useCipc) riderLabels.push(`CI Perfect Care — ทุน ${fmt(inp.cipcCapital)} บาท`);
   if(inp.useMci) riderLabels.push(`Multiple CI — ทุน ${fmt(inp.mciCapital)} บาท`);
   if(inp.useCancer) riderLabels.push(`ความคุ้มครองโรคมะเร็ง — แผน ${inp.cancerPlan}`);
@@ -7071,9 +7079,9 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     }
   });
 
-  const careplusPlanNames2 = {ca:'มะเร็ง', cackd:'มะเร็งและไตวายเรื้อรัง'};
+  const careplusPlanNames2 = CAREPLUS_PLAN_NAMES;
   if(inp.useCareplus && y1.careplus !== undefined){
-    items.push({name:'Care Plus - '+careplusPlanNames2[inp.careplusPlan], premium:y1.careplus, coverage:`คุ้มครอง ${careplusPlanNames2[inp.careplusPlan]} วงเงิน 5,000,000 บาท/ปี`});
+    items.push({name:'Care Plus - '+careplusPlanNames2[inp.careplusPlan], premium:y1.careplus, coverage:`คุ้มครอง ${careplusPlanNames2[inp.careplusPlan]} วงเงิน ${CAREPLUS_SUM_LABEL[inp.careplusSum]} บาท/ปี`});
   }
   if(inp.useCipc && y1.cipc !== undefined){
     items.push({name:'CI Perfect Care', premium:y1.cipc, coverage:`คุ้มครอง 36 โรคร้ายแรงทุกระยะ ทุนประกัน ${fmt(inp.cipcCapital)} บาท (จ่ายสูงสุด 100% ของทุน รวมกรณีเสียชีวิต)`});
@@ -8073,6 +8081,22 @@ function dcareRefreshTable(){
   }
 }
 
+/* ตารางเบี้ย Care Plus บนหน้าแบบประกัน: 3 แบบ (มะเร็ง / ไต / มะเร็ง+ไต) × ชาย-หญิง เลือกวงเงิน 1 ล้านหรือ 5 ล้าน */
+let careplusTableSum = '5m';
+function careplusRateTableBlock(freq='annual'){
+  const sum = careplusTableSum === '1m' ? '1m' : '5m';
+  const sel = `<div class="dcare-controls"><label>วงเงินคุ้มครอง
+      <select id="careplusTableSum" onchange="careplusTableSum = this.value; ciRefreshTable(careplusRateTableBlock, 'careplusTableSum');">
+        <option value="1m"${sum === '1m' ? ' selected' : ''}>1,000,000 บาท/ปี</option>
+        <option value="5m"${sum === '5m' ? ' selected' : ''}>5,000,000 บาท/ปี</option>
+      </select></label></div>`;
+  const series = [];
+  [['ca','มะเร็ง'],['ckd','ไต'],['cackd','มะเร็ง+ไต']].forEach(([plan, lab]) => {
+    series.push({label:'ชาย '+lab, arr: ageSeriesFromFn(0,98, age=>careplusPremium(sum, plan,'m',age,'1',freq))});
+    series.push({label:'หญิง '+lab, arr: ageSeriesFromFn(0,98, age=>careplusPremium(sum, plan,'f',age,'1',freq))});
+  });
+  return sel + renderAgeTable(0, 98, series);
+}
 function renderAgeTable(ageStart, ageEnd, series){
   // series: [{label, arr}]; builds a scrollable table, Age + one column per series
   let thead = '<tr><th>อายุ</th>' + series.map(s=>`<th>${s.label}</th>`).join('') + '</tr>';
@@ -10103,13 +10127,8 @@ const PLAN_DETAILS = {
     ],
     detailSections: () => careplusPathoSection(),
     freqSupported: true,
-    rateTable: (freq='annual') => renderAgeTable(0, 98, [
-      {label:'ชาย มะเร็ง', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','ca','m',age,'1',freq))},
-      {label:'หญิง มะเร็ง', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','ca','f',age,'1',freq))},
-      {label:'ชาย มะเร็ง+ไต', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','cackd','m',age,'1',freq))},
-      {label:'หญิง มะเร็ง+ไต', arr: ageSeriesFromFn(0,98, age=>careplusPremium('5m','cackd','f',age,'1',freq))},
-    ]),
-    rateNote: 'แสดงเฉพาะทุน 5 ล้านบาท (เครื่องคำนวณนี้ตัดตัวเลือกทุน 1 ล้านบาทออกแล้ว)',
+    rateTable: (freq='annual') => careplusRateTableBlock(freq),
+    rateNote: 'เบี้ยตามตารางของบริษัท กลุ่มอาชีพ 1-2 · เลือกวงเงิน 1 ล้านหรือ 5 ล้านบาทได้ด้านบนตาราง · อายุ 81–98 ปีเป็นเบี้ยสำหรับการต่ออายุเท่านั้น',
     faq: [
       {q:'คุ้มครองมะเร็งระยะไหนบ้าง', a:'คุ้มครองมะเร็งทุกชนิดทุกระยะ (ยกเว้นมะเร็งที่สัมพันธ์กับเอดส์) ตราบใดที่รักษาด้วยวิธีการที่กำหนด (รังสีรักษา เคมีบำบัด ภูมิคุ้มกันบำบัด ฯลฯ)'},
       {q:'คุ้มครองไตวายเรื้อรังระยะไหนบ้าง', a:'คุ้มครองไตวายเรื้อรังทุกระยะ แต่ไม่รวมภาวะไตวายเฉียบพลันหรือไตล้มเหลวเฉียบพลัน'},
@@ -13253,7 +13272,7 @@ function applyAiPackage(idx){
     if(it.kind==='ecp'){ setChecked('use_ecp', true); setValue('ecp_plan', it.plan); }
     if(it.kind==='opd_mao'){ setChecked('use_opd_mao', true); setValue('opd_mao_plan', it.plan); }
     if(it.kind==='opd_krang'){ setChecked('use_opd_krang', true); setValue('opd_krang_plan', it.plan); }
-    if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', it.plan === 'ca' ? 'ca' : 'cackd'); }
+    if(it.kind==='careplus'){ setChecked('use_careplus', true); setValue('careplus_plan', ['ca','ckd','cackd'].includes(it.plan) ? it.plan : 'cackd'); setValue('careplus_sum', it.sum === '1m' ? '1m' : '5m'); }
     if(it.kind==='cipc'){ setChecked('use_cipc', true); setValue('cipc_capital', it.capital); }
     if(it.kind==='mci'){ setChecked('use_mci', true); setValue('mci_capital', it.capital); }
     if(it.kind==='dcare'){
