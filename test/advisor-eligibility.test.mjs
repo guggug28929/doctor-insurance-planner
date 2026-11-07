@@ -81,7 +81,7 @@ test("อายุเกิน 70 ปี ต้องเปลี่ยนสั
     const r = call("advBuildResult", inp);
     const m = r.primary.items.find((i) => i.kind === "main");
     assert.ok(m, `อายุ ${age} ต้องยังมีสัญญาหลัก`);
-    assert.equal(m.plan, "99_99", `อายุ ${age} ต้องใช้ 99/99 ไม่ใช่ 99/20`);
+    assert.ok(["99_99", "smart_99_99"].includes(m.plan), `อายุ ${age} ต้องใช้ 99/99 (คุ้มครองตลอดชีพ หรือ Smart Protection) ไม่ใช่ 99/20`);
     assert.equal(r.primary.missing.length, 0, `อายุ ${age} ต้องไม่มีรายการที่หาเบี้ยไม่เจอ`);
   }
 });

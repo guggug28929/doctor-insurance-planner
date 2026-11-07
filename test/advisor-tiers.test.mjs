@@ -228,7 +228,7 @@ test("รายการสัญญาหลักต้องอยู่ใ�
   assert.match(html, /<div class="plan-group-label">ใช้บ่อยที่สุด<\/div>/);
   // สามแบบแรกต้องเป็น 99/20 99/99 99/7 ตามลำดับ
   const order = [...html.matchAll(/name="mainPlan" value="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(order.slice(0, 3), ["99_20", "99_99", "99_7"]);
+  assert.deepEqual(order.slice(0, 4), ["99_20", "99_99", "smart_99_99", "99_7"]);
   // ต้องมีหัวข้อกลุ่มครบทุกก้อน เพื่อให้กวาดตาหาได้เร็ว
   for (const g of ["แบบตลอดชีพและชั่วระยะเวลาอื่น", "เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ", "กลุ่มทุนสูง HNW และชำระครั้งเดียว", "บำนาญ"]) {
     assert.ok(html.includes(`<div class="plan-group-label">${g}</div>`), `ขาดหัวข้อกลุ่ม ${g}`);

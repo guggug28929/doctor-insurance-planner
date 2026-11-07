@@ -34,7 +34,8 @@ const lifeCompareIds = new Set([...lifeCompareBlock.matchAll(/^ {2}([a-z0-9]+): 
    ชนิด rider = สัญญาเพิ่มเติม ห้ามอยู่ในรายการสัญญาหลัก มีได้แค่หน้าแผนกับบล็อก add-on */
 const REGISTRY = [
   {n: 1, name:'Smart Protection 99/7',        data:'main_99_7',            calc:'99_7',                 lp:'99_7',                 cmp:'main997',           route:'/plans/smart-protection-99-7',  kind:'main'},
-  {n: 2, name:'Smart Protection 99/99 พรีเมียร์', data:'main_99_99_premier',calc:'99_99',                lp:'99_99',                cmp:'main9999',          route:'/plans/lifetime-protection-99-99', kind:'main'},
+  {n: 2, name:'Smart Protection 99/99 (รวมพรีเมียร์ ทุน 10 ล้านขึ้นไป)', data:'main_99_99_premier',calc:'smart_99_99', lp:'smart_99_99', cmp:'main9999smart', route:'/plans/smart-protection-99-99', kind:'main'},
+  {n: '2b', name:'คุ้มครองตลอดชีพ 99/99 (ทุน 50,000 เท่านั้น)', data:'main_99_99', calc:'99_99', lp:'99_99', cmp:'main9999', route:'/plans/lifetime-protection-99-99', kind:'main'},
   {n: 3, name:'Smart Protection 80/10',       data:'main_80_10',           calc:'80_10',                lp:'80_10',                cmp:'main8010',          route:'/plans/smart-protection-80-10', kind:'main'},
   {n: 4, name:'Flexi Protection 99/5',        data:'flexi_protection_99_5',calc:'flexi_99_5',           lp:'flexi_99_5',           cmp:'flexi995',          route:'/plans/flexi-protection-99-5',  kind:'main'},
   {n: 5, name:'Premier Legacy 99/5',          data:'premier_legacy_99_5',  calc:'premier_legacy_99_5',  lp:'premier_legacy_99_5',  cmp:'premierlegacy995',  route:'/plans/premier-legacy-99-5',    kind:'main'},

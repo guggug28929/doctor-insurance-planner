@@ -71,7 +71,8 @@ test("ทุกแบบในกลุ่มประกันชีวิต�
   for (const id of COMPARE_GROUPS.life.ids) {
     const p = LIFE_COMPARE_PRODUCTS[id];
     assert.ok(p, `ไม่มีข้อมูลของ ${id}`);
-    assert.ok(p.tiers.length >= 2, `${id} ควรมีตัวเลือกทุนอย่างน้อย 2 ระดับ`);
+    // คุ้มครองตลอดชีพ 99/99 ทำได้ทุน 50,000 บาทเท่านั้น จึงมีตัวเลือกทุนเดียว แบบอื่นต้องมีอย่างน้อย 2 ระดับ
+    if (id !== "main9999") assert.ok(p.tiers.length >= 2, `${id} ควรมีตัวเลือกทุนอย่างน้อย 2 ระดับ`);
     assert.ok(p.tiers.some((t) => t.value === p.defaultValue), `${id} ค่าเริ่มต้นไม่อยู่ในตัวเลือก`);
     for (const k of dataKeys) {
       assert.ok(p.rows[k] && String(p.rows[k]).length > 1, `${id} ขาดข้อมูลหัวข้อ ${k}`);
