@@ -91,7 +91,7 @@ test('กรองข้อมูลที่รับเข้า: ต้อง
 
 test('หน้าคำนวณมีแถบแผนที่บันทึกไว้ และเก็บ/คืนค่าครบทุกช่อง', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /<div class="card saved-plans-card" id="savedPlansCard" hidden>/);
+  assert.match(html, /<div class="sp-toolbar" id="savedPlansCard" hidden>/);
   assert.match(html, /function calcSnapshotState\(\)\{/);
   assert.match(html, /function calcRestoreState\(state\)\{/);
   assert.match(html, /const SP_PLANS_URL = '\/api\/agent-plans';/);
