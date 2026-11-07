@@ -1030,7 +1030,7 @@ function savingsChoice(table, age, budget) {
 
 function buildSavingsQuote(rates, profile) {
   if (profile.age < 0 || profile.age > 80) {
-    return { ok: false, noEligiblePlan: true, question: "เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท ลิงค์ 15/6 (Global) รับอายุ 0-80 ปีครับ" };
+    return { ok: false, noEligiblePlan: true, question: "เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global) รับอายุ 0-80 ปีครับ" };
   }
   const keys = profile.requestedProduct === "smart_link_15_3"
     ? ["smart_link_15_3"]
@@ -1042,7 +1042,7 @@ function buildSavingsQuote(rates, profile) {
   for (const option of options) {
     const label = option.key === "smart_link_15_3"
       ? "เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)"
-      : "เมืองไทย สมาร์ท ลิงค์ 15/6 (Global)";
+      : "เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global)";
     lines.push(`- ${label} ทุน ${money(option.choice.capital)} บาท เบี้ย ${money(option.choice.premium)} บาท/ปี ชำระ ${option.table.pay_years} ปี คุ้มครอง 15 ปี`);
   }
   return {

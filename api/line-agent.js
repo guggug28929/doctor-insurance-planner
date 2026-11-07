@@ -44,7 +44,7 @@ const PRODUCT_RULES = `
 28. หากกังวลค่าเบี้ย/ค่ารักษาหลังเกษียณ มีสวัสดิการปัจจุบัน หรือเป็นรัฐวิสาหกิจ ให้แนะนำเมืองไทยเฟล็กซี่ โพรเทคชั่น 99/20 ซึ่งชำระ 20 ปี และตั้งแต่อายุ 65 ปีเปลี่ยนทุนคงเหลือเป็นค่ารักษา IPD/OPD ได้ตามเงื่อนไข
 29. D Care คือประกันโรคร้ายแรงแบบเงินก้อน เลือกกลุ่มโรคได้ (มะเร็ง หัวใจและหลอดเลือด ปลูกถ่ายอวัยวะ ระบบประสาทและกล้ามเนื้อ อื่น ๆ หรือกลุ่มโรคยอดฮิต) หากถามรายละเอียด D Care ให้ปิดท้ายด้วย https://doctor-insurance.com/plans/d-care
 30. หากลูกค้าบอกว่าทุนสัญญาหลัก Smart Protection 99/20 ขั้นต่ำ 200,000 บาทสูงเกินไป ให้ใช้ 99/99 ทุน 100,000 บาทพร้อม PA; CI Perfect Care ทำได้ไม่เกิน 10 เท่าของทุนสัญญาหลัก ดังนั้น 99/99 ทุน 100,000 บาททำ CI Perfect Care ได้ไม่เกิน 1,000,000 บาท
-31. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ Smart Link 15/3 และ 15/6 พร้อมเลือกทุนตามงบ
+31. หากต้องการออมทรัพย์ลดหย่อนภาษีและไม่เน้นทุนชีวิต ให้เทียบ เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global) พร้อมเลือกทุนตามงบ (สมาร์ท ลิงค์ 15/6 รุ่นเดิมปิดการขายแล้ว)
 `.trim();
 
 const ANALYSIS_SCHEMA = {
@@ -893,26 +893,19 @@ const KNOWLEDGE_TOPIC_ORDER = [
 
 function isChronicOpdWaitingQuestion(message) {
   const text = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
-  const mentionsOpd = /opd|ผู้ป่วยนอก/i.test(text);
-  const mentionsChronicCondition =
-    /ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก/i.test(text);
-  const asksWaitingPeriod =
-    /ระยะ(?:เวลา)?รอคอย|waiting\s*period|รอ(?:กี่|นาน|\s*(?:30|120|180)\s*วัน)/i.test(
-      text
-    );
-  return mentionsOpd && mentionsChronicCondition && asksWaitingPeriod;
+  return (
+    /(?:opd|ผู้ป่วยนอก).*(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก)/i.test(text) ||
+    /(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก).*(?:opd|ผู้ป่วยนอก)/i.test(text)
+  );
 }
 
 function inferKnowledgeTopics(message) {
   const text = String(message || "").toLowerCase().replace(/\s+/g, " ").trim();
   const topics = new Set();
-  const chronicOpd =
-    /(?:opd|ผู้ป่วยนอก).*(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก)/i.test(text) ||
-    /(?:ภูมิแพ้|กระเพาะ|เบาหวาน|ความดัน|หัวใจ|ไทรอยด์|ลมชัก).*(?:opd|ผู้ป่วยนอก)/i.test(text);
 
   if (
     /ระยะ(?:เวลา)?รอคอย|waiting\s*period|รอ\s*(?:30|120|180)\s*วัน|ก่อตัวนาน|ฟักตัวนาน/i.test(text) ||
-    chronicOpd
+    isChronicOpdWaitingQuestion(text)
   ) {
     topics.add("waiting_period");
   }
@@ -961,7 +954,7 @@ function appendKnowledgeLinks(reply, analysis, message) {
     isChronicOpdWaitingQuestion(message)
   ) {
     base =
-      "สำหรับแผน OPD โรคเรื้อรัง เช่น ภูมิแพ้ โรคกระเพาะ เบาหวาน ความดัน หัวใจ ไทรอยด์ และลมชัก มีระยะรอคอย 180 วันครับ";
+      "สำหรับแผน OPD โรคเรื้อรังบางโรค เช่น ภูมิแพ้ โรคกระเพาะ เบาหวาน ความดันโลหิตสูง โรคหัวใจ โรคไทรอยด์ และลมชัก มีระยะรอคอย 180 วันครับ";
   }
   const lines = topics
     .map((topic) => KNOWLEDGE_LINKS[topic])
@@ -973,19 +966,12 @@ function appendKnowledgeLinks(reply, analysis, message) {
   return lines.length ? base + "\n\n" + lines.join("\n") : base;
 }
 
-function isKnowledgeOnlyTurn(analysis, message) {
-  if (!knowledgeTopicsForTurn(analysis, message).length) return false;
-  if (analysis?.asksForPremium || analysis?.shouldRecommendPlan) return false;
-  if (["human_handoff", "resume_ai", "reset"].includes(analysis?.intent)) {
-    return false;
-  }
-
-  const text = String(message || "").replace(/\s+/g, " ").trim();
-  const asksForPlanning =
-    /(?:อยาก|สนใจ|ช่วย|ขอ|แนะนำ|เสนอ|คำนวณ|เช็ก|ดู).{0,18}(?:แผน|ประกัน|เบี้ย|ราคา|แพ็กเกจ)|(?:ซื้อ|ทำ)\s*(?:ประกัน|แผน)|(?:งบ|เบี้ย|ราคา|ค่าห้อง|วงเงิน).{0,18}(?:ต่อปี|เท่าไหร่|กี่บาท|แนะนำ|เสนอ)/i.test(
-      text
-    );
-  return !asksForPlanning;
+function isKnowledgeOnlyTurn(analysis) {
+  return (
+    analysis?.intent === "general_question" &&
+    analysis?.asksForPremium !== true &&
+    analysis?.shouldRecommendPlan !== true
+  );
 }
 
 const HEALTH_HANDOFF_NOTE =
@@ -1086,13 +1072,8 @@ export default async function handler(req, res) {
 
     const currentProfile = migrateProfile(req.body?.profile || {});
     const analysis = await analyzeTurn(message, currentProfile);
-    const knowledgeOnly = isKnowledgeOnlyTurn(analysis, message);
-    const contextualUpdates = knowledgeOnly
-      ? {}
-      : inferContextualUpdates(message, currentProfile);
-    const profile = knowledgeOnly
-      ? currentProfile
-      : mergeProfile(currentProfile, analysis, message, contextualUpdates);
+    const contextualUpdates = inferContextualUpdates(message, currentProfile);
+    const profile = mergeProfile(currentProfile, analysis, message, contextualUpdates);
 
     if (analysis.intent === "human_handoff") {
       profile.botMode = "human";
@@ -1122,12 +1103,11 @@ export default async function handler(req, res) {
     }
 
     const needsPlanning =
-      !knowledgeOnly &&
-      (analysis.asksForPremium ||
-        analysis.shouldRecommendPlan ||
-        analysis.intent === "insurance_advice" ||
-        analysis.intent === "profile_update" ||
-        Object.keys(contextualUpdates).length > 0);
+      analysis.asksForPremium ||
+      analysis.shouldRecommendPlan ||
+      analysis.intent === "insurance_advice" ||
+      analysis.intent === "profile_update" ||
+      Object.keys(contextualUpdates).length > 0;
 
     if (needsPlanning) {
       const missing = missingFields(profile);
@@ -1221,7 +1201,6 @@ export {
   defaultProfile,
   inferContextualUpdates,
   inferKnowledgeTopics,
-  isKnowledgeOnlyTurn,
   mergeProfile,
   missingFields,
 };
