@@ -174,7 +174,7 @@ test("Flexi 99/20 เลือกทุนสูงสุดที่อยู�
   assert.equal(result.body.totalPremium, 35500);
 });
 
-test("เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท ลิงค์ 15/6 (Global) แนะนำทุนตามงบ", async () => {
+test("เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global) และ เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global) แนะนำทุนตามงบ", async () => {
   const result = await quote({
     age: 35,
     annualBudget: 100000,
@@ -185,7 +185,7 @@ test("เมืองไทย สมาร์ท อินเด็กซ์ 15
   assert.equal(result.body.alternatives.length, 2);
   assert.deepEqual(
     result.body.alternatives.map((option) => [option.capital, option.premium]),
-    [[20000, 18900], [100000, 94500]]
+    [[20000, 18900], [100000, 96700]]
   );
 });
 

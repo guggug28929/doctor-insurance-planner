@@ -35,7 +35,7 @@ test('เฟล็กซี่ 99/20 ต้องมีสาขาของต�
 
 test('คีย์แผนสะสมทรัพย์ต้องรับได้ทั้งชื่อสั้นและชื่อเต็ม', () => {
   // หน้าคำนวณส่ง 15_3 แต่หน้าเทียบส่ง smart_link_15_3 เดิมไม่ match เลยตกไป catch-all
-  assert.match(html, /SAVINGS_MAIN_PLANS = new Set\(\['15_3','15_6','smart_link_15_3','smart_link_15_6'\]\)/);
+  assert.match(html, /SAVINGS_MAIN_PLANS = new Set\(\['15_3','15_6','15_6_pro','smart_link_15_3','smart_link_15_6','smart_index_15_6_pro'\]\)/);
   assert.match(html, /plan === '15_3' \|\| plan === 'smart_link_15_3'/);
 });
 
@@ -81,12 +81,13 @@ test('หมุดตรวจ เฟล็กซี่ 99/20 ชาย อา�
 });
 
 test('หมุดตรวจ สมาร์ท ลิงค์ ชาย อายุ 35', () => {
-  for (const key of ['smart_link_15_3', 'smart_link_15_6']) {
+  // 15/6 เปลี่ยนเป็น สมาร์ท อินเด็กซ์ 15/6 (967 ต่อทุน 1,000) และรุ่นโปร (968) ตาม SmartWeb 2026-11-07
+  for (const [key, want] of [['smart_link_15_3', 945000], ['smart_link_15_6', 967000], ['smart_index_15_6_pro', 968000]]) {
     const g = RATES[key];
     const band = g.bands.find(([f, t]) => 35 >= f && 35 <= t);
     assert.ok(band, `${key} ไม่มีแบนด์ที่ครอบคลุมอายุ 35`);
     const i1m = g.capitals.indexOf(1000000);
-    assert.equal(band[i1m + 2], 945000, `${key} ทุน 1 ล้าน ควรได้ 945,000`);
+    assert.equal(band[i1m + 2], want, `${key} ทุน 1 ล้าน ควรได้ ${want}`);
   }
   // สองแบบนี้มีระดับทุนไม่เหมือนกัน ห้ามใช้ชุด tier ร่วมกัน
   assert.notDeepEqual(RATES.smart_link_15_3.capitals, RATES.smart_link_15_6.capitals);

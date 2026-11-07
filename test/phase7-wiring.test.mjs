@@ -149,7 +149,7 @@ test("ทุกแบบสัญญาหลักในหน้าคำน�
   const known = new Set([
     ...[...plainBody.matchAll(/'([a-z0-9_]+)':/g)].map(m => m[1]),
     ...[...specialBody.matchAll(/\n  ([a-z0-9_]+): \{/g)].map(m => m[1]),
-    "15_3", "15_6", "smart_link_15_3", "smart_link_15_6", "pension",
+    "15_3", "15_6", "15_6_pro", "smart_link_15_3", "smart_link_15_6", "smart_index_15_6_pro", "pension",
   ]);
   const missing = plans.filter(p => !known.has(p));
   assert.deepEqual(missing, [], "แบบเหล่านี้ยังไม่ได้ลงทะเบียนปีชำระ: " + missing.join(", "));
