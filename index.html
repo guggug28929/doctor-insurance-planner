@@ -2647,6 +2647,16 @@
   .sp-status{font-size:.75rem;min-height:1em;width:100%;text-align:right;}
   .sp-warn{font-size:.78rem;color:var(--danger,#b3261e);margin:0 0 8px;}
   #spGsiBtn:empty{display:none;}
+
+  /* ---- คุณวุฒิ/รางวัลของหมอกึ๊ก ---- */
+  .agent-awards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px;}
+  .aw-card{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #f0dde5;border-radius:14px;padding:12px 14px;}
+  .aw-logo{flex:none;width:56px;height:56px;border-radius:12px;background:#fdeef4;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .aw-logo img{max-width:100%;max-height:100%;object-fit:contain;}
+  .aw-logo .aw-fallback{font-weight:800;font-size:.72rem;color:var(--pink-deep);text-align:center;line-height:1.1;padding:2px;}
+  .aw-name{font-weight:800;color:var(--pink-deep);font-size:.92rem;}
+  .aw-full{font-size:.75rem;color:var(--muted);margin-top:1px;}
+  .aw-desc{font-size:.8rem;margin-top:4px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -3480,6 +3490,7 @@
       <button class="contact-pill" style="border:none;cursor:pointer;" onclick="showPage('ai')">🤖 เริ่มจากผู้ช่วยออกแบบแผน</button>
     </div>
     <div class="license-line">เลขที่ใบอนุญาตตัวแทนประกันชีวิต 6601072160 &nbsp;•&nbsp; เลขที่ IC License 132335</div>
+    <div class="agent-awards" data-awards></div>
   </div>
 
   <div class="content-card">
@@ -3503,6 +3514,7 @@
       <button class="contact-pill" style="border:none;cursor:pointer;" onclick="showPage('ai')">🤖 ให้ผู้ช่วยออกแบบแผน</button>
     </div>
     <div class="license-line">เลขที่ใบอนุญาตตัวแทนประกันชีวิต 6601072160 &nbsp;•&nbsp; เลขที่ IC License 132335</div>
+    <div class="agent-awards" data-awards></div>
   </div>
 </div>
 </div>
@@ -13548,6 +13560,31 @@ async function spDelete(id){
   }catch(e){ spStatus(e.message || 'ลบไม่สำเร็จ', true); }
 }
 spInit();
+
+
+/* คุณวุฒิของหมอกึ๊ก แสดงทั้งการ์ดหน้าแรกและหน้าติดต่อ จากรายการเดียวกัน
+   โลโก้วางไฟล์ไว้ที่ /public/awards/ ถ้ายังไม่มีไฟล์ จะแสดงตัวย่อแทนโดยไม่เห็นรูปเสีย */
+const AGENT_AWARDS = [
+  {key:'top-health-champion', name:'Top Health Champion', short:'TOP<br>HEALTH',
+   full:'',
+   desc:'รางวัลตัวแทนที่มีผลงานโดดเด่นด้านประกันสุขภาพ'},
+  {key:'iqa', name:'IQA', short:'IQA',
+   full:'International Quality Award · LIMRA',
+   desc:'รางวัลคุณภาพระดับสากลจาก LIMRA องค์กรวิจัยและพัฒนาธุรกิจประกันชีวิตระดับโลก มอบให้ตัวแทนที่ผ่านเกณฑ์ทั้งผลงานขายและอัตรากรมธรรม์ที่ลูกค้าถือต่อเนื่อง'},
+  {key:'tnqa', name:'TNQA', short:'TNQA',
+   full:'Thailand National Quality Award · ตัวแทนคุณภาพดีเด่นแห่งชาติ',
+   desc:'รางวัลจากสมาคมประกันชีวิตไทย เชิดชูตัวแทนที่มีผลงานขายและการให้บริการยอดเยี่ยม ผู้เข้าเกณฑ์มีราว 1 ใน 100 ของตัวแทนทั่วประเทศ'},
+];
+function renderAgentAwards(){
+  document.querySelectorAll('[data-awards]').forEach(box => {
+    box.innerHTML = AGENT_AWARDS.map(a => `<div class="aw-card">
+        <div class="aw-logo"><img src="/public/awards/${a.key}.png" alt="โลโก้ ${a.name}" loading="lazy"
+          onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'aw-fallback',innerHTML:'${a.short}'}))"></div>
+        <div><div class="aw-name">${a.name}</div>${a.full ? `<div class="aw-full">${a.full}</div>` : ''}<div class="aw-desc">${a.desc}</div></div>
+      </div>`).join('');
+  });
+}
+renderAgentAwards();
 
 function applyAiPackage(idx){
   const pkg = AI_PACKAGES[idx]; if(!pkg) return;
