@@ -13460,6 +13460,9 @@ function spRender(){
 function spTogglePop(){ SP.popOpen = !SP.popOpen; spRender(); }
 document.addEventListener('click', e => {
   if(!SP.popOpen) return;
+  /* ปุ่มในแถบถูกวาดใหม่ทุกครั้งที่กด ตัวที่ถูกกดจึงหลุดออกจากหน้าไปแล้วตอนเหตุการณ์มาถึงตรงนี้
+     ต้องข้ามกรณีนี้ ไม่งั้นกดเปิดรายการปุ๊บจะถูกปิดทันที (เคยเป็นบั๊กจริง) */
+  if(!e.target.isConnected) return;
   const bar = document.getElementById('savedPlansCard');
   if(bar && !bar.contains(e.target)){ SP.popOpen = false; spRender(); }
 });
