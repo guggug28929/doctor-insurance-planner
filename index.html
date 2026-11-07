@@ -2938,6 +2938,22 @@
         </select>
       </div>
       <div class="field-err" id="ecpErr"></div>
+
+      <div class="check-row" style="margin-top:12px;">
+        <input type="checkbox" id="use_hsn">
+        <label style="margin:0;flex:1;">แยกค่าใช้จ่าย H&amp;S (N) <span style="color:var(--muted);font-weight:400;">(แยกวงเงินรายหมวด ไม่มีส่วนแรก)</span><span class="info-icon">i<span class="tooltip">ค่าห้อง 1,000–5,000 บาท/วัน ไม่เกิน 120 วัน หมวด 2 ค่ายา ค่าแล็บ ค่าบริการ จ่ายตามจริงรวม 15,000–40,000 บาท/ครั้ง ค่าผ่าตัด 40,000–100,000 บาท ไม่มี Deductible ใช้คู่กับ Extra Care Plus หรือ D Health Lite แบบมี Deductible เพื่อจ่ายส่วนแรกและเพิ่มค่าห้องได้ อายุรับใหม่ 11–74 ปี ต่ออายุถึง 80 ปี</span></span></label>
+      </div>
+      <div id="hsn_fields" class="sub-fields hidden">
+        <label class="first">แผน</label>
+        <select id="hsn_plan">
+          <option value="1000">แผน 1,000 (ห้อง 1,000/วัน หมวด 2 รวม 15,000)</option>
+          <option value="2000">แผน 2,000 (ห้อง 2,000/วัน หมวด 2 รวม 20,000)</option>
+          <option value="3000" selected>แผน 3,000 (ห้อง 3,000/วัน หมวด 2 รวม 25,000)</option>
+          <option value="5000">แผน 5,000 (ห้อง 5,000/วัน หมวด 2 รวม 40,000)</option>
+        </select>
+        <div class="hint">ใช้คู่กับ Extra Care Plus (ส่วนแรก 20,000) หรือ D Health Lite แบบ Deductible ได้ H&amp;S จ่ายตามรายหมวดตั้งแต่บาทแรก จึงช่วยจ่ายส่วนแรกและเพิ่มค่าห้องต่อวัน ทั้งนี้รวมแล้วไม่เกินค่าใช้จ่ายจริง</div>
+      </div>
+      <div class="field-err" id="hsnErr"></div>
     </div>
 
     <div class="card">
@@ -3849,6 +3865,17 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">สุขภาพ (แยกค่าใช้จ่ายรายหมวด)</div>
+      <h3>แยกค่าใช้จ่าย H&amp;S (N)</h3>
+      <p class="meta">อายุรับ 11 – 74 ปี (ต่ออายุถึง 80) • ค่าห้อง 1,000 – 5,000 บาท/วัน • ไม่มีส่วนแรก</p>
+      <ul>
+        <li>หมวด 2 ค่ายา ค่าแล็บ จ่ายตามจริงรวม 15,000–40,000 บาท/ครั้ง ค่าแพทย์ผ่าตัดสูงสุด 100,000 บาท</li>
+        <li><b>ทริกงบน้อย:</b> ใช้คู่ Extra Care Plus หรือ D Health Lite แบบ Deductible เพื่อจ่ายส่วนแรก และเพิ่มค่าห้องต่อวัน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('hsn')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">ผู้ป่วยนอก · จำกัดวงเงินต่อครั้ง</div>
       <h3>สัญญาเพิ่มเติม การรักษาพยาบาลผู้ป่วยนอก (OPD รายครั้ง)</h3>
       <p class="meta">อายุรับ 6 – 80 ปี • 7 แบบ วงเงินต่อครั้ง 500 – 3,000 บาท • คุ้มครองถึงอายุ 99 ปี</p>
@@ -4551,7 +4578,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-07a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-07b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4720,6 +4747,7 @@ bindCheckboxToggle('use_diabetes','diabetes_fields');
 bindCheckboxToggle('use_ehp','ehp_fields');
 bindCheckboxToggle('use_maochai','maochai_fields');
 bindCheckboxToggle('use_ecp','ecp_fields');
+bindCheckboxToggle('use_hsn','hsn_fields');
 bindCheckboxToggle('use_opd_krang','opd_krang_fields');
 bindCheckboxToggle('use_opd_mao','opd_mao_fields');
 
@@ -5590,6 +5618,15 @@ function healthRiderPremium(cfg, gender, age, occupationClass, freq){
     const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, RATES.ecp.payment_schedules.age_start ?? 11) : null;
     return {label:'Extra Care Plus', premium:v};
   }
+  if(cfg.type === 'hsn'){
+    // แยกค่าใช้จ่าย H&S (N): เบี้ยจริงตามช่วงอายุ 11-80 (75-80 เป็นเบี้ยต่ออายุ) แยกกลุ่มอาชีพ 1-2 / 3 ทุกงวด
+    const occ = occKeyFor(occupationClass);
+    if(!occ) return {label:'แยกค่าใช้จ่าย H&S (N)', premium:null};
+    const g = RATES.hsn && RATES.hsn.payment_schedules;
+    const table = g?.occupations?.[occ]?.[freq];
+    const v = table ? rateAtStart(table[gender+'_'+cfg.plan], age, g.age_start ?? 11) : null;
+    return {label:'แยกค่าใช้จ่าย H&S (N)', premium:v};
+  }
   return {label:null, premium:null};
 }
 
@@ -6112,6 +6149,9 @@ function readInputs(){
   if(document.getElementById('use_ecp').checked){
     healthList.push({type:'ecp', plan: document.getElementById('ecp_plan').value});
   }
+  if(document.getElementById('use_hsn') && document.getElementById('use_hsn').checked){
+    healthList.push({type:'hsn', plan: document.getElementById('hsn_plan').value});
+  }
 
   const opdList = [];
   if(document.getElementById('use_opd_krang').checked){
@@ -6209,6 +6249,13 @@ function validateInputs(inp){
   }
   if(inp.mainPlan === '99_99' && inp.mainCapital !== 50000){
     issues.push('คุ้มครองตลอดชีพ 99/99 ทำได้ที่ทุน 50,000 บาทเท่านั้น ถ้าต้องการทุนตั้งแต่ 50,001 บาทขึ้นไปให้เลือกแผน สมาร์ท โพรเทคชั่น 99/99');
+  }
+  // แยกค่าใช้จ่าย H&S (N): แบบหลักต้องมีทุนตั้งแต่ 50,000 บาท และระยะเวลาเอาประกันภัยมากกว่า 1 ปี (SmartWeb หลักเกณฑ์ข้อ 5)
+  if(inp.healthList.some(h => h.type === 'hsn')){
+    if(inp.mainCapital < 50000) issues.push('แยกค่าใช้จ่าย H&S (N) แนบได้เมื่อแบบประกันหลักมีทุนตั้งแต่ 50,000 บาทขึ้นไป');
+    const spH = specialMainPlan(inp.mainPlan);
+    if(spH && spH.coverYears === 1) issues.push('แยกค่าใช้จ่าย H&S (N) แนบได้เฉพาะแบบหลักที่มีระยะเวลาเอาประกันภัยมากกว่า 1 ปี');
+    if(inp.entryAge < 11 || inp.entryAge > 74) issues.push('แยกค่าใช้จ่าย H&S (N) รับทำใหม่อายุ 11–74 ปี (อายุ 75–80 เป็นการต่ออายุเท่านั้น)');
   }
   if(inp.mainPlan === 'smart_99_99' && inp.mainCapital <= 50000){
     issues.push('สมาร์ท โพรเทคชั่น 99/99 ต้องมีทุนตั้งแต่ 50,001 บาทขึ้นไป ถ้าต้องการทุน 50,000 บาทให้เลือกแผน คุ้มครองตลอดชีพ 99/99');
@@ -6656,6 +6703,7 @@ async function exportPremiumTableExcel(){
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
     if(cfg.type === 'ehp') return `Elite Health Plus — แผน ${cfg.plan} (${EHP_REGIONS[ehpRegionKey(cfg.region)].short})`;
     if(cfg.type === 'maochai') return `เหมาจ่าย Extra — แผน ${cfg.plan}`;
+    if(cfg.type === 'hsn') return `แยกค่าใช้จ่าย H&S (N) — แผน ${fmt(Number(cfg.plan))}`;
     return `Extra Care Plus — แผน ${cfg.plan}`;
   });
   const opdLabels = inp.opdList.map(cfg => cfg.type === 'krang' ? `OPD รายครั้ง — ${fmt(cfg.plan)} บาท/ครั้ง` : `OPD เหมาจ่ายรายปี — ${fmt(cfg.plan)} บาท/ปี`);
@@ -7162,9 +7210,19 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
               `ค่าห้อง ${p.room} บาท/วัน`,
               'มีความรับผิดส่วนแรก (Deductible) 20,000 บาท/ครั้งการรักษา'].join(' • ');
     }
+    if(cfg.type === 'hsn'){
+      const i = ['1000','2000','3000','5000'].indexOf(String(cfg.plan));
+      const b = (RATES.hsn && RATES.hsn.benefits) || {};
+      const at = arr => (arr && i >= 0) ? fmt(arr[i]) : '-';
+      return [`แผน ${fmt(Number(cfg.plan))}`,
+              `ค่าห้อง ${at(b.room_per_day)} บาท/วัน สูงสุด 120 วัน (ICU 2 เท่า สูงสุด 15 วัน)`,
+              `ค่ายา ค่าแล็บ ค่าบริการ (หมวด 2) จ่ายตามจริงรวมไม่เกิน ${at(b.cat2_max_per_admission)} บาท/ครั้ง`,
+              `ค่าแพทย์ผ่าตัด ${at(b.surgeon_fee)} บาท/ครั้ง`,
+              'ไม่มีความรับผิดส่วนแรก'].join(' • ');
+    }
     return '';
   }
-  const healthName = {dhl:'D Health Lite', ehp:'Elite Health Plus', maochai:'เหมาจ่าย Extra', ecp:'Extra Care Plus'};
+  const healthName = {dhl:'D Health Lite', ehp:'Elite Health Plus', maochai:'เหมาจ่าย Extra', ecp:'Extra Care Plus', hsn:'แยกค่าใช้จ่าย H&S (N)'};
   inp.healthList.forEach((cfg, i) => {
     const key = 'health_'+i;
     if(y1[key] !== undefined){
@@ -7459,11 +7517,16 @@ function applyInlineFieldValidation(inp, entryAge, gender, riderTotalYear1){
   }
 
   // each selected health rider: purchasable at current entry age?
-  const errIdByType = {dhl:'dhlErr', ehp:'ehpErr', maochai:'maochaiErr', ecp:'ecpErr'};
-  const fieldIdByType = {dhl:'dhl_sum', ehp:'ehp_plan', maochai:'maochai_plan', ecp:'ecp_plan'};
-  ['dhl','ehp','maochai','ecp'].forEach(type => {
+  const errIdByType = {dhl:'dhlErr', ehp:'ehpErr', maochai:'maochaiErr', ecp:'ecpErr', hsn:'hsnErr'};
+  const fieldIdByType = {dhl:'dhl_sum', ehp:'ehp_plan', maochai:'maochai_plan', ecp:'ecp_plan', hsn:'hsn_plan'};
+  ['dhl','ehp','maochai','ecp','hsn'].forEach(type => {
     const cfg = inp.healthList.find(h => h.type === type);
-    if(cfg){
+    if(cfg && type === 'hsn'){
+      // H&S (N) ตารางมีถึงอายุ 80 แต่ 75-80 เป็นเบี้ยต่ออายุ รับทำใหม่ 11-74 ปี
+      const test = healthRiderPremium(cfg, gender, entryAge, inp.occupationClass);
+      const badAge = entryAge < 11 || entryAge > 74;
+      setErr('hsn_plan', 'hsnErr', test.premium===null || badAge, 'แยกค่าใช้จ่าย H&S (N) รับทำใหม่อายุ 11–74 ปี และกลุ่มอาชีพ 1–3 เท่านั้น');
+    } else if(cfg){
       const test = healthRiderPremium(cfg, gender, entryAge);
       setErr(fieldIdByType[type], errIdByType[type], test.premium===null, 'ไม่สามารถแนบแผนนี้ได้ที่อายุปัจจุบัน (เกินช่วงอายุที่ทำได้)');
     } else {
@@ -10097,6 +10160,73 @@ const PLAN_DETAILS = {
     ]),
   },
 
+  hsn: {
+    title: 'แยกค่าใช้จ่าย H&S (N)', category: 'สุขภาพ แยกวงเงินรายหมวด (ไม่มีส่วนแรก)',
+    fit: ['งบน้อยแต่อยากได้ค่าห้องต่อวันสูง โดยใช้คู่กับ Extra Care Plus หรือ D Health Lite แบบมี Deductible', 'มีประกันสุขภาพที่มีความรับผิดส่วนแรกอยู่แล้ว และอยากมีตัวจ่ายส่วนแรกให้', 'อยากได้ค่าผ่าตัดและค่าห้องเพิ่มจากประกันกลุ่มหรือสวัสดิการเดิม'],
+    notFit: 'ใช้เป็นประกันสุขภาพตัวเดียว เพราะวงเงินแยกรายหมวดและไม่คุ้มครองหมวด 9–11 (ล้างไต รังสีรักษา เคมีบำบัด) ถ้าป่วยหนักจะไม่พอ ต้องมีสัญญาสุขภาพตัวหลักหรือ Care Plus คู่กันเสมอ',
+    overview: 'สัญญาเพิ่มเติมสุขภาพแบบแยกค่าใช้จ่ายรายหมวด จ่ายตั้งแต่บาทแรก ไม่มีความรับผิดส่วนแรกและไม่มีค่าใช้จ่ายร่วม เลือกได้ 4 แผน ค่าห้อง 1,000 / 2,000 / 3,000 / 5,000 บาทต่อวัน จุดเด่นคือ <b>หมวด 2 (ค่ายา ค่าแล็บ ค่าบริการทางการแพทย์) จ่ายตามจริงรวมไม่เกิน 15,000–40,000 บาทต่อครั้ง</b> ซึ่งเป็นก้อนที่ใหญ่ที่สุดของบิลนอนโรงพยาบาลส่วนมาก จึงใช้ปิดส่วนแรกของแผนที่มี Deductible ได้ดี และเพิ่มค่าห้องต่อวันทับลงไปได้อีก',
+    images: [],
+    coverage: [
+      'ค่าห้อง ค่าอาหาร ค่าบริการ (หมวด 1) 1,000–5,000 บาท/วัน ไม่เกิน 120 วัน ห้อง ICU จ่าย 2 เท่า ไม่เกิน 15 วัน',
+      'หมวด 2 ค่าตรวจวินิจฉัย ค่าบำบัดรักษา ค่าโลหิต ค่าพยาบาล ค่ายา ค่าเวชภัณฑ์ จ่ายตามจริง รวมไม่เกิน 15,000 / 20,000 / 25,000 / 40,000 บาทต่อครั้ง (รวมยากลับบ้านไม่เกิน 1,000 บาท)',
+      'ค่าแพทย์เยี่ยมไข้ 600 / 800 / 900 / 1,000 บาทต่อวัน ไม่เกิน 120 วัน',
+      'ค่าแพทย์ผ่าตัดและหัตถการ 40,000 / 60,000 / 80,000 / 100,000 บาท ค่าวิสัญญีแพทย์ 4,500 / 7,000 / 7,000 / 9,000 บาท ค่าห้องผ่าตัดและอุปกรณ์รวม 4,500 / 7,000 / 7,000 / 9,000 บาท',
+      'Day Surgery, ตรวจวินิจฉัยก่อน-หลังนอน รพ. 30 วัน, อุบัติเหตุผู้ป่วยนอกภายใน 24 ชม. 3,500–10,000 บาท และรถพยาบาลฉุกเฉิน 1,000–5,000 บาท',
+    ],
+    benefitTitle: 'ตารางผลประโยชน์ ทั้ง 4 แผน',
+    benefitTable: () => renderBenefitTable(['แผน 1,000','แผน 2,000','แผน 3,000','แผน 5,000'], [
+      ['หมวด 1 ค่าห้อง ค่าอาหาร ค่าบริการ (ต่อวัน ไม่เกิน 120 วัน · ICU 2 เท่า ไม่เกิน 15 วัน)','1,000','2,000','3,000','5,000'],
+      ['หมวด 2.1–2.3 ค่าตรวจวินิจฉัย ค่าบำบัดรักษา ค่ายา ค่าเวชภัณฑ์','ตามจริง','ตามจริง','ตามจริง','ตามจริง'],
+      ['หมวด 2.4 ยาและเวชภัณฑ์กลับบ้าน (ไม่เกิน 7 วัน)','1,000','1,000','1,000','1,000'],
+      ['<b>รวมหมวด 2.1–2.4 สูงสุดต่อครั้ง</b>','<b>15,000</b>','<b>20,000</b>','<b>25,000</b>','<b>40,000</b>'],
+      ['หมวด 3 ค่าแพทย์ตรวจรักษา (ต่อวัน ไม่เกิน 120 วัน)','600','800','900','1,000'],
+      ['หมวด 4.1–4.2 ค่าห้องผ่าตัด ค่ายาและอุปกรณ์ผ่าตัด (รวมสูงสุดต่อครั้ง)','4,500','7,000','7,000','9,000'],
+      ['หมวด 4.3 ค่าแพทย์ผ่าตัดและหัตถการ (รวมแพทย์ผู้ช่วย)','40,000','60,000','80,000','100,000'],
+      ['หมวด 4.4 ค่าวิสัญญีแพทย์','4,500','7,000','7,000','9,000'],
+      ['หมวด 4.5 ผ่าตัดเปลี่ยนอวัยวะ และหมวด 5 Day Surgery','ตามจริง ไม่เกินหมวด 4.1–4.4','ตามจริง ไม่เกินหมวด 4.1–4.4','ตามจริง ไม่เกินหมวด 4.1–4.4','ตามจริง ไม่เกินหมวด 4.1–4.4'],
+      ['หมวด 6.1 ตรวจวินิจฉัยก่อน-หลังนอน รพ. 30 วัน','3,000','3,000','3,000','5,000'],
+      ['หมวด 6.2 OPD ต่อเนื่องหลังนอน รพ.','ไม่คุ้มครอง','ไม่คุ้มครอง','ไม่คุ้มครอง','ไม่คุ้มครอง'],
+      ['หมวด 7 อุบัติเหตุผู้ป่วยนอกภายใน 24 ชม. (ต่อครั้ง)','3,500','6,500','8,000','10,000'],
+      ['หมวด 8 เวชศาสตร์ฟื้นฟู · หมวด 9 ล้างไต · หมวด 10 รังสีรักษา · หมวด 11 เคมีบำบัด · หมวด 13 ผ่าตัดเล็ก','ไม่คุ้มครอง','ไม่คุ้มครอง','ไม่คุ้มครอง','ไม่คุ้มครอง'],
+      ['หมวด 12 รถพยาบาลฉุกเฉิน','1,000','2,000','3,000','5,000'],
+      ['ความรับผิดส่วนแรก / ค่าใช้จ่ายร่วม / เพดานต่อปี','ไม่มี','ไม่มี','ไม่มี','ไม่มี'],
+    ], 'หน่วยเป็นบาท คัดลอกจากตารางความคุ้มครองบน SmartWeb · จ่ายตามจริงแต่ไม่เกินวงเงินแต่ละหมวด'),
+    conditions: [
+      'อายุรับทำใหม่ 11 – 74 ปี ต่ออายุได้ถึงอายุ 80 ปี คุ้มครองถึงอายุ 81 ปี (ไม่เกินระยะเวลาของกรมธรรม์หลัก)',
+      'กลุ่มอาชีพ 1, 2 และ 3 (อาชีพ 3 เบี้ยสูงกว่า)',
+      'แบบประกันหลักต้องมีทุนตั้งแต่ 50,000 บาทขึ้นไป และระยะเวลาเอาประกันภัยมากกว่า 1 ปี แนบได้ทั้งกรมธรรม์ใหม่และกรมธรรม์เดิม',
+      'ซื้อได้มากกว่า 1 สัญญา ตามคำสั่งที่ 28/2562',
+      'จ่ายสินไหมจากใบเสร็จรับเงินฉบับจริงเท่านั้น จึงไม่ควรเสนอเกินความจำเป็น',
+      'ชำระเบี้ยรายปี ราย 6 เดือน ราย 3 เดือน รายเดือน ตามกรมธรรม์หลัก (เบี้ยรายงวดทั้งกรมธรรม์ไม่ต่ำกว่า 200 บาท) ชำระด้วยบัตรเครดิตได้',
+      'การตรวจสุขภาพเป็นไปตามแบบประกันหลัก · เบี้ยเปลี่ยนตามช่วงอายุ',
+    ],
+    freqSupported: true,
+    rateTable: (freq='annual') => renderAgeTable(11, 80, ['1000','2000','3000','5000'].flatMap(pl => [
+      {label:`ชาย ${fmt(Number(pl))}`, arr: ageSeriesFromFn(11,80, age=>healthRiderPremium({type:'hsn',plan:pl}, 'm', age, '1', freq).premium)},
+      {label:`หญิง ${fmt(Number(pl))}`, arr: ageSeriesFromFn(11,80, age=>healthRiderPremium({type:'hsn',plan:pl}, 'f', age, '1', freq).premium)},
+    ])),
+    rateNote: 'เบี้ยกลุ่มอาชีพ 1–2 คัดลอกตรงจากตารางทางการ (ช่วงอายุละราคาเดียว) อายุ 75–80 เป็นเบี้ยต่ออายุเท่านั้น · กลุ่มอาชีพ 3 ดูได้ในหน้าคำนวณเบี้ย',
+    detailSections: () => `
+      <div class="content-card">
+        <h2>ใช้ H&amp;S (N) ปิดส่วนแรก แล้วได้ค่าห้องเพิ่ม</h2>
+        <p>แผนสุขภาพที่มีความรับผิดส่วนแรก เช่น <b>Extra Care Plus</b> (ส่วนแรก 20,000 บาทต่อครั้ง) หรือ <b>D Health Lite แบบ Deductible</b> เบี้ยถูกมาก แต่ทุกครั้งที่นอนโรงพยาบาลต้องจ่ายส่วนแรกเอง และค่าห้องต่อวันจำกัด (Extra Care Plus แผน 2–3 วันละ 4,000 บาท)</p>
+        <p>H&amp;S (N) จ่ายตั้งแต่บาทแรกแยกตามหมวด ก้อนที่ช่วยมากที่สุดคือ <b>หมวด 2 ค่ายา ค่าแล็บ ค่าบริการ จ่ายตามจริงรวม 20,000–40,000 บาทต่อครั้ง</b> ซึ่งพอกับส่วนแรก 20,000 บาทของ Extra Care Plus และค่าห้องของ H&amp;S ยังทับกับค่าห้องของแผนหลัก ทำให้นอนห้องแพงขึ้นได้ โดยรวมทั้งสองสัญญาแล้วไม่เกินค่าใช้จ่ายจริง</p>
+        <div class="table-wrap"><table><thead><tr><th>คู่ที่แนะนำ</th><th>ส่วนแรกของแผนหลัก</th><th>H&amp;S ช่วยจ่ายหมวด 2 ได้</th><th>ค่าห้องรวมต่อวัน</th></tr></thead><tbody>
+          <tr><td>Extra Care Plus แผน 2 + H&amp;S แผน 2,000</td><td>20,000</td><td>ไม่เกิน 20,000</td><td>4,000 + 2,000 = 6,000</td></tr>
+          <tr><td>Extra Care Plus แผน 2 + H&amp;S แผน 3,000</td><td>20,000</td><td>ไม่เกิน 25,000</td><td>4,000 + 3,000 = 7,000</td></tr>
+          <tr><td>Extra Care Plus แผน 3 + H&amp;S แผน 5,000</td><td>20,000</td><td>ไม่เกิน 40,000</td><td>4,000 + 5,000 = 9,000</td></tr>
+          <tr><td>D Health Lite 5 ล้าน ส่วนแรก 30,000 + H&amp;S แผน 3,000</td><td>30,000</td><td>ไม่เกิน 25,000 + ค่าห้อง ค่าหมอ ค่าผ่าตัด</td><td>ค่าห้อง D Health Lite + 3,000</td></tr>
+        </tbody></table></div>
+        <p class="meta">คู่กับ D Health Lite ต้องเทียบเบี้ยรวมกับ D Health Lite แบบไม่มีส่วนแรกทุกครั้ง บางเพศบางอายุ (เช่นผู้หญิง) คู่นี้แพงกว่า ให้ใช้แบบไม่มีส่วนแรกไปเลย ส่วนคู่กับ Extra Care Plus ถูกกว่าเกือบทุกช่วงอายุ</p>
+        <p style="margin-top:12px;"><b>ตัวอย่างสมมติ</b> นอนโรงพยาบาล 3 วัน ห้องวันละ 6,000 บาท ค่ายาและค่าแล็บ (หมวด 2) 22,000 บาท ค่าหมอวันละ 1,200 บาท รวม 43,600 บาท</p>
+        <ul>
+          <li><b>Extra Care Plus แผน 2 อย่างเดียว</b> คุ้มครองค่าห้องได้วันละ 4,000 รวม 12,000 + หมวด 2 22,000 + ค่าหมอ 3,600 = 37,600 หักส่วนแรก 20,000 จ่าย 17,600 ลูกค้าจ่ายเอง 26,000 บาท</li>
+          <li><b>Extra Care Plus แผน 2 + H&amp;S แผน 3,000</b> H&amp;S จ่ายค่าห้อง 9,000 + หมวด 2 22,000 + ค่าหมอ 2,700 = 33,700 ส่วนแรก 20,000 จึงมี H&amp;S จ่ายแทนแล้ว Extra Care Plus จ่ายส่วนที่เหลือ 9,900 (ค่าห้องส่วนเกินวันละ 3,000 และค่าหมอส่วนเกิน) ลูกค้าจ่ายเอง 0 บาท</li>
+        </ul>
+        <p class="meta">ตัวเลขเป็นตัวอย่างเพื่ออธิบายหลักการ ยอดจริงขึ้นกับใบแจ้งค่ารักษาและการพิจารณาสินไหมของบริษัท · H&amp;S ไม่คุ้มครองหมวด 9–11 จึงควรมี Care Plus คู่ไว้สำหรับมะเร็งและไตวาย · ยื่นเคลมทั้งสองสัญญาพร้อมกันที่บริษัทเดียวกัน เพราะ H&amp;S จ่ายจากใบเสร็จตัวจริง</p>
+      </div>`,
+  },
+
   opd: {
     title: 'สัญญาเพิ่มเติม การรักษาพยาบาลผู้ป่วยนอก (OPD รายครั้ง)', category: 'ผู้ป่วยนอก · จำกัดวงเงินต่อครั้ง',
     fit: ['ป่วยเล็กน้อยบ่อยจริงจนคำนวณแล้วคุ้มกับเบี้ยที่จ่าย', 'มองว่าเป็นการบังคับตัวเองให้ออมค่ารักษาส่วนนี้ไว้ล่วงหน้า'],
@@ -10694,6 +10824,7 @@ const PLAN_ROUTES = {
   wellbeing: '/plans/well-being-plus',
   maochai: '/plans/maochai-extra',
   ecp: '/plans/extra-care-plus',
+  hsn: '/plans/hs-n',
   opd: '/plans/opd',
   opdmaochai: '/plans/opd-maochai',
   careplus: '/plans/care-plus',
@@ -10824,6 +10955,7 @@ const PLAN_CARD_EXTRA = {
   // การ์ด OPD สองใบใช้คนละสัญญา จึงต้องคิดเบี้ยเริ่มต้นจากแผนต่ำสุดของแบบนั้นเอง
   // ถ้าปล่อยให้ไปหยิบจาก COMPARE_PRODUCTS ใบเหมาจ่ายจะได้เบี้ยของแบบรายครั้งมาแทน
   opdmaochai: {note:'วงเงินรวม 15,000 บาทต่อปี', calc:(g,a)=>opdMaoPremium(15000, g, a, PLAN_CARD_CASE.occClass, 'annual')},
+  hsn:        {note:'แผน 1,000 (ค่าห้อง 1,000 บาท/วัน)', calc:(g,a)=>healthRiderPremium({type:'hsn', plan:'1000'}, g, a, PLAN_CARD_CASE.occClass, 'annual').premium},
 };
 
 function planCardAge(id){
@@ -11053,6 +11185,7 @@ function packageLabelItem(item){
   if(item.kind==='ehp') return `Elite Health Plus ${item.plan.replace('m','')} ล้านบาท/ปี`;
   if(item.kind==='maochai') return `เหมาจ่าย Extra แผน ${item.plan.replace('p','')}`;
   if(item.kind==='ecp') return `Extra Care Plus แผน ${item.plan.replace('p','')} (Deductible 20,000/ครั้ง)`;
+  if(item.kind==='hsn') return `แยกค่าใช้จ่าย H&S (N) แผน ${fmt(Number(item.plan))} (ค่าห้อง ${fmt(Number(item.plan))}/วัน)`;
   if(item.kind==='opd_mao') return `OPD เหมาจ่าย ${fmt(item.plan)} บาท/ปี`;
   if(item.kind==='opd_krang') return `OPD รายครั้ง ${fmt(item.plan)} บาท/ครั้ง`;
   if(item.kind==='careplus') return item.plan === 'ca'
@@ -11076,6 +11209,8 @@ function premiumOfItem(item, gender, age){
   if(item.kind==='ehp') return healthRiderPremium({type:'ehp', plan:item.plan, region:item.region}, gender, age).premium;
   if(item.kind==='maochai') return healthRiderPremium({type:'maochai', plan:item.plan}, gender, age).premium;
   if(item.kind==='ecp') return healthRiderPremium({type:'ecp', plan:item.plan}, gender, age).premium;
+  // H&S (N) รับทำใหม่ 11-74 ปี ห้ามเสนอเป็นแผนใหม่ที่อายุ 75 ขึ้นไป (ช่วงนั้นเป็นเบี้ยต่ออายุ)
+  if(item.kind==='hsn') return (age < 11 || age > 74) ? null : healthRiderPremium({type:'hsn', plan:String(item.plan)}, gender, age).premium;
   if(item.kind==='opd_mao') return opdPremium({type:'mao', plan:String(item.plan)}, gender, age, 'annual', '1').premium;
   if(item.kind==='opd_krang') return opdPremium({type:'krang', plan:String(item.plan)}, gender, age).premium;
   if(item.kind==='careplus') return careplusPremium('5m', item.plan === 'ca' ? 'ca' : 'cackd', gender, age);
@@ -13140,14 +13275,56 @@ const ADV_ALT_DEFS = [
       'ต้องอธิบายช่องโหว่ในตารางด้านล่างให้ลูกค้าเข้าใจก่อนปิดการขาย ห้ามขายโดยไม่บอก',
     ],
   },
+  /* ทริกงบน้อยแต่อยากได้ค่าห้องสูง: แผนที่มีส่วนแรก (เบี้ยถูก) + แยกค่าใช้จ่าย H&S (N) จ่ายส่วนแรกแทน
+     H&S จ่ายตั้งแต่บาทแรกตามรายหมวด หมวด 2 (ยา แล็บ ค่าบริการ) ตามจริงรวม 25,000 / 40,000 บาทต่อครั้ง
+     ซึ่งมากกว่าส่วนแรก 20,000 ของ Extra Care Plus และ 30,000 ของ D Health Lite และค่าห้องของ H&S ทับค่าห้องของแผนหลัก */
+  {
+    id:'alt-hsn-ecp',
+    name:'ทางเลือก D — Extra Care Plus แผน 2 + แยกค่าใช้จ่าย H&S (N) แผน 3,000 ปิดส่วนแรก + Care Plus',
+    health:[{kind:'ecp', plan:'p2'}, {kind:'hsn', plan:'3000'}],
+    needsQuestions:false,
+    forceCarePlus:true,
+    coversDeductible:true,
+    why:[
+      'Extra Care Plus แผน 2 เบี้ยถูกเพราะมีส่วนแรก 20,000 บาทต่อครั้ง ส่วนแรกนี้ให้ H&S (N) แผน 3,000 จ่ายแทน เพราะหมวด 2 ของ H&S (ค่ายา ค่าแล็บ ค่าบริการ) จ่ายตามจริงรวมได้ถึง 25,000 บาทต่อครั้ง ซึ่งเป็นก้อนใหญ่ที่สุดของบิลนอนโรงพยาบาลส่วนมาก',
+      'ค่าห้องได้สองชั้น Extra Care Plus วันละ 4,000 บวก H&S วันละ 3,000 รวมนอนห้องได้ถึงวันละ 7,000 บาท ในเบี้ยที่ต่ำกว่าแผนไม่มีส่วนแรก (รวมทั้งสองสัญญาไม่เกินค่าใช้จ่ายจริง)',
+      'ข้อจำกัดที่ต้องบอกลูกค้า วงเงิน Extra Care Plus แผน 2 คือ 200,000 บาทต่อครั้ง และทั้งสองสัญญาไม่คุ้มครองหมวด 9–11 ระบบจึงพ่วง Care Plus เสมอ ส่วนแรกจะปิดได้หมดหรือไม่ขึ้นกับว่าบิลเป็นค่ายาค่าแล็บมากพอไหม ถ้าบิลส่วนใหญ่เป็นค่าห้องหรือค่าหมอที่เกินวงเงินรายหมวดของ H&S ลูกค้าอาจยังต้องออกส่วนต่างเอง',
+    ],
+  },
+  {
+    id:'alt-hsn-dhl',
+    name:'ทางเลือก E — D Health Lite 5 ล้าน ส่วนแรก 30,000 + แยกค่าใช้จ่าย H&S (N) แผน 3,000 ปิดส่วนแรก + Care Plus',
+    health:[{kind:'dhl', sum:'5m', mode:'deduct', deduct:'d30k'}, {kind:'hsn', plan:'3000'}],
+    // เสนอเฉพาะเมื่อเบี้ยสุขภาพรวมถูกกว่า D Health Lite 5 ล้านแบบไม่มีส่วนแรกจริง ไม่งั้นลูกค้าควรเอาแบบไม่มีส่วนแรกไปเลย
+    cheaperThan:[{kind:'dhl', sum:'5m', mode:'deduct', deduct:'d0'}],
+    needsQuestions:false,
+    forceCarePlus:true,
+    coversDeductible:true,
+    why:[
+      'คงวงเงินก้อนใหญ่ 5 ล้านบาทต่อครั้งไว้ แล้วใช้ส่วนแรก 30,000 บาทกดเบี้ย จากนั้นให้ H&S (N) แผน 3,000 จ่ายส่วนแรกแทน ด้วยหมวด 2 ตามจริงรวม 25,000 บาท บวกค่าห้องวันละ 3,000 และค่าหมอวันละ 900 ซึ่งนอนตั้งแต่ 2 วันขึ้นไปก็มักครบ 30,000',
+      'ได้ค่าห้องเพิ่มอีกวันละ 3,000 บาททับกับค่าห้องของ D Health Lite และค่าแพทย์ผ่าตัดอีกถึง 80,000 บาท ในเบี้ยรวมที่ถูกกว่า D Health Lite แบบไม่มีส่วนแรก (ระบบแสดงทางเลือกนี้เฉพาะอายุและเพศที่ถูกกว่าจริง)',
+      'ข้อจำกัด นอนวันเดียวหรือบิลที่เป็นค่ายาค่าแล็บน้อย H&S อาจจ่ายไม่ถึง 30,000 ลูกค้าต้องออกส่วนต่างเอง · H&S รับทำใหม่ถึงอายุ 74 ปี',
+    ],
+  },
 ];
 function advBuildAlternatives(input){
   const strictNoDeduct = input.riskChoice === 'none';
-  return ADV_ALT_DEFS.map(def => {
+  const sumHealth = items => items.reduce((t, it) => {
+    const v = premiumOfItem(it, input.gender, input.age);
+    return (t === null || typeof v !== 'number') ? null : t + v;
+  }, 0);
+  return ADV_ALT_DEFS.filter(def => {
+    if(!def.cheaperThan) return true;
+    const mine = sumHealth(def.health), ref = sumHealth(def.cheaperThan);
+    return mine !== null && (ref === null || mine < ref);
+  }).map(def => {
     const {state, priced, trace} = advRunLadder(input, def.health, {forceCarePlus: def.forceCarePlus});
-    const conflictsStated = strictNoDeduct && advHasDeductibleOrCopay(priced.items);
+    const hasHsn = priced.items.some(i => i.kind === 'hsn');
+    // ส่วนแรกถูกปิดด้วย H&S แล้ว จึงไม่นับว่าขัดกับลูกค้าที่ไม่อยากควักส่วนแรกเอง แต่ต้องบอกข้อจำกัดไว้
+    const conflictsStated = strictNoDeduct && advHasDeductibleOrCopay(priced.items) && !(def.coversDeductible && hasHsn);
     const warnings = [];
     if(conflictsStated) warnings.push('ลูกค้าแจ้งว่าไม่อยากมี Deductible หรือ Co-payment ทางเลือกนี้จึงขัดกับที่ลูกค้าบอก ห้ามยกเป็นข้อเสนอแรก ให้ใช้ต่อเมื่อคุยกับลูกค้าแล้วเท่านั้น');
+    if(def.coversDeductible && strictNoDeduct && hasHsn) warnings.push('แผนหลักยังมีส่วนแรกอยู่ แต่ H&S (N) จ่ายแทนตามวงเงินรายหมวด ต้องอธิบายลูกค้าว่าเคสที่บิลไม่ตรงหมวดของ H&S อาจยังมีส่วนต่างให้จ่ายเอง');
     return {
       id: def.id,
       kind: 'alt',
@@ -13434,7 +13611,7 @@ function setValue(id, val){
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
 function resetCalculatorSelections(){
-  ['use_dhl','use_ehp','use_maochai','use_ecp','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_mci','use_cancer','use_pure_cancer','use_smart_silver','use_hb'].forEach(id=>setChecked(id,false));
+  ['use_dhl','use_ehp','use_maochai','use_ecp','use_hsn','use_opd_krang','use_opd_mao','use_careplus','use_cipc','use_mci','use_cancer','use_pure_cancer','use_smart_silver','use_hb'].forEach(id=>setChecked(id,false));
   dcareClearRows();
   setValue('pa_plan','none');
 }
@@ -13731,6 +13908,7 @@ function applyAiPackage(idx){
     if(it.kind==='ehp'){ setChecked('use_ehp', true); setValue('ehp_plan', it.plan); setValue('ehp_region', ehpRegionKey(it.region)); }
     if(it.kind==='maochai'){ setChecked('use_maochai', true); setValue('maochai_plan', it.plan); }
     if(it.kind==='ecp'){ setChecked('use_ecp', true); setValue('ecp_plan', it.plan); }
+    if(it.kind==='hsn'){ setChecked('use_hsn', true); setValue('hsn_plan', String(it.plan)); }
     if(it.kind==='opd_mao'){ setChecked('use_opd_mao', true); setValue('opd_mao_plan', it.plan); }
     if(it.kind==='opd_krang'){ setChecked('use_opd_krang', true); setValue('opd_krang_plan', it.plan); }
     if(it.kind==='careplus'){ setChecked('use_careplus', true); ['ca','ckd','cackd'].forEach(pl => { const el = document.getElementById('cp_'+pl); if(el){ el.disabled = false; el.checked = (it.plan === pl) || (pl === 'cackd' && !['ca','ckd'].includes(it.plan)); } }); syncCareplusPlanChecks(); setValue('careplus_sum', it.sum === '1m' ? '1m' : '5m'); }
