@@ -2463,6 +2463,12 @@
   #page-plan-detail .table-wrap tbody td:nth-child(2){text-align:right;}
   #page-plan-detail .table-wrap tbody td:first-child{width:1%;padding-right:22px;}
   #page-plan-detail .table-wrap thead th:first-child{width:1%;padding-right:22px;}
+  /* ตารางผลประโยชน์ (benefit-table) ทุกคอลัมน์แผนเป็นข้อความ ต้องชิดซ้ายและสีเดียวกันทุกคอลัมน์
+     ไม่งั้นกฎคอลัมน์ที่ 2 ด้านบนกับกฎกลางของตารางอายุจะทำให้คอลัมน์แผนแรกชิดขวาและสีจาง ดูเบี้ยว */
+  #page-plan-detail .table-wrap.benefit-table thead th{text-align:left;}
+  #page-plan-detail .table-wrap.benefit-table tbody td:nth-child(2){text-align:left;}
+  .benefit-table tbody td:not(:first-child){color:var(--ink);}
+  body.hnw .benefit-table tbody td:not(:first-child){color:#ece2d6;}
   body.hnw .benefit-group td{background:rgba(212,175,106,.10);}
   body.hnw .group-title{color:var(--gold-hi);}
   body.hnw .group-break h2{color:var(--gold-hi);}
