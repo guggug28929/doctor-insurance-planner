@@ -2619,6 +2619,23 @@
 #page-hospitals .hn-matrix td{background:transparent}#page-hospitals .hn-matrix th,#page-hospitals .hn-matrix td{text-align:left}#page-hospitals .hn-toggles{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:14px 0 0}#page-hospitals .hn-toggle{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:13px;color:var(--ink-soft);cursor:pointer;user-select:none;transition:border-color .15s,background .15s}#page-hospitals .hn-toggle:hover{border-color:var(--pink-deep)}#page-hospitals .hn-toggle input{accent-color:var(--pink-deep);width:16px;height:16px;margin:0;flex-shrink:0}#page-hospitals .hn-toggle:has(input:checked){border-color:var(--pink-deep);background:var(--pink-soft);color:var(--pink-deep);font-weight:600}
 #page-hospitals .hn-credit{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding:18px 4px 0;margin-top:8px;font-size:11px;color:var(--muted)}
 
+
+  /* ---- แผนที่บันทึกไว้ (ตัวแทน) ---- */
+  .saved-plans-card .sp-tag{font-size:.7rem;font-weight:600;color:var(--muted);background:#f6eef2;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;}
+  .sp-actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px;}
+  .sp-actions .btn{padding:7px 12px;font-size:.82rem;}
+  .sp-btn-ghost{background:#fff !important;color:var(--pink) !important;border:1px solid var(--pink) !important;}
+  .sp-search{width:100%;margin-bottom:8px;}
+  .sp-list{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;border-top:1px solid var(--line);}
+  .sp-item{padding:8px 2px;border-bottom:1px solid var(--line);font-size:.83rem;}
+  .sp-item.is-active{background:#fff5f9;}
+  .sp-item .sp-name{font-weight:600;cursor:pointer;color:var(--ink,#2a1d24);}
+  .sp-item .sp-meta{color:var(--muted);font-size:.75rem;margin-top:2px;}
+  .sp-item .sp-row{display:flex;gap:10px;margin-top:4px;}
+  .sp-item .sp-link{background:none;border:none;padding:0;color:var(--pink);cursor:pointer;font-size:.78rem;}
+  .sp-item .sp-link.sp-del{color:var(--danger,#b3261e);}
+  .sp-status{font-size:.78rem;margin-top:6px;min-height:1em;}
+  .sp-warn{font-size:.78rem;color:var(--danger,#b3261e);margin-top:6px;}
 </style>
 </head>
 <body>
@@ -2717,6 +2734,10 @@
 
   <!-- ============ INPUT PANEL ============ -->
   <div id="inputsPanel">
+    <div class="card saved-plans-card" id="savedPlansCard" hidden>
+      <h2>แผนที่บันทึกไว้ <span class="sp-tag">สำหรับตัวแทน</span></h2>
+      <div id="savedPlansBody"><p class="hint">กำลังตรวจสอบการเข้าสู่ระบบ…</p></div>
+    </div>
     <div class="card">
       <h2>ข้อมูลผู้เอาประกัน</h2>
       <label class="first">เพศ</label>
@@ -13269,6 +13290,238 @@ function resetCalculatorSelections(){
   dcareClearRows();
   setValue('pa_plan','none');
 }
+
+/* =========================================================================
+   แผนที่บันทึกไว้ (ตัวแทน) — เก็บบนเซิร์ฟเวอร์ผูกกับอีเมล Google ที่ล็อกอิน
+   เปิดจากเครื่องหรือเบราว์เซอร์อื่นได้ เพราะไม่ได้เก็บไว้ในเบราว์เซอร์
+   เก็บเฉพาะค่าที่กรอกในหน้าคำนวณ (เพศ ปีเกิด ขั้นอาชีพ แผน ทุน) + ชื่อที่ตัวแทนตั้ง
+   ========================================================================= */
+const SP_AUTH_URL = '/api/agent-auth';
+const SP_PLANS_URL = '/api/agent-plans';
+const SP = {signedIn:false, email:'', name:'', clientId:'', plans:[], activeId:null, filter:'', busy:false, warn:''};
+
+/* อ่านค่าทุกช่องในแผงกรอกข้อมูล (ยกเว้นแถว D Care ซึ่งเก็บแยกเป็นรายการ) */
+function calcSnapshotState(){
+  const panel = document.getElementById('inputsPanel');
+  const state = {radios:{}, checks:{}, values:{}, dcare:[]};
+  panel.querySelectorAll('input, select').forEach(el => {
+    if(el.closest('#dcare_list') || el.closest('#savedPlansCard')) return;
+    if(el.type === 'radio'){ if(el.checked && el.name) state.radios[el.name] = el.value; return; }
+    if(!el.id) return;
+    if(el.type === 'checkbox'){ state.checks[el.id] = el.checked; return; }
+    if(el.type === 'button' || el.type === 'submit' || el.type === 'file') return;
+    state.values[el.id] = String(el.value);
+  });
+  state.dcare = [...document.querySelectorAll('#dcare_list .dcare-item')].map(row => ({
+    cat: row.querySelector('.dcare-cat').value,
+    stage: row.querySelector('.dcare-stage').value,
+    capital: parseFloat(row.querySelector('.dcare-cap').value) || 0,
+  }));
+  return state;
+}
+
+/* ยอดเบี้ยปีแรกที่แสดงตอนบันทึก ใช้เตือนเมื่อเปิดแผนเก่าแล้วยอดเปลี่ยน (เช่น ตารางเบี้ยปรับ หรืออายุขึ้นปี) */
+function calcSnapshotSummary(){
+  const inp = readInputs();
+  let totalY1 = null;
+  const stat = [...document.querySelectorAll('#summary .stat')].find(st => /รวมทุกสัญญา/.test((st.querySelector('.k')||{}).textContent || ''));
+  if(stat){ const n = parseFloat(((stat.querySelector('.v')||{}).textContent || '').replace(/[^0-9.]/g, '')); if(Number.isFinite(n)) totalY1 = n; }
+  return {
+    gender: inp.gender, entryAge: inp.entryAge,
+    mainLabel: `${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)} ทุน ${fmt(inp.mainCapital)}`,
+    frequency: paymentFrequencyInfo(inp.paymentFrequency).label,
+    totalY1,
+  };
+}
+
+function spSetVal(el, v){ if(!el) return; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); el.dispatchEvent(new Event('change', {bubbles:true})); }
+
+/* ใส่ค่ากลับทีละขั้น: แผนหลักก่อน (เพราะเปลี่ยนแผนจะตั้งทุนขั้นต่ำให้อัตโนมัติ) → ติ๊ก → ค่าในช่อง → ทุนหลักสุดท้าย
+   ใส่ค่าในช่องสองรอบ เพราะบางช่องเปลี่ยนตัวเลือกของอีกช่อง */
+function calcRestoreState(state){
+  if(!state) return;
+  resetCalculatorSelections();
+  ['cp_ca','cp_ckd','cp_cackd'].forEach(id => { const el = document.getElementById(id); if(el){ el.disabled = false; el.checked = false; } });
+  const R = state.radios || {}, C = state.checks || {}, V = state.values || {};
+  for(const [name, val] of Object.entries(R)){
+    const el = [...document.querySelectorAll(`#inputsPanel input[type=radio][name="${CSS.escape(name)}"]`)].find(r => r.value === val);
+    if(el){ el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); }
+  }
+  if(V.pensionMainSelect !== undefined){
+    const sel = document.getElementById('pensionMainSelect');
+    if(sel){ sel.value = V.pensionMainSelect; if(typeof onPensionMainChange === 'function') onPensionMainChange(); }
+  }
+  for(const [id, on] of Object.entries(C)){
+    const el = document.getElementById(id);
+    if(el && el.type === 'checkbox' && el.checked !== !!on){ el.checked = !!on; el.dispatchEvent(new Event('change', {bubbles:true})); }
+  }
+  if(typeof syncCareplusPlanChecks === 'function') syncCareplusPlanChecks();
+  const skip = new Set(['mainCapital', 'pensionMainSelect']);
+  for(let pass = 0; pass < 2; pass++){
+    for(const [id, val] of Object.entries(V)){
+      if(skip.has(id)) continue;
+      const el = document.getElementById(id);
+      if(el && el.closest('#inputsPanel') && el.value !== val) spSetVal(el, val);
+    }
+  }
+  (state.dcare || []).forEach(d => dcareAddRow(d.cat || 'popular', d.stage || 'early_and_severe', d.capital));
+  if(V.mainCapital !== undefined) spSetVal(document.getElementById('mainCapital'), V.mainCapital);
+  calcTouched = true;
+  renderAll();
+}
+
+async function spFetch(url, opts){
+  const r = await fetch(url, Object.assign({credentials:'same-origin', headers:{'Content-Type':'application/json'}}, opts || {}));
+  const data = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+  return data;
+}
+function spStatus(msg, bad){ const el = document.getElementById('spStatus'); if(el){ el.textContent = msg || ''; el.style.color = bad ? 'var(--danger,#b3261e)' : 'var(--muted)'; } }
+
+async function spInit(){
+  const card = document.getElementById('savedPlansCard');
+  if(!card) return;
+  try{
+    const a = await spFetch(SP_AUTH_URL);
+    SP.clientId = a.clientId || '';
+    SP.signedIn = !!a.signedIn; SP.email = a.email || ''; SP.name = a.name || '';
+    if(!a.config || !a.config.serverStorage){ card.hidden = true; return; }
+    card.hidden = false;
+    if(SP.signedIn) await spLoadPlans();
+    spRender();
+  }catch(e){ card.hidden = true; }
+}
+async function spLoadPlans(){
+  const d = await spFetch(SP_PLANS_URL);
+  SP.plans = Array.isArray(d.plans) ? d.plans : [];
+}
+
+function spPlanMeta(p){
+  const s = p.summary || {};
+  const bits = [];
+  if(s.gender) bits.push(s.gender === 'f' ? 'หญิง' : 'ชาย');
+  if(s.entryAge !== null && s.entryAge !== undefined) bits.push(`${s.entryAge} ปี (ตอนบันทึก)`);
+  if(s.mainLabel) bits.push(s.mainLabel);
+  if(s.totalY1) bits.push(`เบี้ยปีแรก ${fmt(s.totalY1)} บาท${s.frequency && s.frequency !== 'รายปี' ? ' (' + s.frequency + ')' : ''}`);
+  const d = p.updatedAt ? new Date(p.updatedAt) : null;
+  if(d && !isNaN(d)) bits.push('แก้ล่าสุด ' + d.toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'}));
+  return bits.join(' · ');
+}
+
+function spRender(){
+  const body = document.getElementById('savedPlansBody');
+  if(!body) return;
+  const esc = plannerEscapeHtml;
+  if(!SP.signedIn){
+    body.innerHTML = `<p class="hint" style="margin-top:0;">ตัวแทนเข้าสู่ระบบด้วย Google เพื่อบันทึกชุดที่กดไว้ ตั้งชื่อ แล้วเปิดจากเครื่องหรือเบราว์เซอร์อื่นได้</p>
+      <div id="spGsiBtn"></div>
+      <button type="button" class="btn sp-btn-ghost" id="spLoginBtn" onclick="spStartLogin()">เข้าสู่ระบบด้วย Google</button>
+      <div class="sp-status" id="spStatus"></div>`;
+    return;
+  }
+  const active = SP.plans.find(p => p.id === SP.activeId);
+  const f = SP.filter.trim().toLowerCase();
+  const list = SP.plans.filter(p => !f || String(p.name).toLowerCase().includes(f));
+  body.innerHTML = `
+    <div class="hint" style="margin-top:0;">เข้าสู่ระบบเป็น ${esc(SP.email)} · <button type="button" class="sp-link" style="background:none;border:none;color:var(--pink);cursor:pointer;padding:0;" onclick="spLogout()">ออกจากระบบ</button></div>
+    <div class="sp-actions">
+      <button type="button" class="btn" onclick="spSaveNew()">💾 บันทึกเป็นแผนใหม่</button>
+      ${active ? `<button type="button" class="btn sp-btn-ghost" onclick="spSaveOver()">บันทึกทับ “${esc(active.name)}”</button>` : ''}
+    </div>
+    ${SP.warn ? `<div class="sp-warn">${esc(SP.warn)}</div>` : ''}
+    ${SP.plans.length > 5 ? `<input type="search" class="sp-search" placeholder="ค้นหาชื่อแผน…" value="${esc(SP.filter)}" oninput="SP.filter=this.value; spRender(); const s=document.querySelector('.sp-search'); if(s){s.focus(); s.setSelectionRange(s.value.length,s.value.length);}">` : ''}
+    ${SP.plans.length ? `<ul class="sp-list">${list.map(p => `
+      <li class="sp-item${p.id === SP.activeId ? ' is-active' : ''}">
+        <div class="sp-name" onclick="spOpen('${p.id}')">${esc(p.name)}</div>
+        <div class="sp-meta">${esc(spPlanMeta(p))}</div>
+        <div class="sp-row">
+          <button type="button" class="sp-link" onclick="spOpen('${p.id}')">เปิด</button>
+          <button type="button" class="sp-link" onclick="spRename('${p.id}')">เปลี่ยนชื่อ</button>
+          <button type="button" class="sp-link sp-del" onclick="spDelete('${p.id}')">ลบ</button>
+        </div>
+      </li>`).join('')}</ul>` : '<p class="hint">ยังไม่มีแผนที่บันทึกไว้ กรอกแผนด้านล่างแล้วกด “บันทึกเป็นแผนใหม่”</p>'}
+    <div class="sp-status" id="spStatus"></div>`;
+}
+
+function spStartLogin(){
+  if(!SP.clientId){ spStatus('ยังไม่ได้ตั้งค่าการเข้าสู่ระบบ', true); return; }
+  const start = () => {
+    if(!window.google || !google.accounts || !google.accounts.id){ spStatus('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ', true); return; }
+    google.accounts.id.initialize({client_id: SP.clientId, callback: spOnCredential, auto_select:false, cancel_on_tap_outside:true});
+    const btn = document.getElementById('spLoginBtn'); if(btn) btn.style.display = 'none';
+    google.accounts.id.renderButton(document.getElementById('spGsiBtn'), {theme:'outline', size:'large', shape:'pill', text:'signin_with', locale:'th'});
+    spStatus('กดปุ่ม Google ด้านบนเพื่อเข้าสู่ระบบ');
+  };
+  if(window.google && window.google.accounts) return start();
+  const sc = document.createElement('script');
+  sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.defer = true;
+  sc.onload = start; sc.onerror = () => spStatus('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ', true);
+  document.head.appendChild(sc);
+}
+async function spOnCredential(response){
+  spStatus('กำลังเข้าสู่ระบบ…');
+  try{
+    const d = await spFetch(SP_AUTH_URL, {method:'POST', body: JSON.stringify({credential: response.credential})});
+    if(!d.signedIn) throw new Error(d.error || 'เข้าสู่ระบบไม่สำเร็จ');
+    SP.signedIn = true; SP.email = d.email || ''; SP.name = d.name || '';
+    await spLoadPlans(); spRender();
+  }catch(e){ spStatus(e.message || 'เข้าสู่ระบบไม่สำเร็จ', true); }
+}
+async function spLogout(){
+  try{ await spFetch(SP_AUTH_URL, {method:'DELETE'}); }catch(e){}
+  SP.signedIn = false; SP.plans = []; SP.activeId = null; SP.warn = ''; spRender();
+}
+
+async function spSaveNew(){
+  const inp = readInputs();
+  const suggested = `${inp.gender === 'f' ? 'หญิง' : 'ชาย'} ${inp.entryAge} ปี`;
+  const name = (prompt('ตั้งชื่อแผนนี้ (แนะนำชื่อเล่นหรือรหัสลูกค้า ไม่ต้องใส่ชื่อ-นามสกุลเต็ม)', suggested) || '').trim();
+  if(!name) return;
+  await spPersist({name});
+}
+async function spSaveOver(){
+  const p = SP.plans.find(x => x.id === SP.activeId); if(!p) return;
+  if(!confirm(`บันทึกทับแผน “${p.name}” ด้วยค่าปัจจุบันใช่ไหม`)) return;
+  await spPersist({id: p.id, name: p.name});
+}
+async function spPersist({id, name}){
+  if(SP.busy) return; SP.busy = true; spStatus('กำลังบันทึก…');
+  try{
+    renderAll();
+    const d = await spFetch(SP_PLANS_URL, {method:'POST', body: JSON.stringify({id, name, state: calcSnapshotState(), summary: calcSnapshotSummary()})});
+    await spLoadPlans(); SP.activeId = d.plan.id; SP.warn = ''; spRender(); spStatus(`บันทึก “${d.plan.name}” แล้ว`);
+  }catch(e){ spStatus(e.message || 'บันทึกไม่สำเร็จ', true); }
+  SP.busy = false;
+}
+function spOpen(id){
+  const p = SP.plans.find(x => x.id === id); if(!p) return;
+  calcRestoreState(p.state);
+  SP.activeId = id;
+  const now = calcSnapshotSummary();
+  SP.warn = (p.summary && p.summary.totalY1 && now.totalY1 && Math.abs(now.totalY1 - p.summary.totalY1) >= 1)
+    ? `เบี้ยปีแรกตอนนี้ ${fmt(now.totalY1)} บาท ต่างจากตอนบันทึก (${fmt(p.summary.totalY1)} บาท) อาจเพราะอายุขึ้นปีหรือตารางเบี้ยปรับ กรุณาตรวจก่อนส่งลูกค้า`
+    : '';
+  spRender(); spStatus(`เปิดแผน “${p.name}” แล้ว`);
+  const t = document.getElementById('summary'); if(t && t.scrollIntoView && window.innerWidth < 900) t.scrollIntoView({behavior:'smooth', block:'start'});
+}
+async function spRename(id){
+  const p = SP.plans.find(x => x.id === id); if(!p) return;
+  const name = (prompt('ชื่อใหม่ของแผน', p.name) || '').trim();
+  if(!name || name === p.name) return;
+  try{ await spFetch(SP_PLANS_URL, {method:'PATCH', body: JSON.stringify({id, name})}); await spLoadPlans(); spRender(); spStatus('เปลี่ยนชื่อแล้ว'); }
+  catch(e){ spStatus(e.message || 'เปลี่ยนชื่อไม่สำเร็จ', true); }
+}
+async function spDelete(id){
+  const p = SP.plans.find(x => x.id === id); if(!p) return;
+  if(!confirm(`ลบแผน “${p.name}” ใช่ไหม (ลบแล้วกู้คืนไม่ได้)`)) return;
+  try{
+    await spFetch(SP_PLANS_URL + '?id=' + encodeURIComponent(id), {method:'DELETE'});
+    if(SP.activeId === id){ SP.activeId = null; SP.warn = ''; }
+    await spLoadPlans(); spRender(); spStatus('ลบแล้ว');
+  }catch(e){ spStatus(e.message || 'ลบไม่สำเร็จ', true); }
+}
+spInit();
+
 function applyAiPackage(idx){
   const pkg = AI_PACKAGES[idx]; if(!pkg) return;
   resetCalculatorSelections();
