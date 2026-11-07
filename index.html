@@ -2626,22 +2626,27 @@
 #page-hospitals .hn-credit{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line);padding:18px 4px 0;margin-top:8px;font-size:11px;color:var(--muted)}
 
 
-  /* ---- แผนที่บันทึกไว้ (ตัวแทน) ---- */
-  .saved-plans-card .sp-tag{font-size:.7rem;font-weight:600;color:var(--muted);background:#f6eef2;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;}
-  .sp-actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px;}
-  .sp-actions .btn{padding:7px 12px;font-size:.82rem;}
-  .sp-btn-ghost{background:#fff !important;color:var(--pink) !important;border:1px solid var(--pink) !important;}
+  /* ---- แผนที่บันทึกไว้ (ตัวแทน) — แถบเล็กมุมขวาบนของหน้าคำนวณ ---- */
+  .sp-toolbar{position:relative;display:flex;justify-content:flex-end;margin:0 0 10px;}
+  .sp-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:.8rem;}
+  .sp-pill{background:#fff;color:var(--pink-deep);border:1px solid #eab9cd;border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;}
+  .sp-pill:hover{background:#fff5f9;}
+  .sp-pill.sp-solid{background:var(--pink);color:#fff;border-color:var(--pink);}
+  .sp-who{color:var(--muted);font-size:.75rem;}
+  .sp-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(420px,94vw);background:#fff;border:1px solid #eab9cd;border-radius:14px;box-shadow:0 10px 30px rgba(143,13,64,.15);padding:12px 14px;}
+  .sp-pop h4{margin:0 0 8px;color:var(--pink-deep);font-size:.9rem;}
   .sp-search{width:100%;margin-bottom:8px;}
-  .sp-list{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto;border-top:1px solid var(--line);}
+  .sp-list{list-style:none;margin:0;padding:0;max-height:360px;overflow:auto;border-top:1px solid var(--line);}
   .sp-item{padding:8px 2px;border-bottom:1px solid var(--line);font-size:.83rem;}
   .sp-item.is-active{background:#fff5f9;}
-  .sp-item .sp-name{font-weight:600;cursor:pointer;color:var(--ink,#2a1d24);}
+  .sp-item .sp-name{font-weight:600;cursor:pointer;}
   .sp-item .sp-meta{color:var(--muted);font-size:.75rem;margin-top:2px;}
   .sp-item .sp-row{display:flex;gap:10px;margin-top:4px;}
-  .sp-item .sp-link{background:none;border:none;padding:0;color:var(--pink);cursor:pointer;font-size:.78rem;}
-  .sp-item .sp-link.sp-del{color:var(--danger,#b3261e);}
-  .sp-status{font-size:.78rem;margin-top:6px;min-height:1em;}
-  .sp-warn{font-size:.78rem;color:var(--danger,#b3261e);margin-top:6px;}
+  .sp-link{background:none;border:none;padding:0;color:var(--pink);cursor:pointer;font-size:.78rem;font-family:inherit;}
+  .sp-link.sp-del{color:var(--danger,#b3261e);}
+  .sp-status{font-size:.75rem;min-height:1em;width:100%;text-align:right;}
+  .sp-warn{font-size:.78rem;color:var(--danger,#b3261e);margin:0 0 8px;}
+  #spGsiBtn:empty{display:none;}
 </style>
 </head>
 <body>
@@ -2736,14 +2741,14 @@
 
 <div id="page-calc" class="page">
 <div class="wrap">
+<div class="sp-toolbar" id="savedPlansCard" hidden>
+  <div class="sp-bar" id="savedPlansBody"></div>
+  <div class="sp-pop" id="spPop" hidden></div>
+</div>
 <div class="layout">
 
   <!-- ============ INPUT PANEL ============ -->
   <div id="inputsPanel">
-    <div class="card saved-plans-card" id="savedPlansCard" hidden>
-      <h2>แผนที่บันทึกไว้ <span class="sp-tag">สำหรับตัวแทน</span></h2>
-      <div id="savedPlansBody"><p class="hint">กำลังตรวจสอบการเข้าสู่ระบบ…</p></div>
-    </div>
     <div class="card">
       <h2>ข้อมูลผู้เอาประกัน</h2>
       <label class="first">เพศ</label>
@@ -13304,7 +13309,7 @@ function resetCalculatorSelections(){
    ========================================================================= */
 const SP_AUTH_URL = '/api/agent-auth';
 const SP_PLANS_URL = '/api/agent-plans';
-const SP = {signedIn:false, email:'', name:'', clientId:'', plans:[], activeId:null, filter:'', busy:false, warn:''};
+const SP = {signedIn:false, email:'', name:'', clientId:'', plans:[], activeId:null, filter:'', busy:false, warn:'', popOpen:false};
 
 /* อ่านค่าทุกช่องในแผงกรอกข้อมูล (ยกเว้นแถว D Care ซึ่งเก็บแยกเป็นรายการ) */
 function calcSnapshotState(){
@@ -13416,24 +13421,28 @@ function spPlanMeta(p){
 
 function spRender(){
   const body = document.getElementById('savedPlansBody');
-  if(!body) return;
+  const pop = document.getElementById('spPop');
+  if(!body || !pop) return;
   const esc = plannerEscapeHtml;
   if(!SP.signedIn){
-    body.innerHTML = `<p class="hint" style="margin-top:0;">ตัวแทนเข้าสู่ระบบด้วย Google เพื่อบันทึกชุดที่กดไว้ ตั้งชื่อ แล้วเปิดจากเครื่องหรือเบราว์เซอร์อื่นได้</p>
-      <div id="spGsiBtn"></div>
-      <button type="button" class="btn sp-btn-ghost" id="spLoginBtn" onclick="spStartLogin()">เข้าสู่ระบบด้วย Google</button>
+    pop.hidden = true;
+    body.innerHTML = `<div id="spGsiBtn"></div>
+      <button type="button" class="sp-pill" id="spLoginBtn" onclick="spStartLogin()">🔐 ตัวแทน: เข้าสู่ระบบ</button>
       <div class="sp-status" id="spStatus"></div>`;
     return;
   }
   const active = SP.plans.find(p => p.id === SP.activeId);
+  body.innerHTML = `
+    <span class="sp-who">${esc(SP.email)} · <button type="button" class="sp-link" onclick="spLogout()">ออก</button></span>
+    ${active ? `<button type="button" class="sp-pill" onclick="spSaveOver()">บันทึกทับ “${esc(active.name)}”</button>` : ''}
+    <button type="button" class="sp-pill sp-solid" onclick="spSaveNew()">💾 บันทึกแผน</button>
+    <button type="button" class="sp-pill" onclick="spTogglePop()" aria-expanded="${SP.popOpen ? 'true' : 'false'}">📂 แผนที่บันทึกไว้ (${SP.plans.length}) ▾</button>
+    <div class="sp-status" id="spStatus"></div>`;
+  pop.hidden = !SP.popOpen;
+  if(!SP.popOpen) return;
   const f = SP.filter.trim().toLowerCase();
   const list = SP.plans.filter(p => !f || String(p.name).toLowerCase().includes(f));
-  body.innerHTML = `
-    <div class="hint" style="margin-top:0;">เข้าสู่ระบบเป็น ${esc(SP.email)} · <button type="button" class="sp-link" style="background:none;border:none;color:var(--pink);cursor:pointer;padding:0;" onclick="spLogout()">ออกจากระบบ</button></div>
-    <div class="sp-actions">
-      <button type="button" class="btn" onclick="spSaveNew()">💾 บันทึกเป็นแผนใหม่</button>
-      ${active ? `<button type="button" class="btn sp-btn-ghost" onclick="spSaveOver()">บันทึกทับ “${esc(active.name)}”</button>` : ''}
-    </div>
+  pop.innerHTML = `<h4>แผนที่บันทึกไว้</h4>
     ${SP.warn ? `<div class="sp-warn">${esc(SP.warn)}</div>` : ''}
     ${SP.plans.length > 5 ? `<input type="search" class="sp-search" placeholder="ค้นหาชื่อแผน…" value="${esc(SP.filter)}" oninput="SP.filter=this.value; spRender(); const s=document.querySelector('.sp-search'); if(s){s.focus(); s.setSelectionRange(s.value.length,s.value.length);}">` : ''}
     ${SP.plans.length ? `<ul class="sp-list">${list.map(p => `
@@ -13445,9 +13454,14 @@ function spRender(){
           <button type="button" class="sp-link" onclick="spRename('${p.id}')">เปลี่ยนชื่อ</button>
           <button type="button" class="sp-link sp-del" onclick="spDelete('${p.id}')">ลบ</button>
         </div>
-      </li>`).join('')}</ul>` : '<p class="hint">ยังไม่มีแผนที่บันทึกไว้ กรอกแผนด้านล่างแล้วกด “บันทึกเป็นแผนใหม่”</p>'}
-    <div class="sp-status" id="spStatus"></div>`;
+      </li>`).join('')}</ul>` : '<p class="hint" style="margin:0;">ยังไม่มีแผนที่บันทึกไว้ กรอกแผนแล้วกด “💾 บันทึกแผน”</p>'}`;
 }
+function spTogglePop(){ SP.popOpen = !SP.popOpen; spRender(); }
+document.addEventListener('click', e => {
+  if(!SP.popOpen) return;
+  const bar = document.getElementById('savedPlansCard');
+  if(bar && !bar.contains(e.target)){ SP.popOpen = false; spRender(); }
+});
 
 function spStartLogin(){
   if(!SP.clientId){ spStatus('ยังไม่ได้ตั้งค่าการเข้าสู่ระบบ', true); return; }
@@ -13455,7 +13469,7 @@ function spStartLogin(){
     if(!window.google || !google.accounts || !google.accounts.id){ spStatus('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ', true); return; }
     google.accounts.id.initialize({client_id: SP.clientId, callback: spOnCredential, auto_select:false, cancel_on_tap_outside:true});
     const btn = document.getElementById('spLoginBtn'); if(btn) btn.style.display = 'none';
-    google.accounts.id.renderButton(document.getElementById('spGsiBtn'), {theme:'outline', size:'large', shape:'pill', text:'signin_with', locale:'th'});
+    google.accounts.id.renderButton(document.getElementById('spGsiBtn'), {theme:'outline', size:'medium', shape:'pill', text:'signin_with', locale:'th'});
     spStatus('กดปุ่ม Google ด้านบนเพื่อเข้าสู่ระบบ');
   };
   if(window.google && window.google.accounts) return start();
@@ -13507,7 +13521,7 @@ function spOpen(id){
   SP.warn = (p.summary && p.summary.totalY1 && now.totalY1 && Math.abs(now.totalY1 - p.summary.totalY1) >= 1)
     ? `เบี้ยปีแรกตอนนี้ ${fmt(now.totalY1)} บาท ต่างจากตอนบันทึก (${fmt(p.summary.totalY1)} บาท) อาจเพราะอายุขึ้นปีหรือตารางเบี้ยปรับ กรุณาตรวจก่อนส่งลูกค้า`
     : '';
-  spRender(); spStatus(`เปิดแผน “${p.name}” แล้ว`);
+  SP.popOpen = !!SP.warn; spRender(); spStatus(`เปิดแผน “${p.name}” แล้ว`);
   const t = document.getElementById('summary'); if(t && t.scrollIntoView && window.innerWidth < 900) t.scrollIntoView({behavior:'smooth', block:'start'});
 }
 async function spRename(id){
