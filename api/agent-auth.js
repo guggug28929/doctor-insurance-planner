@@ -159,7 +159,14 @@ export default async function handler(req, res) {
     return json(res, result.status, { error: result.message });
   }
 
-  const { record, isNew } = await touchUser(result.email, result.name);
+  // ทะเบียนผู้ใช้เป็นของเสริม ถ้าที่เก็บข้อมูลล่ม ต้องยังล็อกอินได้ ไม่ใช่พังทั้งระบบ (เคยเจอ 500 เพราะ Upstash หาไม่เจอ)
+  let record = { email: result.email, name: result.name, blocked: false, firstSeen: new Date().toISOString() };
+  let isNew = false;
+  try {
+    ({ record, isNew } = await touchUser(result.email, result.name));
+  } catch (error) {
+    console.error('agent touchUser failed (sign-in continues)', error);
+  }
 
   if (record.blocked) {
     return json(res, 403, {

@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   if (!session) return json(res, 401, { error: 'ยังไม่ได้เข้าสู่ระบบ' });
   if (!storageAvailable()) return json(res, 503, { error: 'ยังไม่ได้ตั้งค่าที่เก็บข้อมูลบนเซิร์ฟเวอร์' });
 
-  const user = await getUser(session.email);
+  const user = await getUser(session.email).catch(() => null);
   if (user && user.blocked) return json(res, 403, { error: 'บัญชีนี้ถูกปิดสิทธิ์การใช้งาน' });
 
   const email = session.email;
@@ -93,6 +93,9 @@ export default async function handler(req, res) {
     return json(res, 405, { error: 'Method not allowed' });
   } catch (error) {
     console.error('agent-plans failed', error);
-    return json(res, 500, { error: 'ติดต่อที่เก็บข้อมูลไม่สำเร็จ กรุณาลองใหม่' });
+    const offline = /ENOTFOUND|fetch failed|ECONNREFUSED|getaddrinfo/i.test(String(error && (error.message + ' ' + (error.cause && error.cause.message))));
+    return json(res, offline ? 503 : 500, {
+      error: offline ? 'ที่เก็บข้อมูลบนเซิร์ฟเวอร์ติดต่อไม่ได้ (ฐานข้อมูล Upstash ใช้งานไม่ได้) กรุณาแจ้งผู้ดูแล' : 'ติดต่อที่เก็บข้อมูลไม่สำเร็จ กรุณาลองใหม่',
+    });
   }
 }
