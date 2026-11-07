@@ -13398,8 +13398,9 @@ async function spInit(){
     SP.signedIn = !!a.signedIn; SP.email = a.email || ''; SP.name = a.name || '';
     if(!a.config || !a.config.serverStorage){ card.hidden = true; return; }
     card.hidden = false;
-    if(SP.signedIn) await spLoadPlans();
-    spRender();
+    let err = '';
+    if(SP.signedIn){ try{ await spLoadPlans(); }catch(e){ err = e.message || 'โหลดรายการแผนไม่สำเร็จ'; } }
+    spRender(); if(err) spStatus(err, true);
   }catch(e){ card.hidden = true; }
 }
 async function spLoadPlans(){
@@ -13484,8 +13485,11 @@ async function spOnCredential(response){
     const d = await spFetch(SP_AUTH_URL, {method:'POST', body: JSON.stringify({credential: response.credential})});
     if(!d.signedIn) throw new Error(d.error || 'เข้าสู่ระบบไม่สำเร็จ');
     SP.signedIn = true; SP.email = d.email || ''; SP.name = d.name || '';
-    await spLoadPlans(); spRender();
-  }catch(e){ spStatus(e.message || 'เข้าสู่ระบบไม่สำเร็จ', true); }
+  }catch(e){ spStatus(e.message || 'เข้าสู่ระบบไม่สำเร็จ', true); return; }
+  // ล็อกอินสำเร็จแล้ว ต้องแสดงสถานะล็อกอินเสมอ แม้โหลดรายการแผนไม่สำเร็จ
+  let err = '';
+  try{ await spLoadPlans(); }catch(e){ err = e.message || 'โหลดรายการแผนไม่สำเร็จ'; }
+  spRender(); if(err) spStatus(err, true);
 }
 async function spLogout(){
   try{ await spFetch(SP_AUTH_URL, {method:'DELETE'}); }catch(e){}
