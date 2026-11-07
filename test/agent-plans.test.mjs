@@ -99,6 +99,8 @@ test('หน้าคำนวณมีแถบแผนที่บันท�
   const fn = html.slice(html.indexOf('function calcRestoreState(state){'), html.indexOf('async function spFetch('));
   assert.ok(fn.indexOf('Object.entries(R)') < fn.indexOf("spSetVal(document.getElementById('mainCapital')"));
   assert.match(fn, /dcareAddRow\(/);
+  // คลิกนอกแถบเพื่อปิด ต้องไม่ปิดเพราะปุ่มที่เพิ่งถูกวาดใหม่
+  assert.match(html, /if\(!e\.target\.isConnected\) return;/);
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   assert.match(pkg.scripts.check, /api\/agent-plans\.js/);
 });
