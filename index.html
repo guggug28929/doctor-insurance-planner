@@ -2651,8 +2651,9 @@
   /* ---- คุณวุฒิ/รางวัลของหมอกึ๊ก ---- */
   .agent-awards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px;}
   .aw-card{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid #f0dde5;border-radius:14px;padding:12px 14px;}
-  .aw-logo{flex:none;width:56px;height:56px;border-radius:12px;background:#fdeef4;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  .aw-logo img{max-width:100%;max-height:100%;object-fit:contain;}
+  .aw-logo{flex:none;width:84px;height:64px;border-radius:12px;background:#fff;border:1px solid #f3e4ea;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;box-sizing:border-box;}
+  .aw-logo:has(.aw-fallback){background:#fdeef4;}
+  .aw-logo img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
   .aw-logo .aw-fallback{font-weight:800;font-size:.72rem;color:var(--pink-deep);text-align:center;line-height:1.1;padding:2px;}
   .aw-name{font-weight:800;color:var(--pink-deep);font-size:.92rem;}
   .aw-full{font-size:.75rem;color:var(--muted);margin-top:1px;}
@@ -13569,7 +13570,7 @@ const AGENT_AWARDS = [
    full:'',
    desc:'รางวัลตัวแทนที่มีผลงานโดดเด่นด้านประกันสุขภาพ'},
   {key:'iqa', name:'IQA', short:'IQA',
-   full:'International Quality Award · LIMRA',
+   full:'International Quality Award ระดับ Platinum · LIMRA',
    desc:'รางวัลคุณภาพระดับสากลจาก LIMRA องค์กรวิจัยและพัฒนาธุรกิจประกันชีวิตระดับโลก มอบให้ตัวแทนที่ผ่านเกณฑ์ทั้งผลงานขายและอัตรากรมธรรม์ที่ลูกค้าถือต่อเนื่อง'},
   {key:'tnqa', name:'TNQA', short:'TNQA',
    full:'Thailand National Quality Award · ตัวแทนคุณภาพดีเด่นแห่งชาติ',
