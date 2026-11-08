@@ -54,10 +54,42 @@ test("ทุนขั้นต่ำและค่าธรรมเนีย�
 });
 
 test("หน้าเว็บมีแท็บประกันควบการลงทุนและ route", () => {
-  assert.match(html, /<button data-page="unitlinked">ประกันควบการลงทุน<\/button>/);
+  assert.match(html, /<button data-page="unitlinked" class="nav-off">ประกันควบการลงทุน<\/button>/);
   assert.match(html, /unitlinked: '\/unit-linked'/);
   assert.match(html, /<div id="page-unitlinked" class="page">/);
   assert.equal(U.coi_per_1000.m.length, 100);
   assert.equal(U.coi_per_1000.m[30], 1.5586);
   assert.equal(U.coi_per_1000.f[40], 0.9024);
+});
+
+test("เปลี่ยนแปลงกรมธรรม์: Top Up ช่วงอายุ หยุดพักชำระ ลดเบี้ย ถอนเงิน เปลี่ยนทุน", () => {
+  const res = ctx.ulSimulate({gender:"m", age:35, premium:100000, sa:1500000, stopPayAge:60, rate:0.05, startBE:2569, startMonth:11,
+    changes:[{type:"topup", amount:50000, from:35, to:45}, {type:"holiday", from:40, to:42}, {type:"premium", amount:50000, from:50},
+      {type:"sa", amount:1000000, from:55, to:99}, {type:"withdraw", amount:100000, from:65, to:66}, {type:"withdraw", amount:5000, from:70, to:70}]}, U);
+  const at = (age) => res.rows.find((r) => r.age === age);
+  assert.equal(at(35).topup, 50000); assert.equal(at(45).topup, 50000); assert.equal(at(46).topup, 0);
+  assert.equal(at(40).premium, 0); assert.ok(at(40).holiday); assert.equal(at(43).premium, 100000, "กลับมาชำระหลังพักชำระ");
+  assert.equal(at(50).premium, 50000); assert.equal(at(60).premium, 0, "หยุดชำระตามอายุที่กำหนด");
+  assert.equal(at(55).sa, 1000000);
+  assert.equal(at(65).withdraw, 100000); assert.equal(at(66).sa, 800000, "ถอนแล้วทุนคุ้มครองชีวิตลดลงเท่ายอดถอน");
+  assert.equal(at(70).withdraw, 0); assert.match(at(70).notes[0], /ขั้นต่ำ/);
+  assert.equal(at(35).detail.length, 12);
+  assert.ok(at(35).detail.every((d) => d.nar >= 300000), "NAR ไม่ต่ำกว่า 3 เท่าของเบี้ยหลัก");
+});
+
+test("COR รายเดือนรับฟังก์ชันตามอายุ และหยุดเมื่อคืนค่า 0", () => {
+  const res = ctx.ulSimulate({gender:"f", age:60, premium:50000, sa:300000, rate:0.03, startBE:2569, startMonth:1, months:36,
+    riderMonthlyAt: (age) => age < 62 ? 1000 + age : 0}, U);
+  assert.equal(res.rows[0].rider, 12 * 1060);
+  assert.equal(res.rows[1].rider, 12 * 1061);
+  assert.equal(res.rows[2].rider, 0);
+});
+
+test("หน้าเว็บ: ใช้เบี้ยสัญญาเพิ่มเติมจริงจากตารางเป็น COR และมีกราฟแบบชี้ดูตัวเลข", () => {
+  assert.match(html, /function ulRiderParts\(/);
+  assert.match(html, /healthRiderPremium\(cfg, gender, age, occ, 'annual'\)/);
+  assert.match(html, /function ulBindChartHover\(/);
+  assert.match(html, /stroke-dasharray="4 3"/);
+  assert.match(html, /รายละเอียดการคำนวณ COI และ COR รายเดือน/);
+  assert.doesNotMatch(html, /สรุปจากเอกสารอบรม/);
 });
