@@ -2682,6 +2682,19 @@
   .ul-leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;}
   .ul-table{max-height:460px;} .ul-table td,.ul-table th{white-space:nowrap;}
   .ul-lapse td{color:var(--danger);font-weight:700;}
+  #page-unitlinked .table-wrap table{width:100%;}
+  #page-unitlinked .table-wrap th,#page-unitlinked .table-wrap td{text-align:left!important;vertical-align:top;}
+  #page-unitlinked .ul-table th,#page-unitlinked .ul-table td,#page-unitlinked .ul-num th,#page-unitlinked .ul-num td{text-align:right!important;}
+  #page-unitlinked .ul-table th:first-child,#page-unitlinked .ul-table td:first-child{text-align:center!important;}
+  .ul-chart{position:relative;}
+  .ul-tip{position:absolute;pointer-events:none;background:rgba(33,33,33,.92);color:#fff;border-radius:8px;padding:7px 10px;font-size:.76rem;line-height:1.5;white-space:nowrap;display:none;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+  .ul-tip b{display:block;margin-bottom:2px;} .ul-tip i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+  .ul-changes table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  .ul-changes td,.ul-changes th{padding:5px 6px;border-bottom:1px solid #f3e6ec;text-align:left;vertical-align:top;}
+  .ul-changes input,.ul-changes select{width:100%;min-width:80px;}
+  .ul-changes small{color:var(--muted);font-size:.7rem;display:block;margin-top:2px;}
+  .ul-sub{margin-top:14px;font-size:1rem;color:var(--pink-deep);}
+  .ul-table tbody tr{cursor:pointer;} .ul-table tbody tr.ul-sel td{background:#fff0f5;}
 </style>
 </head>
 <body>
@@ -2749,6 +2762,7 @@
           <button type="button" data-plan-group="grp-tpd">ทุพพลภาพถาวร</button>
           <button type="button" data-plan-group="grp-pa">อุบัติเหตุ</button>
           <button type="button" data-plan-group="grp-pension">บำนาญ</button>
+          <button type="button" data-nav-page="unitlinked">ประกันควบการลงทุน</button>
           <button type="button" data-plan-group="grp-guide">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</button>
           <button type="button" data-nav-page="hnw">แผน HNW</button>
         </div>
@@ -2756,7 +2770,7 @@
       <!-- หน้าอุบัติเหตุยังอยู่ครบและลิงก์ที่ส่งลูกค้าไปแล้วยังเปิดได้
            ปุ่มถูกซ่อนเพราะทางเข้าหลักย้ายไปอยู่ในแผงของแผนทั้งหมด
            แต่ยังต้องอยู่ใน #navbar เพราะสถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ -->
-      <button data-page="unitlinked">ประกันควบการลงทุน</button>
+      <button data-page="unitlinked" class="nav-off">ประกันควบการลงทุน</button>
       <button data-page="accident" class="nav-off">อุบัติเหตุ</button>
       <div class="nav-more" id="navMore">
         <button type="button" class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-controls="navMorePanel">ความรู้</button>
@@ -3580,6 +3594,7 @@
     <a href="#grp-tpd" onclick="return jumpToPlanGroup('grp-tpd');">ทุพพลภาพถาวร</a>
     <a href="#grp-pa" onclick="return jumpToPlanGroup('grp-pa');">อุบัติเหตุ</a>
     <a href="#grp-pension" onclick="return jumpToPlanGroup('grp-pension');">บำนาญ</a>
+    <a href="/unit-linked" onclick="showPage('unitlinked'); return false;">ประกันควบการลงทุน &rarr;</a>
     <a class="pj-unsure" href="#grp-guide" onclick="return jumpToPlanGroup('grp-guide');">ยังไม่แน่ใจว่าควรเริ่มที่ไหน</a>
     <!-- ชิปนี้ต่างจากตัวอื่นตรงที่พาไปคนละหน้า ไม่ใช่เลื่อนลงในหน้าเดิม
          จึงทำสีทองและมีลูกศรกำกับ ให้เห็นชัดว่าเป็นคนละพฤติกรรม -->
@@ -15932,7 +15947,9 @@ function ulSimulate(o, U){
   const r = Number(o.rate);
   const g = Math.pow(1 + r, 1/12) - 1;
   const coiTab = U.coi_per_1000[o.gender === 'f' ? 'f' : 'm'];
-  const prem = Number(o.premium) || 0;
+  const basePrem = Number(o.premium) || 0;
+  const ch = Array.isArray(o.changes) ? o.changes : [];
+  const inRange = (c, age) => age >= c.from && age <= (c.to == null ? 999 : c.to);
   const fee = be => {
     if(be >= U.policy_fee_cap_from_be) return U.policy_fee_cap;
     const t = U.policy_fee_by_be_year[String(be)];
@@ -15942,12 +15959,19 @@ function ulSimulate(o, U){
   const disc1 = p => { for(const [a,b,v] of U.premium_charge_discount_year1) if(p >= a && (b == null || p <= b)) return v; return 0; };
   const topupRate = t => { for(const [a,b,v] of U.topup_charge) if(t >= a && (b == null || t <= b)) return v; return U.topup_charge_max; };
   const surrRate = n => { for(const [k,v] of U.surrender_charge_by_premium_year) if(n === k) return v; return 0; };
+  // เบี้ยหลักต่อปีของปีกรมธรรม์นั้น: เปลี่ยนเบี้ยได้เฉพาะลด (รายการล่าสุดที่เริ่มแล้วมีผล)
+  const premAt = age => { let p = basePrem; for(const c of ch) if(c.type === 'premium' && age >= c.from) p = Number(c.amount) || 0; return p; };
+  const saAt = age => {
+    let s = (o.saCutAge != null && o.saCutTo != null && age >= o.saCutAge) ? Number(o.saCutTo) : Number(o.sa);
+    for(const c of ch) if(c.type === 'sa' && inRange(c, age)) s = Number(c.amount) || 0;
+    return s;
+  };
   const startBE = o.startBE || 2569, startMonth = o.startMonth || 1;
   const years = Math.max(0, (o.endAge || U.cover_to_age) - o.age);
   const months = o.months || years * 12;
-  let main = 0, top = 0, paidCount = 0, cumPrem = 0, cumTop = 0, lapse = null;
+  let main = 0, top = 0, paidCount = 0, cumPrem = 0, cumTop = 0, cumWd = 0, lapse = null;
   const rows = [];
-  let yr = null;
+  let yr = null, prem = basePrem, sa = 0;
   for(let m = 1; m <= months; m++){
     const py = Math.floor((m - 1) / 12) + 1;
     const age = o.age + py - 1;
@@ -15955,42 +15979,63 @@ function ulSimulate(o, U){
     const yearStart = (m - 1) % 12 === 0;
     let newp = 0, tp = 0, premIn = 0, topIn = 0, pc = 0, tc = 0;
     if(yearStart){
-      yr = {py, age, premium:0, topup:0, premCharge:0, topCharge:0, fee:0, coi:0, rider:0};
-      const pays = prem > 0 && age < (o.stopPayAge == null ? U.pay_to_age : o.stopPayAge) && age < U.pay_to_age;
+      prem = premAt(age);
+      yr = {py, age, premium:0, topup:0, premCharge:0, topCharge:0, fee:0, coi:0, rider:0, withdraw:0, withdrawFee:0, holiday:false, notes:[], detail:[]};
+      // ถอนเงินบางส่วน ณ วันครบรอบปีกรมธรรม์ ถอนจากบัญชี Top Up ก่อน แล้วจึงถอนจากบัญชีเบี้ยหลัก
+      let wd = 0;
+      for(const c of ch) if(c.type === 'withdraw' && inRange(c, age)) wd += Number(c.amount) || 0;
+      if(wd > 0){
+        const total = main + top;
+        if(wd < U.withdraw_min) yr.notes.push(`ถอนไม่ได้: ขั้นต่ำครั้งละ ${U.withdraw_min.toLocaleString('en-US')} บาท`);
+        else if(total - wd - U.withdraw_fee < U.withdraw_min_remaining) yr.notes.push(`ถอน ${wd.toLocaleString('en-US')} ไม่ได้: มูลค่าคงเหลือต้องไม่ต่ำกว่า ${U.withdraw_min_remaining.toLocaleString('en-US')} บาท`);
+        else {
+          let need = wd + U.withdraw_fee;
+          const fromTop = Math.min(top, need); top -= fromTop; need -= fromTop; main -= need;
+          yr.withdraw = wd; yr.withdrawFee = U.withdraw_fee; cumWd += wd;
+        }
+      }
+      const holiday = ch.some(c => c.type === 'holiday' && inRange(c, age));
+      const pays = prem > 0 && !holiday && age < (o.stopPayAge == null ? U.pay_to_age : o.stopPayAge) && age < U.pay_to_age;
+      yr.holiday = holiday && prem > 0;
       if(pays){
         paidCount++;
         let cr = chargeRate(paidCount);
         if(paidCount === 1) cr = Math.max(0, cr - disc1(prem));
         premIn = prem; pc = prem * cr; newp = prem - pc;
       }
-      const topAmt = Number(o.topup) || 0;
-      if(topAmt > 0 && age <= Math.min(o.topupUntilAge == null ? U.topup_max_age : o.topupUntilAge, U.topup_max_age)){
-        topIn = topAmt; tc = topAmt * topupRate(topAmt); tp = topAmt - tc;
-      }
+      let topAmt = 0;
+      if((Number(o.topup) || 0) > 0 && age <= Math.min(o.topupUntilAge == null ? U.topup_max_age : o.topupUntilAge, U.topup_max_age)) topAmt += Number(o.topup);
+      for(const c of ch) if(c.type === 'topup' && inRange(c, age) && age <= U.topup_max_age) topAmt += Number(c.amount) || 0;
+      if(topAmt > 0){ topIn = topAmt; tc = topAmt * topupRate(topAmt); tp = topAmt - tc; }
       cumPrem += premIn; cumTop += topIn;
       yr.premium = premIn; yr.topup = topIn; yr.premCharge = pc; yr.topCharge = tc;
+      sa = saAt(age);
     }
-    const sa = (o.saCutAge != null && o.saCutTo != null && age >= o.saCutAge) ? Number(o.saCutTo) : Number(o.sa);
+    const saEff = Math.max(0, sa - cumWd);
     const f = fee(be);
     const base = main + top + newp + tp - f;
-    const nar = Math.max(sa - base, U.nar_floor_multiple * prem);
-    const coi = Math.round(nar * coiTab[Math.min(age, coiTab.length - 1)] / 12000 * 100) / 100;
-    const rider = o.riderAnnual ? Math.round(o.riderAnnual / 12 * 100) / 100 : (o.riderMonthlyByYear ? o.riderMonthlyByYear(py) : 0);
+    const floor = U.nar_floor_multiple * prem;
+    const nar = Math.max(saEff - base, floor);
+    const coiRate = coiTab[Math.min(age, coiTab.length - 1)];
+    const coi = Math.round(nar * coiRate / 12000 * 100) / 100;
+    const rider = o.riderAnnual ? Math.round(o.riderAnnual / 12 * 100) / 100
+      : (o.riderMonthlyByYear ? o.riderMonthlyByYear(py) : (o.riderMonthlyAt ? o.riderMonthlyAt(age, py) : 0));
     const ded = f + coi + rider;
     const ex = main + top;
     if(ex <= 0){ main += newp - ded; top += tp; }
     else { main -= ded * main / ex; top -= ded * top / ex; main += newp; top += tp; }
     main *= 1 + g; top *= 1 + g;
     yr.fee += f; yr.coi += coi; yr.rider += rider;
+    yr.detail.push({m, be, fee:f, base, sa:saEff, nar, narFloor: nar === floor, coiRate, coi, rider, value: main + top});
     if(main + top <= 0 && !lapse){ lapse = {py, age, month:m}; }
     if(m % 12 === 0 || lapse){
       const total = Math.max(0, main + top);
       const surr = Math.max(0, main - surrRate(paidCount) * prem) + Math.max(0, top);
       rows.push(Object.assign({}, yr, {
-        sa, value: total, valueMain: Math.max(0, main), valueTop: Math.max(0, top),
+        sa: saEff, value: total, valueMain: Math.max(0, main), valueTop: Math.max(0, top),
         surrender: lapse ? 0 : Math.min(total, surr),
-        death: lapse ? 0 : Math.max(sa, total + U.death_benefit_floor_multiple * prem),
-        cumPrem, cumTop, lapsed: !!lapse,
+        death: lapse ? 0 : Math.max(saEff, total + U.death_benefit_floor_multiple * prem),
+        cumPrem, cumTop, cumWd, annualPremium: prem, lapsed: !!lapse,
       }));
       if(lapse) break;
     }
@@ -15998,10 +16043,10 @@ function ulSimulate(o, U){
   }
   return {rows, lapse};
 }
-function ulMinSa(U, age, premium, topup){
+function ulMinSa(U, age, premium, topup, withdraw){
   let mult = 5;
   for(const [a,b,v] of U.min_sa_multiple_by_age) if(age >= a && age <= b) mult = v;
-  return Math.max(mult * premium + U.min_sa_topup_pct * (topup || 0), U.min_sa_floor_multiple * premium);
+  return Math.max(mult * premium + U.min_sa_topup_pct * (topup || 0) - (U.min_sa_withdraw_pct || 0) * (withdraw || 0), U.min_sa_floor_multiple * premium);
 }
 
 /* ================= หน้า ประกันแบบควบการลงทุน (Unit Linked) =================
@@ -16155,7 +16200,7 @@ function ulConditionsHtml(U){
   </div>
 
   <div class="content-card">
-    <h2>ยูนิตลิงค์ของเมืองไทยแบบอื่น (สรุปจากเอกสารอบรม)</h2>
+    <h2>ยูนิตลิงค์ของเมืองไทยแบบอื่น</h2>
     <div class="table-wrap benefit-table"><table><thead><tr><th>หัวข้อ</th><th>mOne</th><th>mOnePlus</th><th>mDesign</th><th>mGrow615</th></tr></thead><tbody>
       <tr><td>การชำระ</td><td>ครั้งเดียว</td><td>ครั้งเดียว</td><td>รายงวด ถึงอายุ 99</td><td>รายงวด 6 ปี คุ้มครอง 15 ปี</td></tr>
       <tr><td>อายุรับ</td><td>30 วัน – 70 ปี</td><td>30 วัน – 80 ปี</td><td>30 วัน – 70 ปี</td><td>30 วัน – 70 ปี</td></tr>
@@ -16171,98 +16216,294 @@ function ulConditionsHtml(U){
   </div>`;
 }
 
+/* สัญญาเพิ่มเติมที่หักจากมูลค่ากรมธรรม์ (UDR) ยังไม่มีตาราง UDR จริง
+   จึงสมมติว่าเบี้ย UDR ต่อปี = เบี้ยสัญญาเพิ่มเติมแบบปกติ (PPR) ที่อายุของปีนั้น แล้วหาร 12 เป็น COR รายเดือน
+   อายุที่ตารางไม่มีอัตรา (เกินอายุต่ออายุ) ถือว่าความคุ้มครองสิ้นสุด COR = 0 */
+const UL_RIDER_OPTS = {
+  health: [['none','ไม่แนบ'],
+    ['dhl|1m|d0','D Health Lite 1 ล้าน ไม่มีส่วนแรก'],['dhl|1m|d20k','D Health Lite 1 ล้าน ส่วนแรก 20,000'],['dhl|1m|d50k','D Health Lite 1 ล้าน ส่วนแรก 50,000'],
+    ['dhl|5m|d0','D Health Lite 5 ล้าน ไม่มีส่วนแรก'],['dhl|5m|d30k','D Health Lite 5 ล้าน ส่วนแรก 30,000'],['dhl|5m|d50k','D Health Lite 5 ล้าน ส่วนแรก 50,000'],['dhl|5m|d100k','D Health Lite 5 ล้าน ส่วนแรก 100,000'],
+    ['ehp|20m','Elite Health Plus 20 ล้าน (ไทย)'],['ehp|40m','Elite Health Plus 40 ล้าน (ไทย)'],['ehp|75m','Elite Health Plus 75 ล้าน (ไทย)'],['ehp|100m','Elite Health Plus 100 ล้าน (ไทย)'],
+    ['ecp|p1','Extra Care Plus แผน 1'],['ecp|p2','Extra Care Plus แผน 2'],['ecp|p3','Extra Care Plus แผน 3'],
+    ['hsn|1000','H&S (N) ค่าห้อง 1,000'],['hsn|2000','H&S (N) ค่าห้อง 2,000'],['hsn|3000','H&S (N) ค่าห้อง 3,000'],['hsn|5000','H&S (N) ค่าห้อง 5,000']],
+  careplus: [['none','ไม่แนบ'],['ca|1m','Care Plus มะเร็ง 1 ล้าน'],['ca|5m','Care Plus มะเร็ง 5 ล้าน'],['ckd|1m','Care Plus ไตวายเรื้อรัง 1 ล้าน'],['ckd|5m','Care Plus ไตวายเรื้อรัง 5 ล้าน'],['cackd|1m','Care Plus มะเร็ง+ไต 1 ล้าน'],['cackd|5m','Care Plus มะเร็ง+ไต 5 ล้าน']],
+  pa: [['none','ไม่แนบ'],['1','PA แผน 1'],['2','PA แผน 2'],['3','PA แผน 3'],['4','PA แผน 4'],['5','PA แผน 5'],['6','PA แผน 6'],['7','PA แผน 7']],
+  opd: [['none','ไม่แนบ'],['15000','OPD เหมาจ่าย 15,000'],['20000','OPD เหมาจ่าย 20,000'],['25000','OPD เหมาจ่าย 25,000'],['30000','OPD เหมาจ่าย 30,000'],['50000','OPD เหมาจ่าย 50,000'],['100000','OPD เหมาจ่าย 100,000']],
+};
+function ulRiderParts(sel, gender, age){
+  const occ = sel.occ || '1', out = [];
+  const lab = (list, v) => (UL_RIDER_OPTS[list].find(x => x[0] === v) || [0, v])[1];
+  if(sel.health && sel.health !== 'none'){
+    const [t, a, b] = sel.health.split('|');
+    const cfg = t === 'dhl' ? {type:'dhl', sum:a, deduct:b} : t === 'ehp' ? {type:'ehp', plan:a, region:'thailand'} : {type:t, plan:a};
+    out.push({label: lab('health', sel.health), annual: healthRiderPremium(cfg, gender, age, occ, 'annual').premium});
+  }
+  if(sel.careplus && sel.careplus !== 'none'){ const [p, s] = sel.careplus.split('|'); out.push({label: lab('careplus', sel.careplus), annual: careplusPremium(s, p, gender, age, occ, 'annual')}); }
+  if(sel.cipc > 0) out.push({label:`CI Perfect Care ทุน ${UL_FMT(sel.cipc)}`, annual: cipcPremium(sel.cipc, gender, age, 'annual')});
+  if(sel.pa && sel.pa !== 'none') out.push({label: lab('pa', sel.pa), annual: paPremium(sel.pa, age, 'annual')});
+  if(sel.opd && sel.opd !== 'none') out.push({label: lab('opd', sel.opd), annual: opdMaoPremium(sel.opd, gender, age, occ, 'annual')});
+  if(sel.hb > 0) out.push({label:`ค่าชดเชยรายวัน (HB) ${UL_FMT(sel.hb)} บาท/วัน`, annual: hbPremium(sel.hb, age, 'annual')});
+  if(sel.tpd > 0) out.push({label:`ทุพพลภาพถาวร (TPD) ทุน ${UL_FMT(sel.tpd)}`, annual: tpdPremium(sel.tpd, age, gender, 'annual')});
+  out.forEach(p => { p.monthly = typeof p.annual === 'number' ? Math.round(p.annual / 12 * 100) / 100 : 0; });
+  return out;
+}
+
+const UL_CHANGE_TYPES = {
+  sa:       {label:'เปลี่ยนจำนวนเงินเอาประกันภัย (ทุน)', amount:true, to:true},
+  topup:    {label:'ชำระเบี้ย Top Up (ต่อปี)', amount:true, to:true},
+  withdraw: {label:'ถอนเงินบางส่วน (ต่อปี)', amount:true, to:true},
+  holiday:  {label:'หยุดพักชำระเบี้ย', amount:false, to:true},
+  premium:  {label:'ลดเบี้ยประกันภัยหลักต่อปี', amount:true, to:false},
+};
+let ulChanges = [{type:'topup', amount:'', from:'', to:''}];
+let ulLast = null, ulDetailPy = 1, ulChartPts = null;
+
 function ulSimFormHtml(){
+  const sel = (id, list) => `<select id="${id}">${UL_RIDER_OPTS[list].map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>`;
   return `
   <div class="content-card" id="ulSimCard">
     <h2>จำลองมูลค่ากรมธรรม์ mDesign (กราฟ + ตาราง)</h2>
-    <p class="meta">สูตรเดียวกับเอกสารประกอบการขาย (SI) ของบริษัท ตรวจแล้วตรงกับ SI ทุกเดือนในปีกรมธรรม์ที่ 1–2 · ชำระเบี้ยรายปี · ผลตอบแทนเป็นตัวเลขสมมติ ไม่การันตี ก่อนเสนอลูกค้าต้องออก SI จากระบบบริษัททุกครั้ง</p>
+    <p class="meta">ชำระเบี้ยรายปี · ผลตอบแทนเป็นตัวเลขสมมติ ไม่การันตี · ก่อนเสนอลูกค้าต้องออกเอกสารเสนอขายจากระบบบริษัททุกครั้ง</p>
+    <h3 class="ul-sub">ข้อมูลกรมธรรม์</h3>
     <div class="ul-form">
       <label>เพศ<select id="ulGender"><option value="m">ชาย</option><option value="f">หญิง</option></select></label>
       <label>อายุ (ปี)<input id="ulAge" type="number" min="0" max="70" value="35"></label>
+      <label>ขั้นอาชีพ<select id="ulOcc"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
       <label>เบี้ยประกันภัยหลักต่อปี (บาท)<input id="ulPrem" type="number" min="20000" step="1000" value="100000"></label>
       <label>ทุนประกัน (บาท)<input id="ulSa" type="number" min="0" step="10000" value="1500000"><small id="ulSaHint"></small></label>
-      <label>เบี้ย Top Up ต่อปี (บาท)<input id="ulTop" type="number" min="0" step="1000" value="0"><small>ขั้นต่ำ 5,000 ไม่เกินเบี้ยหลักต่อปี</small></label>
-      <label>Top Up ถึงอายุ<input id="ulTopAge" type="number" min="0" max="70" value="60"></label>
-      <label>หยุดชำระเบี้ยตั้งแต่อายุ<input id="ulStopAge" type="number" min="1" max="99" value="60"><small>ใส่ 99 ถ้าชำระตลอด</small></label>
-      <label>ลดทุนประกันตั้งแต่อายุ (ไม่ใส่ = ไม่ลด)<input id="ulCutAge" type="number" min="1" max="98" value=""></label>
-      <label>ลดทุนเหลือ (บาท)<input id="ulCutTo" type="number" min="0" step="10000" value=""></label>
+      <label>ชำระเบี้ยถึงอายุ<input id="ulStopAge" type="number" min="1" max="99" value="60"><small>ใส่ 99 ถ้าชำระตลอด</small></label>
       <label>อัตราผลตอบแทนสมมติต่อปี (%)<input id="ulRate" type="number" step="0.5" min="-5" max="12" value="5"></label>
-      <label>ค่าสัญญาเพิ่มเติมที่หักจากกรมธรรม์ ต่อปี (บาท)<input id="ulRider" type="number" min="0" step="1000" value="0"><small>ใส่ค่าเฉลี่ยโดยประมาณ ของจริงขึ้นตามอายุ</small></label>
     </div>
+    <h3 class="ul-sub">เปลี่ยนแปลงข้อมูลในกรมธรรม์</h3>
+    <div class="ul-changes" id="ulChanges"></div>
+    <div class="ul-actions"><button class="btn btn-ghost" type="button" onclick="ulAddChange()">+ เพิ่มรายการ</button></div>
+    <h3 class="ul-sub">สัญญาเพิ่มเติม (หักจากมูลค่ากรมธรรม์ = COR)</h3>
+    <div class="ul-form">
+      <label>สัญญาสุขภาพ${sel('ulRHealth', 'health')}</label>
+      <label>Care Plus${sel('ulRCare', 'careplus')}</label>
+      <label>CI Perfect Care ทุน (บาท)<input id="ulRCipc" type="number" min="0" step="100000" value="0"></label>
+      <label>อุบัติเหตุ PA${sel('ulRPa', 'pa')}</label>
+      <label>OPD เหมาจ่าย${sel('ulROpd', 'opd')}</label>
+      <label>ค่าชดเชยรายวัน HB (บาท/วัน)<input id="ulRHb" type="number" min="0" step="500" value="0"></label>
+      <label>ทุพพลภาพถาวร TPD ทุน (บาท)<input id="ulRTpd" type="number" min="0" step="100000" value="0"></label>
+    </div>
+    <p class="meta">COR รายเดือน = เบี้ยสัญญาเพิ่มเติมต่อปีที่อายุของปีนั้น ÷ 12 เบี้ยขึ้นตามอายุทุกปี และหยุดหักเมื่อสัญญาสิ้นสุด</p>
     <div class="ul-actions"><button class="btn" type="button" onclick="ulRunSim()">คำนวณ</button>
       <button class="btn btn-ghost" type="button" onclick="ulUseMinSa()">ใช้ทุนประกันขั้นต่ำ</button></div>
     <div id="ulWarn"></div>
     <div id="ulSummary" class="ul-summary"></div>
     <div id="ulChart"></div>
     <div id="ulTable"></div>
+    <div id="ulDetail"></div>
   </div>`;
 }
+
+function ulRenderChanges(){
+  const box = document.getElementById('ulChanges');
+  if(!box) return;
+  const U = RATES.unit_linked_mdesign;
+  const body = ulChanges.map((c, i) => {
+    const T = UL_CHANGE_TYPES[c.type];
+    let hint = '';
+    if(c.type === 'sa') hint = 'ไม่ต่ำกว่าทุนขั้นต่ำของอายุนั้น';
+    if(c.type === 'topup') hint = `ขั้นต่ำ ${UL_FMT(U.topup_min)} ไม่เกินเบี้ยหลักต่อปี ถึงอายุ ${U.topup_max_age}`;
+    if(c.type === 'withdraw') hint = `ขั้นต่ำ ${UL_FMT(U.withdraw_min)} ค่าธรรมเนียม ${U.withdraw_fee} บาท/ครั้ง คงเหลือ ≥ ${UL_FMT(U.withdraw_min_remaining)}`;
+    if(c.type === 'premium') hint = `ลดได้อย่างเดียว ขั้นต่ำ ${UL_FMT(U.min_premium.annual)} ไม่เกินเบี้ยปัจจุบัน`;
+    if(c.type === 'holiday') hint = 'กลับมาชำระต่อหลังอายุสิ้นสุด';
+    return `<tr><td><select onchange="ulSetChange(${i},'type',this.value)">${Object.entries(UL_CHANGE_TYPES).map(([k, t]) => `<option value="${k}"${k === c.type ? ' selected' : ''}>${t.label}</option>`).join('')}</select><small>${hint}</small></td>
+      <td>${T.amount ? `<input type="number" min="0" step="1000" value="${c.amount}" oninput="ulSetChange(${i},'amount',this.value)">` : '-'}</td>
+      <td><input type="number" min="0" max="99" value="${c.from}" oninput="ulSetChange(${i},'from',this.value)"></td>
+      <td>${T.to ? `<input type="number" min="0" max="99" value="${c.to}" oninput="ulSetChange(${i},'to',this.value)">` : 'ตลอด'}</td>
+      <td><button class="btn btn-ghost" type="button" onclick="ulDelChange(${i})" aria-label="ลบ">ลบ</button></td></tr>`;
+  }).join('');
+  box.innerHTML = `<table><thead><tr><th>รายการ</th><th>จำนวนเงิน (บาท)</th><th>อายุเริ่ม</th><th>อายุสิ้นสุด</th><th></th></tr></thead><tbody>${body || '<tr><td colspan="5">ยังไม่มีรายการ</td></tr>'}</tbody></table>`;
+}
+function ulSetChange(i, k, v){ ulChanges[i][k] = v; if(k === 'type') ulRenderChanges(); }
+function ulAddChange(){ ulChanges.push({type:'sa', amount:'', from:'', to:''}); ulRenderChanges(); }
+function ulDelChange(i){ ulChanges.splice(i, 1); ulRenderChanges(); }
 
 function ulReadForm(){
   const v = id => document.getElementById(id).value;
   const num = id => v(id) === '' ? null : Number(v(id));
   const d = new Date();
-  return {gender: v('ulGender'), age: num('ulAge'), premium: num('ulPrem'), sa: num('ulSa'),
-    topup: num('ulTop') || 0, topupUntilAge: num('ulTopAge'), stopPayAge: num('ulStopAge'),
-    saCutAge: num('ulCutAge'), saCutTo: num('ulCutTo'), rate: (num('ulRate') || 0) / 100,
-    riderAnnual: num('ulRider') || 0, startBE: d.getFullYear() + 543, startMonth: d.getMonth() + 1};
+  const changes = ulChanges.map(c => ({type:c.type, amount: c.amount === '' ? null : Number(c.amount),
+      from: c.from === '' ? null : Number(c.from), to: !UL_CHANGE_TYPES[c.type].to || c.to === '' ? null : Number(c.to)}))
+    .filter(c => c.from != null && (!UL_CHANGE_TYPES[c.type].amount || c.amount != null));
+  const riders = {occ: v('ulOcc'), health: v('ulRHealth'), careplus: v('ulRCare'), cipc: num('ulRCipc') || 0,
+    pa: v('ulRPa'), opd: v('ulROpd'), hb: num('ulRHb') || 0, tpd: num('ulRTpd') || 0};
+  const gender = v('ulGender');
+  return {gender, age: num('ulAge'), premium: num('ulPrem'), sa: num('ulSa'), stopPayAge: num('ulStopAge'),
+    rate: (num('ulRate') || 0) / 100, changes, riders,
+    riderMonthlyAt: age => ulRiderParts(riders, gender, age).reduce((s, p) => s + p.monthly, 0),
+    startBE: d.getFullYear() + 543, startMonth: d.getMonth() + 1};
+}
+function ulFirstYearTopup(o){
+  return o.changes.filter(c => c.type === 'topup' && o.age >= c.from && o.age <= (c.to == null ? 999 : c.to)).reduce((s, c) => s + c.amount, 0);
 }
 function ulUseMinSa(){
   const U = RATES.unit_linked_mdesign, o = ulReadForm();
-  document.getElementById('ulSa').value = Math.ceil(ulMinSa(U, o.age, o.premium, o.topup) / 1000) * 1000;
+  document.getElementById('ulSa').value = Math.ceil(ulMinSa(U, o.age, o.premium, ulFirstYearTopup(o)) / 1000) * 1000;
   ulRunSim();
 }
+
+const UL_SERIES = [
+  {k:'value', label:'มูลค่าการลงทุน', color:'#c2185b'},
+  {k:'death', label:'ผลประโยชน์กรณีเสียชีวิต', color:'#1e4f78'},
+  {k:'paid', label:'เบี้ยสะสมที่จ่าย (หลัก + Top Up)', color:'#9e9e9e'},
+];
+const UL_CH = {W:760, H:300, L:70, R:14, T:16, B:34};
 function ulChartSvg(rows, startAge){
   if(!rows.length) return '';
-  const W = 760, H = 300, L = 70, R = 14, T = 16, B = 34;
-  const series = [
-    {k:'value', label:'มูลค่าการลงทุน', color:'#c2185b'},
-    {k:'death', label:'ผลประโยชน์กรณีเสียชีวิต', color:'#1e4f78'},
-    {k:'paid', label:'เบี้ยสะสมที่จ่าย (หลัก + Top Up)', color:'#9e9e9e'},
-  ];
+  const {W, H, L, R, T, B} = UL_CH;
   const pts = rows.map(r => ({age: r.age + 1, value: r.value, death: r.death, paid: r.cumPrem + r.cumTop}));
-  const maxY = Math.max(1, ...pts.flatMap(p => series.map(s => p[s.k])));
-  const ages = pts.map(p => p.age), a0 = startAge, a1 = Math.max(...ages);
+  const maxY = Math.max(1, ...pts.flatMap(p => UL_SERIES.map(s => p[s.k])));
+  const a0 = startAge, a1 = Math.max(...pts.map(p => p.age));
   const x = a => L + (a - a0) / Math.max(1, a1 - a0) * (W - L - R);
   const y = v => T + (1 - v / maxY) * (H - T - B);
-  const step = Math.pow(10, Math.floor(Math.log10(maxY))) * (maxY / Math.pow(10, Math.floor(Math.log10(maxY))) > 5 ? 2 : 1);
+  ulChartPts = {pts, x, y};
+  const mag = Math.pow(10, Math.floor(Math.log10(maxY)));
+  const step = mag * (maxY / mag > 5 ? 2 : 1);
   let grid = '';
   for(let v = 0; v <= maxY; v += step) grid += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#eee"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#777">${v >= 1e6 ? (v/1e6).toFixed(v % 1e6 ? 1 : 0) + ' ล.' : UL_FMT(v)}</text>`;
   for(let a = Math.ceil(a0/10)*10; a <= a1; a += 10) grid += `<text x="${x(a)}" y="${H-12}" text-anchor="middle" font-size="10" fill="#777">อายุ ${a}</text>`;
-  const lines = series.map(s => `<polyline fill="none" stroke="${s.color}" stroke-width="2.2" points="${pts.map(p => x(p.age).toFixed(1)+','+y(p[s.k]).toFixed(1)).join(' ')}"/>`).join('');
-  const legend = series.map(s => `<span class="ul-leg"><i style="background:${s.color}"></i>${s.label}</span>`).join('');
-  return `<div class="ul-chart"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="กราฟมูลค่ากรมธรรม์">${grid}${lines}</svg><div class="ul-legend">${legend}</div></div>`;
+  const lines = UL_SERIES.map(s => `<polyline fill="none" stroke="${s.color}" stroke-width="2.2" points="${pts.map(p => x(p.age).toFixed(1)+','+y(p[s.k]).toFixed(1)).join(' ')}"/>`).join('');
+  const hover = `<g id="ulHover" style="display:none" pointer-events="none">
+    <line id="ulHx" stroke="#555" stroke-dasharray="4 3" stroke-width="1"/>
+    ${UL_SERIES.map((s, i) => `<line id="ulHy${i}" stroke="${s.color}" stroke-dasharray="4 3" stroke-width="1"/><circle id="ulHd${i}" r="4" fill="#fff" stroke="${s.color}" stroke-width="2"/>`).join('')}
+    <rect id="ulHxBox" height="16" rx="4" fill="#333"/><text id="ulHxTxt" font-size="10" fill="#fff" text-anchor="middle"></text>
+    <rect id="ulHyBox" height="16" rx="4" fill="#c2185b"/><text id="ulHyTxt" font-size="10" fill="#fff" text-anchor="end"></text>
+  </g><rect id="ulHit" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/>`;
+  const legend = UL_SERIES.map(s => `<span class="ul-leg"><i style="background:${s.color}"></i>${s.label}</span>`).join('');
+  return `<div class="ul-chart"><svg id="ulSvg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="กราฟมูลค่ากรมธรรม์" style="touch-action:pan-y">${grid}${lines}${hover}</svg><div class="ul-tip" id="ulTip"></div><div class="ul-legend">${legend}</div></div>`;
 }
+function ulBindChartHover(){
+  const svg = document.getElementById('ulSvg'), tip = document.getElementById('ulTip');
+  if(!svg || !ulChartPts) return;
+  const {W, H, L, R, T, B} = UL_CH;
+  const g = document.getElementById('ulHover');
+  const set = (id, a) => { const el = document.getElementById(id); for(const k in a) el.setAttribute(k, a[k]); return el; };
+  const short = v => v >= 1e6 ? (v/1e6).toFixed(2) + ' ล.' : UL_FMT(v);
+  const move = ev => {
+    const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const {pts, x, y} = ulChartPts;
+    let best = pts[0];
+    for(const q of pts) if(Math.abs(x(q.age) - p.x) < Math.abs(x(best.age) - p.x)) best = q;
+    const X = x(best.age);
+    g.style.display = '';
+    set('ulHx', {x1:X, x2:X, y1:T, y2:H-B});
+    let near = 0, nd = Infinity;
+    UL_SERIES.forEach((s, i) => {
+      const Y = y(best[s.k]);
+      set('ulHy' + i, {x1:L, x2:X, y1:Y, y2:Y}); set('ulHd' + i, {cx:X, cy:Y});
+      if(Math.abs(Y - p.y) < nd){ nd = Math.abs(Y - p.y); near = i; }
+    });
+    const xt = `อายุ ${best.age}`, xw = xt.length * 6 + 12;
+    set('ulHxBox', {x: Math.min(Math.max(X - xw/2, L), W - R - xw), y: H - B + 2, width: xw});
+    const xtxt = set('ulHxTxt', {x: Math.min(Math.max(X, L + xw/2), W - R - xw/2), y: H - B + 13}); xtxt.textContent = xt;
+    const s = UL_SERIES[near], Y = y(best[s.k]), yt = short(best[s.k]), yw = yt.length * 6 + 12;
+    set('ulHyBox', {x: L - yw - 2, y: Y - 8, width: yw, fill: s.color});
+    const ytxt = set('ulHyTxt', {x: L - 8, y: Y + 4}); ytxt.textContent = yt;
+    tip.innerHTML = `<b>สิ้นปี อายุ ${best.age}</b>` + UL_SERIES.map(s => `<div><i style="background:${s.color}"></i>${s.label}: ${UL_FMT(best[s.k])} บาท</div>`).join('');
+    tip.style.display = 'block';
+    const box = svg.parentNode.getBoundingClientRect(), sb = svg.getBoundingClientRect();
+    const px = sb.left - box.left + X / W * sb.width, py = sb.top - box.top + Math.min(...UL_SERIES.map(s => y(best[s.k]))) / H * sb.height;
+    const tw = tip.offsetWidth;
+    tip.style.left = (px + 14 + tw > box.width ? px - tw - 14 : px + 14) + 'px';
+    tip.style.top = Math.max(4, py - 10) + 'px';
+  };
+  const leave = () => { g.style.display = 'none'; tip.style.display = 'none'; };
+  svg.addEventListener('pointermove', move);
+  svg.addEventListener('pointerdown', move);
+  svg.addEventListener('pointerleave', leave);
+}
+
+function ulDetailHtml(py){
+  if(!ulLast) return '';
+  const {res, o} = ulLast;
+  const row = res.rows.find(r => r.py === py) || res.rows[0];
+  if(!row) return '';
+  const U = RATES.unit_linked_mdesign;
+  const opts = res.rows.map(r => `<option value="${r.py}"${r.py === row.py ? ' selected' : ''}>ปีที่ ${r.py} (อายุ ${r.age})</option>`).join('');
+  const f2 = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const months = row.detail.map((d, i) => `<tr><td>${i + 1}</td><td>${f2(d.fee)}</td><td>${f2(d.base)}</td><td>${UL_FMT(d.sa)}</td><td>${f2(d.nar)}${d.narFloor ? ' *' : ''}</td><td>${d.coiRate.toFixed(4)}</td><td>${f2(d.coi)}</td><td>${f2(d.rider)}</td><td>${f2(Math.max(0, d.value))}</td></tr>`).join('');
+  const parts = ulRiderParts(o.riders, o.gender, row.age);
+  const corRows = parts.length ? parts.map(p => `<tr><td>${p.label}</td><td>${typeof p.annual === 'number' ? f2(p.annual) : 'สิ้นสุด/ไม่มีอัตรา'}</td><td>${f2(p.monthly)}</td><td>${f2(p.monthly * 12)}</td></tr>`).join('')
+    + `<tr><td><b>รวม COR</b></td><td></td><td><b>${f2(parts.reduce((s, p) => s + p.monthly, 0))}</b></td><td><b>${f2(row.rider)}</b></td></tr>` : '<tr><td colspan="4">ไม่ได้แนบสัญญาเพิ่มเติม</td></tr>';
+  return `<h3 class="ul-sub">รายละเอียดการคำนวณ COI และ COR รายเดือน</h3>
+    <label class="ul-form" style="display:block;max-width:260px">เลือกปีกรมธรรม์<select onchange="ulDetailPy=Number(this.value);document.getElementById('ulDetail').innerHTML=ulDetailHtml(ulDetailPy)">${opts}</select></label>
+    <div class="ul-callout"><b>สูตร COI (ค่าการประกันภัย)</b><ol>
+      <li>มูลค่าก่อนหัก = มูลค่าบัญชีเบี้ยหลัก + บัญชี Top Up (รวมเงินที่เข้าเดือนนี้) − ค่าธรรมเนียมรักษากรมธรรม์</li>
+      <li>เงินเสี่ยงภัยสุทธิ (NAR) = ทุนประกัน − มูลค่าก่อนหัก แต่ไม่ต่ำกว่า ${U.nar_floor_multiple} เท่าของเบี้ยหลักต่อปี (${UL_FMT(U.nar_floor_multiple * row.annualPremium)} บาท)</li>
+      <li>COI รายเดือน = อัตรา COI ต่อทุน 1,000 ต่อปี (ตามเพศและอายุ) × NAR ÷ 12,000</li>
+      <li>ตัวอย่างเดือนแรกของปีนี้: ${row.detail[0].coiRate.toFixed(4)} × ${f2(row.detail[0].nar)} ÷ 12,000 = <b>${f2(row.detail[0].coi)}</b> บาท</li></ol>
+      <b>สูตร COR (ค่าสัญญาเพิ่มเติม)</b><ol><li>COR รายเดือน = เบี้ยสัญญาเพิ่มเติมต่อปี ณ อายุ ${row.age} ÷ 12 แล้วรวมทุกสัญญา หักพร้อม COI ทุกเดือน</li></ol></div>
+    <div class="table-wrap ul-table ul-num"><table><thead><tr><th>เดือน</th><th>ค่ารักษากรมธรรม์</th><th>มูลค่าก่อนหัก</th><th>ทุนประกัน</th><th>NAR</th><th>อัตรา COI/1,000</th><th>COI</th><th>COR</th><th>มูลค่าสิ้นเดือน</th></tr></thead><tbody>${months}</tbody></table></div>
+    <p class="meta">* NAR ถูกยกขึ้นเป็นขั้นต่ำ ${U.nar_floor_multiple} เท่าของเบี้ยหลักต่อปี</p>
+    <div class="table-wrap benefit-table ul-num"><table><thead><tr><th>สัญญาเพิ่มเติม (อายุ ${row.age})</th><th>เบี้ยต่อปี</th><th>COR ต่อเดือน</th><th>COR ทั้งปี</th></tr></thead><tbody>${corRows}</tbody></table></div>`;
+}
+
 function ulRunSim(){
   const U = RATES.unit_linked_mdesign, o = ulReadForm();
   const warn = [];
   if(!(o.age >= 0 && o.age <= 70)) warn.push('อายุรับประกัน 30 วัน – 70 ปี');
   if(!(o.premium >= U.min_premium.annual)) warn.push(`เบี้ยหลักรายปีขั้นต่ำ ${UL_FMT(U.min_premium.annual)} บาท`);
-  const minSa = ulMinSa(U, o.age, o.premium || 0, o.topup);
+  const top1 = ulFirstYearTopup(o);
+  const minSa = ulMinSa(U, o.age, o.premium || 0, top1);
   document.getElementById('ulSaHint').textContent = `ทุนขั้นต่ำ ${UL_FMT(minSa)} บาท`;
   if(o.sa < minSa) warn.push(`ทุนประกันต่ำกว่าขั้นต่ำ ${UL_FMT(minSa)} บาท`);
-  if(o.topup && (o.topup < U.topup_min || o.topup > o.premium)) warn.push(`Top Up ต้องไม่ต่ำกว่า ${UL_FMT(U.topup_min)} บาท และไม่เกินเบี้ยหลักต่อปี`);
-  if(o.saCutAge != null && o.saCutTo != null){
-    const minAtCut = ulMinSa(U, Math.min(70, o.saCutAge), o.premium || 0, 0);
-    if(o.saCutTo < minAtCut) warn.push(`ทุนหลังลดต้องไม่ต่ำกว่าทุนขั้นต่ำ (${UL_FMT(minAtCut)} บาท ที่อายุ ${o.saCutAge} ปี)`);
+  let cur = o.premium || 0;
+  for(const c of [...o.changes].sort((a, b) => a.from - b.from)){
+    const name = UL_CHANGE_TYPES[c.type].label;
+    if(c.from < o.age) warn.push(`${name}: อายุเริ่มต้องไม่น้อยกว่าอายุแรกเข้า (${o.age})`);
+    if(c.to != null && c.to < c.from) warn.push(`${name}: อายุสิ้นสุดต้องไม่น้อยกว่าอายุเริ่ม`);
+    if(c.type === 'topup'){
+      if(c.amount < U.topup_min) warn.push(`Top Up ขั้นต่ำ ${UL_FMT(U.topup_min)} บาท`);
+      if(c.amount > cur) warn.push(`Top Up ${UL_FMT(c.amount)} เกินเบี้ยหลักต่อปี (${UL_FMT(cur)})`);
+      if((c.to == null ? c.from : c.to) > U.topup_max_age) warn.push(`Top Up ทำได้ถึงอายุ ${U.topup_max_age} ปี ส่วนที่เกินจะไม่ถูกนำมาคำนวณ`);
+    }
+    if(c.type === 'premium'){
+      if(c.amount < U.min_premium.annual) warn.push(`เบี้ยหลักหลังลดต้องไม่ต่ำกว่า ${UL_FMT(U.min_premium.annual)} บาท`);
+      if(c.amount > cur) warn.push(`เปลี่ยนเบี้ยได้เฉพาะลด (เบี้ยปัจจุบัน ${UL_FMT(cur)} บาท)`);
+      cur = c.amount;
+    }
+    if(c.type === 'sa'){
+      const m = ulMinSa(U, Math.min(70, c.from), cur, 0);
+      if(c.amount < m) warn.push(`ทุนที่อายุ ${c.from} ต้องไม่ต่ำกว่าทุนขั้นต่ำ ${UL_FMT(m)} บาท`);
+      if(c.amount > o.sa) warn.push(`เพิ่มทุนที่อายุ ${c.from} ต้องผ่านการพิจารณารับประกันใหม่`);
+    }
+    if(c.type === 'withdraw' && c.amount < U.withdraw_min) warn.push(`ถอนขั้นต่ำครั้งละ ${UL_FMT(U.withdraw_min)} บาท`);
   }
-  // ทดสอบเพดานทุนตามกรมธรรม์: ผลตอบแทน -1% ต้องไม่หมดภายใน 10 ปี
+  const parts0 = ulRiderParts(o.riders, o.gender, o.age);
+  for(const p of parts0) if(typeof p.annual !== 'number') warn.push(`${p.label}: ไม่มีอัตราเบี้ยที่อายุ ${o.age} ปี / ขั้นอาชีพนี้ จึงไม่ได้คิด COR`);
   const test = ulSimulate(Object.assign({}, o, {rate:-0.01, months:120}), U);
-  if(test.lapse) warn.push(`ทุนนี้ไม่ผ่านเกณฑ์ทุนสูงสุด: ที่ผลตอบแทน -1% มูลค่าหมดในปีกรมธรรม์ที่ ${test.lapse.py} (กรมธรรม์กำหนดว่าต้องไม่หมดภายใน 10 ปี) ต้องลดทุนหรือเพิ่มเบี้ย`);
-  document.getElementById('ulWarn').innerHTML = warn.length ? `<div class="ul-warn">${warn.map(w => '• ' + w).join('<br>')}</div>` : '';
+  if(test.lapse) warn.push(`ทุนนี้ไม่ผ่านเกณฑ์ทุนสูงสุด: ที่ผลตอบแทน -1% มูลค่าหมดในปีกรมธรรม์ที่ ${test.lapse.py} (กรมธรรม์กำหนดว่าต้องไม่หมดภายใน 10 ปี) ต้องลดทุน ลดสัญญาเพิ่มเติม หรือเพิ่มเบี้ย`);
   const res = ulSimulate(o, U);
   const rows = res.rows;
+  for(const r of rows) for(const n of r.notes) warn.push(`ปีที่ ${r.py} (อายุ ${r.age}): ${n}`);
+  document.getElementById('ulWarn').innerHTML = warn.length ? `<div class="ul-warn">${warn.map(w => '• ' + w).join('<br>')}</div>` : '';
   const at = age => rows.find(r => r.age + 1 === age);
   const card = (t, v) => `<div class="ul-card"><span>${t}</span><b>${v}</b></div>`;
-  const paid = rows.length ? rows[rows.length-1].cumPrem + rows[rows.length-1].cumTop : 0;
-  let sum = card('เบี้ยที่จ่ายรวม', UL_FMT(paid) + ' บาท');
+  const last = rows[rows.length - 1];
+  let sum = card('เบี้ยที่จ่ายรวม (หลัก + Top Up)', UL_FMT(last ? last.cumPrem + last.cumTop : 0) + ' บาท');
+  if(last && last.cumWd) sum += card('ถอนเงินรวม', UL_FMT(last.cumWd) + ' บาท');
+  sum += card('COR เดือนแรก', UL_FMT(parts0.reduce((s, p) => s + p.monthly, 0)) + ' บาท');
   for(const a of [60, 80, 99]) if(a > o.age){ const r = at(a); sum += card(`มูลค่าการลงทุน ณ อายุ ${a}`, r ? UL_FMT(r.value) + ' บาท' : 'กรมธรรม์ขาดอายุแล้ว'); }
   sum += card('สถานะ', res.lapse ? `มูลค่าหมด ขาดอายุตอนอายุ ${res.lapse.age} ปี` : 'มีผลบังคับถึงอายุ 99 ปี');
   document.getElementById('ulSummary').innerHTML = sum;
   document.getElementById('ulChart').innerHTML = ulChartSvg(rows, o.age);
-  const body = rows.map(r => `<tr${r.lapsed ? ' class="ul-lapse"' : ''}><td>${r.py}</td><td>${r.age}</td><td>${UL_FMT(r.premium)}</td><td>${UL_FMT(r.topup)}</td><td>${UL_FMT(r.premCharge + r.topCharge)}</td><td>${UL_FMT(r.fee)}</td><td>${UL_FMT(r.coi)}</td><td>${UL_FMT(r.rider)}</td><td>${UL_FMT(r.value)}</td><td>${UL_FMT(r.surrender)}</td><td>${UL_FMT(r.death)}</td></tr>`).join('');
-  document.getElementById('ulTable').innerHTML = `<div class="table-wrap ul-table"><table><thead><tr><th>ปีที่</th><th>อายุต้นปี</th><th>เบี้ยหลัก</th><th>Top Up</th><th>ค่าดำเนินการเบี้ย</th><th>ค่ารักษากรมธรรม์</th><th>COI</th><th>สัญญาเพิ่มเติม</th><th>มูลค่าการลงทุนสิ้นปี</th><th>มูลค่าเวนคืน</th><th>ผลประโยชน์เสียชีวิต</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="meta">ค่าใช้จ่ายเป็นยอดรวมทั้งปี มูลค่าเป็นยอด ณ สิ้นปีกรมธรรม์ ค่าธรรมเนียมรักษากรมธรรม์คิดตามปี พ.ศ. โดยถือว่าเริ่มสัญญาเดือนนี้ ค่าสัญญาเพิ่มเติมใช้ค่าคงที่ที่กรอก ของจริงปรับขึ้นตามอายุ จึงทำให้ตัวเลขจริงต่ำกว่านี้เมื่อแนบสัญญาสุขภาพ</p>`;
+  ulBindChartHover();
+  ulLast = {res, o};
+  if(!rows.some(r => r.py === ulDetailPy)) ulDetailPy = 1;
+  const body = rows.map(r => `<tr data-py="${r.py}" class="${r.lapsed ? 'ul-lapse' : ''}${r.py === ulDetailPy ? ' ul-sel' : ''}"><td>${r.py}</td><td>${r.age}</td><td>${r.holiday ? 'พักชำระ' : UL_FMT(r.premium)}</td><td>${UL_FMT(r.topup)}</td><td>${UL_FMT(r.withdraw)}</td><td>${UL_FMT(r.premCharge + r.topCharge)}</td><td>${UL_FMT(r.fee)}</td><td>${UL_FMT(r.coi)}</td><td>${UL_FMT(r.rider)}</td><td>${UL_FMT(r.sa)}</td><td>${UL_FMT(r.value)}</td><td>${UL_FMT(r.surrender)}</td><td>${UL_FMT(r.death)}</td></tr>`).join('');
+  document.getElementById('ulTable').innerHTML = `<div class="table-wrap ul-table"><table><thead><tr><th>ปีที่</th><th>อายุต้นปี</th><th>เบี้ยหลัก</th><th>Top Up</th><th>ถอน</th><th>ค่าธรรมเนียมเบี้ย</th><th>ค่ารักษากรมธรรม์</th><th>COI</th><th>COR</th><th>ทุนประกัน</th><th>มูลค่าการลงทุนสิ้นปี</th><th>มูลค่าเวนคืน</th><th>ผลประโยชน์เสียชีวิต</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="meta">ค่าใช้จ่ายเป็นยอดรวมทั้งปี มูลค่าเป็นยอด ณ สิ้นปีกรมธรรม์ · คลิกแถวเพื่อดูการคำนวณ COI / COR รายเดือนของปีนั้น · ถอนเงินคิดจากบัญชี Top Up ก่อน และลดทุนคุ้มครองชีวิตลงเท่ายอดที่ถอน</p>`;
+  document.querySelectorAll('#ulTable tbody tr').forEach(tr => tr.addEventListener('click', () => {
+    ulDetailPy = Number(tr.dataset.py);
+    document.querySelectorAll('#ulTable tbody tr').forEach(t => t.classList.toggle('ul-sel', t === tr));
+    document.getElementById('ulDetail').innerHTML = ulDetailHtml(ulDetailPy);
+  }));
+  document.getElementById('ulDetail').innerHTML = ulDetailHtml(ulDetailPy);
 }
 
 function renderUnitLinkedPage(){
@@ -16271,9 +16512,10 @@ function renderUnitLinkedPage(){
   const box = document.getElementById('ulContent');
   if(!U || !box) return;
   box.innerHTML = `<div class="faq-hero"><h1>ประกันแบบควบการลงทุน (Unit Linked)</h1>
-    <p>สรุปเงื่อนไขทั้งหมดที่ลูกค้าควรรู้ก่อนตัดสินใจ ตัวเลขทุกตัวมาจากเอกสารเสนอขายและคู่มือของเมืองไทยประกันชีวิต พร้อมเครื่องจำลองมูลค่ากรมธรรม์ ผลตอบแทนไม่การันตี</p></div>`
+    <p>สรุปเงื่อนไขทั้งหมดที่ลูกค้าควรรู้ก่อนตัดสินใจ พร้อมเครื่องจำลองมูลค่ากรมธรรม์ ผลตอบแทนไม่การันตี</p></div>`
     + ulSimFormHtml() + ulConditionsHtml(U);
   ulRendered = true;
+  ulRenderChanges();
   ulRunSim();
 }
 
