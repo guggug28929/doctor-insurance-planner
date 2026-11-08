@@ -2664,6 +2664,24 @@
   .aw-name{font-weight:800;color:var(--pink-deep);font-size:.92rem;}
   .aw-full{font-size:.75rem;color:var(--muted);margin-top:1px;}
   .aw-desc{font-size:.8rem;margin-top:4px;line-height:1.5;}
+  /* หน้า ประกันแบบควบการลงทุน */
+  .ul-callout{border:1.5px solid var(--pink);background:#fff7fa;border-radius:14px;padding:12px 16px;margin-top:10px;}
+  .ul-callout ol{margin:6px 0 0 18px;padding:0;}
+  .ul-details summary{cursor:pointer;font-weight:700;color:var(--pink-deep);margin:8px 0;}
+  .ul-fee-table{max-width:420px;}
+  .ul-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;margin-top:10px;}
+  .ul-form label{display:flex;flex-direction:column;font-size:.82rem;font-weight:600;gap:4px;margin:0;}
+  .ul-form small{font-weight:400;color:var(--muted);font-size:.72rem;}
+  .ul-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px;}
+  .ul-warn{background:#fff4e5;border:1px solid #f0c48a;border-radius:10px;padding:10px 14px;font-size:.84rem;margin:8px 0;}
+  .ul-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:12px 0;}
+  .ul-card{background:#fff;border:1px solid #f0dde5;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
+  .ul-card span{font-size:.74rem;color:var(--muted);} .ul-card b{color:var(--pink-deep);font-size:.98rem;}
+  .ul-chart{background:#fff;border:1px solid #f0dde5;border-radius:14px;padding:10px;margin:8px 0 12px;}
+  .ul-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;margin-top:4px;}
+  .ul-leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;}
+  .ul-table{max-height:460px;} .ul-table td,.ul-table th{white-space:nowrap;}
+  .ul-lapse td{color:var(--danger);font-weight:700;}
 </style>
 </head>
 <body>
@@ -2738,6 +2756,7 @@
       <!-- หน้าอุบัติเหตุยังอยู่ครบและลิงก์ที่ส่งลูกค้าไปแล้วยังเปิดได้
            ปุ่มถูกซ่อนเพราะทางเข้าหลักย้ายไปอยู่ในแผงของแผนทั้งหมด
            แต่ยังต้องอยู่ใน #navbar เพราะสถานะ active และดัชนีค้นหาทั้งเว็บอ่านจากตรงนี้ -->
+      <button data-page="unitlinked">ประกันควบการลงทุน</button>
       <button data-page="accident" class="nav-off">อุบัติเหตุ</button>
       <div class="nav-more" id="navMore">
         <button type="button" class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-controls="navMorePanel">ความรู้</button>
@@ -4537,6 +4556,10 @@
 
 <div id="page-tax" class="page">
   <div class="wrap"><div id="taxContent"></div></div>
+</div>
+
+<div id="page-unitlinked" class="page">
+  <div class="wrap"><div id="ulContent"></div></div>
 </div>
 
 <div id="page-faq" class="page">
@@ -10797,6 +10820,7 @@ const PAGE_ROUTES = {
   knowledge: '/health-knowledge',
   faq: '/faq',
   tax: '/tax-planner',
+  unitlinked: '/unit-linked',
   hospitals: '/hospitals',
   contact: '/contact',
 };
@@ -15895,6 +15919,364 @@ function setKnowTab(tab){
   renderHealthGuide();
 }
 
+/* จำลองมูลค่ากรมธรรม์ เมืองไทยยูนิตลิงค์ 1 (mDesign) รายเดือน ชำระเบี้ยรายปี
+   สูตรตรวจกับ SI ของบริษัทแล้ว (ปีที่ 1-2 ตรงทุกเดือน ที่ -1% 2% 5%)
+   1) ต้นปีกรมธรรม์: เบี้ยหลักหักค่าใช้จ่ายในการดำเนินการตามครั้งที่ชำระ (ปีแรกมีส่วนลดตามขนาดเบี้ย) เข้าบัญชีเบี้ยหลัก
+      Top Up หักค่าธรรมเนียมตามขนาดเงิน เข้าบัญชี Top Up
+   2) ทุกเดือน: ค่าธรรมเนียมรักษากรมธรรม์ (ตามปี พ.ศ.) + ค่า COI + ค่าสัญญาเพิ่มเติม
+      COI = อัตราตามอายุ x เงินเสี่ยงภัยสุทธิ / 12,000
+      เงินเสี่ยงภัยสุทธิ = max(ทุน - (มูลค่าทั้งหมดรวมเงินเข้าเดือนนี้ - ค่าธรรมเนียมรักษากรมธรรม์), 3 เท่าของเบี้ยหลักต่อปี)
+      เดือนที่ยังไม่มีมูลค่าเดิม หักจากเงินเบี้ยหลักที่เพิ่งเข้า ไม่งั้นหักตามสัดส่วนมูลค่าเดิมของสองบัญชีก่อนเติมเงินใหม่
+   3) ผลตอบแทนรายเดือน = (1+r)^(1/12) - 1  */
+function ulSimulate(o, U){
+  const r = Number(o.rate);
+  const g = Math.pow(1 + r, 1/12) - 1;
+  const coiTab = U.coi_per_1000[o.gender === 'f' ? 'f' : 'm'];
+  const prem = Number(o.premium) || 0;
+  const fee = be => {
+    if(be >= U.policy_fee_cap_from_be) return U.policy_fee_cap;
+    const t = U.policy_fee_by_be_year[String(be)];
+    return t != null ? t : U.policy_fee_by_be_year[Object.keys(U.policy_fee_by_be_year)[0]];
+  };
+  const chargeRate = n => { for(const [a,b,v] of U.premium_charge.by_premium_year) if(n >= a && n <= b) return v; return 0; };
+  const disc1 = p => { for(const [a,b,v] of U.premium_charge_discount_year1) if(p >= a && (b == null || p <= b)) return v; return 0; };
+  const topupRate = t => { for(const [a,b,v] of U.topup_charge) if(t >= a && (b == null || t <= b)) return v; return U.topup_charge_max; };
+  const surrRate = n => { for(const [k,v] of U.surrender_charge_by_premium_year) if(n === k) return v; return 0; };
+  const startBE = o.startBE || 2569, startMonth = o.startMonth || 1;
+  const years = Math.max(0, (o.endAge || U.cover_to_age) - o.age);
+  const months = o.months || years * 12;
+  let main = 0, top = 0, paidCount = 0, cumPrem = 0, cumTop = 0, lapse = null;
+  const rows = [];
+  let yr = null;
+  for(let m = 1; m <= months; m++){
+    const py = Math.floor((m - 1) / 12) + 1;
+    const age = o.age + py - 1;
+    const be = startBE + Math.floor((startMonth + m - 2) / 12);
+    const yearStart = (m - 1) % 12 === 0;
+    let newp = 0, tp = 0, premIn = 0, topIn = 0, pc = 0, tc = 0;
+    if(yearStart){
+      yr = {py, age, premium:0, topup:0, premCharge:0, topCharge:0, fee:0, coi:0, rider:0};
+      const pays = prem > 0 && age < (o.stopPayAge == null ? U.pay_to_age : o.stopPayAge) && age < U.pay_to_age;
+      if(pays){
+        paidCount++;
+        let cr = chargeRate(paidCount);
+        if(paidCount === 1) cr = Math.max(0, cr - disc1(prem));
+        premIn = prem; pc = prem * cr; newp = prem - pc;
+      }
+      const topAmt = Number(o.topup) || 0;
+      if(topAmt > 0 && age <= Math.min(o.topupUntilAge == null ? U.topup_max_age : o.topupUntilAge, U.topup_max_age)){
+        topIn = topAmt; tc = topAmt * topupRate(topAmt); tp = topAmt - tc;
+      }
+      cumPrem += premIn; cumTop += topIn;
+      yr.premium = premIn; yr.topup = topIn; yr.premCharge = pc; yr.topCharge = tc;
+    }
+    const sa = (o.saCutAge != null && o.saCutTo != null && age >= o.saCutAge) ? Number(o.saCutTo) : Number(o.sa);
+    const f = fee(be);
+    const base = main + top + newp + tp - f;
+    const nar = Math.max(sa - base, U.nar_floor_multiple * prem);
+    const coi = Math.round(nar * coiTab[Math.min(age, coiTab.length - 1)] / 12000 * 100) / 100;
+    const rider = o.riderAnnual ? Math.round(o.riderAnnual / 12 * 100) / 100 : (o.riderMonthlyByYear ? o.riderMonthlyByYear(py) : 0);
+    const ded = f + coi + rider;
+    const ex = main + top;
+    if(ex <= 0){ main += newp - ded; top += tp; }
+    else { main -= ded * main / ex; top -= ded * top / ex; main += newp; top += tp; }
+    main *= 1 + g; top *= 1 + g;
+    yr.fee += f; yr.coi += coi; yr.rider += rider;
+    if(main + top <= 0 && !lapse){ lapse = {py, age, month:m}; }
+    if(m % 12 === 0 || lapse){
+      const total = Math.max(0, main + top);
+      const surr = Math.max(0, main - surrRate(paidCount) * prem) + Math.max(0, top);
+      rows.push(Object.assign({}, yr, {
+        sa, value: total, valueMain: Math.max(0, main), valueTop: Math.max(0, top),
+        surrender: lapse ? 0 : Math.min(total, surr),
+        death: lapse ? 0 : Math.max(sa, total + U.death_benefit_floor_multiple * prem),
+        cumPrem, cumTop, lapsed: !!lapse,
+      }));
+      if(lapse) break;
+    }
+    o._trace && o._trace.push({m, age, fee:f, coi, rider, main, top});
+  }
+  return {rows, lapse};
+}
+function ulMinSa(U, age, premium, topup){
+  let mult = 5;
+  for(const [a,b,v] of U.min_sa_multiple_by_age) if(age >= a && age <= b) mult = v;
+  return Math.max(mult * premium + U.min_sa_topup_pct * (topup || 0), U.min_sa_floor_multiple * premium);
+}
+
+/* ================= หน้า ประกันแบบควบการลงทุน (Unit Linked) =================
+   เนื้อหาคัดจาก SI ของบริษัท (Proposal 26200018444), Sales Sheet mDesign และเอกสารอบรม UN1-UN3
+   ทุกตัวเลขค่าธรรมเนียมและอัตรา COI อ่านจาก RATES.unit_linked_mdesign ใน data/premium-rates.json */
+let ulRendered = false;
+const UL_FMT = n => (n == null || !isFinite(n)) ? '-' : Math.round(n).toLocaleString('en-US');
+const UL_PCT = v => (v * 100).toFixed(v * 100 % 1 ? 2 : 0) + '%';
+
+function ulConditionsHtml(U){
+  const pc = U.premium_charge.by_premium_year;
+  const pcRows = pc.map(([a,b,v,mx]) => `<tr><td>${b >= 999 ? `ปีที่ ${a} เป็นต้นไป` : (a === b ? `ปีที่ ${a}` : `ปีที่ ${a} – ${b}`)}</td><td>${UL_PCT(v)}</td><td>${UL_PCT(mx)}</td></tr>`).join('');
+  const discRows = U.premium_charge_discount_year1.map(([a,b,v]) => `<tr><td>${UL_FMT(a)}${b ? ' – ' + UL_FMT(b) : ' ขึ้นไป'}</td><td>${v ? UL_PCT(v) : 'ไม่มีส่วนลด'}</td></tr>`).join('');
+  const topRows = U.topup_charge.map(([a,b,v]) => `<tr><td>${a ? UL_FMT(a) : 'ไม่เกิน'}${b ? (a ? ' – ' : ' ') + UL_FMT(b) : ' ขึ้นไป'}</td><td>${UL_PCT(v)}</td></tr>`).join('');
+  const feeYears = Object.entries(U.policy_fee_by_be_year);
+  const feeRows = feeYears.map(([y,v]) => `<tr><td>พ.ศ. ${y}</td><td>${v.toFixed(2)}</td></tr>`).join('') + `<tr><td>ตั้งแต่ พ.ศ. ${U.policy_fee_cap_from_be}</td><td>${U.policy_fee_cap.toFixed(2)}</td></tr>`;
+  const surRows = U.surrender_charge_by_premium_year.map(([n,v,mx]) => `<tr><td>${n === 10 ? 'ครั้งที่ 10 เป็นต้นไป' : 'ครั้งที่ ' + n}</td><td>${UL_PCT(v)}</td><td>${UL_PCT(mx)}</td></tr>`).join('');
+  const minSaRows = U.min_sa_multiple_by_age.map(([a,b,v]) => `<tr><td>${a} – ${b} ปี</td><td>${v} เท่า</td></tr>`).join('');
+  const coiRows = [];
+  for(let a = 0; a <= 99; a++) coiRows.push(`<tr><td>${a}</td><td>${U.coi_per_1000.m[a].toFixed(4)}</td><td>${U.coi_per_1000.f[a].toFixed(4)}</td></tr>`);
+  return `
+  <div class="content-card">
+    <h2>ประกันชีวิตควบการลงทุน คืออะไร</h2>
+    <p>เป็นประกันชีวิตที่เบี้ยประกันส่วนหนึ่งถูกหักเป็นค่าใช้จ่าย แล้วที่เหลือนำไปซื้อหน่วยลงทุนในกองทุนรวมที่ลูกค้าเลือกเอง ทุกเดือนบริษัทจะ<b>ขายคืนหน่วยลงทุนอัตโนมัติ</b>เพื่อจ่ายค่าธรรมเนียมรักษากรมธรรม์ ค่าการประกันภัย (COI) และค่าสัญญาเพิ่มเติม ถ้ามูลค่าการลงทุนลดลงจนเท่ากับหรือต่ำกว่าศูนย์ <b>กรมธรรม์และสัญญาเพิ่มเติมทั้งหมดสิ้นผลทันที</b> เว้นแต่จะเติมเงิน</p>
+    <div class="ul-callout"><b>สิ่งที่ต้องเข้าใจก่อนซื้อ</b>
+      <ol>
+        <li>เป็นประกันชีวิต ไม่ใช่เงินฝาก ไม่ใช่กองทุนรวมแถมประกัน และไม่ใช่ประกันแถมกองทุน</li>
+        <li>ไม่มีการรับประกันผลตอบแทน ตัวเลขในตารางทุกตารางเป็นการสมมติอัตราผลตอบแทนเพื่อให้เห็นภาพ ผลจริงอาจมากหรือน้อยกว่า และอาจขาดทุนได้</li>
+        <li>ค่าใช้จ่ายไม่คงที่ แม้เบี้ยจะคงที่ ค่า COI จะสูงขึ้นตามอายุ และสูงขึ้นเมื่อมูลค่าการลงทุนต่ำ เพราะเงินเสี่ยงภัยสุทธิมากขึ้น</li>
+        <li>ทุนประกันยิ่งสูง ค่าการประกันภัยยิ่งแพง และแพงขึ้นเร็วเมื่ออายุมาก</li>
+        <li>ถอนเงินได้แต่มีค่าธรรมเนียม 200 บาทต่อครั้ง และเวนคืนเร็วในช่วง 9 ปีแรกมีค่าธรรมเนียมเวนคืนสูง (ดูตารางด้านล่าง)</li>
+        <li>ลดหย่อนภาษีได้เฉพาะส่วนที่เป็นค่าใช้จ่าย ส่วนที่นำไปลงทุนลดหย่อนไม่ได้</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <h2>เมืองไทยยูนิตลิงค์ 1 (mDesign) ชำระเบี้ยรายงวด · เงื่อนไขหลัก</h2>
+    <div class="table-wrap benefit-table"><table><tbody>
+      <tr><td>อายุรับประกัน</td><td>30 วัน – 70 ปี</td></tr>
+      <tr><td>ระยะเวลาคุ้มครอง</td><td>ถึงอายุครบ 99 ปี หรือตราบเท่าที่มูลค่าการลงทุนยังพอจ่ายค่าใช้จ่ายรายเดือน</td></tr>
+      <tr><td>การชำระเบี้ย</td><td>รายปี ราย 6 เดือน ราย 3 เดือน รายเดือน ชำระต่อเนื่องได้ถึงอายุ 99 ปี หรือวางแผนหยุดพักชำระก่อนก็ได้</td></tr>
+      <tr><td>เบี้ยประกันภัยหลักขั้นต่ำ</td><td>รายปี ${UL_FMT(U.min_premium.annual)} · ราย 6 เดือน ${UL_FMT(U.min_premium.semiannual)} · ราย 3 เดือน ${UL_FMT(U.min_premium.quarterly)} · รายเดือน ${UL_FMT(U.min_premium.monthly)} บาท ขั้นสูงไม่จำกัด</td></tr>
+      <tr><td>ปรับเบี้ยหลัก</td><td>ลดเบี้ยหลักได้ แต่ต้องไม่ต่ำกว่าขั้นต่ำ และ<b>เพิ่มเบี้ยหลักไม่ได้</b></td></tr>
+      <tr><td>เบี้ยส่วนที่เป็นเงินออมเพิ่มเติม (Top Up)</td><td>ขั้นต่ำ ${UL_FMT(U.topup_min)} บาทต่อครั้ง สูงสุดไม่เกินเบี้ยประกันภัยหลักต่อปีที่ชำระแล้ว ทำได้ถึงอายุ ${U.topup_max_age} ปี ไม่มีค่าธรรมเนียมเวนคืนในส่วน Top Up</td></tr>
+      <tr><td>ทุนประกันขั้นต่ำ</td><td>ค่าที่มากกว่าระหว่าง (1) จำนวนเท่าของเบี้ยหลักต่อปีตามอายุ + 125% ของเบี้ย Top Up − 125% ของเงินที่ถอนออกบางส่วน กับ (2) 3 เท่าของเบี้ยหลักต่อปี</td></tr>
+      <tr><td>ทุนประกันขั้นสูง</td><td>ไม่จำกัด แต่ต้องผ่านการทดสอบว่ามูลค่าการลงทุน<b>ต้องไม่ต่ำกว่าศูนย์ภายใน 10 ปี เมื่อทดสอบที่ผลตอบแทน −1% ต่อปี</b></td></tr>
+      <tr><td>เพิ่ม/ลดทุนประกัน</td><td>ทำได้ปีละ 1 ครั้ง ลดได้ไม่ต่ำกว่าทุนขั้นต่ำ การเพิ่มทุนต้องผ่านการพิจารณารับประกันใหม่ และระยะเวลาโต้แย้ง 2 ปีกับข้อยกเว้นฆ่าตัวตาย 1 ปีเริ่มนับใหม่เฉพาะส่วนทุนที่เพิ่ม</td></tr>
+      <tr><td>ผลประโยชน์กรณีเสียชีวิต</td><td>จำนวนที่มากกว่าระหว่าง (1) ทุนประกัน − เงินที่ถอนออกบางส่วน กับ (2) มูลค่าขายคืนหน่วยลงทุน + 3 เท่าของเบี้ยหลักต่อปี</td></tr>
+      <tr><td>อยู่ครบอายุ 99 ปี</td><td>รับมูลค่าขายคืนหน่วยลงทุน</td></tr>
+      <tr><td>เวนคืนกรมธรรม์</td><td>รับมูลค่าขายคืนหน่วยลงทุน หักค่าธรรมเนียมเวนคืน (ถ้ามี)</td></tr>
+      <tr><td>การลงทุน</td><td>เลือกได้ไม่เกิน ${U.max_funds} กองทุน แต่ละกองไม่ต่ำกว่า ${U.min_fund_pct}% ของเงินลงทุน มีกองให้เลือก 53 กองจาก 11 บลจ. (ข้อมูล 17 มิ.ย. 2567) หรือเลือกพอร์ตแนะนำ MTL Portfolio Management 5 ระดับ ตั้งแต่ Low Risk ถึง Aggressive</td></tr>
+      <tr><td>สัญญาเพิ่มเติม</td><td>แนบได้เฉพาะตอนซื้อพร้อมสัญญาหลัก <b>เพิ่มทีหลังไม่ได้</b> ลดแผนได้แต่เพิ่มไม่ได้ ค่าสัญญาเพิ่มเติมหักจากมูลค่าการลงทุนเป็นรายเดือน และปรับขึ้นตามอายุทุกปี</td></tr>
+    </tbody></table></div>
+  </div>
+
+  <div class="content-card">
+    <h2>ค่าใช้จ่ายทั้งหมดของกรมธรรม์</h2>
+    <h3>1. ค่าใช้จ่ายในการดำเนินการสำหรับเบี้ยประกันภัยหลัก (Premium Charge)</h3>
+    <p>หักจากเบี้ยหลักทุกครั้งที่ชำระ นับตามครั้งที่ชำระเบี้ย (รายปีนับปีละครั้ง ราย 6 เดือนครั้งที่ 1–2 = ปีที่ 1 ราย 3 เดือนครั้งที่ 1–4 = ปีที่ 1 รายเดือนครั้งที่ 1–12 = ปีที่ 1)</p>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>ปีที่ชำระเบี้ย</th><th>อัตราที่เรียกเก็บ (% ของเบี้ยหลัก)</th><th>อัตราสูงสุดตามกรมธรรม์</th></tr></thead><tbody>${pcRows}</tbody></table></div>
+    <p>ส่วนลดค่าใช้จ่ายในการดำเนินการเฉพาะปีกรมธรรม์ที่ 1 ตามเบี้ยหลักต่อปี</p>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>เบี้ยหลักต่อปี (บาท)</th><th>ส่วนลด</th></tr></thead><tbody>${discRows}</tbody></table></div>
+    <p class="meta">ตัวอย่าง เบี้ย 100,000 บาท ปีแรกหัก 40% − 2.5% = 37.5% คือ 37,500 บาท เหลือลงทุน 62,500 บาท ก่อนหักค่าธรรมเนียมรายเดือน</p>
+
+    <h3>2. ค่าใช้จ่ายในการดำเนินการสำหรับเบี้ย Top Up</h3>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>เบี้ย Top Up ต่อครั้ง (บาท)</th><th>อัตราที่เรียกเก็บ</th></tr></thead><tbody>${topRows}</tbody></table></div>
+    <p class="meta">อัตราสูงสุดตามกรมธรรม์ไม่เกิน ${UL_PCT(U.topup_charge_max)} ของเบี้ย Top Up</p>
+
+    <h3>3. ค่าธรรมเนียมการรักษากรมธรรม์ (Policy Fee) หักทุกเดือน</h3>
+    <p>เริ่ม 111.42 บาทต่อเดือนในปี พ.ศ. 2562 เพิ่มขึ้นตามอัตราเงินเฟ้อ 2% ต่อปี สูงสุดไม่เกิน 150 บาทต่อเดือน (กรมธรรม์กำหนดเพดาน 150 บาท และเงินเฟ้อไม่เกิน 3% ต่อปี) อัตราเปลี่ยนตามปี พ.ศ. ไม่ใช่ตามปีกรมธรรม์</p>
+    <div class="table-wrap benefit-table ul-fee-table"><table><thead><tr><th>ปี</th><th>บาท/เดือน</th></tr></thead><tbody>${feeRows}</tbody></table></div>
+
+    <h3>4. ค่าการประกันภัยกรณีมรณกรรม (COI) หักทุกเดือน</h3>
+    <p><b>COI รายเดือน = อัตราค่าการประกันภัยรายปีตามอายุ × เงินเสี่ยงภัยสุทธิ ÷ 12,000</b></p>
+    <p><b>เงินเสี่ยงภัยสุทธิ</b> = ทุนประกัน − มูลค่าการลงทุน หรือ 3 เท่าของเบี้ยหลักต่อปี แล้วแต่จำนวนใดสูงกว่า อายุที่ใช้คืออายุในหน้าตารางกรมธรรม์สำหรับปีแรก และอายุ ณ วันครบรอบปีกรมธรรม์ในปีต่อไป</p>
+    <p>ผลที่ตามมา: ถ้ามูลค่าการลงทุนโตเร็ว เงินเสี่ยงภัยสุทธิลดลง COI ก็ลดลง ถ้าตลาดแย่หรือถอนเงินออก COI จะสูงขึ้น และเมื่ออายุมาก อัตราขึ้นเร็วมาก เช่น ชายอายุ 40 ปี ${U.coi_per_1000.m[40]} บาท อายุ 70 ปี ${U.coi_per_1000.m[70]} บาท อายุ 90 ปี ${U.coi_per_1000.m[90]} บาทต่อเงินเสี่ยงภัย 1,000 บาทต่อปี</p>
+    <details class="ul-details"><summary>ดูตารางอัตราค่าการประกันภัยรายปีต่อเงินเสี่ยงภัยสุทธิ 1,000 บาท ทุกอายุ (ตารางมรณะไทยพื้นฐานปี 2560)</summary>
+      <div class="table-wrap benefit-table" style="max-height:360px;"><table><thead><tr><th>อายุ</th><th>ชาย</th><th>หญิง</th></tr></thead><tbody>${coiRows.join('')}</tbody></table></div>
+      <p class="meta">อัตรามรณะที่ใช้คำนวณจะเปลี่ยนไปตามตารางมรณะไทยฉบับล่าสุด</p>
+    </details>
+
+    <h3>5. ค่าการประกันภัยสัญญาเพิ่มเติม (Cost of Rider)</h3>
+    <p>สัญญาเพิ่มเติมที่แนบกับยูนิตลิงค์เป็นแบบชำระค่าการประกันภัยโดยการขายคืนหน่วยลงทุน (UDR) คือบริษัทขายหน่วยลงทุนทุกเดือนมาจ่าย ไม่ว่าจะชำระเบี้ยหลักเป็นรายปีหรือรายเดือน ค่าสัญญาเพิ่มเติมปรับตามอายุและอาชีพทุกรอบปีกรมธรรม์ และบริษัทปรับอัตราได้ตามที่นายทะเบียนเห็นชอบ โดยแจ้งล่วงหน้าเป็นลายลักษณ์อักษร ผู้เอาประกันมีสิทธิไม่ต่ออายุสัญญาเพิ่มเติมได้ ยิ่งแนบสัญญาสุขภาพแพง มูลค่าการลงทุนยิ่งหมดเร็วเมื่อผลตอบแทนไม่พอ</p>
+
+    <h3>6. ค่าบริหารกรมธรรม์ (Admin Fee)</h3>
+    <p>แบบ mDesign ไม่มี (แบบชำระครั้งเดียว mOne และ mOnePlus มีค่าบริหารกรมธรรม์ 0.5% – 0.7% ต่อปีของมูลค่าการลงทุน)</p>
+
+    <h3>7. ค่าธรรมเนียมอื่น</h3>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>รายการ</th><th>ที่เรียกเก็บปัจจุบัน</th><th>สูงสุดตามกรมธรรม์</th></tr></thead><tbody>
+      <tr><td>ถอนเงินลงทุนออกบางส่วน</td><td>200 บาทต่อครั้ง</td><td>1% ของเงินที่ถอน และ 200 บาทต่อครั้ง</td></tr>
+      <tr><td>เปลี่ยนแปลงการจัดสรรเงินลงทุน</td><td>0 บาท</td><td>100 บาทต่อครั้ง</td></tr>
+      <tr><td>สับเปลี่ยนกองทุน</td><td>0% และ 0 บาท</td><td>1% ของเงินที่สับเปลี่ยน และ 200 บาทต่อครั้ง</td></tr>
+      <tr><td>รายงานสถานะทางการเงิน</td><td>ส่งให้ฟรีอย่างน้อยเดือนละ 1 ครั้ง ขอเพิ่มฉบับละ 50 บาท</td><td>ครั้งละ 200 บาท</td></tr>
+      <tr><td>ต่ออายุกรมธรรม์ (กลับคืนสถานะ)</td><td>ครั้งละ 200 บาท</td><td>ครั้งละ 400 บาท</td></tr>
+      <tr><td>ยกเลิกกรมธรรม์ภายใน 15 วัน (Free Look)</td><td colspan="2">คืนมูลค่าขายคืนหน่วยลงทุน + ค่าใช้จ่ายในการดำเนินการ + ค่าการประกันภัย + ค่าธรรมเนียมรักษากรมธรรม์ + ค่าใช้จ่ายอื่น หักค่าใช้จ่ายของบริษัท 500 บาท และค่าตรวจสุขภาพที่จ่ายจริง (ถ้ามี)</td></tr>
+    </tbody></table></div>
+    <p class="meta">บริษัทเปลี่ยนค่าใช้จ่ายอื่นได้โดยแจ้งล่วงหน้าเป็นหนังสือไม่น้อยกว่า 30 วัน แต่ไม่เกินอัตราสูงสุดที่นายทะเบียนเห็นชอบ</p>
+
+    <h3>8. ค่าธรรมเนียมเวนคืนกรมธรรม์</h3>
+    <p>คิดเป็น % ของเบี้ยหลักต่อปี ตามครั้งที่ชำระเบี้ยหลักไปแล้ว หักจากมูลค่าส่วนเบี้ยหลักเท่านั้น ส่วน Top Up ไม่มีค่าธรรมเนียมเวนคืน</p>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>ครั้งที่ชำระเบี้ยหลัก (รายปี)</th><th>ที่เรียกเก็บ</th><th>สูงสุดตามกรมธรรม์</th></tr></thead><tbody>${surRows}</tbody></table></div>
+    <p class="meta">ราย 6 เดือนครั้งที่ 1–2 / ราย 3 เดือนครั้งที่ 1–4 / รายเดือนครั้งที่ 1–12 นับเป็นปีที่ 1 และเลื่อนไปตามลำดับ เช่น รายเดือนครั้งที่ 109 ขึ้นไปไม่มีค่าธรรมเนียม</p>
+  </div>
+
+  <div class="content-card">
+    <h2>การชำระเบี้ย หยุดพัก ถอน และขาดอายุ</h2>
+    <h3>หยุดพักชำระเบี้ย (Premium Holiday)</h3>
+    <ul>
+      <li>เกิดขึ้นเมื่อไม่ชำระเบี้ยหลักภายในระยะเวลาผ่อนผัน ${U.grace_days} วัน</li>
+      <li>กรมธรรม์ยังมีผลบังคับต่อไปตราบเท่าที่มูลค่าการลงทุนพอจ่ายค่าใช้จ่ายรายเดือน (ค่าธรรมเนียมรักษากรมธรรม์ + COI + ค่าสัญญาเพิ่มเติม) ค่าใช้จ่ายเหล่านี้<b>ยังเกิดขึ้นทุกเดือนแม้หยุดชำระ</b></li>
+      <li>กลับคืนสถานะปกติได้โดยชำระเบี้ยหลัก 1 งวด สำหรับรายปี ราย 6 เดือน ราย 3 เดือน และ 3 งวด สำหรับรายเดือน</li>
+      <li>การหยุดพักระยะยาวทำได้เมื่อผลตอบแทนพอกับค่าใช้จ่ายทั้งหมดในอนาคต ใช้เครื่องจำลองด้านล่างดูอายุที่มูลค่าจะหมด</li>
+    </ul>
+    <h3>ถอนเงินลงทุนออกบางส่วน (Partial Withdrawal)</h3>
+    <ul>
+      <li>ถอนครั้งละไม่ต่ำกว่า ${UL_FMT(U.withdraw_min)} บาท และต้องมีมูลค่าการลงทุนคงเหลือหลังถอนไม่ต่ำกว่า ${UL_FMT(U.withdraw_min_remaining)} บาท ค่าธรรมเนียม 200 บาทต่อครั้ง</li>
+      <li>เงินที่ถอนไปจะ<b>ลดผลประโยชน์กรณีเสียชีวิต</b> (ทุนประกัน − เงินที่ถอน) และลดทุนประกันขั้นต่ำลง 125% ของเงินที่ถอน</li>
+      <li>ถอนในช่วงที่ยังมีค่าธรรมเนียมเวนคืน เงินที่ได้อาจน้อยกว่ามูลค่าขายคืนหน่วยลงทุน</li>
+      <li>ระยะเวลา: เอกสารถึงบริษัทก่อน 15.00 น. อนุมัติในวันเดียวกัน ขายหน่วยวันทำการถัดไป รับเงินบัญชีกสิกรไทย T+1 เช็ค T+2 ธนาคารอื่น T+3 นับจากวันสั่งจ่าย กองต่างประเทศบางกองอาจนานกว่านี้</li>
+    </ul>
+    <h3>เมื่อไหร่กรมธรรม์ขาดอายุ</h3>
+    <p>เมื่อมูลค่าการลงทุนเท่ากับหรือต่ำกว่าศูนย์ กรมธรรม์และสัญญาเพิ่มเติมทั้งหมดสิ้นผล บริษัทส่งหนังสือแจ้งเตือนเมื่อมูลค่าไม่พอชำระค่าใช้จ่ายล่วงหน้าประมาณ 2 เดือน และส่งหนังสือแจ้งเมื่อกรมธรรม์ขาดอายุ มูลค่าอาจหมดในปีใดปีหนึ่งก็ได้ ไม่จำเป็นต้องเป็นตอนอายุมาก</p>
+    <h3>การซื้อขายหน่วยลงทุน</h3>
+    <ul>
+      <li>เบี้ยงวดแรก: ลงทุนตามสัดส่วนที่ระบุภายใน 3 วันทำการนับจากวันอนุมัติกรมธรรม์ ใช้ราคาวันทำการถัดจากวันเริ่มสัญญา</li>
+      <li>เบี้ยงวดต่อไปและ Top Up: ลงทุนภายใน 3 วันทำการถัดจากวันที่บริษัทได้รับเงินหรือทราบผลการเรียกเก็บเงิน</li>
+      <li>ค่าใช้จ่ายรายเดือน: ขายคืนหน่วยทุกเดือน ณ วันที่ตรงกับวันเริ่มสัญญา (ทำรายการวันทำการถัดไป) ถ้ามีธุรกรรมค้าง จะขายหลังธุรกรรมนั้นเสร็จ</li>
+      <li>บริษัทเปลี่ยนแปลงหรือยกเลิกกองทุนได้ โดยแจ้งล่วงหน้าไม่น้อยกว่า 1 เดือน ถ้าลูกค้าไม่เลือกกองใหม่ บริษัทสับเปลี่ยนไปกองที่นโยบายใกล้เคียงโดยไม่คิดค่าธรรมเนียม</li>
+    </ul>
+    <h3>ปรับสัดส่วนการลงทุนอัตโนมัติ (AFR)</h3>
+    <p>ไม่มีค่าธรรมเนียม เลือกรอบได้ทุก 3, 6 หรือ 12 เดือน (ขายคืนครั้งแรกวันที่ 21 ของเดือน มี.ค. มิ.ย. ก.ย. ธ.ค. ถ้าส่งคำสั่งหลังวันที่ 20 จะเริ่มรอบถัดไป) รวมกันไม่เกิน 10 กองทุน แต่ละกองไม่น้อยกว่า 5% AFR สิ้นสุดทันทีเมื่อถอนเงินบางส่วน สับเปลี่ยนกองทุน ขอยกเลิก เปลี่ยนสัดส่วนการจัดสรร ชำระเบี้ยหรือ Top Up ด้วยสัดส่วนที่ต่างไป กรมธรรม์ขาดอายุ หรือสิ้นผลบังคับ</p>
+  </div>
+
+  <div class="content-card">
+    <h2>ทุนประกันขั้นต่ำ การตรวจสุขภาพ และภาษี</h2>
+    <h3>จำนวนเท่าของเบี้ยหลักต่อปี สำหรับทุนประกันขั้นต่ำ</h3>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>อายุ</th><th>จำนวนเท่าของเบี้ยหลักต่อปี</th></tr></thead><tbody>${minSaRows}</tbody></table></div>
+    <p class="meta">บวก 125% ของเบี้ย Top Up หัก 125% ของเงินที่ถอนออกบางส่วน และต้องไม่น้อยกว่า 3 เท่าของเบี้ยหลักต่อปี บริษัทเปลี่ยนจำนวนเท่าได้โดยแจ้งล่วงหน้า 30 วัน</p>
+    <h3>เกณฑ์ตรวจสุขภาพ (มีผล 15 ก.ค. 2564)</h3>
+    <p>นับทุนเพื่อตรวจสุขภาพของ mDesign = ทุนประกัน − เบี้ย Top Up รวมกับทุนกรมธรรม์เดิมที่ยังมีผลบังคับ ไม่ต้องตรวจถ้าไม่เกิน: อายุ 0–15 ปี 7,500,000 · 16–45 ปี 10,000,000 · 46–50 ปี 10,000,000 · 51–60 ปี 6,000,000 · 61–80 ปี 3,000,000 · 81–90 ปีตรวจทุกราย ใน 9 จังหวัด (แม่ฮ่องสอน เชียงราย เชียงใหม่ ลำพูน ลำปาง แพร่ น่าน พะเยา ระยอง) ตรวจ Anti-HIV เมื่อทุนเกิน 3,000,000 บาท บริษัทขอผลตรวจเพิ่มได้ทุกกรณี</p>
+    <h3>สิทธิลดหย่อนภาษี</h3>
+    <p>ใช้สิทธิในหมวดเบี้ยประกันชีวิตได้เฉพาะส่วนค่าใช้จ่าย ได้แก่ ค่าใช้จ่ายในการดำเนินการของเบี้ยหลักและ Top Up ค่า COI ค่าสัญญาเพิ่มเติม ค่าธรรมเนียมรักษากรมธรรม์ และค่าบริหารกรมธรรม์ จ่ายปีไหนใช้สิทธิปีนั้น ใช้ได้ทุกปีแม้อยู่ระหว่างหยุดพักชำระเบี้ย ขอหนังสือรับรองผ่านแอป MTL Click เงินส่วนที่นำไปลงทุนนำไปลดหย่อนไม่ได้</p>
+    <h3>ข้อกำหนดสำคัญอื่น</h3>
+    <ul>
+      <li>บริษัทโต้แย้งความไม่สมบูรณ์ของสัญญาได้ภายใน 2 ปีนับจากวันเริ่มคุ้มครอง (หรือวันต่ออายุครั้งล่าสุด หรือวันอนุมัติเพิ่มทุนเฉพาะส่วนที่เพิ่ม) และต้องใช้สิทธิภายใน 1 เดือนนับแต่ทราบข้อมูล</li>
+      <li>ไม่คุ้มครองการฆ่าตัวตายภายใน 1 ปี หรือถูกผู้รับประโยชน์ฆ่าตาย</li>
+      <li>บริษัทปฏิเสธคำขอได้ถ้าลูกค้าไม่ทำแบบประเมิน Suitability Test หรือให้ข้อมูลไม่ครบ หรือมีปัญหาสุขภาพ</li>
+      <li>ช่องทางร้องเรียน: Call Center 1766 · ก.ล.ต. 1207 · คปภ. 1186</li>
+    </ul>
+  </div>
+
+  <div class="content-card">
+    <h2>ยูนิตลิงค์ของเมืองไทยแบบอื่น (สรุปจากเอกสารอบรม)</h2>
+    <div class="table-wrap benefit-table"><table><thead><tr><th>หัวข้อ</th><th>mOne</th><th>mOnePlus</th><th>mDesign</th><th>mGrow615</th></tr></thead><tbody>
+      <tr><td>การชำระ</td><td>ครั้งเดียว</td><td>ครั้งเดียว</td><td>รายงวด ถึงอายุ 99</td><td>รายงวด 6 ปี คุ้มครอง 15 ปี</td></tr>
+      <tr><td>อายุรับ</td><td>30 วัน – 70 ปี</td><td>30 วัน – 80 ปี</td><td>30 วัน – 70 ปี</td><td>30 วัน – 70 ปี</td></tr>
+      <tr><td>เบี้ยขั้นต่ำ</td><td>75,000</td><td>50,000</td><td>รายปี 20,000</td><td>รายปี 20,000</td></tr>
+      <tr><td>ทุนขั้นต่ำ</td><td>1.25 เท่าของเบี้ย + 1.25 เท่าของ Top Up</td><td>1.5 เท่าของเบี้ย + 98% ของ Top Up</td><td>5–15 เท่าตามอายุ</td><td>3–10 เท่าตามอายุ</td></tr>
+      <tr><td>ค่าธรรมเนียมเบี้ย</td><td>4.25–5%</td><td>ไม่มี (Top Up 2%)</td><td>40/27/19/4%</td><td>8/6/4/2%</td></tr>
+      <tr><td>ค่าบริหารกรมธรรม์ต่อปี</td><td>ไม่มี (มีค่ารักษากรมธรรม์ไม่เกิน 150 บาท/เดือน)</td><td>0.5–0.7% ของมูลค่า</td><td>ไม่มี</td><td>0.5–0.7% ของมูลค่า</td></tr>
+      <tr><td>ผลประโยชน์เสียชีวิต</td><td>มากกว่าระหว่างทุน กับ มูลค่า + 25% ของเบี้ย</td><td>มากกว่าระหว่างทุน กับ มูลค่า + 50% ของเบี้ย</td><td>มากกว่าระหว่างทุน กับ มูลค่า + 3 เท่าของเบี้ยต่อปี</td><td>ทุน + มูลค่าการลงทุน</td></tr>
+      <tr><td>แนบสัญญาสุขภาพ</td><td>ไม่ได้</td><td>ได้</td><td>ได้</td><td>ได้</td></tr>
+      <tr><td>จุดเด่น</td><td>ไม่มีค่าธรรมเนียมเวนคืน</td><td>ไม่มีค่าธรรมเนียมเบี้ยหลัก</td><td>หยุดพักชำระได้ ทุนสูง</td><td>โบนัส 2% ของเบี้ยปีที่ 1–6 และ Non-Lapse Guaranteed เมื่อไม่ลด ไม่ถอน ไม่หยุด</td></tr>
+    </tbody></table></div>
+    <p class="meta">เครื่องจำลองในหน้านี้ใช้สูตรของ mDesign เท่านั้น แบบอื่นค่าธรรมเนียมต่างกัน</p>
+  </div>`;
+}
+
+function ulSimFormHtml(){
+  return `
+  <div class="content-card" id="ulSimCard">
+    <h2>จำลองมูลค่ากรมธรรม์ mDesign (กราฟ + ตาราง)</h2>
+    <p class="meta">สูตรเดียวกับเอกสารประกอบการขาย (SI) ของบริษัท ตรวจแล้วตรงกับ SI ทุกเดือนในปีกรมธรรม์ที่ 1–2 · ชำระเบี้ยรายปี · ผลตอบแทนเป็นตัวเลขสมมติ ไม่การันตี ก่อนเสนอลูกค้าต้องออก SI จากระบบบริษัททุกครั้ง</p>
+    <div class="ul-form">
+      <label>เพศ<select id="ulGender"><option value="m">ชาย</option><option value="f">หญิง</option></select></label>
+      <label>อายุ (ปี)<input id="ulAge" type="number" min="0" max="70" value="35"></label>
+      <label>เบี้ยประกันภัยหลักต่อปี (บาท)<input id="ulPrem" type="number" min="20000" step="1000" value="100000"></label>
+      <label>ทุนประกัน (บาท)<input id="ulSa" type="number" min="0" step="10000" value="1500000"><small id="ulSaHint"></small></label>
+      <label>เบี้ย Top Up ต่อปี (บาท)<input id="ulTop" type="number" min="0" step="1000" value="0"><small>ขั้นต่ำ 5,000 ไม่เกินเบี้ยหลักต่อปี</small></label>
+      <label>Top Up ถึงอายุ<input id="ulTopAge" type="number" min="0" max="70" value="60"></label>
+      <label>หยุดชำระเบี้ยตั้งแต่อายุ<input id="ulStopAge" type="number" min="1" max="99" value="60"><small>ใส่ 99 ถ้าชำระตลอด</small></label>
+      <label>ลดทุนประกันตั้งแต่อายุ (ไม่ใส่ = ไม่ลด)<input id="ulCutAge" type="number" min="1" max="98" value=""></label>
+      <label>ลดทุนเหลือ (บาท)<input id="ulCutTo" type="number" min="0" step="10000" value=""></label>
+      <label>อัตราผลตอบแทนสมมติต่อปี (%)<input id="ulRate" type="number" step="0.5" min="-5" max="12" value="5"></label>
+      <label>ค่าสัญญาเพิ่มเติมที่หักจากกรมธรรม์ ต่อปี (บาท)<input id="ulRider" type="number" min="0" step="1000" value="0"><small>ใส่ค่าเฉลี่ยโดยประมาณ ของจริงขึ้นตามอายุ</small></label>
+    </div>
+    <div class="ul-actions"><button class="btn" type="button" onclick="ulRunSim()">คำนวณ</button>
+      <button class="btn btn-ghost" type="button" onclick="ulUseMinSa()">ใช้ทุนประกันขั้นต่ำ</button></div>
+    <div id="ulWarn"></div>
+    <div id="ulSummary" class="ul-summary"></div>
+    <div id="ulChart"></div>
+    <div id="ulTable"></div>
+  </div>`;
+}
+
+function ulReadForm(){
+  const v = id => document.getElementById(id).value;
+  const num = id => v(id) === '' ? null : Number(v(id));
+  const d = new Date();
+  return {gender: v('ulGender'), age: num('ulAge'), premium: num('ulPrem'), sa: num('ulSa'),
+    topup: num('ulTop') || 0, topupUntilAge: num('ulTopAge'), stopPayAge: num('ulStopAge'),
+    saCutAge: num('ulCutAge'), saCutTo: num('ulCutTo'), rate: (num('ulRate') || 0) / 100,
+    riderAnnual: num('ulRider') || 0, startBE: d.getFullYear() + 543, startMonth: d.getMonth() + 1};
+}
+function ulUseMinSa(){
+  const U = RATES.unit_linked_mdesign, o = ulReadForm();
+  document.getElementById('ulSa').value = Math.ceil(ulMinSa(U, o.age, o.premium, o.topup) / 1000) * 1000;
+  ulRunSim();
+}
+function ulChartSvg(rows, startAge){
+  if(!rows.length) return '';
+  const W = 760, H = 300, L = 70, R = 14, T = 16, B = 34;
+  const series = [
+    {k:'value', label:'มูลค่าการลงทุน', color:'#c2185b'},
+    {k:'death', label:'ผลประโยชน์กรณีเสียชีวิต', color:'#1e4f78'},
+    {k:'paid', label:'เบี้ยสะสมที่จ่าย (หลัก + Top Up)', color:'#9e9e9e'},
+  ];
+  const pts = rows.map(r => ({age: r.age + 1, value: r.value, death: r.death, paid: r.cumPrem + r.cumTop}));
+  const maxY = Math.max(1, ...pts.flatMap(p => series.map(s => p[s.k])));
+  const ages = pts.map(p => p.age), a0 = startAge, a1 = Math.max(...ages);
+  const x = a => L + (a - a0) / Math.max(1, a1 - a0) * (W - L - R);
+  const y = v => T + (1 - v / maxY) * (H - T - B);
+  const step = Math.pow(10, Math.floor(Math.log10(maxY))) * (maxY / Math.pow(10, Math.floor(Math.log10(maxY))) > 5 ? 2 : 1);
+  let grid = '';
+  for(let v = 0; v <= maxY; v += step) grid += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#eee"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#777">${v >= 1e6 ? (v/1e6).toFixed(v % 1e6 ? 1 : 0) + ' ล.' : UL_FMT(v)}</text>`;
+  for(let a = Math.ceil(a0/10)*10; a <= a1; a += 10) grid += `<text x="${x(a)}" y="${H-12}" text-anchor="middle" font-size="10" fill="#777">อายุ ${a}</text>`;
+  const lines = series.map(s => `<polyline fill="none" stroke="${s.color}" stroke-width="2.2" points="${pts.map(p => x(p.age).toFixed(1)+','+y(p[s.k]).toFixed(1)).join(' ')}"/>`).join('');
+  const legend = series.map(s => `<span class="ul-leg"><i style="background:${s.color}"></i>${s.label}</span>`).join('');
+  return `<div class="ul-chart"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="กราฟมูลค่ากรมธรรม์">${grid}${lines}</svg><div class="ul-legend">${legend}</div></div>`;
+}
+function ulRunSim(){
+  const U = RATES.unit_linked_mdesign, o = ulReadForm();
+  const warn = [];
+  if(!(o.age >= 0 && o.age <= 70)) warn.push('อายุรับประกัน 30 วัน – 70 ปี');
+  if(!(o.premium >= U.min_premium.annual)) warn.push(`เบี้ยหลักรายปีขั้นต่ำ ${UL_FMT(U.min_premium.annual)} บาท`);
+  const minSa = ulMinSa(U, o.age, o.premium || 0, o.topup);
+  document.getElementById('ulSaHint').textContent = `ทุนขั้นต่ำ ${UL_FMT(minSa)} บาท`;
+  if(o.sa < minSa) warn.push(`ทุนประกันต่ำกว่าขั้นต่ำ ${UL_FMT(minSa)} บาท`);
+  if(o.topup && (o.topup < U.topup_min || o.topup > o.premium)) warn.push(`Top Up ต้องไม่ต่ำกว่า ${UL_FMT(U.topup_min)} บาท และไม่เกินเบี้ยหลักต่อปี`);
+  if(o.saCutAge != null && o.saCutTo != null){
+    const minAtCut = ulMinSa(U, Math.min(70, o.saCutAge), o.premium || 0, 0);
+    if(o.saCutTo < minAtCut) warn.push(`ทุนหลังลดต้องไม่ต่ำกว่าทุนขั้นต่ำ (${UL_FMT(minAtCut)} บาท ที่อายุ ${o.saCutAge} ปี)`);
+  }
+  // ทดสอบเพดานทุนตามกรมธรรม์: ผลตอบแทน -1% ต้องไม่หมดภายใน 10 ปี
+  const test = ulSimulate(Object.assign({}, o, {rate:-0.01, months:120}), U);
+  if(test.lapse) warn.push(`ทุนนี้ไม่ผ่านเกณฑ์ทุนสูงสุด: ที่ผลตอบแทน -1% มูลค่าหมดในปีกรมธรรม์ที่ ${test.lapse.py} (กรมธรรม์กำหนดว่าต้องไม่หมดภายใน 10 ปี) ต้องลดทุนหรือเพิ่มเบี้ย`);
+  document.getElementById('ulWarn').innerHTML = warn.length ? `<div class="ul-warn">${warn.map(w => '• ' + w).join('<br>')}</div>` : '';
+  const res = ulSimulate(o, U);
+  const rows = res.rows;
+  const at = age => rows.find(r => r.age + 1 === age);
+  const card = (t, v) => `<div class="ul-card"><span>${t}</span><b>${v}</b></div>`;
+  const paid = rows.length ? rows[rows.length-1].cumPrem + rows[rows.length-1].cumTop : 0;
+  let sum = card('เบี้ยที่จ่ายรวม', UL_FMT(paid) + ' บาท');
+  for(const a of [60, 80, 99]) if(a > o.age){ const r = at(a); sum += card(`มูลค่าการลงทุน ณ อายุ ${a}`, r ? UL_FMT(r.value) + ' บาท' : 'กรมธรรม์ขาดอายุแล้ว'); }
+  sum += card('สถานะ', res.lapse ? `มูลค่าหมด ขาดอายุตอนอายุ ${res.lapse.age} ปี` : 'มีผลบังคับถึงอายุ 99 ปี');
+  document.getElementById('ulSummary').innerHTML = sum;
+  document.getElementById('ulChart').innerHTML = ulChartSvg(rows, o.age);
+  const body = rows.map(r => `<tr${r.lapsed ? ' class="ul-lapse"' : ''}><td>${r.py}</td><td>${r.age}</td><td>${UL_FMT(r.premium)}</td><td>${UL_FMT(r.topup)}</td><td>${UL_FMT(r.premCharge + r.topCharge)}</td><td>${UL_FMT(r.fee)}</td><td>${UL_FMT(r.coi)}</td><td>${UL_FMT(r.rider)}</td><td>${UL_FMT(r.value)}</td><td>${UL_FMT(r.surrender)}</td><td>${UL_FMT(r.death)}</td></tr>`).join('');
+  document.getElementById('ulTable').innerHTML = `<div class="table-wrap ul-table"><table><thead><tr><th>ปีที่</th><th>อายุต้นปี</th><th>เบี้ยหลัก</th><th>Top Up</th><th>ค่าดำเนินการเบี้ย</th><th>ค่ารักษากรมธรรม์</th><th>COI</th><th>สัญญาเพิ่มเติม</th><th>มูลค่าการลงทุนสิ้นปี</th><th>มูลค่าเวนคืน</th><th>ผลประโยชน์เสียชีวิต</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="meta">ค่าใช้จ่ายเป็นยอดรวมทั้งปี มูลค่าเป็นยอด ณ สิ้นปีกรมธรรม์ ค่าธรรมเนียมรักษากรมธรรม์คิดตามปี พ.ศ. โดยถือว่าเริ่มสัญญาเดือนนี้ ค่าสัญญาเพิ่มเติมใช้ค่าคงที่ที่กรอก ของจริงปรับขึ้นตามอายุ จึงทำให้ตัวเลขจริงต่ำกว่านี้เมื่อแนบสัญญาสุขภาพ</p>`;
+}
+
+function renderUnitLinkedPage(){
+  if(ulRendered) return;
+  const U = RATES && RATES.unit_linked_mdesign;
+  const box = document.getElementById('ulContent');
+  if(!U || !box) return;
+  box.innerHTML = `<div class="faq-hero"><h1>ประกันแบบควบการลงทุน (Unit Linked)</h1>
+    <p>สรุปเงื่อนไขทั้งหมดที่ลูกค้าควรรู้ก่อนตัดสินใจ ตัวเลขทุกตัวมาจากเอกสารเสนอขายและคู่มือของเมืองไทยประกันชีวิต พร้อมเครื่องจำลองมูลค่ากรมธรรม์ ผลตอบแทนไม่การันตี</p></div>`
+    + ulSimFormHtml() + ulConditionsHtml(U);
+  ulRendered = true;
+  ulRunSim();
+}
+
 function showPage(name, options = {}){
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-'+name);
@@ -15912,6 +16294,7 @@ function showPage(name, options = {}){
   if(name === 'faq' && typeof renderFaq === 'function') renderFaq();
   if(name === 'home' && typeof setHomeGender === 'function') setHomeGender(homeSampleGender);
   if(name === 'tax' && typeof renderTaxPage === 'function') renderTaxPage();
+  if(name === 'unitlinked' && typeof renderUnitLinkedPage === 'function') renderUnitLinkedPage();
   if(name === 'hospitals' && typeof hnInit === 'function') hnInit();
   if(name === 'ai'){
     const bb = document.getElementById('advBucketBox');

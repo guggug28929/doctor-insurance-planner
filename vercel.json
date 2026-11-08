@@ -37,6 +37,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/unit-linked",
+      "destination": "/index.html"
+    },
+    {
       "source": "/calculator",
       "destination": "/index.html"
     },
