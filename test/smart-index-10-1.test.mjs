@@ -76,3 +76,18 @@ test("15/6 มีปุ่มโบรชัวร์และหัวข้อ
   assert.match(html, /detailSections: \(\) => smartIndexPortfolioSection\(\)/);
   assert.match(call("smartIndexPortfolioSection"), /S&amp;P Multi-Asset Global Macro ESG Index/);
 });
+
+test("กราฟเทียบหุ้นโลก ใช้ตัวเลขรายปีจาก factsheet MSCI และโบรชัวร์ตรง ๆ", () => {
+  const b = RATES.smart_index_10_1.benchmark;
+  assert.deepEqual(b.years, [2020, 2021, 2022, 2023, 2024, 2025]);
+  assert.deepEqual(b.series.msci_acwi.calendar_pct, [16.25, 18.54, -18.36, 22.20, 17.49, 22.34]);
+  assert.deepEqual(b.series.msci_world.calendar_pct, [15.90, 21.82, -18.14, 23.79, 18.67, 21.09]);
+  const d = call("si101Data");
+  assert.equal(d.series[0].pct[2], 6.0);
+  assert.ok(Math.abs(d.series[1].cum[6] - 197.61) < 0.02);
+  const sec = call("smartIndex101CompareSection");
+  assert.match(sec, /ดัชนีของแผนนี้ เทียบกับหุ้นโลก/);
+  assert.match(sec, /stroke-dasharray="4 4"/);
+  assert.match(sec, /onpointermove="si101Move\(event\)"/);
+  assert.match(sec, /เอื้อฝั่งหุ้น/);
+});
