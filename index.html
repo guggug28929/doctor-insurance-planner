@@ -2693,6 +2693,29 @@
   .ul-changes td,.ul-changes th{padding:5px 6px;border-bottom:1px solid #f3e6ec;text-align:left;vertical-align:top;}
   .ul-changes input,.ul-changes select{width:100%;min-width:80px;}
   .ul-changes small{color:var(--muted);font-size:.7rem;display:block;margin-top:2px;}
+  .si-port h3{margin:18px 0 8px;color:var(--pink-deep);font-size:1rem;}
+  .si-hero{background:linear-gradient(120deg,#1e3a5f,#8f0d40);color:#fff;border-radius:16px;padding:16px 18px;}
+  .si-hero-name{font-size:1.15rem;font-weight:800;}
+  .si-hero-full{font-size:.78rem;opacity:.85;margin-top:4px;line-height:1.5;}
+  .si-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .si-tags span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:3px 10px;font-size:.74rem;}
+  .si-note{background:#fff7fa;border-left:4px solid var(--pink);border-radius:10px;padding:10px 14px;margin:12px 0 0;font-size:.86rem;}
+  .si-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+  .si-steps div{background:#fff;border:1px solid #f0dde5;border-radius:12px;padding:10px;display:flex;gap:8px;align-items:flex-start;font-size:.82rem;line-height:1.45;}
+  .si-steps b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--pink);color:#fff;display:grid;place-items:center;font-size:.78rem;}
+  .si-funnel,.si-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;}
+  .si-funnel div,.si-stats div{background:#fff;border:1px solid #f0dde5;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
+  .si-funnel span,.si-stats span{font-size:.76rem;color:var(--muted);}
+  .si-comp small{font-size:.7rem;color:var(--muted);line-height:1.35;} .si-cal{margin-top:8px;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));}
+  .si-funnel b,.si-stats b{font-size:1.1rem;color:#1e3a5f;} .si-stats b.neg{color:var(--danger,#b3261e);}
+  .si-formula{background:#1e3a5f;color:#fff;border-radius:12px;padding:12px 14px;font-family:ui-monospace,Menlo,monospace;font-size:.84rem;line-height:1.6;overflow-x:auto;}
+  .si-list{margin:10px 0 0 18px;font-size:.88rem;}
+  .si-view{margin-top:18px;border:1.5px solid #eab9cd;border-radius:16px;overflow:hidden;}
+  .si-view-head{background:var(--pink);color:#fff;font-weight:800;padding:9px 14px;}
+  .si-view-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+  .si-view-grid>div{padding:10px 14px;font-size:.86rem;} .si-view-grid ul{margin:6px 0 0 18px;padding:0;}
+  .si-pro{background:#f2faf5;} .si-pro b{color:#1b7a43;} .si-con{background:#fff8ef;} .si-con b{color:#a35a00;}
+  .si-verdict{padding:10px 14px;font-size:.88rem;background:#fff;border-top:1px solid #f0dde5;}
   .ul-calc-link{display:block;margin:4px 0 6px;padding:9px 12px;border:1.5px dashed var(--pink);border-radius:10px;color:var(--pink-deep);font-weight:700;text-decoration:none;font-size:.88rem;background:#fff7fa;}
   .ul-calc-link:hover{background:#ffeef5;}
   #ulSaveCard{margin:6px 0 4px;position:relative;}
@@ -2848,6 +2871,7 @@
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี เน้นการออม เงินคืนการันตี 5% ของทุนทุก 2 ปี (ปีที่ 2-14) ครบสัญญา 600% และร่วมผลตอบแทนดัชนี 50% (ไม่การันตี) ไม่ต้องตอบคำถามสุขภาพ แนบสัญญาเพิ่มเติมไม่ได้ แทนแบบ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6_pro"> เมืองไทย สมาร์ท อินเด็กซ์ 15/6 โปร (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี เน้นโอกาสเติบโต เงินคืนการันตี 2.5% ของทุนทุก 2 ปี (ปีที่ 2-14) ครบสัญญา 600% และร่วมผลตอบแทนดัชนี 100% (ไม่การันตี) เบี้ยอัตราเดียวทุกอายุ ไม่ต้องตอบคำถามสุขภาพ แนบสัญญาเพิ่มเติมไม่ได้</span></span></label>
+        <label><input type="radio" name="mainPlan" value="smart_index_10_1"> เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global) ชำระครั้งเดียว<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียวเท่ากับทุนประกัน คุ้มครองชีวิต 105% 10 ปี ครบสัญญารับ 101% ของทุน พร้อมโอกาสรับผลตอบแทนจากดัชนี (PR 150% ไม่การันตี) ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 50,000 บาท แนบสัญญาเพิ่มเติมไม่ได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="lifetime_protection"> เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">สัญญาหลักที่รวมความคุ้มครองโรคร้ายแรง 15 โรคไว้ในตัว ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ตลอดสัญญา อายุรับ 1-65 ปี ทุนขั้นต่ำ 150,000 บาท ระยะเวลาที่ไม่คุ้มครองโรคร้ายแรง 90 วัน</span></span></label>
         <div class="plan-group-label">เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ</div>
         <label><input type="radio" name="mainPlan" value="sabaijai_90_90"> วัยเก๋า คุ้มสุขใจ 90/90 (เพื่อผู้สูงอายุ)<span class="info-icon">i<span class="tooltip">ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ อายุรับ 50-75 ปี ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท ชำระและคุ้มครองถึงอายุ 90 ปี ปีที่ 1-2 เสียชีวิตจากเจ็บป่วยได้คืนเบี้ย 102% แนบได้เฉพาะอุบัติเหตุและชดเชยรายวันสำหรับผู้สูงอายุ</span></span></label>
@@ -3818,6 +3842,17 @@
     </div>
 
     <div class="plan-card">
+      <div class="cat">ประกันชีวิตแบบสะสมทรัพย์ · ชำระครั้งเดียว</div>
+      <h3>เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global)</h3>
+      <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ยครั้งเดียว • คุ้มครอง 10 ปี • ทุนขั้นต่ำ 50,000 บาท</p>
+      <ul>
+        <li>เบี้ยเท่ากับทุนประกันพอดี ครบสัญญาได้คืน 101% ของทุนแน่นอน</li>
+        <li>ลุ้นผลตอบแทนจากดัชนี Solactive Multi-Strategy ร่วม 150% (ไม่การันตี) ไม่ต้องตอบคำถามสุขภาพ</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('smartindex101')">ดูรายละเอียดเต็ม + พอร์ตลงทุน &rarr;</button>
+    </div>
+
+    <div class="plan-card">
       <div class="cat">ประกันชีวิตแบบสะสมทรัพย์</div>
       <h3>เมืองไทย สมาร์ท อินเด็กซ์ 15/6 และ 15/6 โปร (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ย 6 ปี • คุ้มครอง 15 ปี • ไม่ต้องตอบคำถามสุขภาพ</p>
@@ -4629,7 +4664,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-07b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-11a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -4955,6 +4990,13 @@ const SPECIAL_MAIN_PLANS = {
     freqAllowed:['annual'],
     hint:'คุ้มครองตลอดชีพ 99/1 มีเงินคืน: <b>เบี้ยชำระครั้งเดียวเท่ากับจำนวนเงินเอาประกันภัยพอดี</b> เพราะอัตราคือ 1,000 บาทต่อทุน 1,000 บาท เท่ากันทุกเพศทุกอายุ • คุ้มครองชีวิต <b>105%</b> ของทุน • การันตีมีเงินคืนทุกปีถึงอายุ 99 ปี • อายุรับ 30 วัน – 70 ปี • ทุน 1,000,000 ถึง 500,000,000 บาท • <b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> • แนบสัญญาเพิ่มเติมไม่ได้ • ไม่รับบัตรเครดิต • ต้องจองสิทธิ์การขายก่อนส่งงาน',
   },
+  smart_index_10_1: {
+    label:'เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global)',
+    entryAgeMin:0, entryAgeMax:80, coverToAge:null, coverYears:10, payYears:1,
+    capitalMin:50000, capitalStep:10000, capitalMaxOf: age => (age <= 15 ? 25000000 : age <= 70 ? 50000000 : 15000000), ridersLocked:true,
+    freqAllowed:['annual'],
+    hint:'สมาร์ท อินเด็กซ์ 10/1: <b>ชำระเบี้ยครั้งเดียว เท่ากับทุนประกันพอดี</b> • อายุรับ 30 วัน – 80 ปี • ทุนขั้นต่ำ 50,000 บาท สูงสุด 25 ล้าน (≤15 ปี) / 50 ล้าน (16–70 ปี) / 15 ล้าน (71–80 ปี) • คุ้มครอง 10 ปี • แนบสัญญาเพิ่มเติมไม่ได้',
+  },
   whole_life_99_1_nocash: {
     label:'เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว ไม่มีเงินคืน)',
     entryAgeMin:0, entryAgeMax:80, coverToAge:99, payYears:1,
@@ -4998,6 +5040,7 @@ const SINGLE_PREMIUM_PLANS = {
   premier_legacy_99_1: 'premier_legacy_99_1',
   whole_life_99_1_nocash: 'whole_life_99_1_nocash',
   whole_life_99_1_cashback: 'whole_life_99_1_cashback',
+  smart_index_10_1: 'smart_index_10_1',
 };
 function singlePremiumPlanPremium(plan, capital, gender, entryAge, freq){
   const g = RATES[SINGLE_PREMIUM_PLANS[plan]];
@@ -7376,7 +7419,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
     premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
     legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
-    whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash',
+    whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash', smart_index_10_1:'smartindex101',
   };
   // แบบที่ไม่ได้อยู่ใน SPECIAL_MAIN_PLANS ต้องบอกระยะชำระและอายุคุ้มครองไว้ที่นี่แทน
   const MAIN_TERM_BASE = {
@@ -9206,6 +9249,145 @@ const PENSION_COVER_IMAGES = {
 
 // Brochure PDFs currently available under /public/brochures — only these plans
 // get a download button; plans without a published PDF here show nothing.
+/* สมาร์ท อินเด็กซ์ 10/1: ตัวอย่างผลประโยชน์และพอร์ตลงทุนจากโบรชัวร์ลูกค้า (RATES.smart_index_10_1)
+   IRR คำนวณจากตัวเลขในโบรชัวร์ตรง ๆ (จ่ายครั้งเดียว รับครั้งเดียวปีที่ 10) ไม่ได้ประมาณค่าเพิ่ม */
+function smartIndex101ExampleTable(){
+  const g = RATES.smart_index_10_1; if(!g) return '';
+  const ex = g.brochure_examples;
+  const body = ex.rows.map(([r, bonus, total]) => {
+    const irr = (Math.pow(total / ex.premium, 1 / g.coverage_years) - 1) * 100;
+    return `<tr><td>ดัชนีโตเฉลี่ย ${r}% ต่อปี</td><td>${fmt(Math.round(ex.capital * g.maturity_pct / 100))}</td><td>${fmt(bonus)}</td><td><b>${fmt(total)}</b></td><td>${irr.toFixed(2)}%</td></tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table><thead><tr><th>สมมติฐานดัชนี (PR 150%)</th><th>ครบสัญญา 101% (การันตี)</th><th>ผลตอบแทนตามดัชนี</th><th>รวมรับ</th><th>IRR ต่อปี</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="meta">จ่ายเบี้ยครั้งเดียว ${fmt(ex.premium)} บาท ตัวเลขผลตอบแทนตามดัชนีเป็นตัวอย่างจากสูตรของบริษัท ไม่การันตี IRR คำนวณจากเงินที่จ่ายครั้งเดียวกับเงินที่รับตอนครบ 10 ปี</p>`;
+}
+function smartIndex101PortfolioSection(){
+  const g = RATES.smart_index_10_1; if(!g) return '';
+  const st = g.index_stats;
+  const comp = g.index_components.map(([name, style, pct]) => `<div><span>${style}</span><b>${pct}%</b><small>${name}</small></div>`).join('');
+  const cal = Object.entries(st.calendar_pct).map(([y, v]) => `<div><span>${y === '2026_ytd_to_10_sep' ? '2026*' : y}</span><b class="${v < 0 ? 'neg' : ''}">${v > 0 ? '+' : ''}${v.toFixed(1)}%</b></div>`).join('');
+  return `<div class="content-card si-port">
+    <h2>พอร์ตลงทุนที่ใช้อ้างอิงผลตอบแทน</h2>
+    <div class="si-hero">
+      <div class="si-hero-name">Solactive Multi-Strategy Investment Fund Index</div>
+      <div class="si-hero-full">ชื่อเต็ม: ${g.index_name} · ผู้จัดทำดัชนี Solactive AG (เยอรมนี)</div>
+      <div class="si-tags"><span>4 กองทุนกลยุทธ์ทางเลือก</span><span>กองละ 25%</span><span>คุมความผันผวน 6%</span><span>หักค่า 0.8% ต่อปี</span></div>
+    </div>
+    <div class="si-note">ดัชนีนี้เป็น "ไม้บรรทัด" วัดผลตอบแทนพิเศษตอนครบสัญญาเท่านั้น เงินต้น 101% ของทุนได้แน่นอนไม่ว่าดัชนีจะเป็นอย่างไร</div>
+    <h3>ข้างในดัชนีมีอะไร</h3>
+    <div class="si-funnel si-comp">${comp}</div>
+    <ul class="si-list">
+      <li><b>Active Fixed Income</b> ตราสารหนี้ที่ผู้จัดการปรับตามดอกเบี้ยและราคา</li>
+      <li><b>Long/Short Equity</b> ซื้อหุ้นที่ถูกเกินพื้นฐาน และขายชอร์ตหุ้นที่แพงเกิน ทำกำไรได้ทั้งขาขึ้นและขาลง</li>
+      <li><b>Equity Market Neutral</b> ใช้โมเดลเชิงปริมาณ ซื้อและขายหุ้นในสัดส่วนสมดุล ผลตอบแทนไม่ผูกกับทิศทางตลาด</li>
+      <li><b>Event Driven</b> หาจังหวะจากเหตุการณ์สำคัญของบริษัท เช่น ควบรวมกิจการ</li>
+    </ul>
+    <h3>สถิติย้อนหลัง</h3>
+    <div class="si-stats">
+      <div><span>ผลตอบแทนเฉลี่ยต่อปี</span><b>${st.return_pa_pct}%</b></div>
+      <div><span>ความผันผวนเฉลี่ย</span><b>${st.volatility_pct}%</b></div>
+      <div><span>ผลตอบแทนต่อความเสี่ยง</span><b>${st.return_per_risk}</b></div>
+      <div><span>ช่วงที่ร่วงหนักสุด</span><b class="neg">${st.max_drawdown_pct}%</b></div>
+    </div>
+    <div class="si-stats si-cal">${cal}</div>
+    <p class="meta">ช่วงข้อมูล ${st.period} · * ปี 2026 ถึง 10 ก.ย. 2026 · ผลในอดีตไม่ได้ยืนยันผลในอนาคต</p>
+    <h3>ผลตอบแทนพิเศษคิดยังไง</h3>
+    <div class="si-formula">ทุน × (อัตราแลกเปลี่ยนวันสุดท้าย ÷ วันแรก) × 150% × Max(0, ดัชนีวันสุดท้าย ÷ ดัชนีวันแรก − 100%)</div>
+    <ul class="si-list">
+      <li><b>ตัวอย่างบริษัท</b> ทุน 100,000 ดัชนีโต 3% ต่อปี (247.58 → 331.91): 100,000 × 150% × 34.06% = 51,092 บาท</li>
+      <li>วัดเฉพาะวันเริ่มกับวันสุดท้าย ถ้าดัชนีปลายทางต่ำกว่าวันเริ่ม ได้ 0 แต่ไม่ขาดทุน</li>
+      <li>ผลตอบแทนคิดเป็นดอลลาร์แล้วแปลงกลับเป็นบาท บาทแข็งค่าตอนครบสัญญา เงินส่วนนี้จะลดลง</li>
+    </ul>
+    <div class="si-view">
+      <div class="si-view-head">มุมมองหมอกึ๊ก (สังเขป)</div>
+      <div class="si-view-grid">
+        <div class="si-pro"><b>จุดแข็ง</b><ul>
+          <li>PR 150% สูงกว่าสมาร์ท อินเด็กซ์ 15/6 (50%) และ 15/6 โปร (100%) ดัชนีขึ้นเท่าไร ได้ส่วนแบ่งเกินกว่าที่ดัชนีขึ้น</li>
+          <li>4 กลยุทธ์แบบไม่ผูกกับทิศทางตลาด ปี 2022 ที่หุ้นและพันธบัตรโลกร่วงพร้อมกัน ดัชนีนี้ยังบวก 6%</li>
+          <li>จ่ายครั้งเดียว ไม่ต้องตอบคำถามสุขภาพ เงินต้นไม่สูญ</li>
+        </ul></div>
+        <div class="si-con"><b>ข้อควรรู้</b><ul>
+          <li>การันตีแค่ 101% ใน 10 ปี (ราว 0.1% ต่อปี) ถ้าดัชนีไม่ขึ้น ผลตอบแทนแพ้เงินฝากประจำ</li>
+          <li>ประวัติดัชนีส่วนใหญ่เป็นตัวเลขคำนวณย้อนหลัง เพิ่งเริ่มคำนวณจริง ก.ย. 2026</li>
+          <li>ดัชนีแบบ ER หักค่า 0.8% ต่อปีและคุมผันผวน จึงโตช้ากว่ากองทุนต้นทาง</li>
+          <li>ลดหย่อนภาษีได้แค่ปีที่จ่าย สูงสุด 100,000 บาท เงินส่วนที่เกินไม่ได้สิทธิ</li>
+        </ul></div>
+      </div>
+      <div class="si-verdict"><b>สรุป:</b> เหมาะกับ "เงินเย็นก้อนเดียว 10 ปี" ที่รับได้ว่าอาจได้แค่ 101% แต่ถ้าดัชนีทำได้ใกล้อดีต มีโอกาสได้ผลตอบแทนรวมสูงกว่าเงินฝากชัดเจน ถ้าต้องการเงินคืนระหว่างทางหรือได้สิทธิลดหย่อนหลายปี สมาร์ท อินเด็กซ์ 15/6 ตอบโจทย์กว่า</div>
+    </div>
+    <p class="meta">ข้อมูลดัชนี องค์ประกอบ และสูตรจากโบรชัวร์ของบริษัท ผลตอบแทนตามดัชนีไม่การันตี</p>
+  </div>`;
+}
+
+/* พอร์ตลงทุนของ สมาร์ท อินเด็กซ์ 15/6 และ 15/6 โปร
+   ข้อมูลทุกตัวมาจากโบรชัวร์ลูกค้าของบริษัท (หน้า 4–8, 14, 17) ส่วน "มุมมองหมอกึ๊ก" เป็นบทวิเคราะห์ของเว็บนี้
+   ห้ามใช้ตัวเลขจากสไลด์อบรมหรือรายงานดัชนีรายไตรมาส เพราะเป็นเอกสารภายใน ห้ามเผยแพร่ */
+function smartIndexPortfolioSection(){
+  return `<div class="content-card si-port">
+    <h2>พอร์ตลงทุนที่ใช้อ้างอิงผลตอบแทน</h2>
+    <div class="si-hero">
+      <div class="si-hero-name">S&amp;P Multi-Asset Global Macro ESG Index</div>
+      <div class="si-hero-full">ชื่อเต็ม: S&amp;P Multi-Asset Global Macro ESG 6% Risk Control 0.5% Decrement Index (USD) ER · จัดทำโดย S&amp;P Dow Jones Indices (SPDJI) ผู้ทำดัชนี S&amp;P 500</div>
+      <div class="si-tags"><span>หุ้น ESG</span><span>ตราสารหนี้</span><span>ค่าเงิน</span><span>สหรัฐฯ · ยุโรป · ญี่ปุ่น</span><span>ปรับพอร์ตทุกเดือน</span><span>คุมความผันผวน 6%</span></div>
+    </div>
+    <div class="si-note">เงินที่ลูกค้าจ่ายไม่ได้ไปซื้อดัชนีนี้โดยตรง ดัชนีเป็นแค่ "ไม้บรรทัด" ที่บริษัทใช้วัดว่าจะจ่ายผลตอบแทนพิเศษตอนครบสัญญาเท่าไร ส่วนเงินคืนการันตีและเงินครบสัญญา 600% ของทุนได้แน่นอนไม่ว่าดัชนีจะขึ้นหรือลง</div>
+
+    <h3>ดัชนีทำงานยังไง (5 ขั้น)</h3>
+    <div class="si-steps">
+      <div><b>1</b><span>ดูว่าเศรษฐกิจโลกกำลังโตหรือชะลอ</span></div>
+      <div><b>2</b><span>ดูว่าหุ้น พันธบัตร หรือค่าเงิน ตัวไหนกำลังเป็นขาขึ้น</span></div>
+      <div><b>3</b><span>คัดหุ้นเฉพาะบริษัทที่คะแนน ESG ดี ตัดบุหรี่ อาวุธ ถ่านหิน</span></div>
+      <div><b>4</b><span>ปรับสัดส่วนสินทรัพย์ทุกเดือน</span></div>
+      <div><b>5</b><span>ถ้าตลาดผันผวนเกิน 6% ต่อปี ลดสัดส่วนเสี่ยงลง</span></div>
+    </div>
+
+    <h3>หุ้นที่ผ่านการคัด ESG</h3>
+    <div class="si-funnel">
+      <div><span>S&amp;P 500 (สหรัฐฯ)</span><b>500 → 244 ตัว</b></div>
+      <div><span>S&amp;P Europe 350</span><b>350 → 254 ตัว</b></div>
+      <div><span>S&amp;P Japan 500</span><b>500 → 319 ตัว</b></div>
+    </div>
+    <p class="meta">ข้อมูลการคัดหุ้น ณ ก.ย. 2025 ตามโบรชัวร์ของบริษัท</p>
+
+    <h3>สถิติย้อนหลัง 10 ปี (30 ก.ย. 2015 – 30 ก.ย. 2025)</h3>
+    <div class="si-stats">
+      <div><span>ผลตอบแทนเฉลี่ยต่อปี</span><b>4.85%</b></div>
+      <div><span>ความผันผวนเฉลี่ย</span><b>5.70%</b></div>
+      <div><span>ผลตอบแทนต่อความเสี่ยง</span><b>0.85</b></div>
+      <div><span>ช่วงที่ร่วงหนักสุด</span><b class="neg">−7.36%</b></div>
+    </div>
+    <p class="meta">ตัวเลขช่วงก่อน 3 ต.ค. 2025 เป็นการทดสอบย้อนหลัง (backtest) ดัชนีเพิ่งเริ่มคำนวณจริงหลังจากนั้น ผลในอดีตไม่ได้ยืนยันผลในอนาคต</p>
+
+    <h3>ผลตอบแทนพิเศษคิดยังไง</h3>
+    <div class="si-formula">ทุน × 600% × (อัตราแลกเปลี่ยนวันสุดท้าย ÷ วันแรก) × PR × Max(0, ดัชนีวันสุดท้าย ÷ ดัชนีวันแรก − 100%)</div>
+    <ul class="si-list">
+      <li><b>วัดจุดเริ่มกับจุดจบเท่านั้น</b> ระหว่างทางขึ้นลงเท่าไรไม่มีผล ถ้าดัชนีปลายทางต่ำกว่าวันแรก ได้ 0 แต่ไม่ขาดทุน</li>
+      <li><b>PR คือส่วนแบ่งที่ได้</b> รุ่น 15/6 ได้ 50% ของการเติบโต รุ่นโปรได้ 100%</li>
+      <li><b>ตัวอย่างบริษัท ทุน 1 ล้าน ดัชนีโต 3% ต่อปี</b> (230 → 357.45): รุ่น 15/6 ได้เพิ่ม 1,662,391 บาท รุ่นโปรได้ 3,324,783 บาท ไม่การันตี</li>
+      <li><b>มีเรื่องค่าเงิน</b> ผลตอบแทนคิดเป็นดอลลาร์แล้วแปลงกลับเป็นบาท ถ้าบาทแข็งค่าตอนครบสัญญา เงินส่วนนี้จะลดลง</li>
+    </ul>
+
+    <div class="si-view">
+      <div class="si-view-head">มุมมองหมอกึ๊ก (สังเขป)</div>
+      <div class="si-view-grid">
+        <div class="si-pro"><b>จุดแข็ง</b><ul>
+          <li>เงินต้นไม่สูญ ได้ 600% ของทุนแน่นอน ดัชนีจะร่วงแค่ไหนก็ไม่ขาดทุน</li>
+          <li>ดัชนีแบบผสมสินทรัพย์และคุมความผันผวน กราฟจึงค่อย ๆ ขึ้น ไม่หวือหวา เหมาะกับคนที่ไม่อยากลุ้นหุ้น</li>
+          <li>กระจายทั้งหุ้น พันธบัตร ค่าเงิน 3 ภูมิภาค ดีกว่าฝากผูกกับตลาดเดียว</li>
+        </ul></div>
+        <div class="si-con"><b>ข้อควรรู้</b><ul>
+          <li>ดัชนีชนิดนี้ (ER + หักค่า 0.5% ต่อปี + คุมผันผวน 6%) ตั้งใจลดความเสี่ยง จึงโตช้ากว่าหุ้นโลกล้วนเมื่อตลาดขาขึ้นแรง ๆ</li>
+          <li>ประวัติ 10 ปีส่วนใหญ่เป็นตัวเลขทดสอบย้อนหลัง ยังไม่ใช่ผลจริง</li>
+          <li>ได้ผลตอบแทนพิเศษเฉพาะตอนอยู่ครบ 15 ปี ถ้าเวนคืนก่อนหรือเสียชีวิตจะไม่ได้ส่วนนี้</li>
+          <li>ค่าเงินบาทแข็งตอนครบสัญญาทำให้ผลตอบแทนส่วนนี้ลดลง</li>
+        </ul></div>
+      </div>
+      <div class="si-verdict"><b>สรุป:</b> มองว่าเป็น "เงินออมการันตี + ตั๋วลุ้นผลตอบแทนจากดัชนีที่ค่อนข้างนิ่ง" ถ้าเน้นเงินคืนระหว่างทางแน่นอน เลือก 15/6 ถ้ารอได้และอยากได้ส่วนแบ่งดัชนีเต็ม เลือก 15/6 โปร ไม่ควรเอาไปเทียบกับการลงทุนหุ้นโดยตรง เพราะเป้าหมายต่างกัน</div>
+    </div>
+    <p class="meta">ข้อมูลดัชนีและสูตรจากโบรชัวร์ของบริษัท ผลตอบแทนตามดัชนีไม่การันตี ตรวจผลดัชนีล่าสุดได้กับตัวแทน</p>
+  </div>`;
+}
+
 const PLAN_BROCHURES = {
   dhl: [{file:'d-health-lite.pdf', label:'โบรชัวร์ D Health Lite'}],
   ehp: [{file:'elite-health-plus.pdf', label:'โบรชัวร์ Elite Health Plus'}],
@@ -9231,6 +9413,8 @@ const PLAN_BROCHURES = {
        "ตารางอัตราเบี้ย" คือตารางเบี้ยทางการของบริษัท เปิดมาเจอแต่ตัวเลขล้วน
      ถ้าเขียนว่าโบรชัวร์ทั้งคู่ ลูกค้าที่กดหวังเห็นความคุ้มครองจะเจอตารางเบี้ยแล้วงง
      ห้ามใส่เอกสารภายในของตัวแทน เช่น หลักเกณฑ์รับประกัน HNW หรือสไลด์แจ้งจองสิทธิ์การขาย */
+  smartindex101:        [{file:'smart-index-10-1.pdf',                label:'โบรชัวร์ สมาร์ท อินเด็กซ์ 10/1 (Global)'}],
+  smartlink156:         [{file:'smart-index-15-6.pdf',                label:'โบรชัวร์ สมาร์ท อินเด็กซ์ 15/6 และ 15/6 โปร (Global)'}],
   main997:              [{file:'smart-protection-99-7.pdf',            label:'เอกสารสรุปแบบประกัน สมาร์ท โพรเทคชั่น 99/7'}],
   main8010:             [{file:'smart-protection-80-10.pdf',           label:'เอกสารสรุปแบบประกัน สมาร์ท โพรเทคชั่น 80/10'}],
   lifetimeprotection:   [{file:'lifetime-protection-99-20.pdf',        label:'เอกสารสรุปแบบประกัน ไลฟ์ไทม์ โพรเทคชั่น 99/20'}],
@@ -9255,7 +9439,10 @@ const PLAN_BROCHURES = {
   mt_happy_retire_60:   [{file:'happy-retire-60.pdf',                  label:'เอกสารสรุปแบบประกัน แฮปปี้ รีไทร์ 60'}],
 };
 
+/* ไฟล์ใหม่ที่ใหญ่เกินขีดโฮสต์ ส่งผ่าน /api/brochure ซึ่งพาไปไฟล์เดียวกันบน GitHub ลิงก์ที่ลูกค้าเห็นยังเป็นโดเมนเว็บเรา */
+const BROCHURE_VIA_API = new Set(['smart-index-15-6.pdf', 'smart-index-10-1.pdf']);
 function brochureUrl(file){
+  if(BROCHURE_VIA_API.has(file) && window.location.protocol !== 'file:') return '/api/brochure?file=' + encodeURIComponent(file);
   const src = '/brochures/' + file;
   if(window.location.protocol === 'file:') return '.' + src;
   return src;
@@ -9986,6 +10173,7 @@ const PLAN_DETAILS = {
     notFit: 'ต้องการใช้เงินระหว่างทาง หรือต้องการทุนคุ้มครองชีวิตสูงเพื่อปกป้องครอบครัว เพราะเบี้ยเกือบเท่าทุนต่อปี ทุนชีวิตจึงไม่ใช่จุดขาย',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ผลตอบแทนส่วนหนึ่งอ้างอิงดัชนี S&P Multi-Asset Global Macro ESG Index มี 2 รุ่นให้เลือก คือ 15/6 (เน้นการออม เงินคืนการันตีสูงกว่า) และ 15/6 โปร (เน้นโอกาสเติบโต ร่วมผลตอบแทนดัชนีเต็ม 100%) ทั้งสองรุ่นมาแทนแบบ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว',
     images: [],   // ภาพปกเดิมเป็นของ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว จึงไม่แสดง
+    detailSections: () => smartIndexPortfolioSection(),
     coverage: [
       '<b>เสียชีวิต</b> รับตามขั้นบันไดของทุนประกัน ณ วันเริ่มคุ้มครอง: ปีที่ 1 = 100%, ปีที่ 2 = 200%, ปีที่ 3 = 300%, ปีที่ 4 = 400%, ปีที่ 5 = 500%, ปีที่ 6-15 = 600% หรือค่าเวนคืน หรือ 101% ของเบี้ยที่ชำระแล้ว แล้วแต่จำนวนใดมากกว่า (เหมือนกันทั้งสองรุ่น)',
       '<b>เงินคืนระหว่างสัญญา (การันตี)</b> สิ้นปีกรมธรรม์ที่ 2, 4, 6, 8, 10, 12, 14 รวม 7 ครั้ง: รุ่น 15/6 ครั้งละ 5% ของทุน (รวม 35%) · รุ่น 15/6 โปร ครั้งละ 2.5% ของทุน (รวม 17.5%)',
@@ -10020,6 +10208,44 @@ const PLAN_DETAILS = {
       + '<tr><td>IRR รวมดัชนี (ตัวอย่าง ไม่การันตี)</td><td>3.40% / 3.19%</td><td>5.23%</td></tr>'
       + '</tbody></table></div>',
     rateNote: 'เบี้ยชายและหญิงเท่ากัน ชำระรายปี 6 ปี เบี้ย = อัตราต่อทุน 1,000 บาทตามตารางทางการ x ทุน / 1,000 ไม่มีส่วนลดตามทุน · ตัวเลข IRR และตัวอย่างทุน 100,000 มาจากภาพสรุปความแตกต่างบน SmartWeb ส่วนที่อ้างอิงดัชนีไม่การันตี',
+  },
+
+  smartindex101: {
+    title: 'เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global)', category: 'ประกันชีวิตแบบสะสมทรัพย์ ชำระเบี้ยครั้งเดียว มีผลตอบแทนตามดัชนีอ้างอิง (Index-Linked)',
+    fit: ['มีเงินก้อนที่ไม่ต้องใช้ 10 ปี อยากได้เงินต้นคืนแน่นอนและลุ้นผลตอบแทนที่สูงกว่าเงินฝาก', 'อยากใช้สิทธิลดหย่อนภาษีปีนี้ด้วยเงินก้อนเดียว และไม่อยากผูกพันจ่ายเบี้ยหลายปี', 'สุขภาพไม่ค่อยดี เพราะไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ'],
+    notFit: 'ต้องการทุนคุ้มครองชีวิตสูง (คุ้มครองแค่ 105% ของเงินที่จ่าย) หรืออาจต้องใช้เงินก้อนนี้ก่อน 10 ปี เพราะผลตอบแทนตามดัชนีจ่ายเฉพาะตอนอยู่ครบสัญญา',
+    notice: {
+      chip: 'จุดเด่น',
+      head: 'จ่ายครั้งเดียว เงินต้นไม่สูญ · ร่วมผลตอบแทนดัชนี 150%',
+      body: 'เบี้ย 1,000 บาทต่อทุน 1,000 บาท เท่ากันทุกเพศทุกอายุ วางเงิน 100,000 ได้ทุน 100,000 · ครบ 10 ปีรับ <b>101% ของทุนแน่นอน</b> ' +
+            'บวกผลตอบแทนตามดัชนีอ้างอิง (ถ้ามี) ที่อัตราส่วนร่วม <b>PR 150%</b> ซึ่งไม่การันตี · ใช้ใบคำขอชนิด<b>ไม่มีคำถามสุขภาพ</b>',
+    },
+    overview: 'ประกันชีวิตแบบสะสมทรัพย์<b>ชำระเบี้ยครั้งเดียว คุ้มครอง 10 ปี</b> ผลตอบแทนส่วนหนึ่งอ้างอิงดัชนี Solactive Multi-Strategy Investment Fund Index ER 6% VT 0.8% Decrement Index ซึ่งกระจายลงทุนผ่าน 4 กองทุนกลยุทธ์ทางเลือก ครบสัญญาได้เงินต้นคืนอย่างน้อย 101% และถ้าดัชนีปลายทางสูงกว่าวันเริ่ม จะได้ผลตอบแทนเพิ่มตามสูตรของบริษัท',
+    images: [],
+    coverage: [
+      '<b>เสียชีวิตปีกรมธรรม์ที่ 1–10</b> รับ <b>105%</b> ของจำนวนเงินเอาประกันภัย ณ วันเริ่มมีผลคุ้มครอง หรือเงินค่าเวนคืนกรมธรรม์ในขณะนั้น แล้วแต่จำนวนใดมากกว่า',
+      '<b>ครบกำหนดสัญญาสิ้นปีที่ 10</b> รับ <b>101%</b> ของจำนวนเงินเอาประกันภัย (การันตี)',
+      '<b>ผลตอบแทนตามดัชนีอ้างอิง (ไม่การันตี)</b> จ่ายเมื่ออยู่ครบสัญญา = ทุน × (อัตราแลกเปลี่ยนวันสุดท้าย ÷ วันแรก) × 150% × Max(0, ดัชนีวันสุดท้าย ÷ ดัชนีวันแรก − 100%)',
+      'เบี้ยใช้สิทธิลดหย่อนภาษีหมวดประกันชีวิตได้ตามที่จ่ายจริง สูงสุด 100,000 บาท ตามหลักเกณฑ์กรมสรรพากร',
+    ],
+    conditions: [
+      'อายุรับประกัน <b>30 วัน – 80 ปี</b> · <b>ชำระเบี้ยครั้งเดียว</b> · คุ้มครอง 10 ปี',
+      'ทุนประกันขั้นต่ำ <b>50,000 บาท</b> · สูงสุด อายุ 30 วัน – 15 ปี: 25 ล้านบาท, 16 – 70 ปี: 50 ล้านบาท, 71 – 80 ปี: 15 ล้านบาท',
+      'อัตราเบี้ย <b>1,000 บาท ต่อทุน 1,000 บาท</b> เพศชายและหญิงเท่ากันทุกอายุ ไม่มีส่วนลด',
+      '<b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b> ใช้ใบคำขอชนิดไม่มีคำถามสุขภาพ แบบที่ 1 รหัส 2-02-05-3380 บริษัทพิจารณารับได้ทุกกรณีที่ไม่ขัดกับกฎหมาย',
+      '<b>แนบสัญญาเพิ่มเติมไม่ได้</b>',
+      'ชำระด้วยบัตรเครดิตและผ่านบัญชีบัตรเครดิต (CCP) ได้ ตั้งแต่ 9 ต.ค. 2569 – 31 ธ.ค. 2569',
+      'บริษัทไม่การันตีผลตอบแทนตามดัชนีอ้างอิง ผลตอบแทนส่วนนี้จ่ายเฉพาะกรณีมีชีวิตอยู่ครบสัญญา ถ้าเวนคืนก่อนหรือเสียชีวิตจะไม่ได้ส่วนนี้',
+    ],
+    benefitTitle: 'ตัวอย่างผลประโยชน์ที่ทุน 100,000 บาท (จากโบรชัวร์บริษัท)',
+    benefitTable: () => smartIndex101ExampleTable(),
+    detailSections: () => smartIndex101PortfolioSection(),
+    freqSupported: false,
+    rateTable: () => renderAgeTable(0, 80, [
+      {label:'ชาย (ทุน 100,000)', arr: ageSeriesFromFn(0,80, a=>mainPremiumAtEntry('smart_index_10_1',100000,'m',a,'annual'))},
+      {label:'หญิง (ทุน 100,000)', arr: ageSeriesFromFn(0,80, a=>mainPremiumAtEntry('smart_index_10_1',100000,'f',a,'annual'))},
+    ]),
+    rateNote: 'เบี้ยชำระครั้งเดียวที่ทุน 100,000 บาท · เท่ากันทุกอายุทุกเพศ เพราะอัตราเบี้ยคือ 1,000 บาทต่อทุน 1,000 บาท',
   },
 
   dhl: {
@@ -10859,6 +11085,7 @@ const PLAN_ROUTES = {
   premierlegacy991: '/plans/premier-legacy-99-1',
   wholelife991nocash: '/plans/whole-life-99-1',
   wholelife991cashback: '/plans/whole-life-99-1-cashback',
+  smartindex101: '/plans/smart-index-10-1',
   waigao9090: '/plans/waigao-90-90',
   waigao9910: '/plans/waigao-99-10',
   easyprotection: '/plans/easy-protection',
@@ -11523,6 +11750,16 @@ const LIFE_PRODUCTS = [
     tradeoff:'ต้องวางเงินก้อนเท่ากับทุนประกันเต็มจำนวน เพราะเบี้ยคือ 100% ของทุน · แนบสัญญาเพิ่มเติมไม่ได้ · ไม่รับบัตรเครดิต · ต้องจองสิทธิ์การขายก่อนส่งงาน',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('whole_life_99_1_cashback',cap,g,age,freq),
     calcPlanValue:'whole_life_99_1_cashback',
+  },
+  {
+    id:'smart_index_10_1', name:'เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global)', short:'10/1',
+    isSavings:true, purposes:['saving','tax'],
+    payYears:1, coverToAge:null, coverYears:10, entryAgeMin:0, entryAgeMax:80,
+    capitals:[100000,500000,1000000],
+    strength:'จ่ายครั้งเดียว 10 ปีครบ ได้คืนอย่างน้อย 101% ของเงินที่จ่าย ร่วมผลตอบแทนดัชนีสูงถึง 150% ไม่ต้องตอบคำถามสุขภาพ',
+    tradeoff:'ผลตอบแทนการันตีต่ำมาก (ราว 0.1% ต่อปี) ส่วนที่เหลือขึ้นกับดัชนี ทุนคุ้มครองชีวิตเพียง 105% และใช้ลดหย่อนภาษีได้แค่ปีที่จ่าย',
+    premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('smart_index_10_1',cap,g,age,freq),
+    calcPlanValue:'smart_index_10_1',
   },
   {
     id:'15_3', name:'เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)', short:'15/3',
@@ -18183,7 +18420,7 @@ const COMPARE_SELECTABLE_IDS = ['dhl','ehp','maochai','ecp','careplus','opd',
   'waigao9090','waigao9910','easyprotection',
   'happyreturn997','happyreturn999','premierlegacy995','premierlegacy9910','legacywealth995',
   'premierlegacy991','wholelife991nocash','wholelife991cashback',
-  'flexi9920','smartlink153','smartlink156'];
+  'flexi9920','smartlink153','smartlink156','smartindex101'];
 
 /* ---------- จัดกลุ่มการเปรียบเทียบตามวัตถุประสงค์ ----------
    สัญญาเพิ่มเติมสุขภาพกับสัญญาหลักประกันชีวิตดูคนละเรื่องกันสิ้นเชิง
@@ -18195,7 +18432,7 @@ const COMPARE_GROUPS = {
              'lifetimeprotection','waigao9090','waigao9910','easyprotection',
              'happyreturn997','happyreturn999','premierlegacy995','premierlegacy9910','legacywealth995',
              'premierlegacy991','wholelife991nocash','wholelife991cashback',
-             'flexi9920','smartlink153','smartlink156']},
+             'flexi9920','smartlink153','smartlink156','smartindex101']},
 };
 function compareGroupOf(id){
   for(const k of Object.keys(COMPARE_GROUPS)) if(COMPARE_GROUPS[k].ids.includes(id)) return k;
@@ -18376,6 +18613,16 @@ const LIFE_COMPARE_PRODUCTS = {
       health:'ตรวจสุขภาพตามหลักเกณฑ์กลุ่ม HNW',
       maturity:'ครบอายุ 99 ปี รับ 100% ของทุน', cash:'<b>มูลค่าเวนคืนคงที่ตลอดสัญญา</b>',
       tax:'ลดหย่อนได้สูงสุด 100,000 บาทต่อปี · <b>ชำระด้วยบัตรเครดิตไม่ได้</b>',
+      wait:'ไม่พบข้อมูลระยะเวลาที่ไม่คุ้มครองในแหล่งที่ตรวจ'}},
+  smartindex101: {title:'สมาร์ท อินเด็กซ์ 10/1 (Global)', plan:'smart_index_10_1',
+    tiers:[{value:'100000',label:'ทุน 100,000'},{value:'500000',label:'ทุน 500,000'},{value:'1000000',label:'ทุน 1,000,000'}],
+    defaultValue:'100000',
+    rows:{purpose:'พักเงินก้อน 10 ปี เงินต้นไม่สูญ พร้อมลุ้นผลตอบแทนจากดัชนี', entry:'30 วัน – 80 ปี',
+      pay:'<b>ครั้งเดียว เท่ากับทุนประกันพอดี</b>', cover:'10 ปี', ci:'ไม่มี', riders:'<b>แนบสัญญาเพิ่มเติมไม่ได้</b>',
+      minSum:'50,000 บาท', maxSum:'25 ล้าน (อายุ ≤15) / 50 ล้าน (16–70) / 15 ล้าน (71–80)',
+      health:'<b>ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</b>',
+      maturity:'ครบปีที่ 10 รับ 101% ของทุน + ผลตอบแทนตามดัชนี PR 150% (ไม่การันตี)',
+      cash:'มีมูลค่าเวนคืน', tax:'ลดหย่อนได้ตามเบี้ยที่จ่ายจริง สูงสุด 100,000 บาท',
       wait:'ไม่พบข้อมูลระยะเวลาที่ไม่คุ้มครองในแหล่งที่ตรวจ'}},
   wholelife991cashback: {title:'คุ้มครองตลอดชีพ 99/1 (มีเงินคืน 1.75%)', plan:'whole_life_99_1_cashback',
     tiers:[{value:'1000000',label:'ทุน 1,000,000'},{value:'5000000',label:'ทุน 5,000,000'},{value:'10000000',label:'ทุน 10,000,000'}],
@@ -18756,7 +19003,7 @@ function buildLifeCompareRows(columns){
      ทั้งที่ตารางแถวบนในหน้าเดียวกันบอกว่าชำระ 20 ปี ขัดกันเองต่อหน้าลูกค้า */
   const payYears = {'99_20':20, '99_99':null, 'smart_99_99':null, '99_7':7, '80_10':10, 'flexi_99_5':5,
     'flexi_99_20':20, 'smart_link_15_3':3, 'smart_link_15_6':6,
-    'premier_legacy_99_1':1, 'whole_life_99_1_nocash':1, 'whole_life_99_1_cashback':1,
+    'premier_legacy_99_1':1, 'whole_life_99_1_nocash':1, 'whole_life_99_1_cashback':1, 'smart_index_10_1':1,
     'lifetime_protection':20, 'sabaijai_90_90':null, 'sabaijai_99_10':10, 'easy_protection_15_15':15,
     'happy_return_99_7':7, 'happy_return_99_9':9,
     'premier_legacy_99_5':5, 'premier_legacy_99_10':10, 'legacy_wealth_99_5':5};
