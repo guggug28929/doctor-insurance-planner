@@ -2693,6 +2693,11 @@
   .ul-changes td,.ul-changes th{padding:5px 6px;border-bottom:1px solid #f3e6ec;text-align:left;vertical-align:top;}
   .ul-changes input,.ul-changes select{width:100%;min-width:80px;}
   .ul-changes small{color:var(--muted);font-size:.7rem;display:block;margin-top:2px;}
+  .ul-calc-link{display:block;margin:4px 0 6px;padding:9px 12px;border:1.5px dashed var(--pink);border-radius:10px;color:var(--pink-deep);font-weight:700;text-decoration:none;font-size:.88rem;background:#fff7fa;}
+  .ul-calc-link:hover{background:#ffeef5;}
+  #ulSaveCard{margin:6px 0 4px;position:relative;}
+  .ul-print-meta{margin:3mm 0;} .ul-print-meta td{text-align:left !important;background:#fff !important;} .ul-print-meta td:first-child{width:45mm;font-weight:700;color:#8f0d40;}
+  .ul-print-chart svg{width:100%;max-height:95mm;} .ul-print-chart .ul-legend{display:flex;gap:6mm;font-size:8pt;} .ul-print-chart .ul-leg i{display:inline-block;width:8mm;height:1mm;margin-right:2mm;vertical-align:middle;}
   .ul-sub{margin-top:14px;font-size:1rem;color:var(--pink-deep);}
   .ul-table tbody tr{cursor:pointer;} .ul-table tbody tr.ul-sel td{background:#fff0f5;}
 </style>
@@ -2862,6 +2867,8 @@
         <label><input type="radio" name="mainPlan" value="whole_life_99_1_nocash"> เพื่อคุ้มครองตลอดชีพ 99/1 (ชำระครั้งเดียว)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยครั้งเดียว ไม่มีเงินคืนระหว่างสัญญา มูลค่าเวนคืนเพิ่มขึ้นตามปีกรมธรรม์ อายุรับ 30 วัน – 80 ปี ทุนขั้นต่ำ 10,000,000 บาท แนบสัญญาเพิ่มเติมกลุ่มสุขภาพ แคร์ พลัส และอุบัติเหตุ แบบ ก. ได้ · อัตราตรวจไขว้ SmartWeb และเว็บตัวแทนตรงกันครบทุกค่า รวมจุดที่ชายอายุ 30 ปี</span></span></label>
         <div class="plan-group-label">บำนาญ</div>
         <label><input type="radio" name="mainPlan" value="pension"> ประกันชีวิตแบบบำนาญ (9 แบบ)<span class="info-icon">i<span class="tooltip">ใช้เป็นสัญญาหลักเพื่อวางแผนเกษียณ บางแบบแนบสัญญาเพิ่มเติมได้ บางแบบไม่ได้ ระบบจะปิดตัวเลือกให้อัตโนมัติตามเงื่อนไขของแต่ละแบบ</span></span></label>
+        <div class="plan-group-label">ประกันควบการลงทุน</div>
+        <a class="ul-calc-link" href="/unit-linked" onclick="showPage('unitlinked'); return false;">ยูนิตลิงก์ (mDesign) — จำลองมูลค่ากรมธรรม์ &rarr;</a>
       </div>
       </div>
       <div class="hint">เลื่อนในกรอบด้านบนเพื่อดูแบบอื่น แบบที่ใช้บ่อยที่สุดอยู่บนสุด</div>
@@ -6865,6 +6872,7 @@ function xlsxWrapNote(text, max){
 
 function dgDownloadXlsx(fileName, data){
   const {title, details, meta, head, body} = data;
+  const sheetName = String(data.sheetName || 'ตารางเบี้ย').replace(/[\\/?*\[\]:']/g, '').slice(0, 31) || 'Sheet1';
   const colCount = Math.max(...head.map(r => r.length), ...body.map(r => r.length), 2);
 
   const rows = [];
@@ -6892,7 +6900,9 @@ function dgDownloadXlsx(fileName, data){
   }
   // หมายเหตุการปรับเบี้ยสัญญาเพิ่มเติม แบ่งบรรทัดให้อ่านได้ในหน้าจอ ไม่ล้นไปไกลเกินไป
   push('');
-  for(const line of xlsxWrapNote(RIDER_PREMIUM_ADJUST_NOTE, 120)) push(xlsxCell('A' + (r + 1), line, XLSX_STYLE.NOTE, true));
+  for(const note of (data.notes || [RIDER_PREMIUM_ADJUST_NOTE])){
+    for(const line of xlsxWrapNote(note, 120)) push(xlsxCell('A' + (r + 1), line, XLSX_STYLE.NOTE, true));
+  }
 
   /* ความกว้างคอลัมน์คิดจากข้อความที่ยาวที่สุดจริง ๆ ของคอลัมน์นั้น
      ของเดิมไม่ได้ตั้งเลย Excel จึงใช้ความกว้างมาตรฐาน ตัวเลขล้นเป็น ##### */
@@ -6930,9 +6940,9 @@ function dgDownloadXlsx(fileName, data){
   const workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
     + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
     + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-    + '<sheets><sheet name="ตารางเบี้ย" sheetId="1" r:id="rId1"/></sheets>'
+    + `<sheets><sheet name="${xlsxEsc(sheetName)}" sheetId="1" r:id="rId1"/></sheets>`
     // พิมพ์ออกมาแล้วหัวตารางต้องซ้ำทุกหน้า ไม่งั้นหน้าที่สองอ่านไม่รู้เรื่อง
-    + `<definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">'ตารางเบี้ย'!$${headRowIndex}:$${headRowEnd}</definedName></definedNames>`
+    + `<definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">'${xlsxEsc(sheetName)}'!$${headRowIndex}:$${headRowEnd}</definedName></definedNames>`
     + '</workbook>';
 
   const files = {
@@ -13758,10 +13768,11 @@ async function spInit(){
     SP.clientId = a.clientId || '';
     SP.signedIn = !!a.signedIn; SP.email = a.email || ''; SP.name = a.name || '';
     if(!a.config || !a.config.serverStorage){ card.hidden = true; return; }
-    card.hidden = false;
+    card.hidden = false; SP.storage = true;
     let err = '';
     if(SP.signedIn){ try{ await spLoadPlans(); }catch(e){ err = e.message || 'โหลดรายการแผนไม่สำเร็จ'; } }
     spRender(); if(err) spStatus(err, true);
+    if(typeof ulSpRender === 'function') ulSpRender();
   }catch(e){ card.hidden = true; }
 }
 async function spLoadPlans(){
@@ -13798,16 +13809,17 @@ function spRender(){
     <span class="sp-who">${esc(SP.email)} · <button type="button" class="sp-link" onclick="spLogout()">ออก</button></span>
     ${active ? `<button type="button" class="sp-pill" onclick="spSaveOver()">บันทึกทับ “${esc(active.name)}”</button>` : ''}
     <button type="button" class="sp-pill sp-solid" onclick="spSaveNew()">💾 บันทึกแผน</button>
-    <button type="button" class="sp-pill" onclick="spTogglePop()" aria-expanded="${SP.popOpen ? 'true' : 'false'}">📂 แผนที่บันทึกไว้ (${SP.plans.length}) ▾</button>
+    <button type="button" class="sp-pill" onclick="spTogglePop()" aria-expanded="${SP.popOpen ? 'true' : 'false'}">📂 แผนที่บันทึกไว้ (${SP.plans.filter(p => !ulIsPlan(p)).length}) ▾</button>
     <div class="sp-status" id="spStatus"></div>`;
   pop.hidden = !SP.popOpen;
   if(!SP.popOpen) return;
   const f = SP.filter.trim().toLowerCase();
-  const list = SP.plans.filter(p => !f || String(p.name).toLowerCase().includes(f));
+  const calcPlans = SP.plans.filter(p => !ulIsPlan(p));
+  const list = calcPlans.filter(p => !f || String(p.name).toLowerCase().includes(f));
   pop.innerHTML = `<h4>แผนที่บันทึกไว้</h4>
     ${SP.warn ? `<div class="sp-warn">${esc(SP.warn)}</div>` : ''}
-    ${SP.plans.length > 5 ? `<input type="search" class="sp-search" placeholder="ค้นหาชื่อแผน…" value="${esc(SP.filter)}" oninput="SP.filter=this.value; spRender(); const s=document.querySelector('.sp-search'); if(s){s.focus(); s.setSelectionRange(s.value.length,s.value.length);}">` : ''}
-    ${SP.plans.length ? `<ul class="sp-list">${list.map(p => `
+    ${calcPlans.length > 5 ? `<input type="search" class="sp-search" placeholder="ค้นหาชื่อแผน…" value="${esc(SP.filter)}" oninput="SP.filter=this.value; spRender(); const s=document.querySelector('.sp-search'); if(s){s.focus(); s.setSelectionRange(s.value.length,s.value.length);}">` : ''}
+    ${calcPlans.length ? `<ul class="sp-list">${list.map(p => `
       <li class="sp-item${p.id === SP.activeId ? ' is-active' : ''}">
         <div class="sp-name" onclick="spOpen('${p.id}')">${esc(p.name)}</div>
         <div class="sp-meta">${esc(spPlanMeta(p))}</div>
@@ -13854,10 +13866,12 @@ async function spOnCredential(response){
   let err = '';
   try{ await spLoadPlans(); }catch(e){ err = e.message || 'โหลดรายการแผนไม่สำเร็จ'; }
   spRender(); if(err) spStatus(err, true);
+  if(typeof ulSpRender === 'function') ulSpRender();
 }
 async function spLogout(){
   try{ await spFetch(SP_AUTH_URL, {method:'DELETE'}); }catch(e){}
   SP.signedIn = false; SP.plans = []; SP.activeId = null; SP.warn = ''; spRender();
+  if(typeof ulSpRender === 'function') ulSpRender();
 }
 
 async function spSaveNew(){
@@ -16264,6 +16278,7 @@ function ulSimFormHtml(){
   <div class="content-card" id="ulSimCard">
     <h2>จำลองมูลค่ากรมธรรม์ mDesign (กราฟ + ตาราง)</h2>
     <p class="meta">ชำระเบี้ยรายปี · ผลตอบแทนเป็นตัวเลขสมมติ ไม่การันตี · ก่อนเสนอลูกค้าต้องออกเอกสารเสนอขายจากระบบบริษัททุกครั้ง</p>
+    <div class="sp-toolbar" id="ulSaveCard" hidden><div class="sp-bar" id="ulSaveBody"></div><div class="sp-pop" id="ulSavePop" hidden></div></div>
     <h3 class="ul-sub">ข้อมูลกรมธรรม์</h3>
     <div class="ul-form">
       <label>เพศ<select id="ulGender"><option value="m">ชาย</option><option value="f">หญิง</option></select></label>
@@ -16289,12 +16304,15 @@ function ulSimFormHtml(){
     </div>
     <p class="meta">COR รายเดือน = เบี้ยสัญญาเพิ่มเติมต่อปีที่อายุของปีนั้น ÷ 12 เบี้ยขึ้นตามอายุทุกปี และหยุดหักเมื่อสัญญาสิ้นสุด</p>
     <div class="ul-actions"><button class="btn" type="button" onclick="ulRunSim()">คำนวณ</button>
-      <button class="btn btn-ghost" type="button" onclick="ulUseMinSa()">ใช้ทุนประกันขั้นต่ำ</button></div>
+      <button class="btn btn-ghost" type="button" onclick="ulUseMinSa()">ใช้ทุนประกันขั้นต่ำ</button>
+      <button class="btn btn-ghost" type="button" onclick="ulExportExcel()">ดาวน์โหลด Excel</button>
+      <button class="btn btn-ghost" type="button" onclick="ulExportPdf()">ดาวน์โหลด PDF</button></div>
     <div id="ulWarn"></div>
     <div id="ulSummary" class="ul-summary"></div>
     <div id="ulChart"></div>
     <div id="ulTable"></div>
     <div id="ulDetail"></div>
+    <div class="ul-callout"><b>คำเตือนเรื่องผลตอบแทน</b><ol>${UL_RETURN_DISCLAIMER.map(t => `<li>${t.replace(/^คำเตือนเรื่องผลตอบแทน: /, '')}</li>`).join('')}</ol></div>
   </div>`;
 }
 
@@ -16506,6 +16524,172 @@ function ulRunSim(){
   document.getElementById('ulDetail').innerHTML = ulDetailHtml(ulDetailPy);
 }
 
+/* ---------- ยูนิตลิงก์: ส่งออก Excel / PDF ---------- */
+const UL_RETURN_DISCLAIMER = [
+  'คำเตือนเรื่องผลตอบแทน: อัตราผลตอบแทนในเอกสารนี้เป็นตัวเลขสมมติเพื่อแสดงตัวอย่างการคำนวณเท่านั้น ไม่ใช่ผลตอบแทนที่รับประกันหรือคาดการณ์ ผลการดำเนินงานในอดีตของกองทุนไม่ได้เป็นสิ่งยืนยันผลการดำเนินงานในอนาคต',
+  'มูลค่ากรมธรรม์ขึ้นลงตามราคาหน่วยลงทุน ผู้เอาประกันภัยรับความเสี่ยงจากการลงทุนเอง อาจได้รับเงินคืนน้อยกว่าเบี้ยประกันภัยที่ชำระ และกรมธรรม์อาจสิ้นผลก่อนกำหนดหากมูลค่าไม่พอหักค่าใช้จ่าย',
+  'ค่าการประกันภัย (COI) ค่าสัญญาเพิ่มเติม (COR) และค่าธรรมเนียม คำนวณตามอัตราปัจจุบัน บริษัทปรับได้ไม่เกินอัตราสูงสุดที่ระบุในกรมธรรม์ ค่า COR ในเอกสารนี้ใช้เบี้ยสัญญาเพิ่มเติมแบบชำระปกติเป็นตัวประมาณ ตัวเลขจริงอาจต่างไป',
+  'เอกสารนี้ใช้ประกอบการวางแผนเบื้องต้น ไม่ใช่เอกสารเสนอขาย ก่อนตัดสินใจต้องศึกษาเอกสารเสนอขายและหนังสือชี้ชวนของกองทุนที่ออกจากระบบของบริษัท',
+];
+function ulExportData(){
+  if(!ulLast){ ulRunSim(); }
+  if(!ulLast || !ulLast.res.rows.length){ alert('กรุณากดคำนวณก่อนดาวน์โหลดครับ'); return null; }
+  const {res, o} = ulLast;
+  const parts = ulRiderParts(o.riders, o.gender, o.age);
+  const changes = o.changes.map(c => `${UL_CHANGE_TYPES[c.type].label}${UL_CHANGE_TYPES[c.type].amount ? ' ' + UL_FMT(c.amount) + ' บาท' : ''} อายุ ${c.from}${c.to != null ? '–' + c.to : (c.type === 'premium' ? ' เป็นต้นไป' : '')}`);
+  const last = res.rows[res.rows.length - 1];
+  const meta = [
+    ['แบบประกัน', RATES.unit_linked_mdesign.name],
+    ['ผู้เอาประกัน', `${o.gender === 'f' ? 'หญิง' : 'ชาย'} อายุ ${o.age} ปี · ขั้นอาชีพ ${o.riders.occ}`],
+    ['เบี้ยประกันภัยหลักต่อปี', UL_FMT(o.premium) + ' บาท (ชำระรายปี) ถึงอายุ ' + (o.stopPayAge == null ? 99 : o.stopPayAge)],
+    ['ทุนประกัน', UL_FMT(o.sa) + ' บาท'],
+    ['อัตราผลตอบแทนสมมติ', (o.rate * 100).toFixed(1).replace(/\.0$/, '') + '% ต่อปี (ไม่การันตี)'],
+    ['เปลี่ยนแปลงกรมธรรม์', changes.join(' • ') || 'ไม่มี'],
+    ['สัญญาเพิ่มเติม (COR)', parts.map(p => `${p.label} ${typeof p.annual === 'number' ? UL_FMT(p.annual) + ' บาท/ปี' : '(ไม่มีอัตรา)'}`).join(' • ') || 'ไม่ได้แนบ'],
+    ['สถานะ', res.lapse ? `มูลค่าหมด กรมธรรม์ขาดอายุตอนอายุ ${res.lapse.age} ปี` : 'มีผลบังคับถึงอายุ 99 ปี'],
+    ['เบี้ยที่จ่ายรวม (หลัก + Top Up)', UL_FMT(last.cumPrem + last.cumTop) + ' บาท'],
+  ];
+  const head = ['ปีที่','อายุต้นปี','เบี้ยหลัก','Top Up','ถอน','ค่าธรรมเนียมเบี้ย','ค่ารักษากรมธรรม์','COI','COR','ทุนประกัน','มูลค่าการลงทุนสิ้นปี','มูลค่าเวนคืน','ผลประโยชน์เสียชีวิต'];
+  const f = n => Math.round(n || 0).toLocaleString('en-US');
+  const body = res.rows.map(r => [String(r.py), String(r.age), r.holiday ? 'พักชำระ' : f(r.premium), f(r.topup), f(r.withdraw), f(r.premCharge + r.topCharge), f(r.fee), f(r.coi), f(r.rider), f(r.sa), f(r.value), f(r.surrender), f(r.death)]);
+  const fileName = `UnitLinked-mDesign-${o.gender === 'f' ? 'หญิง' : 'ชาย'}${o.age}-เบี้ย${o.premium}`;
+  return {o, res, meta, head, body, fileName};
+}
+function ulExportExcel(){
+  const d = ulExportData(); if(!d) return;
+  dgDownloadXlsx(d.fileName, {
+    title: 'จำลองมูลค่ากรมธรรม์ ' + RATES.unit_linked_mdesign.name,
+    details: `สร้างเมื่อ ${new Date().toLocaleString('th-TH')} · ${CONTENT_CREDIT}`,
+    meta: d.meta, head: [d.head], body: d.body,
+    notes: [...UL_RETURN_DISCLAIMER, RIDER_PREMIUM_ADJUST_NOTE], sheetName: 'จำลองยูนิตลิงก์',
+  });
+}
+function ulExportPdf(){
+  const d = ulExportData(); if(!d) return;
+  const esc = plannerEscapeHtml;
+  const host = document.getElementById('printArea') || (() => { const x = document.createElement('div'); x.id = 'printArea'; document.body.appendChild(x); return x; })();
+  const headObjs = d.head.map(t => ({text:t, cls:''}));
+  const rows = d.body.map(r => r.map(t => ({text:t, cls:''})));
+  const groups = dgSplitPrintColumns(host, headObjs, rows);
+  const metaHtml = `<table class="ul-print-meta"><tbody>${d.meta.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>`;
+  const chart = ulChartSvg(d.res.rows, d.o.age).replace(/<div class="ul-tip"[^>]*><\/div>/, '');
+  const sections = groups.map((g, i) => `<section class="print-sec print-sec-next">
+      <div class="print-head"><div class="print-title">ตารางมูลค่ากรมธรรม์รายปี${groups.length > 1 ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}</div>
+      <div class="print-meta">หน่วย: บาท · ค่าใช้จ่ายเป็นยอดรวมทั้งปี มูลค่าเป็นยอด ณ สิ้นปีกรมธรรม์ · ผลตอบแทนสมมติ ${esc((d.o.rate * 100).toFixed(1).replace(/\.0$/, ''))}% ต่อปี ไม่การันตี</div></div>
+      <table><thead><tr>${g.map(ci => `<th>${esc(d.head[ci])}</th>`).join('')}</tr></thead>
+      <tbody>${d.body.map(r => '<tr>' + g.map(ci => `<td>${esc(r[ci])}</td>`).join('') + '</tr>').join('')}</tbody></table></section>`).join('');
+  host.innerHTML = `<div class="print-doc">
+      <section class="print-sec">
+        <div class="print-head"><div class="print-title">จำลองมูลค่ากรมธรรม์ ${esc(RATES.unit_linked_mdesign.name)}</div>
+        <div class="print-meta">สร้างเมื่อ ${esc(new Date().toLocaleString('th-TH'))}</div></div>
+        ${metaHtml}
+        <div class="ul-print-chart">${chart}</div>
+        <div class="print-foot print-adjust-note">${UL_RETURN_DISCLAIMER.map(esc).join('<br>')}</div>
+      </section>
+      ${sections}
+      <div class="print-foot print-adjust-note">${UL_RETURN_DISCLAIMER.map(esc).join('<br>')}<br>${esc(RIDER_PREMIUM_ADJUST_NOTE)}</div>
+      <div class="print-foot">${esc(CONTENT_CREDIT)}</div>
+    </div>`;
+  document.body.classList.add('dg-printing');
+  const cleanup = () => { document.body.classList.remove('dg-printing'); host.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(cleanup, 60000);
+  window.print();
+}
+
+/* ---------- ยูนิตลิงก์: บันทึกงาน (ใช้ที่เก็บแผนเดียวกับหน้าคำนวณเบี้ย แยกด้วย planKind = ul) ---------- */
+const UL_FIELDS = ['ulGender','ulAge','ulOcc','ulPrem','ulSa','ulStopAge','ulRate','ulRHealth','ulRCare','ulRCipc','ulRPa','ulROpd','ulRHb','ulRTpd'];
+const UL_SP = {activeId:null, popOpen:false, busy:false};
+function ulIsPlan(p){ return !!(p && p.state && p.state.values && p.state.values.planKind === 'ul'); }
+function ulSnapshotState(){
+  const values = {planKind:'ul'};
+  for(const id of UL_FIELDS){ const el = document.getElementById(id); if(el) values[id] = String(el.value); }
+  ulChanges.slice(0, 20).forEach((c, i) => { values[`ulc${i}_t`] = c.type; values[`ulc${i}_a`] = String(c.amount ?? ''); values[`ulc${i}_f`] = String(c.from ?? ''); values[`ulc${i}_e`] = String(c.to ?? ''); });
+  return {radios:{}, checks:{}, values, dcare:[]};
+}
+function ulRestoreState(state){
+  const V = (state && state.values) || {};
+  for(const id of UL_FIELDS){ const el = document.getElementById(id); if(el && V[id] !== undefined) el.value = V[id]; }
+  ulChanges = [];
+  for(let i = 0; i < 20 && V[`ulc${i}_t`] !== undefined; i++){
+    if(!UL_CHANGE_TYPES[V[`ulc${i}_t`]]) continue;
+    ulChanges.push({type:V[`ulc${i}_t`], amount:V[`ulc${i}_a`] || '', from:V[`ulc${i}_f`] || '', to:V[`ulc${i}_e`] || ''});
+  }
+  ulRenderChanges(); ulRunSim();
+}
+function ulSpStatus(msg, bad){ const el = document.getElementById('ulSpStatus'); if(el){ el.textContent = msg || ''; el.style.color = bad ? 'var(--danger,#b3261e)' : 'var(--muted)'; } }
+function ulSpRender(){
+  const card = document.getElementById('ulSaveCard'), body = document.getElementById('ulSaveBody'), pop = document.getElementById('ulSavePop');
+  if(!card || !body || !pop) return;
+  card.hidden = !SP.storage;
+  if(!SP.storage) return;
+  const esc = plannerEscapeHtml;
+  if(!SP.signedIn){
+    pop.hidden = true;
+    body.innerHTML = `<div id="ulGsiBtn"></div><button type="button" class="sp-pill" id="ulLoginBtn" onclick="ulSpLogin()">🔐 ตัวแทน: เข้าสู่ระบบเพื่อบันทึกงาน</button><div class="sp-status" id="ulSpStatus"></div>`;
+    return;
+  }
+  const plans = SP.plans.filter(ulIsPlan);
+  const active = plans.find(p => p.id === UL_SP.activeId);
+  body.innerHTML = `<span class="sp-who">${esc(SP.email)}</span>
+    ${active ? `<button type="button" class="sp-pill" onclick="ulSpSaveOver()">บันทึกทับ “${esc(active.name)}”</button>` : ''}
+    <button type="button" class="sp-pill sp-solid" onclick="ulSpSaveNew()">💾 บันทึกงาน</button>
+    <button type="button" class="sp-pill" onclick="UL_SP.popOpen=!UL_SP.popOpen;ulSpRender()">📂 งานที่บันทึกไว้ (${plans.length}) ▾</button>
+    <div class="sp-status" id="ulSpStatus"></div>`;
+  pop.hidden = !UL_SP.popOpen;
+  if(!UL_SP.popOpen) return;
+  pop.innerHTML = `<h4>งานยูนิตลิงก์ที่บันทึกไว้</h4>` + (plans.length ? `<ul class="sp-list">${plans.map(p => `
+      <li class="sp-item${p.id === UL_SP.activeId ? ' is-active' : ''}">
+        <div class="sp-name" onclick="ulSpOpen('${p.id}')">${esc(p.name)}</div>
+        <div class="sp-meta">${esc(spPlanMeta(p))}</div>
+        <div class="sp-row"><button type="button" class="sp-link" onclick="ulSpOpen('${p.id}')">เปิด</button>
+          <button type="button" class="sp-link" onclick="spRename('${p.id}').then(ulSpRender)">เปลี่ยนชื่อ</button>
+          <button type="button" class="sp-link sp-del" onclick="spDelete('${p.id}').then(ulSpRender)">ลบ</button></div>
+      </li>`).join('')}</ul>` : '<p class="hint" style="margin:0;">ยังไม่มีงานที่บันทึกไว้</p>');
+}
+function ulSpLogin(){
+  if(!SP.clientId){ ulSpStatus('ยังไม่ได้ตั้งค่าการเข้าสู่ระบบ', true); return; }
+  const start = () => {
+    if(!window.google || !google.accounts || !google.accounts.id){ ulSpStatus('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ', true); return; }
+    google.accounts.id.initialize({client_id: SP.clientId, callback: spOnCredential, auto_select:false, cancel_on_tap_outside:true});
+    const btn = document.getElementById('ulLoginBtn'); if(btn) btn.style.display = 'none';
+    google.accounts.id.renderButton(document.getElementById('ulGsiBtn'), {theme:'outline', size:'medium', shape:'pill', text:'signin_with', locale:'th'});
+    ulSpStatus('กดปุ่ม Google ด้านบนเพื่อเข้าสู่ระบบ');
+  };
+  if(window.google && window.google.accounts) return start();
+  const sc = document.createElement('script');
+  sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.defer = true;
+  sc.onload = start; sc.onerror = () => ulSpStatus('โหลดระบบเข้าสู่ระบบของ Google ไม่สำเร็จ', true);
+  document.head.appendChild(sc);
+}
+function ulSpSummary(){
+  const o = ulReadForm();
+  const last = ulLast && ulLast.res.rows.length ? ulLast.res.rows[ulLast.res.rows.length - 1] : null;
+  return {gender:o.gender, entryAge:o.age, mainLabel:`Unit Linked mDesign เบี้ย ${UL_FMT(o.premium)} ทุน ${UL_FMT(o.sa)} ผลตอบแทน ${(o.rate*100).toFixed(1).replace(/\.0$/, '')}%`, frequency:'รายปี', totalY1:null};
+}
+async function ulSpPersist(id, name){
+  if(UL_SP.busy) return; UL_SP.busy = true; ulSpStatus('กำลังบันทึก…');
+  try{
+    ulRunSim();
+    const d = await spFetch(SP_PLANS_URL, {method:'POST', body: JSON.stringify({id, name, state: ulSnapshotState(), summary: ulSpSummary()})});
+    await spLoadPlans(); UL_SP.activeId = d.plan.id; ulSpRender(); ulSpStatus(`บันทึก “${d.plan.name}” แล้ว`);
+  }catch(e){ ulSpStatus(e.message || 'บันทึกไม่สำเร็จ', true); }
+  UL_SP.busy = false;
+}
+function ulSpSaveNew(){
+  const o = ulReadForm();
+  const name = (prompt('ตั้งชื่องานนี้ (แนะนำชื่อเล่นหรือรหัสลูกค้า ไม่ต้องใส่ชื่อ-นามสกุลเต็ม)', `UL ${o.gender === 'f' ? 'หญิง' : 'ชาย'} ${o.age} ปี`) || '').trim();
+  if(name) ulSpPersist(undefined, name);
+}
+function ulSpSaveOver(){
+  const p = SP.plans.find(x => x.id === UL_SP.activeId); if(!p) return;
+  if(confirm(`บันทึกทับงาน “${p.name}” ด้วยค่าปัจจุบันใช่ไหม`)) ulSpPersist(p.id, p.name);
+}
+function ulSpOpen(id){
+  const p = SP.plans.find(x => x.id === id); if(!p) return;
+  ulRestoreState(p.state); UL_SP.activeId = id; UL_SP.popOpen = false; ulSpRender(); ulSpStatus(`เปิดงาน “${p.name}” แล้ว`);
+}
+
 function renderUnitLinkedPage(){
   if(ulRendered) return;
   const U = RATES && RATES.unit_linked_mdesign;
@@ -16517,6 +16701,7 @@ function renderUnitLinkedPage(){
   ulRendered = true;
   ulRenderChanges();
   ulRunSim();
+  ulSpRender();
 }
 
 function showPage(name, options = {}){
