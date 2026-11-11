@@ -73,7 +73,7 @@ test("ลงทะเบียนครบ: เครื่องคำนวณ
 
 test("15/6 มีปุ่มโบรชัวร์และหัวข้อพอร์ตลงทุน", () => {
   assert.match(html, /smartlink156:         \[\{file:'smart-index-15-6\.pdf'/);
-  assert.match(html, /detailSections: \(\) => smartIndexPortfolioSection\(\)/);
+  assert.match(html, /smartIndexPortfolioSection\(\),/);
   assert.match(call("smartIndexPortfolioSection"), /S&amp;P Multi-Asset Global Macro ESG Index/);
 });
 
@@ -88,6 +88,20 @@ test("กราฟเทียบหุ้นโลก ใช้ตัวเล�
   const sec = call("smartIndex101CompareSection");
   assert.match(sec, /ดัชนีของแผนนี้ เทียบกับหุ้นโลก/);
   assert.match(sec, /stroke-dasharray="4 4"/);
-  assert.match(sec, /onpointermove="si101Move\(event\)"/);
+  assert.match(sec, /onpointermove="siMove\('101',event\)"/);
   assert.match(sec, /เอื้อฝั่งหุ้น/);
+});
+
+test("15/6 มีกราฟเทียบหุ้นโลก 11 ปี จากข้อมูลรายปีของ S&P DJI", () => {
+  const h = RATES.smart_index_15_6_pro.index_history;
+  assert.deepEqual(h.calendar_pct, [4.31, 4.45, 5.47, 2.92, 13.71, 1.43, 9.52, -2.05, 3.70, 9.39, 3.94]);
+  assert.equal(RATES.smart_index_10_1.benchmark.series.msci_acwi.calendar_pct_long.length, 11);
+  const sec = call("smartIndex156CompareSection");
+  assert.match(sec, /เทียบกับหุ้นโลก \(11 ปี\)/);
+  assert.match(sec, /onpointermove="siMove\('156',event\)"/);
+  assert.match(sec, /back-tested/);
+  assert.match(html, /detailSections: \(\) => smartIndex156CompareSection\(\) \+ smartIndexPortfolioSection\(\)/);
+  // ทั้งสองกราฟอยู่คนละหน้า แต่ id ต้องไม่ชนกัน
+  assert.match(call("smartIndex101CompareSection"), /id="sic101Svg"/);
+  assert.match(sec, /id="sic156Svg"/);
 });
