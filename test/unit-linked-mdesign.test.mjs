@@ -93,3 +93,13 @@ test("หน้าเว็บ: ใช้เบี้ยสัญญาเพิ
   assert.match(html, /รายละเอียดการคำนวณ COI และ COR รายเดือน/);
   assert.doesNotMatch(html, /สรุปจากเอกสารอบรม/);
 });
+
+test("ส่งออก Excel/PDF มีคำเตือนผลตอบแทน และระบบบันทึกงานแยกจากแผนหน้าคำนวณ", () => {
+  assert.match(html, /function ulExportExcel\(/);
+  assert.match(html, /function ulExportPdf\(/);
+  assert.match(html, /notes: \[\.\.\.UL_RETURN_DISCLAIMER, RIDER_PREMIUM_ADJUST_NOTE\]/);
+  assert.match(html, /UL_RETURN_DISCLAIMER\.map\(esc\)/);
+  assert.match(html, /values = \{planKind:'ul'\}/);
+  assert.match(html, /const calcPlans = SP\.plans\.filter\(p => !ulIsPlan\(p\)\)/);
+  assert.match(html, /class="ul-calc-link" href="\/unit-linked"/);
+});

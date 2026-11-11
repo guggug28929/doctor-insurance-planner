@@ -37,7 +37,9 @@ test('ข้อความอยู่ในหน้าคำนวณ PDF แ
   assert.match(html, /<p class="meta rider-adjust-note"[^>]*>\$\{plannerEscapeHtml\(RIDER_PREMIUM_ADJUST_NOTE\)\}<\/p>/);
   assert.doesNotMatch(html, /^\s*RIDER_PREMIUM_ADJUST_NOTE,$/m, 'ข้อความสรุปสำหรับคัดลอกยาวเกินไป ไม่ต้องใส่');
   assert.match(html, /<div class="print-foot print-adjust-note">\$\{plannerEscapeHtml\(RIDER_PREMIUM_ADJUST_NOTE\)\}<\/div>/);
-  assert.match(html, /xlsxWrapNote\(RIDER_PREMIUM_ADJUST_NOTE, 120\)/);
+  // Excel ใส่หมายเหตุจาก data.notes ถ้าไม่ส่งมาใช้ข้อความนี้เป็นค่าตั้งต้นเสมอ
+  assert.match(html, /data\.notes \|\| \[RIDER_PREMIUM_ADJUST_NOTE\]/);
+  assert.match(html, /xlsxWrapNote\(note, 120\)/);
 });
 
 test('ตัดบรรทัดสำหรับ Excel ไม่ทำข้อความหายหรือซ้ำ', () => {
