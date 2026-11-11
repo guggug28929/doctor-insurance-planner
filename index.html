@@ -4682,7 +4682,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-11b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-11c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -9271,112 +9271,159 @@ const PENSION_COVER_IMAGES = {
    ใช้ผลตอบแทนรายปีปฏิทินจากเอกสารทางการเท่านั้น (โบรชัวร์บริษัท + factsheet MSCI) ไม่สร้างจุดรายเดือนขึ้นเอง
    ผลตอบแทนสะสมจึงเป็นจุด ณ สิ้นปี เริ่ม 100 ที่สิ้นปี 2019 */
 let si101Mode = 'cum';
+const SI_CMP = {};   // ข้อมูลกราฟเทียบของแต่ละแผน แยกตาม key เพื่อให้หน้าเดียวมีได้หลายกราฟ
+function siCmpBuild(key, years, series){
+  for(const s of series){ let v = 100; s.cum = [100, ...s.pct.map(p => (v *= 1 + p / 100))]; }
+  SI_CMP[key] = {years, series};
+  return SI_CMP[key];
+}
 function si101Data(){
   const g = RATES.smart_index_10_1, b = g && g.benchmark;
   if(!b) return null;
-  const sol = b.years.map(y => g.index_stats.calendar_pct[String(y)]);
-  const series = [
-    {k:'sol', label:'ดัชนีของแผนนี้ (Solactive Multi-Strategy)', color:'#c2185b', pct:sol, main:true},
-    {k:'acwi', label:b.series.msci_acwi.label, color:'#1e4f78', pct:b.series.msci_acwi.calendar_pct},
-    {k:'world', label:b.series.msci_world.label, color:'#8aa4bf', pct:b.series.msci_world.calendar_pct},
-  ];
-  for(const s of series){ let v = 100; s.cum = [100, ...s.pct.map(p => (v *= 1 + p / 100))]; }
-  return {years:b.years, series, b, g};
+  const d = siCmpBuild('101', b.years, [
+    {k:'sol', label:'ดัชนีของแผนนี้ (Solactive Multi-Strategy)', short:'ดัชนีของแผนนี้', color:'#c2185b', pct:b.years.map(y => g.index_stats.calendar_pct[String(y)]), main:true},
+    {k:'acwi', label:b.series.msci_acwi.label, short:'MSCI ACWI', color:'#1e4f78', pct:b.series.msci_acwi.calendar_pct},
+    {k:'world', label:b.series.msci_world.label, short:'MSCI World', color:'#8aa4bf', pct:b.series.msci_world.calendar_pct},
+  ]);
+  return Object.assign(d, {b, g});
+}
+function si156Data(){
+  const h = RATES.smart_index_15_6_pro && RATES.smart_index_15_6_pro.index_history;
+  const b = RATES.smart_index_10_1 && RATES.smart_index_10_1.benchmark;
+  if(!h || !b || !b.years_long) return null;
+  const d = siCmpBuild('156', h.years, [
+    {k:'sp', label:'ดัชนีของแผนนี้ (S&P Multi-Asset Global Macro ESG)', short:'ดัชนีของแผนนี้', color:'#c2185b', pct:h.calendar_pct, main:true},
+    {k:'acwi', label:b.series.msci_acwi.label, short:'MSCI ACWI', color:'#1e4f78', pct:b.series.msci_acwi.calendar_pct_long},
+    {k:'world', label:b.series.msci_world.label, short:'MSCI World', color:'#8aa4bf', pct:b.series.msci_world.calendar_pct_long},
+  ]);
+  return Object.assign(d, {h, b});
 }
 function si101Fmt(v, sign){ return (sign && v > 0 ? '+' : '') + v.toFixed(1) + '%'; }
-function si101Svg(mode){
-  const d = si101Data(); if(!d) return '';
+function siSvg(key, mode){
+  const d = SI_CMP[key]; if(!d) return '';
+  const id = s => `sic${key}${s}`;
   const W = 760, H = 330, L = 58, R = 120, T = 20, B = 40;
   const pw = W - L - R, ph = H - T - B;
+  const G = {key, mode, L, T, pw, ph, H, B, W, d};
   let html = '';
   if(mode === 'cum'){
-    const xs = ['สิ้นปี 2019', ...d.years.map(String)];
+    const xs = [String(d.years[0] - 1), ...d.years.map(String)];
     const all = d.series.flatMap(s => s.cum);
-    const lo = Math.floor(Math.min(...all) / 20) * 20, hi = Math.ceil(Math.max(...all) / 20) * 20;
+    const st = (Math.max(...all) - Math.min(...all)) > 160 ? 40 : 20;
+    const lo = Math.floor(Math.min(...all) / st) * st, hi = Math.ceil(Math.max(...all) / st) * st;
     const x = i => L + i * pw / (xs.length - 1), y = v => T + (1 - (v - lo) / (hi - lo)) * ph;
-    for(let v = lo; v <= hi; v += 20) html += `<line x1="${L}" x2="${L+pw}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 100 ? '#c9b3bd' : '#f1e6eb'}" ${v === 100 ? 'stroke-dasharray="3 3"' : ''}/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#8a7a82">${v}</text>`;
-    xs.forEach((t, i) => html += `<text x="${x(i)}" y="${H-14}" text-anchor="middle" font-size="11" fill="#8a7a82">${i ? t : '2019'}</text>`);
+    Object.assign(G, {x, y, xs});
+    for(let v = lo; v <= hi; v += st) html += `<line x1="${L}" x2="${L+pw}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 100 ? '#c9b3bd' : '#f1e6eb'}" ${v === 100 ? 'stroke-dasharray="3 3"' : ''}/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#8a7a82">${v}</text>`;
+    const every = xs.length > 8 ? 2 : 1;
+    xs.forEach((t, i) => { if(i % every === 0 || i === xs.length - 1) html += `<text x="${x(i)}" y="${H-14}" text-anchor="middle" font-size="11" fill="#8a7a82">${t}</text>`; });
     const main = d.series[0];
-    html += `<defs><linearGradient id="si101g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c2185b" stop-opacity=".28"/><stop offset="1" stop-color="#c2185b" stop-opacity="0"/></linearGradient></defs>`;
-    html += `<path d="M${x(0)},${y(lo)} ${main.cum.map((v,i)=>`L${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')} L${x(main.cum.length-1)},${y(lo)} Z" fill="url(#si101g)"/>`;
+    html += `<defs><linearGradient id="${id('g')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c2185b" stop-opacity=".28"/><stop offset="1" stop-color="#c2185b" stop-opacity="0"/></linearGradient></defs>`;
+    html += `<path d="M${x(0)},${y(lo)} ${main.cum.map((v,i)=>`L${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')} L${x(main.cum.length-1)},${y(lo)} Z" fill="url(#${id('g')})"/>`;
     for(const s of [...d.series].reverse()){
       html += `<polyline fill="none" stroke="${s.color}" stroke-width="${s.main ? 3.4 : 2.2}" stroke-linejoin="round" stroke-linecap="round" points="${s.cum.map((v,i)=>x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ')}"/>`;
       s.cum.forEach((v,i) => html += `<circle cx="${x(i)}" cy="${y(v)}" r="${s.main ? 3.6 : 2.6}" fill="#fff" stroke="${s.color}" stroke-width="2"/>`);
     }
-    // ป้ายปลายเส้น เลื่อนไม่ให้ทับกัน
     const ends = d.series.map(s => ({s, yy: y(s.cum[s.cum.length-1])})).sort((a,b) => a.yy - b.yy);
     for(let i = 1; i < ends.length; i++) if(ends[i].yy - ends[i-1].yy < 26) ends[i].yy = ends[i-1].yy + 26;
     for(const e of ends){ const v = e.s.cum[e.s.cum.length-1]; html += `<rect x="${L+pw+8}" y="${e.yy-11}" width="104" height="22" rx="11" fill="${e.s.color}"/><text x="${L+pw+60}" y="${e.yy+4}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">${si101Fmt(v - 100, true)}</text>`; }
-    html += `<g id="si101Hover" style="display:none" pointer-events="none"><line id="si101Vx" stroke="#5b4a52" stroke-dasharray="4 4"/>${d.series.map((s,i)=>`<line id="si101H${i}" stroke="${s.color}" stroke-dasharray="4 4" stroke-width="1.2"/><circle id="si101D${i}" r="6" fill="${s.color}" stroke="#fff" stroke-width="2.5"/>`).join('')}<rect id="si101XB" height="20" rx="10" fill="#2b2027"/><text id="si101XT" font-size="11" fill="#fff" text-anchor="middle" font-weight="700"></text>${d.series.map((s,i)=>`<rect id="si101YB${i}" height="18" rx="9" fill="${s.color}"/><text id="si101YT${i}" font-size="10.5" fill="#fff" text-anchor="end" font-weight="700"></text>`).join('')}</g>`;
-    html += `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent" style="cursor:crosshair" onpointermove="si101Move(event)" onpointerdown="si101Move(event)" onpointerleave="si101Leave()"/>`;
-    window.si101Geo = {mode, x, y, L, T, pw, ph, H, B, xs, d, W};
+    html += `<g id="${id('Hover')}" style="display:none" pointer-events="none"><line id="${id('Vx')}" stroke="#5b4a52" stroke-dasharray="4 4"/>${d.series.map((s,i)=>`<line id="${id('H'+i)}" stroke="${s.color}" stroke-dasharray="4 4" stroke-width="1.2"/><circle id="${id('D'+i)}" r="6" fill="${s.color}" stroke="#fff" stroke-width="2.5"/>`).join('')}<rect id="${id('XB')}" height="20" rx="10" fill="#2b2027"/><text id="${id('XT')}" font-size="11" fill="#fff" text-anchor="middle" font-weight="700"></text>${d.series.map((s,i)=>`<rect id="${id('YB'+i)}" height="18" rx="9" fill="${s.color}"/><text id="${id('YT'+i)}" font-size="10.5" fill="#fff" text-anchor="end" font-weight="700"></text>`).join('')}</g>`;
+    html += `<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent" style="cursor:crosshair" onpointermove="siMove('${key}',event)" onpointerdown="siMove('${key}',event)" onpointerleave="siLeave('${key}')"/>`;
   } else {
     const vals = d.series.flatMap(s => s.pct);
     const lo = Math.floor(Math.min(...vals) / 10) * 10, hi = Math.ceil(Math.max(...vals) / 10) * 10;
     const y = v => T + (1 - (v - lo) / (hi - lo)) * ph;
     const gw = pw / d.years.length, bw = Math.min(26, gw / (d.series.length + 1.2));
+    Object.assign(G, {y, gw});
     for(let v = lo; v <= hi; v += 10) html += `<line x1="${L}" x2="${L+pw}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? '#9c8790' : '#f1e6eb'}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#8a7a82">${v}%</text>`;
     d.years.forEach((yr, i) => {
       const cx = L + gw * (i + .5);
-      html += `<rect class="si101-col" data-i="${i}" x="${L + gw*i + 2}" y="${T}" width="${gw-4}" height="${ph}" rx="8" fill="transparent" onpointerenter="si101Bar(${i})" onpointerdown="si101Bar(${i})" onpointerleave="si101Leave()"/>`;
+      html += `<rect class="si-col" data-i="${i}" x="${L + gw*i + 2}" y="${T}" width="${gw-4}" height="${ph}" rx="8" fill="transparent" onpointerenter="siBar('${key}',${i})" onpointerdown="siBar('${key}',${i})" onpointerleave="siLeave('${key}')"/>`;
       d.series.forEach((s, k) => {
         const v = s.pct[i], bx = cx + (k - (d.series.length - 1) / 2) * (bw + 3) - bw / 2;
         html += `<rect x="${bx}" y="${Math.min(y(v), y(0))}" width="${bw}" height="${Math.max(1, Math.abs(y(v) - y(0)))}" rx="4" fill="${s.color}" pointer-events="none"/>`;
-        if(s.main) html += `<text x="${bx + bw/2}" y="${v >= 0 ? y(v) - 5 : y(v) + 13}" text-anchor="middle" font-size="10" font-weight="700" fill="${s.color}" pointer-events="none">${si101Fmt(v, true)}</text>`;
+        if(s.main && d.years.length <= 8) html += `<text x="${bx + bw/2}" y="${v >= 0 ? y(v) - 5 : y(v) + 13}" text-anchor="middle" font-size="10" font-weight="700" fill="${s.color}" pointer-events="none">${si101Fmt(v, true)}</text>`;
       });
       html += `<text x="${cx}" y="${H-14}" text-anchor="middle" font-size="11" fill="#8a7a82">${yr}</text>`;
     });
-    html += `<g id="si101Hover" style="display:none" pointer-events="none"><line id="si101Vx" stroke="#5b4a52" stroke-dasharray="4 4"/></g>`;
-    window.si101Geo = {mode, L, T, pw, ph, H, B, d, gw, W, y};
   }
-  return `<svg id="si101Svg" viewBox="0 0 ${W} ${H}" width="100%" style="touch-action:pan-y;display:block">${html}</svg><div class="si-tip" id="si101Tip"></div>`;
+  (window.SI_GEO = window.SI_GEO || {})[key] = G;
+  return `<svg id="${id('Svg')}" viewBox="0 0 ${W} ${H}" width="100%" style="touch-action:pan-y;display:block">${html}</svg><div class="si-tip" id="${id('Tip')}"></div>`;
 }
-function si101Tip(px, pyTop, title, rows){
-  const tip = document.getElementById('si101Tip'), svg = document.getElementById('si101Svg'); if(!tip || !svg) return;
+function siTip(key, px, pyTop, title, rows){
+  const tip = document.getElementById(`sic${key}Tip`), svg = document.getElementById(`sic${key}Svg`); if(!tip || !svg) return;
   tip.innerHTML = `<b>${title}</b>` + rows.map(r => `<div><i style="background:${r.c}"></i><span>${r.l}</span><em>${r.v}</em></div>`).join('');
   tip.style.display = 'block';
-  const box = svg.parentNode.getBoundingClientRect(), sb = svg.getBoundingClientRect(), G = window.si101Geo;
+  const G = window.SI_GEO[key], box = svg.parentNode.getBoundingClientRect(), sb = svg.getBoundingClientRect();
   const X = sb.left - box.left + px / G.W * sb.width, Y = sb.top - box.top + pyTop / G.H * sb.height;
   const tw = tip.offsetWidth;
   tip.style.left = Math.max(4, X + 16 + tw > box.width ? X - tw - 16 : X + 16) + 'px';
   tip.style.top = Math.max(4, Y - 10) + 'px';
 }
-function si101Move(ev){
-  const G = window.si101Geo; if(!G || G.mode !== 'cum') return;
-  const svg = document.getElementById('si101Svg'); const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+function siMove(key, ev){
+  const G = window.SI_GEO && window.SI_GEO[key]; if(!G || G.mode !== 'cum') return;
+  const svg = document.getElementById(`sic${key}Svg`); const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   let i = Math.round((p.x - G.L) / (G.pw / (G.xs.length - 1))); i = Math.max(0, Math.min(G.xs.length - 1, i));
-  const X = G.x(i), set = (id, a) => { const el = document.getElementById(id); if(el) for(const k in a) el.setAttribute(k, a[k]); return el; };
-  document.getElementById('si101Hover').style.display = '';
-  set('si101Vx', {x1:X, x2:X, y1:G.T, y2:G.T + G.ph});
-  const xt = i ? 'สิ้นปี ' + G.xs[i] : 'จุดเริ่ม สิ้นปี 2019', xw = xt.length * 6.2 + 18;
-  set('si101XB', {x: Math.max(G.L, Math.min(G.L + G.pw - xw, X - xw/2)), y: G.T + G.ph + 4, width: xw});
-  set('si101XT', {x: Math.max(G.L + xw/2, Math.min(G.L + G.pw - xw/2, X)), y: G.T + G.ph + 18}).textContent = xt;
+  const X = G.x(i), set = (s, a) => { const el = document.getElementById(`sic${key}${s}`); if(el) for(const k in a) el.setAttribute(k, a[k]); return el; };
+  document.getElementById(`sic${key}Hover`).style.display = '';
+  set('Vx', {x1:X, x2:X, y1:G.T, y2:G.T + G.ph});
+  const xt = i ? 'สิ้นปี ' + G.xs[i] : 'จุดเริ่ม สิ้นปี ' + G.xs[0], xw = xt.length * 6.2 + 18;
+  set('XB', {x: Math.max(G.L, Math.min(G.L + G.pw - xw, X - xw/2)), y: G.T + G.ph + 4, width: xw});
+  set('XT', {x: Math.max(G.L + xw/2, Math.min(G.L + G.pw - xw/2, X)), y: G.T + G.ph + 18}).textContent = xt;
   const used = [];
   G.d.series.forEach((s, k) => {
-    const Y = G.y(s.cum[i]); set('si101H' + k, {x1: G.L, x2: X, y1: Y, y2: Y}); set('si101D' + k, {cx: X, cy: Y});
+    const Y = G.y(s.cum[i]); set('H' + k, {x1: G.L, x2: X, y1: Y, y2: Y}); set('D' + k, {cx: X, cy: Y});
     let ty = Y; while(used.some(u => Math.abs(u - ty) < 19)) ty += 19; used.push(ty);
     const t = s.cum[i].toFixed(1), w = t.length * 6.4 + 14;
-    set('si101YB' + k, {x: G.L - w - 3, y: ty - 9, width: w}); set('si101YT' + k, {x: G.L - 10, y: ty + 4}).textContent = t;
+    set('YB' + k, {x: G.L - w - 3, y: ty - 9, width: w}); set('YT' + k, {x: G.L - 10, y: ty + 4}).textContent = t;
   });
-  si101Tip(X, Math.min(...G.d.series.map(s => G.y(s.cum[i]))), i ? `สิ้นปี ${G.xs[i]} · เงิน 100 กลายเป็น` : 'จุดเริ่ม: เงิน 100',
-    G.d.series.map(s => ({c: s.color, l: s.main ? 'ดัชนีของแผนนี้' : s.label.replace(/ \(.+\)/, ''), v: s.cum[i].toFixed(1) + (i ? ` (${si101Fmt(s.pct[i-1], true)} ปีนั้น)` : '')})));
+  siTip(key, X, Math.min(...G.d.series.map(s => G.y(s.cum[i]))), i ? `สิ้นปี ${G.xs[i]} · เงิน 100 กลายเป็น` : 'จุดเริ่ม: เงิน 100',
+    G.d.series.map(s => ({c: s.color, l: s.short, v: s.cum[i].toFixed(1) + (i ? ` (${si101Fmt(s.pct[i-1], true)} ปีนั้น)` : '')})));
 }
-function si101Bar(i){
-  const G = window.si101Geo; if(!G || G.mode !== 'bar') return;
-  document.querySelectorAll('#si101Svg .si101-col').forEach(r => r.setAttribute('fill', Number(r.dataset.i) === i ? 'rgba(194,24,91,.07)' : 'transparent'));
-  const X = G.L + G.gw * (i + .5);
-  si101Tip(X, G.T + 10, `ปี ${G.d.years[i]}`, G.d.series.map(s => ({c: s.color, l: s.main ? 'ดัชนีของแผนนี้' : s.label.replace(/ \(.+\)/, ''), v: si101Fmt(s.pct[i], true)})));
+function siBar(key, i){
+  const G = window.SI_GEO && window.SI_GEO[key]; if(!G || G.mode !== 'bar') return;
+  document.querySelectorAll(`#sic${key}Svg .si-col`).forEach(r => r.setAttribute('fill', Number(r.dataset.i) === i ? 'rgba(194,24,91,.07)' : 'transparent'));
+  siTip(key, G.L + G.gw * (i + .5), G.T + 10, `ปี ${G.d.years[i]}`, G.d.series.map(s => ({c: s.color, l: s.short, v: si101Fmt(s.pct[i], true)})));
 }
-function si101Leave(){
-  const h = document.getElementById('si101Hover'); if(h) h.style.display = 'none';
-  const t = document.getElementById('si101Tip'); if(t) t.style.display = 'none';
-  document.querySelectorAll('#si101Svg .si101-col').forEach(r => r.setAttribute('fill', 'transparent'));
+function siLeave(key){
+  const h = document.getElementById(`sic${key}Hover`); if(h) h.style.display = 'none';
+  const t = document.getElementById(`sic${key}Tip`); if(t) t.style.display = 'none';
+  document.querySelectorAll(`#sic${key}Svg .si-col`).forEach(r => r.setAttribute('fill', 'transparent'));
 }
-function si101SetMode(m){
-  si101Mode = m;
-  const box = document.getElementById('si101Chart'); if(box) box.innerHTML = si101Svg(m);
-  document.querySelectorAll('.si-seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+function siSetMode(key, m){
+  const box = document.getElementById(`sic${key}Chart`); if(box) box.innerHTML = siSvg(key, m);
+  document.querySelectorAll(`#sic${key}Seg button`).forEach(b => b.classList.toggle('on', b.dataset.m === m));
+}
+function si101Svg(mode){ si101Data(); return siSvg('101', mode); }
+function siCmpShell(key, D){
+  return `<div class="si-seg" id="sic${key}Seg"><button type="button" data-m="cum" class="on" onclick="siSetMode('${key}','cum')">ผลตอบแทนสะสม</button><button type="button" data-m="bar" onclick="siSetMode('${key}','bar')">ผลตอบแทนรายปี</button></div>
+    <div class="si-chart" id="sic${key}Chart">${siSvg(key, 'cum')}</div>
+    <div class="si-legend">${D.series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('')}</div>`;
+}
+const siCagr = s => (Math.pow(s.cum[s.cum.length - 1] / 100, 1 / s.pct.length) - 1) * 100;
+const siStdev = s => { const m = s.pct.reduce((a, b) => a + b, 0) / s.pct.length; return Math.sqrt(s.pct.reduce((a, b) => a + (b - m) ** 2, 0) / (s.pct.length - 1)); };
+function smartIndex156CompareSection(){
+  const D = si156Data(); if(!D) return '';
+  const [sp, acwi] = D.series;
+  const neg = s => s.pct.filter(v => v < 0).length, worst = s => Math.min(...s.pct);
+  const i22 = D.years.indexOf(2022), i18 = D.years.indexOf(2018);
+  return `<div class="content-card si-port si-cmp">
+    <h2>ดัชนีของแผนนี้ เทียบกับหุ้นโลก (11 ปี)</h2>
+    <p class="meta">ลงเงินสมมติ 100 ที่สิ้นปี ${D.years[0] - 1} ดูว่าแต่ละดัชนีพาเงินไปถึงเท่าไร ชี้หรือแตะกราฟเพื่อดูตัวเลขแต่ละปี</p>
+    <div class="si-kpis">
+      <div class="k-main"><span>ปีที่แย่ที่สุด (ดัชนีของแผนนี้)</span><b>${si101Fmt(worst(sp), true)}</b><small>หุ้นโลกปีที่แย่ที่สุด ${si101Fmt(worst(acwi), true)}</small></div>
+      <div class="k-main"><span>ความผันผวนของผลตอบแทนรายปี</span><b>${siStdev(sp).toFixed(1)}%</b><small>หุ้นโลก ${siStdev(acwi).toFixed(1)}% · นิ่งกว่าราว ${Math.round(siStdev(acwi) / siStdev(sp))} เท่า</small></div>
+      <div><span>ปีที่ติดลบ (${D.years[0]}–${D.years[D.years.length-1]})</span><b>${neg(sp)} จาก ${D.years.length} ปี</b><small>หุ้นโลก ${neg(acwi)} ปี</small></div>
+      <div><span>โตเฉลี่ยต่อปี</span><b>${siCagr(sp).toFixed(1)}%</b><small>หุ้นโลก ${siCagr(acwi).toFixed(1)}%</small></div>
+    </div>
+    ${siCmpShell('156', D)}
+    <div class="si-insight">
+      <div><b>ปีที่หุ้นร่วง ดัชนีนี้เกือบไม่เจ็บ</b> ปี 2018 หุ้นโลก ${si101Fmt(acwi.pct[i18])} ดัชนีนี้ ${si101Fmt(sp.pct[i18], true)} · ปี 2022 หุ้นโลก ${si101Fmt(acwi.pct[i22])} ดัชนีนี้แค่ ${si101Fmt(sp.pct[i22])} เพราะระบบคุมความผันผวน 6% ลดสัดส่วนเสี่ยงอัตโนมัติ</div>
+      <div><b>ตอนตลาดดี หุ้นโลกชนะขาด</b> 11 ปีหุ้นโลกโตรวม ${si101Fmt(acwi.cum[acwi.cum.length-1] - 100, true)} ดัชนีนี้ ${si101Fmt(sp.cum[sp.cum.length-1] - 100, true)} ดัชนีนี้จึงเหมาะกับคนที่ให้ความสำคัญกับความนิ่งมากกว่าผลตอบแทนสูงสุด</div>
+      <div><b>ใน 15/6 ไม่ต้องรับความเสี่ยงขาลงเลย</b> ต่อให้ดัชนีติดลบ ยังได้เงินคืนทุก 2 ปี และครบสัญญา 600% ของทุนครบ ดัชนีมีผลแค่ส่วนโบนัสตอนครบ 15 ปี</div>
+    </div>
+    <p class="meta">ที่มา: ดัชนีของแผนนี้จาก ${D.h.source} (${D.h.note}) · หุ้นโลกจาก ${D.b.source} (${D.b.basis}) · ดัชนีของแผนนี้เป็นแบบ ER หัก 0.5% ต่อปีแล้ว ส่วน MSCI รวมเงินปันผล จึงเป็นการเทียบที่เอื้อฝั่งหุ้น · ปี 2026 ยังไม่ครบปีจึงไม่ใส่ (ดัชนีนี้ ${si101Fmt(D.h.ytd_2026_to_30_sep_pct, true)} ถึง 30 ก.ย. 2026) · ผลในอดีตไม่ได้ยืนยันผลในอนาคต</p>
+  </div>`;
 }
 function smartIndex101CompareSection(){
   const D = si101Data(); if(!D) return '';
@@ -9384,7 +9431,6 @@ function smartIndex101CompareSection(){
   const worst = s => Math.min(...s.pct), neg = s => s.pct.filter(v => v < 0).length;
   const end = s => s.cum[s.cum.length - 1] - 100;
   const cagr = s => (Math.pow(s.cum[s.cum.length - 1] / 100, 1 / D.years.length) - 1) * 100;
-  si101Mode = 'cum';
   return `<div class="content-card si-port si-cmp">
     <h2>ดัชนีของแผนนี้ เทียบกับหุ้นโลก</h2>
     <p class="meta">ลงเงินสมมติ 100 ที่สิ้นปี 2019 แล้วดูว่าแต่ละดัชนีพาเงินไปถึงเท่าไร ชี้หรือแตะกราฟเพื่อดูตัวเลขแต่ละปี</p>
@@ -9394,9 +9440,7 @@ function smartIndex101CompareSection(){
       <div><span>ปีวิกฤต 2022</span><b>${si101Fmt(sol.pct[2], true)}</b><small>หุ้นโลก ${si101Fmt(acwi.pct[2], true)} ในปีเดียวกัน</small></div>
       <div><span>โตเฉลี่ยต่อปี 2020–2025</span><b>${cagr(sol).toFixed(1)}%</b><small>หุ้นโลก ${cagr(acwi).toFixed(1)}%</small></div>
     </div>
-    <div class="si-seg"><button type="button" data-m="cum" class="on" onclick="si101SetMode('cum')">ผลตอบแทนสะสม</button><button type="button" data-m="bar" onclick="si101SetMode('bar')">ผลตอบแทนรายปี</button></div>
-    <div class="si-chart" id="si101Chart">${si101Svg('cum')}</div>
-    <div class="si-legend">${D.series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('')}</div>
+    ${siCmpShell('101', D)}
     <div class="si-insight">
       <div><b>ปี 2022 คือหัวใจของเรื่องนี้</b> หุ้นโลกร่วง ${si101Fmt(acwi.pct[2])} ในปีเดียว ขณะที่ดัชนีของแผนนี้ยังบวก ${si101Fmt(sol.pct[2], true)} เพราะ 4 กองข้างในไม่ได้พนันว่าตลาดต้องขึ้น</div>
       <div><b>ตอนตลาดดี หุ้นโลกชนะ</b> 6 ปีนี้หุ้นโลกโตรวม ${si101Fmt(end(acwi), true)} ส่วนดัชนีของแผนนี้ ${si101Fmt(end(sol), true)} แลกกับการแกว่งน้อยกว่ามาก</div>
@@ -10330,7 +10374,7 @@ const PLAN_DETAILS = {
     notFit: 'ต้องการใช้เงินระหว่างทาง หรือต้องการทุนคุ้มครองชีวิตสูงเพื่อปกป้องครอบครัว เพราะเบี้ยเกือบเท่าทุนต่อปี ทุนชีวิตจึงไม่ใช่จุดขาย',
     overview: 'ประกันชีวิตแบบสะสมทรัพย์ ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี ผลตอบแทนส่วนหนึ่งอ้างอิงดัชนี S&P Multi-Asset Global Macro ESG Index มี 2 รุ่นให้เลือก คือ 15/6 (เน้นการออม เงินคืนการันตีสูงกว่า) และ 15/6 โปร (เน้นโอกาสเติบโต ร่วมผลตอบแทนดัชนีเต็ม 100%) ทั้งสองรุ่นมาแทนแบบ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว',
     images: [],   // ภาพปกเดิมเป็นของ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว จึงไม่แสดง
-    detailSections: () => smartIndexPortfolioSection(),
+    detailSections: () => smartIndex156CompareSection() + smartIndexPortfolioSection(),
     coverage: [
       '<b>เสียชีวิต</b> รับตามขั้นบันไดของทุนประกัน ณ วันเริ่มคุ้มครอง: ปีที่ 1 = 100%, ปีที่ 2 = 200%, ปีที่ 3 = 300%, ปีที่ 4 = 400%, ปีที่ 5 = 500%, ปีที่ 6-15 = 600% หรือค่าเวนคืน หรือ 101% ของเบี้ยที่ชำระแล้ว แล้วแต่จำนวนใดมากกว่า (เหมือนกันทั้งสองรุ่น)',
       '<b>เงินคืนระหว่างสัญญา (การันตี)</b> สิ้นปีกรมธรรม์ที่ 2, 4, 6, 8, 10, 12, 14 รวม 7 ครั้ง: รุ่น 15/6 ครั้งละ 5% ของทุน (รวม 35%) · รุ่น 15/6 โปร ครั้งละ 2.5% ของทุน (รวม 17.5%)',
