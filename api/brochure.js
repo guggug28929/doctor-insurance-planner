@@ -6,6 +6,10 @@ const FALLBACK_BROCHURE_URLS = Object.freeze({
     "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/d-health-lite.pdf",
   "cancer.pdf":
     "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/cancer.pdf",
+  "smart-index-10-1.pdf":
+    "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/smart-index-10-1.pdf",
+  "smart-index-15-6.pdf":
+    "https://raw.githubusercontent.com/guggug28929/doctor-insurance-planner/main/public/brochures/smart-index-15-6.pdf",
 });
 
 export function fallbackBrochureUrl(file) {
