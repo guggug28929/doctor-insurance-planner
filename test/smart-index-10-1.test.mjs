@@ -105,3 +105,28 @@ test("15/6 มีกราฟเทียบหุ้นโลก 11 ปี จ�
   assert.match(call("smartIndex101CompareSection"), /id="sic101Svg"/);
   assert.match(sec, /id="sic156Svg"/);
 });
+
+test("หน้าแผนทั้งหมด: เรียงกลุ่มตลอดชีพต่อกัน ป้ายประเภทตรงกัน และมีครบทุกแบบ", () => {
+  const a = html.indexOf('<div id="page-plans"'), b = html.indexOf('<!-- ============ PAGE: HNW');
+  const page = html.slice(a, b);
+  const ids = [...page.matchAll(/showPlanDetail\('([a-z0-9_]+)'\)/g)].map(m => m[1]);
+  const i = id => ids.indexOf(id);
+  assert.equal(i('flexi9920') - i('flexi995'), 1, "เฟล็กซี่ 99/5 กับ 99/20 ต้องอยู่ติดกัน");
+  assert.ok(i('main9999smart') > i('main997') && i('main9999') - i('main9999smart') === 1);
+  for (const id of ['wholelife991cashback', 'wholelife991nocash', 'premierlegacy991']) assert.ok(ids.includes(id), id + " ต้องมีการ์ดในหน้าแผน");
+  const pd = html.slice(html.indexOf('const PLAN_DETAILS = {'));
+  const keys = [...pd.slice(0, 1200000).matchAll(/\n  ([a-z0-9_]+): \{\n    title:/g)].map(m => m[1]);
+  assert.deepEqual(keys.filter(k => !ids.includes(k)), [], "ทุกแบบที่มีหน้ารายละเอียดต้องมีการ์ดในหน้าแผน");
+  assert.doesNotMatch(page, /<div class="cat">ประกันชีวิตเพื่อวัยเกษียณ<\/div>/);
+  assert.match(page, /<div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 20 ปี · แปลงเป็นค่ารักษาได้<\/div>/);
+});
+
+test("เปรียบเทียบประกันสุขภาพมี H&S (N) อ่านวงเงินจากข้อมูลชุดเดียวกับหน้าแผน", () => {
+  assert.match(html, /health: \{label:'สัญญาเพิ่มเติมสุขภาพและค่ารักษา', ids:\['dhl','ehp','maochai','ecp','hsn','careplus','opd'\]\}/);
+  const i = html.indexOf("  hsn: {\n    title:'แยกค่าใช้จ่าย H&S (N)'");
+  assert.ok(i > html.indexOf("const COMPARE_PRODUCTS = {"), "ต้องอยู่ใน COMPARE_PRODUCTS");
+  const blk = html.slice(i, html.indexOf("  careplus: {", i));
+  assert.match(blk, /const b = RATES\.hsn\.benefits/);
+  assert.match(blk, /healthRiderPremium\(Object\.assign\(\{type:'hsn'\}, cfg\)/);
+  for (const k of ["n1", "n2", "n3", "n4", "n6", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
+});

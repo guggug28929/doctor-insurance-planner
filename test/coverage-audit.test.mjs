@@ -96,7 +96,7 @@ test("สัญญาเพิ่มเติมต้องไม่ถูก�
 test("ทุกแบบในกลุ่มเปรียบเทียบประกันชีวิต มีข้อมูลตารางครบ", () => {
   const groupBlock = bracketBlock("const COMPARE_GROUPS = {", "{", "}");
   const lifeIds = [...groupBlock.matchAll(/'([a-z0-9]+)'/g)].map((m) => m[1]);
-  const healthIds = ["dhl", "ehp", "maochai", "ecp", "careplus", "opd"];
+  const healthIds = ["dhl", "ehp", "maochai", "ecp", "hsn", "careplus", "opd"];
   for (const id of lifeIds) {
     if (healthIds.includes(id)) continue;
     assert.ok(lifeCompareIds.has(id), `${id} อยู่ในกลุ่มประกันชีวิตแต่ไม่มีข้อมูลใน LIFE_COMPARE_PRODUCTS`);
