@@ -551,6 +551,13 @@
   .info-icon:focus-visible, .tx-hint:focus-visible{outline:2px solid var(--pink-deep);outline-offset:2px;}
   .info-icon.hint-open{background:var(--pink-deep);}
   .info-icon.tip-down .tooltip{bottom:auto;top:135%;}
+  /* ลากสลับคอลัมน์ในตารางเปรียบเทียบ */
+  .coldrag-table thead th:not(:first-child),[data-reorder] .compare-col-summary:not(.compare-col-add){cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  .coldrag-table thead th:not(:first-child)::after,[data-reorder] .compare-col-summary:not(.compare-col-add) .compare-col-title::after{content:" ⇄";opacity:.45;font-weight:400;font-size:.85em;}
+  body.coldrag-active .coldrag-table, body.coldrag-active [data-reorder]{cursor:grabbing;}
+  .coldrag-src{opacity:.45;}
+  .coldrag-over{box-shadow:inset 0 0 0 2px var(--pink-deep,#8f0d40);background:rgba(143,13,64,.06) !important;}
+  .coldrag-ghost{position:fixed;z-index:9999;pointer-events:none;padding:6px 12px;border-radius:999px;background:var(--pink-deep,#8f0d40);color:#fff;font-size:.8rem;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .tx-hint.hint-open{background:var(--pink-deep);color:#fff;}
   @media (max-width:600px){
     /* บนมือถือ ตรึงกล่องคำอธิบายไว้ที่ขอบล่างของจอเสมอ แทนการวางลอยข้างไอคอน
@@ -4572,7 +4579,7 @@
   <div class="content-card" style="margin-top:14px;">
     <h2>เปรียบเทียบประกันชีวิตแบบบำนาญ</h2>
     <p style="color:var(--muted);">เลือกได้สูงสุด 4 แบบ ระบบจะเทียบเงื่อนไข อัตราบำนาญ ความคุ้มครองชีวิต และคำนวณเบี้ยกับผลตอบแทนจากอายุและทุนประกันที่กรอกให้ทันที</p>
-    <div id="pensionCompareBox" style="margin-top:14px;"></div>
+    <div id="pensionCompareBox" data-reorder="pension" style="margin-top:14px;"></div>
   </div>
 </div>
 </div>
@@ -4653,7 +4660,7 @@
 <div id="page-compare" class="page">
 <div class="wrap">
   <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
-  <div id="compareContent" style="margin-top:14px;">
+  <div id="compareContent" data-reorder="compare" style="margin-top:14px;">
     <div class="content-card">
       <p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ กรุณากลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ที่หัวข้อสัญญาเพิ่มเติมสุขภาพ/ชดเชยรายได้</p>
     </div>
@@ -19226,7 +19233,7 @@ function renderPensionCompare(){
   let table = '<p class="pension-hint">เลือกแบบประกันที่อยากเทียบ (สูงสุด 4 แบบ)</p>';
   if(sel.length){
     const cols = sel.map(pid => ({pid, rows: pensionCompareRows(pid)}));
-    const headers = ['หัวข้อเปรียบเทียบ', ...cols.map(c => pensionPlan(c.pid).shortName)];
+    const headers = cols.map(c => pensionPlan(c.pid).shortName);
     const rows = PENSION_COMPARE_ROW_DEFS.map(def => {
       if(def.section) return ['§' + def.section];
       return [def.label, ...cols.map(c => c.rows[def.key] != null ? c.rows[def.key] : '<span class="compare-na">—</span>')];
@@ -19778,6 +19785,171 @@ function renderComparePage(){
 }
 initComparePlanCards();
 initCompareToggle();
+
+/* =========================================================
+   ลากสลับคอลัมน์ในตารางเปรียบเทียบทุกหน้า
+   - หน้าที่มี state (เปรียบเทียบแผนสุขภาพ/ชีวิต และบำนาญ) สลับลำดับใน array แล้ว render ใหม่
+     การ์ดด้านบนกับตารางจึงสลับตามกันเสมอ
+   - ตารางคงที่ (CI, อุบัติเหตุ, เทียบหลายบริษัท ฯลฯ) สลับเซลล์ในตารางโดยตรง
+   - เมาส์: กดค้างแล้วลาก · มือถือ: แตะค้างครู่หนึ่งแล้วลาก (ปัดปกติยังเลื่อนตารางได้)
+   ========================================================= */
+const COL_REORDER = {
+  compare(a, b){
+    if(a===b || !compareSelected[a] || !compareSelected[b]) return;
+    [compareSelected[a], compareSelected[b]] = [compareSelected[b], compareSelected[a]];
+    renderComparePage();
+  },
+  pension(a, b){
+    if(a===b || !pensionCompareSelected[a] || !pensionCompareSelected[b]) return;
+    [pensionCompareSelected[a], pensionCompareSelected[b]] = [pensionCompareSelected[b], pensionCompareSelected[a]];
+    renderPensionCompare();
+  },
+};
+(function(){
+  const SKIP = 'select,button,input,textarea,a,option,label,[onclick],.info-icon';
+  const firstHeadText = t => ((t.tHead && t.tHead.rows[0] && t.tHead.rows[0].cells[0]) ? t.tHead.rows[0].cells[0].textContent : '').trim();
+  function isCompareTable(t){
+    if(!t || !t.tHead || t.tHead.rows.length !== 1) return false;
+    const n = t.tHead.rows[0].cells.length;
+    if(n < 3) return false;
+    if(t.closest('[data-reorder]')) return true;
+    if(t.matches('.cmp, .xw-table, .benefit-table')) return true;
+    return /^(หัวข้อ|หมวดความคุ้มครอง|หัวข้อเปรียบเทียบ)$/.test(firstHeadText(t));
+  }
+  // แถวที่จำนวนเซลล์ไม่เท่าหัวตาราง (ยกเว้นแถวหัวข้อกลุ่มที่มีเซลล์เดียว) ทำให้สลับไม่ได้อย่างปลอดภัย
+  function movableRows(t){
+    const n = t.tHead.rows[0].cells.length, rows = [];
+    for(const r of t.rows){
+      if(r.cells.length === n){ rows.push(r); continue; }
+      if(r.cells.length === 1) continue;
+      return null;
+    }
+    return rows;
+  }
+  function swapTableCols(t, a, b){
+    const rows = movableRows(t); if(!rows) return;
+    rows.forEach(r => {
+      const x = r.cells[a], y = r.cells[b];
+      const mark = document.createComment('');
+      r.replaceChild(mark, x); r.replaceChild(x, y); r.replaceChild(y, mark);
+    });
+  }
+  // หา "รายการที่ลากได้" จากจุดที่กด
+  function targetOf(el){
+    if(!el || el.closest(SKIP)) return null;
+    const card = el.closest('.compare-columns-summary .compare-col-summary:not(.compare-col-add)');
+    if(card){
+      const box = card.closest('[data-reorder]'); if(!box) return null;
+      const items = [...card.parentElement.querySelectorAll(':scope > .compare-col-summary:not(.compare-col-add)')];
+      if(items.length < 2) return null;
+      return {kind:'card', box, key: box.dataset.reorder, items, index: items.indexOf(card)};
+    }
+    const th = el.closest('th');
+    if(!th) return null;
+    const t = th.closest('table');
+    if(!isCompareTable(t) || th.parentElement !== t.tHead.rows[0]) return null;
+    const idx = th.cellIndex;
+    if(idx < 1) return null;
+    const box = t.closest('[data-reorder]');
+    if(!box && !movableRows(t)) return null;
+    const items = [...t.tHead.rows[0].cells];
+    return {kind:'col', box, key: box && box.dataset.reorder, table: t, items, index: idx};
+  }
+  let st = null, ghost = null, hold = null, overIdx = -1;
+  function highlight(on){
+    if(!st) return;
+    document.querySelectorAll('.coldrag-over,.coldrag-src').forEach(e => e.classList.remove('coldrag-over','coldrag-src'));
+    if(!on) return;
+    const mark = (i, cls) => {
+      if(st.kind === 'card'){ st.items[i] && st.items[i].classList.add(cls); return; }
+      for(const r of st.table.rows) if(r.cells.length === st.items.length && r.cells[i]) r.cells[i].classList.add(cls);
+    };
+    mark(st.index, 'coldrag-src');
+    if(overIdx >= 0 && overIdx !== st.index) mark(overIdx, 'coldrag-over');
+  }
+  function begin(){
+    st.active = true;
+    document.body.classList.add('coldrag-active');
+    ghost = document.createElement('div');
+    ghost.className = 'coldrag-ghost';
+    const src = st.items[st.index];
+    ghost.textContent = (src.querySelector('.compare-col-title') || src).textContent.trim().slice(0, 40);
+    document.body.appendChild(ghost);
+    moveGhost(st.x, st.y);
+    highlight(true);
+    try{ navigator.vibrate && navigator.vibrate(15); }catch(e){}
+    try{ const sel = window.getSelection(); sel && sel.removeAllRanges(); }catch(e){}
+  }
+  function moveGhost(x, y){ if(ghost){ ghost.style.left = (x + 12) + 'px'; ghost.style.top = (y + 12) + 'px'; } }
+  function indexAt(x, y){
+    // เลือกคอลัมน์จากตำแหน่งแนวนอน ลากเลยขอบตารางขึ้น/ลงก็ยังเลือกได้
+    let best = -1;
+    st.items.forEach((it, i) => {
+      if(st.kind === 'col' && i === 0) return;
+      const r = it.getBoundingClientRect();
+      if(x >= r.left && x <= r.right) best = i;
+    });
+    return best;
+  }
+  function end(drop){
+    clearTimeout(hold); hold = null;
+    if(st && st.active){
+      highlight(false);
+      if(drop && overIdx >= 0 && overIdx !== st.index){
+        if(st.box && COL_REORDER[st.key]){
+          const off = st.kind === 'col' ? 1 : 0;
+          COL_REORDER[st.key](st.index - off, overIdx - off);
+        } else if(st.kind === 'col'){
+          swapTableCols(st.table, st.index, overIdx);
+        }
+      }
+      document.body.classList.remove('coldrag-active');
+      st.suppressClick = true;
+      setTimeout(() => { st = null; }, 0);
+    } else st = null;
+    if(ghost){ ghost.remove(); ghost = null; }
+    overIdx = -1;
+  }
+  document.addEventListener('pointerdown', e => {
+    if(e.button !== 0 && e.pointerType === 'mouse') return;
+    const t = targetOf(e.target);
+    if(!t) return;
+    st = Object.assign(t, {x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, type:e.pointerType, active:false});
+    if(e.pointerType !== 'mouse') hold = setTimeout(() => { if(st && !st.active) begin(); }, 280);
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if(!st) return;
+    st.x = e.clientX; st.y = e.clientY;
+    const moved = Math.hypot(e.clientX - st.sx, e.clientY - st.sy);
+    if(!st.active){
+      if(st.type === 'mouse'){ if(moved > 6) begin(); else return; }
+      else { if(moved > 10){ clearTimeout(hold); st = null; } return; }  // ปัดเลื่อนตารางตามปกติ
+    }
+    e.preventDefault();
+    moveGhost(e.clientX, e.clientY);
+    const i = indexAt(e.clientX, e.clientY);
+    if(i !== overIdx){ overIdx = i; highlight(true); }
+  }, {capture:true, passive:false});
+  document.addEventListener('touchmove', e => { if(st && st.active) e.preventDefault(); }, {passive:false});
+  document.addEventListener('pointerup', () => end(true), true);
+  document.addEventListener('pointercancel', () => end(false), true);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') end(false); });
+  document.addEventListener('click', e => { if(st && st.suppressClick){ e.stopPropagation(); e.preventDefault(); } }, true);
+  // ใส่ title บอกว่าลากได้ ให้ผู้ใช้รู้โดยไม่ต้องอ่านคู่มือ
+  const hint = 'ลากเพื่อสลับตำแหน่งคอลัมน์ (มือถือ: แตะค้างแล้วลาก)';
+  const mark = () => {
+    document.querySelectorAll('table').forEach(t => {
+      if(t.dataset.coldragMarked || !isCompareTable(t)) return;
+      if(!t.closest('[data-reorder]') && !movableRows(t)) return;
+      t.dataset.coldragMarked = '1'; t.classList.add('coldrag-table');
+      [...t.tHead.rows[0].cells].slice(1).forEach(th => { th.title = hint; });
+    });
+    document.querySelectorAll('[data-reorder] .compare-col-summary:not(.compare-col-add)').forEach(c => { c.title = hint; });
+  };
+  new MutationObserver(() => { clearTimeout(mark._t); mark._t = setTimeout(mark, 60); })
+    .observe(document.documentElement, {childList:true, subtree:true});
+  if(document.readyState !== 'loading') mark(); else document.addEventListener('DOMContentLoaded', mark);
+})();
 
 /* =========================================================
    ประกันชีวิตแบบบำนาญ — ข้อมูล เครื่องคำนวณ และหน้ารายละเอียด

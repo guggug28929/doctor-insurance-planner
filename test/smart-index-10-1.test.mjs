@@ -130,3 +130,14 @@ test("เปรียบเทียบประกันสุขภาพม�
   assert.match(blk, /healthRiderPremium\(Object\.assign\(\{type:'hsn'\}, cfg\)/);
   for (const k of ["n1", "n2", "n3", "n4", "n6_1", "n6_2", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
 });
+
+test("ตารางเปรียบเทียบลากสลับคอลัมน์ได้ และหน้าที่มี state สลับลำดับใน array (การ์ดกับตารางสลับตามกัน)", async () => {
+  const fs = await import("node:fs");
+  const src = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(src, /id="compareContent" data-reorder="compare"/);
+  assert.match(src, /id="pensionCompareBox" data-reorder="pension"/);
+  assert.match(src, /const COL_REORDER = \{/);
+  assert.match(src, /\[compareSelected\[a\], compareSelected\[b\]\] = \[compareSelected\[b\], compareSelected\[a\]\]/);
+  // ตารางบำนาญต้องไม่มีหัวคอลัมน์เกินจากแถวข้อมูล
+  assert.doesNotMatch(src, /const headers = \['หัวข้อเปรียบเทียบ', \.\.\.cols/);
+});
