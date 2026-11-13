@@ -128,5 +128,5 @@ test("เปรียบเทียบประกันสุขภาพม�
   const blk = html.slice(i, html.indexOf("  careplus: {", i));
   assert.match(blk, /const b = RATES\.hsn\.benefits/);
   assert.match(blk, /healthRiderPremium\(Object\.assign\(\{type:'hsn'\}, cfg\)/);
-  for (const k of ["n1", "n2", "n3", "n4", "n6", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
+  for (const k of ["n1", "n2", "n3", "n4", "n6_1", "n6_2", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
 });

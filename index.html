@@ -550,6 +550,7 @@
   .hint-open .tooltip{visibility:visible;opacity:1;}
   .info-icon:focus-visible, .tx-hint:focus-visible{outline:2px solid var(--pink-deep);outline-offset:2px;}
   .info-icon.hint-open{background:var(--pink-deep);}
+  .info-icon.tip-down .tooltip{bottom:auto;top:135%;}
   .tx-hint.hint-open{background:var(--pink-deep);color:#fff;}
   @media (max-width:600px){
     /* บนมือถือ ตรึงกล่องคำอธิบายไว้ที่ขอบล่างของจอเสมอ แทนการวางลอยข้างไอคอน
@@ -9049,7 +9050,7 @@ function formatBenefitCell(c){
   let s = String(c);
   const raw = s.trim();
   if(raw === '—' || raw === '-' || raw.includes('ไม่ครอบคลุม') || raw.includes('ไม่คุ้มครอง')){
-    const label = (raw === '—' || raw === '-') ? 'ไม่คุ้มครอง' : s;
+    const label = (raw === '—' || raw === '-' || raw === 'ไม่ครอบคลุมในแผนนี้') ? 'ไม่คุ้มครอง' : s;
     return `<span class="benefit-no"><span class="benefit-icon no">×</span>${label}</span>`;
   }
   if(raw.includes('จ่ายตามจริง')){
@@ -9156,11 +9157,12 @@ function dhlBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000 บาท/วัน', '4,000 บาท/วัน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', 'สูงสุด 14 วัน', 'สูงสุด 14 วัน'],
+    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', '20,000 บาท/ครั้ง (สูงสุด 14 วัน)', '20,000 บาท/ครั้ง (สูงสุด 14 วัน)'],
     ['3. ค่าแพทย์ตรวจรักษา', '2,000 บาท/วัน', '4,000 บาท/วัน'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>'],
     ['8. เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['9. ค่าล้างไต', carePlusLinkText(), carePlusLinkText()],
@@ -9178,11 +9180,12 @@ function eliteBenefitRows(){
     ['§ผลประโยชน์ส่วนความคุ้มครองหลัก (13 หมวดมาตรฐาน)'],
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '10,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '12,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '15,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '25,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน (สูงสุดไม่เกิน 30 วัน)', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง'],
+    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ รวมผ่าตัดเปลี่ยนอวัยวะ (1 ครั้งตลอดชีวิต)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน (ผูกกับการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน (ผูกกับการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>'],
     ['8. เวชศาสตร์ฟื้นฟู หลังนอนโรงพยาบาล (รวมในวงเงินการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['9. ล้างไตผ่านทางเส้นเลือด', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
@@ -9216,11 +9219,12 @@ function eliteBenefitTable(){
 function maochaiBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
-    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง'],
+    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
+    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
+    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['8. เวชศาสตร์ฟื้นฟู', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['9. ค่าล้างไต', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
@@ -9236,11 +9240,12 @@ function maochaiBenefitTable(){
 function ecpBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
-    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน'],
+    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
+    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
+    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['8. เวชศาสตร์ฟื้นฟู', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['9. ค่าล้างไต', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
@@ -14785,7 +14790,7 @@ const FAQ_ITEMS = [
   {g:'coverage', k:'cov-daysurg-followup', q:'Day Surgery ตรวจก่อน-หลังนอนโรงพยาบาล อุบัติเหตุ OPD เวชศาสตร์ฟื้นฟู (หมวด 5-8) จ่ายอะไร ไม่จ่ายอะไร',
    lead:'สี่หมวดนี้ดูเหมือนจะเป็นเรื่องเดียวกันแต่จริง ๆ มีเงื่อนไขคนละแบบ และเป็นจุดที่เหมาจ่าย Extra ไม่คุ้มครองเลยทั้งสี่หมวด',
    body:`<b>หมวด 5 — Day Surgery</b> คือผ่าตัดใหญ่ที่เดี๋ยวนี้เทคโนโลยีทำให้ไม่ต้องนอนโรงพยาบาลข้ามคืน กลับบ้านได้ในวันเดียวกัน เช่น ผ่าตัดต้อกระจก ส่องกล้องข้อเข่าบางกรณี จ่ายเหมือนกับกรณีนอนโรงพยาบาลทุกประการ ไม่ได้ลดสิทธิลงเพราะไม่ได้นอนค้างคืน
-<b>หมวด 6 — ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน</b> แบ่งเป็นสองช่วง คือ<b>6.1 ก่อนแอดมิด</b> (ตรวจแล็บ เอกซเรย์ ที่นำไปสู่การตัดสินใจแอดมิดครั้งนั้นจริง) และ<b>6.2 หลังแอดมิด</b> (นัดตรวจติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วัน สำหรับโรคเดียวกับที่แอดมิด) ทั้งสองช่วงผูกกับการแอดมิดครั้งนั้นเท่านั้น ไม่ใช่วงเงิน OPD ทั่วไป
+<b>หมวด 6 — ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน</b> แบ่งเป็นสองหมวดย่อยที่แยกวงเงินกัน คือ<b>6.1 ค่าตรวจวินิจฉัย</b> (แล็บ เอกซเรย์ ที่เกี่ยวข้องโดยตรงกับโรคที่แอดมิด ทำภายใน 30 วันทั้งก่อนและหลังการแอดมิดครั้งนั้น) และ<b>6.2 ค่ารักษา OPD ต่อเนื่อง</b> (พบแพทย์ รับยา สำหรับโรคเดิมภายใน 30 วันหลังออกจากโรงพยาบาล ไม่รวมค่าตรวจวินิจฉัย) บางแผนคุ้มครองแค่ 6.1 เช่น H&S ทั้งสองช่วงผูกกับการแอดมิดครั้งนั้นเท่านั้น ไม่ใช่วงเงิน OPD ทั่วไป
 · <b>จ่าย</b> ตรวจเลือด เอกซเรย์ อัลตราซาวด์ ที่แพทย์สั่งก่อนแอดมิดแล้วผลนำไปสู่การนอนโรงพยาบาลจริง และนัดติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วันสำหรับโรคเดียวกัน
 · <b>ไม่จ่าย</b> ตรวจแล้วสุดท้ายไม่ได้แอดมิดจริง (ตรวจแล้วให้กลับบ้าน) มักไม่เข้าเงื่อนไข 6.1 เพราะเงื่อนไขกำหนดให้ต้องนำไปสู่การแอดมิดจริง และการตรวจที่ไม่เกี่ยวกับโรคที่แอดมิดครั้งนั้นก็ไม่เข้าเงื่อนไขเช่นกัน
 !ผ่าตัดเล็กตามหมวด 13 ที่ทำด้วยยาชาเฉพาะที่ ไม่สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ ต้องใช้สิทธิ OPD แทน เพราะหมวด 6 ผูกกับการนอนโรงพยาบาลหรือ Day Surgery เท่านั้น
@@ -18576,7 +18581,8 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
-      rows.n2_4 = '1,000 บาทต่อครั้ง<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
+      rows.n2_4 = '1,000 บาท/ครั้ง (สูงสุด 7 วัน)<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
+      rows.n9 = rows.n10 = rows.n11 = carePlusLinkText();
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = 'ไม่มี';
       rows.copay_pct = 'ไม่มี';
@@ -18595,7 +18601,8 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
-      rows.n2_4 = '1,000 บาทต่อวัน<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
+      rows.n2_4 = '1,000 บาท/ครั้ง (สูงสุด 7 วัน)<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
+      rows.n9 = rows.n10 = rows.n11 = carePlusLinkText();
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = '20,000 บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง';
       rows.copay_pct = 'ไม่มี';
@@ -18621,13 +18628,14 @@ const COMPARE_PRODUCTS = {
         deductible:'ไม่มี', copay_pct:'ไม่มี',
         n1:`${f(b.room_per_day[i])}/วัน (สูงสุด ${b.room_max_days} วัน · ICU ${b.icu_multiplier} เท่า ไม่เกิน ${b.icu_max_days} วัน)`,
         n2:`จ่ายตามจริง รวมหมวด 2.1–2.4 ไม่เกิน ${f(b.cat2_max_per_admission[i])}/ครั้ง`,
-        n2_4:`${f(b.cat2_4_take_home[i])}/ครั้ง (รวมในวงเงินหมวด 2)`,
+        n2_4:`${f(b.cat2_4_take_home[i])} บาท/ครั้ง (สูงสุด 7 วัน · รวมในวงเงินหมวด 2)`,
         n3:`${f(b.doctor_visit_per_day[i])}/วัน`,
         n4:`แพทย์ผ่าตัด ${f(b.surgeon_fee[i])} · ห้องผ่าตัด ${f(b.cat4_1_4_2_max_per_admission[i])} · วิสัญญี ${f(b.anesthesiologist_fee[i])}`,
         n5:'ตามจริง ไม่เกินวงเงินหมวด 4',
-        n6:`${f(b.cat6_1_pre_post_dx[i])} (ก่อน-หลังนอน รพ. 30 วัน)`,
+        n6_1:`${f(b.cat6_1_pre_post_dx[i])} บาท (ก่อน-หลังนอน รพ. 30 วัน)`,
+        n6_2:'ไม่คุ้มครอง',
         n7:`${f(b.cat7_accident_opd_24h[i])}/ครั้ง`,
-        n8:'ไม่คุ้มครอง', n9:'ไม่คุ้มครอง', n10:'ไม่คุ้มครอง', n11:'ไม่คุ้มครอง',
+        n8:'ไม่คุ้มครอง', n9:carePlusLinkText(), n10:carePlusLinkText(), n11:carePlusLinkText(),
         n12:f(b.cat12_ambulance[i]), n13:'ไม่คุ้มครอง',
       };
     },
@@ -18701,6 +18709,7 @@ const COMPARE_GROUPS = {
              'flexi9920','smartlink153','smartlink156','smartindex101']},
 };
 function compareGroupOf(id){
+  id = String(id).split('~')[0];   // คอลัมน์ซ้ำของแผนเดียวกันใช้ id แบบ ehp~2
   for(const k of Object.keys(COMPARE_GROUPS)) if(COMPARE_GROUPS[k].ids.includes(id)) return k;
   return null;
 }
@@ -19112,37 +19121,44 @@ function renderPensionCompare(){
 const COMPARE_MAX = 4;
 const COMPARE_ROW_DEFS = [
   {section:'วงเงินคุ้มครองและเงื่อนไขการจ่าย'},
-  {key:'sum_insured', label:'วงเงินคุ้มครอง (ต่อครั้ง/ต่อปี)'},
-  {key:'deductible', label:'ความรับผิดส่วนแรก (Deductible)'},
-  {key:'copay_pct', label:'ส่วนร่วมจ่าย (Copayment %)'},
+  {key:'sum_insured', label:'วงเงินคุ้มครอง (ต่อครั้ง/ต่อปี)', tip:'เพดานสูงสุดที่บริษัทจ่าย แบบต่อครั้งนับรายการเจ็บป่วยแต่ละครั้ง แบบต่อปีนับรวมทุกครั้งในรอบปีกรมธรรม์'},
+  {key:'deductible', label:'ความรับผิดส่วนแรก (Deductible)', tip:'ค่ารักษาส่วนแรกที่ผู้เอาประกันจ่ายเองก่อนต่อการเจ็บป่วยครั้งหนึ่ง ส่วนที่เกินบริษัทจ่ายตามความคุ้มครอง'},
+  {key:'copay_pct', label:'ส่วนร่วมจ่าย (Copayment %)', tip:'สัดส่วนที่ผู้เอาประกันร่วมจ่ายทุกครั้งที่เคลม เช่น 20% บริษัทจ่าย 80%'},
   {section:'ผลประโยชน์หลัก (13 หมวดมาตรฐาน)'},
-  {key:'n1', label:'ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)'},
-  {key:'n2', label:'ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล'},
-  {key:'n2_4', label:'ค่ายา/เวชภัณฑ์กลับบ้าน'},
-  {key:'n3', label:'ค่าแพทย์ตรวจรักษา'},
-  {key:'n4', label:'ค่าผ่าตัด/หัตถการ'},
-  {key:'n5', label:'Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)'},
-  {key:'n6', label:'ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน'},
-  {key:'n7', label:'อุบัติเหตุ OPD ภายใน 24 ชั่วโมง'},
-  {key:'n8', label:'เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล'},
-  {key:'n9', label:'ล้างไตผ่านทางเส้นเลือด'},
-  {key:'n10', label:'รังสีรักษา/รังสีร่วมรักษา/นิวเคลียร์รักษา'},
-  {key:'n11', label:'เคมีบำบัด/Targeted Therapy'},
-  {key:'n12', label:'รถพยาบาลฉุกเฉิน'},
-  {key:'n13', label:'ผ่าตัดเล็ก'},
+  {key:'n1', label:'หมวด 1 · ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)', tip:'ค่าห้อง ค่าอาหาร และค่าบริการพื้นฐานของโรงพยาบาลระหว่างนอนเป็นผู้ป่วยใน รวมห้อง ICU ตามจำนวนวันที่แผนกำหนด'},
+  {key:'n2', label:'หมวด 2 · ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล', tip:'ค่าแล็บ เอกซเรย์ ค่าบำบัดรักษา เลือด ยา น้ำเกลือ เวชภัณฑ์ และค่าพยาบาลระหว่างนอนโรงพยาบาล (หมวดย่อย 2.1–2.4)'},
+  {key:'n2_4', label:'หมวด 2.4 · ค่ายา/เวชภัณฑ์กลับบ้าน', tip:'ยาและเวชภัณฑ์สิ้นเปลืองที่แพทย์สั่งให้นำกลับไปใช้ต่อที่บ้านในวันออกจากโรงพยาบาล จำกัดทั้งวงเงินและจำนวนวันตามแผน'},
+  {key:'n3', label:'หมวด 3 · ค่าแพทย์ตรวจรักษา', tip:'ค่าแพทย์เยี่ยมไข้และดูแลระหว่างนอนโรงพยาบาล ไม่รวมค่าแพทย์ผ่าตัด'},
+  {key:'n4', label:'หมวด 4 · ค่าผ่าตัด/หัตถการ', tip:'ค่าห้องผ่าตัด ยาและอุปกรณ์ผ่าตัด ค่าแพทย์ผ่าตัด วิสัญญีแพทย์ และการผ่าตัดเปลี่ยนอวัยวะ ระหว่างนอนโรงพยาบาล (หมวดย่อย 4.1–4.5)'},
+  {key:'n5', label:'หมวด 5 · Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)', tip:'ผ่าตัดใหญ่ในห้องผ่าตัดที่ใช้ยาสลบหรือยาชาทางไขสันหลัง แต่กลับบ้านได้ภายในวันเดียว ไม่ต้องนอนโรงพยาบาล'},
+  {key:'n6_1', label:'หมวด 6.1 · ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', tip:'ค่าตรวจวินิจฉัย เช่น แล็บ เอกซเรย์ ที่เกี่ยวข้องโดยตรงกับโรคที่นอนโรงพยาบาล ทำภายใน 30 วันก่อนและหลังการนอนครั้งนั้น'},
+  {key:'n6_2', label:'หมวด 6.2 · ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', tip:'ค่ารักษาแบบผู้ป่วยนอกสำหรับโรคเดิมต่อเนื่อง ภายใน 30 วันหลังออกจากโรงพยาบาล ไม่รวมค่าตรวจวินิจฉัย (อยู่ในหมวด 6.1)'},
+  {key:'n7', label:'หมวด 7 · อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', tip:'ค่ารักษาบาดเจ็บจากอุบัติเหตุแบบไม่ต้องนอนโรงพยาบาล เฉพาะที่รักษาภายใน 24 ชั่วโมงหลังเกิดเหตุ ไม่รวมนัดล้างแผลต่อเนื่อง'},
+  {key:'n8', label:'หมวด 8 · เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล', tip:'ค่ากายภาพหรือฟื้นฟูสมรรถภาพแบบผู้ป่วยนอก ต่อเนื่องหลังออกจากโรงพยาบาล ตามคำสั่งแพทย์และระยะเวลาที่กำหนด'},
+  {key:'n9', label:'หมวด 9 · ล้างไตผ่านทางเส้นเลือด', tip:'ค่าฟอกเลือดล้างไตทางหลอดเลือดสำหรับภาวะไตวาย แบบไม่ต้องนอนโรงพยาบาล'},
+  {key:'n10', label:'หมวด 10 · รังสีรักษา/รังสีร่วมรักษา/นิวเคลียร์รักษา', tip:'ค่าฉายแสง รังสีร่วมรักษา และเวชศาสตร์นิวเคลียร์รักษา แบบไม่ต้องนอนโรงพยาบาล ส่วนใหญ่ใช้รักษามะเร็ง'},
+  {key:'n11', label:'หมวด 11 · เคมีบำบัด/Targeted Therapy', tip:'ค่ายาเคมีบำบัดและยามุ่งเป้า (Targeted Therapy) รักษามะเร็ง แบบไม่ต้องนอนโรงพยาบาล'},
+  {key:'n12', label:'หมวด 12 · รถพยาบาลฉุกเฉิน', tip:'ค่ารถพยาบาลของโรงพยาบาลเพื่อนำส่งผู้ป่วยกรณีฉุกเฉิน หรือย้ายโรงพยาบาลตามความจำเป็นทางการแพทย์'},
+  {key:'n13', label:'หมวด 13 · ผ่าตัดเล็ก', tip:'ผ่าตัดหรือหัตถการที่ใช้ยาชาเฉพาะที่ ไม่ต้องนอนโรงพยาบาล เช่น ผ่าฝี ตัดไฝ เย็บแผล ไม่มีสิทธิตรวจติดตามตามหมวด 6'},
   {section:'ผลประโยชน์ส่วนขยาย (เฉพาะบางแผน)'},
-  {key:'parent_bed', label:'ค่าห้องพักบิดา/มารดา (เตียงเสริม)'},
-  {key:'rehab_ipd', label:'ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน'},
-  {key:'medical_equipment', label:'ค่าเครื่องมือแพทย์/อุปกรณ์เทียม'},
-  {key:'psychiatric', label:'ค่ารักษาทางจิตเวช'},
-  {key:'private_nurse', label:'ค่าพยาบาลส่วนตัวหลังออกจากโรงพยาบาล'},
-  {key:'dental_accident', label:'ค่าทันตกรรมจากอุบัติเหตุ'},
-  {key:'emergency_assist', label:'ค่าช่วยเหลือฉุกเฉินทางการแพทย์'},
-  {key:'advanced_imaging', label:'ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET)'},
-  {key:'opd_general', label:'OPD ทั่วไป (ผู้ป่วยนอก)'},
-  {key:'physiotherapy', label:'ค่ากายภาพบำบัด'},
-  {key:'acupuncture', label:'ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก'},
+  {key:'parent_bed', label:'ค่าห้องพักบิดา/มารดา (เตียงเสริม)', tip:'ค่าเตียงเสริมให้พ่อหรือแม่เฝ้าไข้เด็กที่นอนโรงพยาบาล'},
+  {key:'rehab_ipd', label:'ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน', tip:'ค่าฟื้นฟูสมรรถภาพที่ต้องนอนโรงพยาบาล เช่น หลังโรคหลอดเลือดสมอง จำกัดจำนวนวันต่อโรค'},
+  {key:'medical_equipment', label:'ค่าเครื่องมือแพทย์/อุปกรณ์เทียม', tip:'ค่าอุปกรณ์ทางการแพทย์และอวัยวะเทียมตามคำสั่งแพทย์ มีวงเงินสูงสุดตลอดชีพ'},
+  {key:'psychiatric', label:'ค่ารักษาทางจิตเวช', tip:'ค่ารักษาโรคทางจิตเวชตามเงื่อนไขของแผน มีวงเงินต่อโรคและวงเงินตลอดชีพ'},
+  {key:'private_nurse', label:'ค่าพยาบาลส่วนตัวหลังออกจากโรงพยาบาล', tip:'ค่าพยาบาลดูแลที่บ้านหลังออกจากโรงพยาบาลตามคำแนะนำแพทย์ จำกัดจำนวนวันต่อปี'},
+  {key:'dental_accident', label:'ค่าทันตกรรมจากอุบัติเหตุ', tip:'ค่ารักษาฟันที่เสียหายจากอุบัติเหตุ ไม่รวมทันตกรรมทั่วไป'},
+  {key:'emergency_assist', label:'ค่าช่วยเหลือฉุกเฉินทางการแพทย์', tip:'บริการช่วยเหลือฉุกเฉิน เช่น เคลื่อนย้ายผู้ป่วยทางการแพทย์ ตามเงื่อนไขของแผน'},
+  {key:'advanced_imaging', label:'ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET)', tip:'ค่าตรวจ CT MRI PET Scan แบบไม่ต้องนอนโรงพยาบาล แยกจากหมวด 6.1 ที่ต้องผูกกับการนอนโรงพยาบาล'},
+  {key:'opd_general', label:'OPD ทั่วไป (ผู้ป่วยนอก)', tip:'ค่าพบแพทย์ ค่าตรวจ และค่ายาแบบผู้ป่วยนอกสำหรับเจ็บป่วยทั่วไป เช่น ไข้หวัด โดยไม่ต้องนอนโรงพยาบาล'},
+  {key:'physiotherapy', label:'ค่ากายภาพบำบัด', tip:'ค่ากายภาพบำบัดแบบผู้ป่วยนอก จำกัดจำนวนครั้งต่อวัน'},
+  {key:'acupuncture', label:'ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก', tip:'ค่าฝังเข็ม ธรรมชาติบำบัด และการจัดกระดูกหรือไคโรแพรกติก มีวงเงินต่อปี'},
 ];
+/* หัวข้อด้านซ้ายของตารางเปรียบเทียบ พร้อมไอคอน i อธิบายนิยามแบบย่อ
+   ใช้คลาส tip-down ให้กล่องเปิดลงล่าง เพราะตารางมี overflow แถวบนสุดจะโดนตัดถ้าเปิดขึ้น */
+function compareRowLabel(def){
+  if(!def.tip) return def.label;
+  return `${def.label}<span class="info-icon tip-down" tabindex="0" role="button" aria-label="นิยาม">i<span class="tooltip">${def.tip}</span></span>`;
+}
 
 let compareMode = false;
 let compareSelected = [];
@@ -19255,7 +19271,7 @@ function toggleCompareSelect(id){
 /* ---------- คอลัมน์และแถวของกลุ่มสัญญาหลักประกันชีวิต ---------- */
 function buildLifeCompareColumns(inputs){
   return compareSelected.map(id => {
-    const p = LIFE_COMPARE_PRODUCTS[id];
+    const p = LIFE_COMPARE_PRODUCTS[compareBaseId(id)];
     const capital = Number(compareTierByProduct[id] || p.defaultValue);
     const premium = mainPremiumAtEntry(p.plan, capital, inputs.gender, inputs.age, 'annual');
     return {id, product:p, capital, premium};
@@ -19379,7 +19395,21 @@ function readCompareInputs(){
   return {gender, birthYear, age, occClass};
 }
 function rerenderComparePage(){ renderComparePage(); }
-function setCompareTier(id, value){ compareTierByProduct[id] = value; renderComparePage(); }
+function compareBaseId(key){ return String(key).split('~')[0]; }
+function compareProductOf(key){
+  const b = compareBaseId(key);
+  return compareGroupOf(b) === 'life' ? LIFE_COMPARE_PRODUCTS[b] : COMPARE_PRODUCTS[b];
+}
+// วงเงินที่คอลัมน์อื่นของแผนเดียวกันใช้อยู่ — ห้ามเลือกซ้ำ เพราะจะได้คอลัมน์เหมือนกันทุกช่อง
+function compareTiersUsedByOthers(key){
+  const b = compareBaseId(key);
+  return compareSelected.filter(k => k !== key && compareBaseId(k) === b)
+    .map(k => compareTierByProduct[k] || compareProductOf(k).defaultValue);
+}
+function setCompareTier(id, value){
+  if(compareTiersUsedByOthers(id).includes(value)) return;
+  compareTierByProduct[id] = value; renderComparePage();
+}
 function removeCompareColumn(id){
   compareSelected = compareSelected.filter(x => x !== id);
   renderComparePage();
@@ -19387,14 +19417,20 @@ function removeCompareColumn(id){
 // Lets the owner add a plan back (or a different one) directly from the
 // compare page itself, without navigating back to /plans first.
 function addCompareColumn(id){
-  if(!id || compareSelected.includes(id) || compareSelected.length >= COMPARE_MAX) return;
+  if(!id || compareSelected.length >= COMPARE_MAX) return;
   const cur = compareActiveGroup();
   if(cur && compareGroupOf(id) !== cur) return;   // กันเลือกข้ามกลุ่มจากช่องเพิ่มแผนด้วย
-  compareSelected.push(id);
-  if(!compareTierByProduct[id]){
-    compareTierByProduct[id] = compareGroupOf(id) === 'life'
-      ? LIFE_COMPARE_PRODUCTS[id].defaultValue : COMPARE_PRODUCTS[id].defaultValue;
-  }
+  const product = compareProductOf(id);
+  // แผนเดียวกันเพิ่มซ้ำได้ เพื่อเทียบคนละวงเงิน เช่น Elite 20 ล้าน กับ 75 ล้าน
+  // คอลัมน์ใหม่เริ่มที่วงเงินแรกที่ยังไม่มีคอลัมน์ไหนใช้
+  const used = compareSelected.filter(k => compareBaseId(k) === id)
+    .map(k => compareTierByProduct[k] || product.defaultValue);
+  const freeTier = [product.defaultValue, ...product.tiers.map(t => t.value)].find(v => !used.includes(v));
+  if(freeTier === undefined) return;
+  let key = id, n = 2;
+  while(compareSelected.includes(key)) key = id + '~' + (n++);
+  compareSelected.push(key);
+  compareTierByProduct[key] = freeTier;
   renderComparePage();
 }
 function buildCompareBenefitRows(columns){
@@ -19403,9 +19439,9 @@ function buildCompareBenefitRows(columns){
     if(def.section) return ['§'+def.section];
     const cells = colMaps.map(m => {
       const v = m[def.key];
-      return v === undefined ? '<span class="compare-na">ไม่มีในแผนนี้</span>' : v;
+      return v === undefined ? 'ไม่คุ้มครอง' : v;
     });
-    return [def.label, ...cells];
+    return [compareRowLabel(def), ...cells];
   });
 }
 /* ---------- สัญญาเพิ่มเติมที่ผูกกับสัญญาหลักบางแบบโดยเฉพาะ ----------
@@ -19487,7 +19523,7 @@ function renderLifeComparePage(el, inputs){
     <div class="compare-col-summary">
       <div class="compare-col-title">${col.product.title}</div>
       <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
-        ${col.product.tiers.map(t => `<option value="${t.value}" ${Number(t.value)===col.capital?'selected':''}>${t.label}</option>`).join('')}
+        ${(used => col.product.tiers.map(t => `<option value="${t.value}" ${Number(t.value)===col.capital?'selected':''} ${used.includes(t.value)?'disabled':''}>${t.label}${used.includes(t.value)?' (มีคอลัมน์แล้ว)':''}</option>`).join(''))(compareTiersUsedByOthers(col.id))}
       </select>
       <div class="compare-price">${col.premium != null ? fmt(Math.round(col.premium))+' บาท/ปี' : 'อายุนี้ทำแบบนี้ไม่ได้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
@@ -19522,8 +19558,12 @@ function compareSummaryRow(cardsHtml, colCount, withAddSlot = true){
 function renderCompareAddSlot(){
   const group = compareActiveGroup();
   const pool = group ? COMPARE_GROUPS[group].ids : COMPARE_SELECTABLE_IDS;
-  const titleOf = id => (compareGroupOf(id) === 'life' ? LIFE_COMPARE_PRODUCTS[id].title : COMPARE_PRODUCTS[id].title);
-  const availableToAdd = pool.filter(id => !compareSelected.includes(id));
+  const titleOf = id => compareProductOf(id).title;
+  // แผนที่เลือกแล้วยังเพิ่มซ้ำได้ ถ้ายังมีวงเงินที่ไม่มีคอลัมน์ไหนใช้
+  const availableToAdd = pool.filter(id => {
+    const n = compareSelected.filter(k => compareBaseId(k) === id).length;
+    return n === 0 || n < compareProductOf(id).tiers.length;
+  });
   if(compareSelected.length >= COMPARE_MAX || availableToAdd.length === 0) return '';
   return `
     <div class="compare-col-summary compare-col-add">
@@ -19550,7 +19590,7 @@ function renderComparePage(){
   const inputs = readCompareInputs();
   if(compareActiveGroup() === 'life'){ renderLifeComparePage(el, inputs); return; }
   const columns = compareSelected.map(id => {
-    const product = COMPARE_PRODUCTS[id];
+    const product = COMPARE_PRODUCTS[compareBaseId(id)];
     const tierVal = compareTierByProduct[id] || product.defaultValue;
     const tier = product.tiers.find(t => t.value === tierVal) || product.tiers[0];
     const occKey = occKeyFor(inputs.occClass);
@@ -19561,7 +19601,7 @@ function renderComparePage(){
     <div class="compare-col-summary">
       <div class="compare-col-title">${col.product.title}</div>
       <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
-        ${col.product.tiers.map(t => `<option value="${t.value}" ${t.value===col.tier.value?'selected':''}>${t.label}</option>`).join('')}
+        ${(used => col.product.tiers.map(t => `<option value="${t.value}" ${t.value===col.tier.value?'selected':''} ${used.includes(t.value)?'disabled':''}>${t.label}${used.includes(t.value)?' (มีคอลัมน์แล้ว)':''}</option>`).join(''))(compareTiersUsedByOthers(col.id))}
       </select>
       <div class="compare-price">${col.premium != null ? fmt(col.premium)+' บาท/ปี' : 'ไม่มีอัตราเบี้ยสำหรับกลุ่มอาชีพนี้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
