@@ -17,7 +17,7 @@ test("หน้าความรู้เหลือแท็บเดีย�
 test("ชื่อหัวข้อต้องไม่ยัดชื่อบริษัท ให้ขายผ่านเนื้อหาแทน", () => {
   // ชื่อหัวข้อควรเป็นความรู้กลาง ๆ คนอ่านไม่รู้สึกว่ากำลังโดนขาย
   const titles = [...html.matchAll(/num:'\d', title:'([^']+)'/g)].map((m) => m[1]);
-  assert.equal(titles.length, 5);
+  assert.equal(titles.length, 6);
   for (const t of titles) {
     assert.ok(!/เมืองไทย/.test(t), `ชื่อหัวข้อไม่ควรมีคำว่าเมืองไทย: ${t}`);
   }
@@ -34,9 +34,9 @@ test("ต้องมีเรื่องเบี้ยคงที่แบ�
   assert.match(html, /ถ้ากลัวเบี้ยหลังเกษียณ มีสี่ทางให้เลือก ไม่ใช่ทางเดียว/);
 });
 
-test("คู่มือต้องมีครบห้าหัวข้อ พร้อมสารบัญและตารางแมปแบบที่เรามี", () => {
+test("คู่มือต้องมีครบหกหัวข้อ พร้อมสารบัญและตารางแมปแบบที่เรามี", () => {
   const ids = [...html.matchAll(/id:'(g-[a-z]+)'/g)].map((m) => m[1]);
-  assert.deepEqual(ids, ["g-why", "g-bucket", "g-type", "g-trap", "g-pick"]);
+  assert.deepEqual(ids, ["g-why", "g-bucket", "g-type", "g-trap", "g-pick", "g-claim"]);
   assert.equal([...html.matchAll(/\{t:'/g)].length >= 8, true, "ควรมีแปดเรื่องที่ต้องเคลียร์");
   assert.match(html, /function healthGuideBucketsHtml\(\)/);
   assert.match(html, /function healthGuideTypeTableHtml\(\)/);
@@ -123,4 +123,19 @@ test("ตารางจุดคุ้มทุน OPD ต้องคำนว
   assert.match(html, /typeof sec\.extraHtml === 'function' \? sec\.extraHtml\(\)/);
   // ต้องติดป้ายข้อจำกัดว่าเป็นเงินสดล้วน ไม่ใช่ ROI
   assert.match(html, /ยังไม่คิดมูลค่าเงินตามเวลาและเงินเฟ้อค่ารักษา/);
+});
+
+test("คู่มือหัวข้อเคลมต้องอธิบายช่องทาง หกด่าน เอกสาร และกรอบเวลาให้ครบ", () => {
+  assert.match(html, /title:'เคลมประกันสุขภาพทำยังไง ตั้งแต่ป่วยจนเงินเข้า'/);
+  for (const t of ["แฟกซ์เคลม<br>(ผู้ป่วยใน)", "OPD Cashless", "iClaim", "Pre-authorization", "Direct Claim",
+                   "หกด่านที่ต้องผ่านครบทุกด่าน", "ใบแจ้งรายการค่ารักษาพยาบาล", "ดอกเบี้ยร้อยละ 15 ต่อปี", "ภายใน <b>90 วัน</b>"]) {
+    assert.ok(html.includes(t), `หัวข้อเคลมควรมี ${t}`);
+  }
+  // Direct Claim คือสำรองจ่ายแล้วเบิกตรง ไม่ใช่การใช้สิทธิ์ทันทีที่โรงพยาบาล
+  assert.doesNotMatch(html, /Direct Claim คือใช้สิทธิ์ได้ทันที/);
+  // ลิงก์ไป FAQ ต้องชี้ key ที่มีอยู่จริง
+  const keys = new Set([...html.matchAll(/k:'([a-z0-9-]+)'/g)].map((m) => m[1]));
+  for (const m of html.matchAll(/hgFaq\('([a-z]+)','([a-z0-9-]+)'/g)) {
+    assert.ok(keys.has(m[2]), `ไม่มีหัวข้อ FAQ key ${m[2]}`);
+  }
 });
