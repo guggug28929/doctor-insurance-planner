@@ -4778,7 +4778,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 
 
 <script>
-const DATA_VERSION = '2026-11-14d';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-14e';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -16556,6 +16556,87 @@ function faqScore(item, tokens){
   score += hits / list.length * 4;
   return score;
 }
+// โหมดภาษาอังกฤษ: ค้นจากข้อความที่แปลแล้วของแต่ละข้อ (แปลทีละ text node แบบเดียวกับที่ผู้ใช้เห็น)
+const FAQ_EN = new Map();
+function faqEnText(item){
+  if(FAQ_EN.has(item)) return FAQ_EN.get(item);
+  const part = html => { const d = document.createElement('div'); d.innerHTML = html || ''; const out = [];
+    const w = document.createTreeWalker(d, NodeFilter.SHOW_TEXT); let n;
+    while((n = w.nextNode())){ const v = n.nodeValue.replace(/\s+/g,' ').trim(); if(v) out.push(i18nT(v)); }
+    return out.join(' ').replace(/\s+/g,' ').trim(); };
+  const r = { q: part(item.q), lead: part(item.lead), body: part(faqBodyHtml(item.body)), doc: part(item.doc) };
+  r.plain = [r.lead, r.body, r.doc].filter(Boolean).join(' · ');
+  r.hay = (r.q + ' ' + r.plain).toLowerCase();
+  FAQ_EN.set(item, r);
+  return r;
+}
+const FAQ_EN_STOP = new Set(['the','a','an','and','or','of','to','in','on','for','is','are','am','do','does','did','can','could','i','my','me','it','its','what','how','why','when','which','who','with','be','if','will','would','should','about','this','that','there','have','has','get','you','your','we','at','by','as','from','not','no','any']);
+const FAQ_EN_RE = new Map();
+function faqEnHas(hay, t){
+  let re = FAQ_EN_RE.get(t);
+  if(!re){ re = new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')); FAQ_EN_RE.set(t, re); }
+  return re.test(hay);
+}
+const FAQ_EN_SYN = {deny:['reject','refus','declin','turn down'],reject:['deni','deny','refus','declin'],refuse:['reject','deni','deny','declin'],decline:['reject','deni','deny','refus'],
+  cancel:['terminat','lapse','surrender'],surrender:['cash value','cancel'],price:['premium','cost'],cost:['premium','price','fee'],premium:['price','cost'],fee:['cost','charge'],
+  disease:['illness','condition'],illness:['disease','sick'],sick:['ill','disease'],hide:['conceal','non-disclos','undisclos'],conceal:['hide','hid','non-disclos'],lie:['conceal','non-disclos','false'],
+  kid:['child'],child:['kid','baby'],baby:['child','newborn','infant'],pregnan:['maternity','birth'],elderly:['senior','older'],
+  tax:['deduct'],deduct:['tax','deductible'],copay:['co-pay','copayment'],cashless:['fax claim','credit','upfront']};
+const FAQ_EN_VAR = new Map();
+function faqEnVariants(t){
+  if(FAQ_EN_VAR.has(t)) return FAQ_EN_VAR.get(t);
+  const v = new Set([t]);
+  if(t.length > 4 && t.endsWith('ied')) v.add(t.slice(0,-3) + 'y');
+  if(t.length > 4 && t.endsWith('ed')){ v.add(t.slice(0,-2)); v.add(t.slice(0,-1)); }
+  if(t.length > 5 && t.endsWith('ing')){ v.add(t.slice(0,-3)); v.add(t.slice(0,-3) + 'e'); }
+  for(const x of [...v]) for(const [k, syn] of Object.entries(FAQ_EN_SYN)) if(x === k || (k.length > 4 && x.startsWith(k))) syn.forEach(s => v.add(s));
+  const out = [...v].filter(x => x.length >= 2);
+  FAQ_EN_VAR.set(t, out);
+  return out;
+}
+function faqEnHasAny(hay, t){ return faqEnVariants(t).some(v => faqEnHas(hay, v)); }
+function faqEnTokens(q){
+  const low = q.toLowerCase().replace(/\s+/g,' ').trim();
+  const raw = low.split(/[^a-z0-9%'-]+/).map(t => t.replace(/^[-']+|[-']+$/g,'')).filter(t => t.length >= 2);
+  const use = raw.filter(t => !FAQ_EN_STOP.has(t));
+  const out = [...new Set((use.length ? use : raw).map(t => t.length > 3 && /[^s]s$/.test(t) ? t.slice(0,-1) : t))];
+  out.phrase = raw.length > 1 ? low.replace(/[^a-z0-9%' -]+/g,' ').replace(/\s+/g,' ').trim() : '';
+  return out;
+}
+function faqEnScore(item, tokens){
+  if(!tokens.length) return 0;
+  const e = faqEnText(item), q = e.q.toLowerCase(), lead = e.lead.toLowerCase();
+  let score = 0, hits = 0;
+  for(const t of tokens){
+    if(!faqEnHasAny(e.hay, t)) continue;
+    hits++;
+    const df = FAQ_ITEMS.reduce((n, it) => n + (faqEnHasAny(faqEnText(it).hay, t) ? 1 : 0), 0);
+    const w = (Math.min(t.length, 12) / 3) * Math.max(0.35, Math.log(FAQ_ITEMS.length / Math.max(df,1)) / Math.log(4));
+    score += w;
+    if(faqEnHasAny(lead, t)) score += w * 1.5;
+    if(faqEnHasAny(q, t)) score += w * 3;
+  }
+  if(!hits) return 0;
+  const ph = tokens.phrase;
+  if(ph && e.hay.includes(ph)) score += 12 + (q.includes(ph) ? 20 : 0);
+  const cover = hits / tokens.length;
+  return (score + cover * 4) * cover;
+}
+function faqEnSnippet(item, tokens){
+  if(!tokens.length) return '';
+  const plain = faqEnText(item).plain, low = plain.toLowerCase();
+  let at = -1;
+  if(tokens.phrase) at = low.indexOf(tokens.phrase);
+  if(at < 0) for(const t of tokens.flatMap(faqEnVariants)){ const i = low.search(new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))); if(i >= 0 && (at < 0 || i < at)) at = i; }
+  if(at < 0) return '';
+  const start = Math.max(0, at - 60);
+  let cut = plain.slice(start, start + 180);
+  if(start > 0) cut = '…' + cut;
+  if(start + 180 < plain.length) cut += '…';
+  let html = faqEsc(cut);
+  const alt = [...new Set(tokens.flatMap(faqEnVariants))].sort((a,b)=>b.length-a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  return html.replace(new RegExp('\\b(?:' + alt + ')[a-z]*', 'gi'), m => '<mark>' + m + '</mark>');
+}
 function faqEsc(t){ return t.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 // ตัวอย่างบรรทัดที่ตรง พร้อมไฮไลท์ เพื่อให้รู้ว่าคำที่ค้นไปโผล่ตรงไหนของคำตอบ
 function faqSnippet(item, tokens){
@@ -16606,9 +16687,10 @@ function renderFaq(){
   const clearBtn = document.getElementById('faqClear');
   if(clearBtn) clearBtn.style.display = q ? 'block' : 'none';
 
-  const tokens = q ? faqSegment(q) : [];
+  const faqEnMode = !!q && i18nEN() && !/[\u0E00-\u0E7F]/.test(q);
+  const tokens = q ? (faqEnMode ? faqEnTokens(q) : faqSegment(q)) : [];
   const scored = q
-    ? FAQ_ITEMS.map(it => ({it, sc: faqScore(it, tokens)})).filter(x => x.sc > 0)
+    ? FAQ_ITEMS.map(it => ({it, sc: faqEnMode ? faqEnScore(it, tokens) : faqScore(it, tokens)})).filter(x => x.sc > 0)
         .sort((a,b) => b.sc - a.sc).map(x => x.it)
     : FAQ_ITEMS.slice();
   // ค้นทั้งเว็บก่อน แล้วค่อยแยกว่าอันไหนอยู่แท็บนี้ อันไหนอยู่แท็บอีกฝั่ง
@@ -16640,7 +16722,7 @@ function renderFaq(){
   let html = '', found = 0;
   if(q){
     html += `<p class="faq-result">พบ ${hits.length} คำถามที่ตรงกับ “${faqEsc(q)}”`
-      + (() => { const u = tokens.filter(t => !FAQ_STOP.has(t)); return u.length > 1 ? ` <span class="faq-tok">แยกคำเป็น ${u.map(t=>`<b>${faqEsc(t)}</b>`).join(' + ')}</span>` : ''; })()
+      + (() => { const u = tokens.filter(t => !FAQ_STOP.has(t)); return !faqEnMode && u.length > 1 ? ` <span class="faq-tok">แยกคำเป็น ${u.map(t=>`<b>${faqEsc(t)}</b>`).join(' + ')}</span>` : ''; })()
       + `</p>`;
     // ถ้าแท็บนี้ไม่เจอเลย กล่องว่างจะพาไปอีกแท็บให้อยู่แล้ว ไม่ต้องบอกซ้ำสองที่
     if(other.length && hits.length){
@@ -16656,7 +16738,7 @@ function renderFaq(){
     html += `<section class="faq-sec">
       <div class="faq-sec-h"><span class="faq-sec-i" aria-hidden="true">${g.icon}</span>
         <div><div class="faq-sec-t">${g.label}</div><div class="faq-sec-d">${g.desc}</div></div></div>
-      ${list.map(it => { const snip = q ? faqSnippet(it, tokens) : ''; return `<details class="faq-item"${it.k ? ` id="faq-${it.k}"` : ''}${q ? ' data-hit="1"' : ''}>
+      ${list.map(it => { const snip = q ? (faqEnMode ? faqEnSnippet(it, tokens) : faqSnippet(it, tokens)) : ''; return `<details class="faq-item"${it.k ? ` id="faq-${it.k}"` : ''}${q ? ' data-hit="1"' : ''}>
         <summary><span class="faq-qwrap"><span class="faq-q">${it.q}</span>${snip ? `<span class="faq-snip">${snip}</span>` : ''}</span><span class="faq-arrow" aria-hidden="true"></span></summary>
         <div class="faq-a">
           <p class="faq-lead">${it.lead}</p>
@@ -18774,19 +18856,29 @@ let DATA=[],META={},ENTITIES=[],CURRENT=[];
 function normalize(s){return String(s||'').normalize('NFKC').toLowerCase().replace(/[\s\-.,()\/&’'"ฯ:]/g,'').replace(/โรงพยาบาล|รพ\.|hospital|\(รัฐบาล\)/g,'');}
 function boolOf(rows,k){return rows.some(r=>r[k]===true)?true:rows.some(r=>r[k]==null)?null:false;}
 function summary(rows){return {individual:boolOf(rows,'individual'),group:boolOf(rows,'group'),special:[...new Set(rows.map(r=>r.special).filter(Boolean))],checkup:rows.every(r=>r.relation==='checkup')};}
-function hnName(e){if(!(window.I18N&&I18N.lang==='en'&&e.en))return e.name;let n=e.en;if(n===n.toUpperCase())n=n.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());if(e.type==='hospital'&&!/hospital|clinic|medical|center|centre|institute/i.test(n))n+=' Hospital';return n;}
-function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);if(r.english_name&&!e.en)e.en=r.english_name.trim();e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
+let HNEN=null,HNEN_P=null;
+function hnEnOn(){return !!(window.I18N&&I18N.lang==='en');}
+function hnLoadEn(){if(HNEN_P)return HNEN_P;HNEN_P=fetch('/data/hospital-en.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()}).then(j=>{HNEN=j;return j}).catch(()=>{HNEN_P=null;return null});return HNEN_P;}
+function hnName(e){if(!hnEnOn())return e.name;if(!e.en)return (HNEN&&HNEN.names[e.name])||e.name;let n=e.en;if(n===n.toUpperCase())n=n.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());if(e.type==='hospital'&&!/hospital|clinic|medical|center|centre|institute/i.test(n))n+=' Hospital';return n;}
+const HN_MK=/(หมู่ที่|หมู่บ้าน|หมู่|ม\.|ถนน|ถ\.|ซอย|ซ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.|ก\.ม\.|กม\.)/;
+const HN_MKL={'หมู่ที่':'Moo','หมู่บ้าน':'Village','หมู่':'Moo','ม':'Moo','ถนน':'R','ถ':'R','ซอย':'Soi','ซ':'Soi','ตำบล':'Tambon','ต':'Tambon','แขวง':'Khwaeng','อำเภอ':'Amphoe','อ':'Amphoe','เขต':'Khet','จังหวัด':'','จ':'','ก.ม':'Km','กม':'Km'};
+function hnAddr(s){if(!s||!hnEnOn()||!HNEN||!/[฀-๿]/.test(s))return s;const W=HNEN.words;let road=false,miss=false;const out=s.replace(/[฀-๿.]+/g,run=>{if(!/[฀-๿]/.test(run))return run;const t=[];for(let p of run.split(HN_MK)){p=p.replace(/^\.+|\.+$/g,'');if(!p)continue;if(Object.prototype.hasOwnProperty.call(HN_MKL,p)){const l=HN_MKL[p];if(road){t.push('Rd.');road=false;}if(l==='R')road=true;else if(l)t.push(l);continue;}if(!/[฀-๿]/.test(p)){t.push(p);continue;}let v=W[p];if(v==null){miss=true;v=p;}if(road){v+=' Rd.';road=false;}if(v)t.push(v);}return t.length?' '+t.join(' ')+' ':' ';});if(miss)return s;return (out+(road?' Rd.':'')).replace(/\s+/g,' ').replace(/\s+([,)])/g,'$1').replace(/\(\s+/g,'(').replace(/,(\s*,)+/g,',').trim();}
+const HN_HRS=[[/เวลาบริการ\/ข้อจำกัด:\s*/g,'Hours: '],[/หมายเหตุจากต้นทาง:\s*/g,'Source note: '],[/ให้บริการผู้ป่วยนอก\s*ในวัน-เวลาราชการ/g,'outpatient service during official hours'],[/เปิดให้บริการ|เปิดทำการ/g,'open'],[/ให้บริการ/g,'service'],[/ทุ+กวั+น/g,'daily'],[/วันหยุดนักขัตฤกษ์|นักขัตฤกษ์|วันหยุดราชการ/g,'public holidays'],[/วันทำการ/g,'working days'],[/จ-ศ/g,'Mon-Fri'],[/ส\.-อา/g,'Sat-Sun'],[/(?:วัน)?จันทร์/g,'Mon'],[/(?:วัน)?อังคาร/g,'Tue'],[/(?:วัน)?พุธ/g,'Wed'],[/(?:วัน)?พฤหัสบดี/g,'Thu'],[/(?:วัน)?ศุกร์/g,'Fri'],[/(?:วัน)?เสาร์/g,'Sat'],[/(?:วัน)?อาทิตย์|อวันาทิตย์/g,'Sun'],[/ตลอด\s*24\s*(?:ชั่วโมง|ชม\.)|24\s*(?:ชั่วโมง|ชม\.)/g,'24 hours'],[/ช่วงเช้า|เช้า/g,'morning'],[/ช่วงบ่าย/g,'afternoon'],[/ยกเว้น/g,'except'],[/ปิดทำการ|หยุด/g,'closed'],[/เฉพาะคลินิกพิเศษ/g,'special clinic only'],[/ผู้ป่วยใน/g,'inpatient'],[/ผู้ป่วยนอก/g,'outpatient'],[/หมายเลขโทรศัพท์/g,'Tel.'],[/เบอร์\s*/g,''],[/สายด่วน/g,'Hotline'],[/ต่อ\s*/g,'ext. '],[/หรือ/g,'or'],[/ถึง/g,'to'],[/เวลา\s*/g,''],[/\s*น\s*\.(?=\s|,|$|\))/g,''],[/(\d)\s*น\.?/g,'$1'],[/\s*น\.\s*$/g,'']];
+function hnTx(s){if(s==null||!hnEnOn()||!HNEN||!/[฀-๿]/.test(String(s)))return s;s=String(s);const T=HNEN.text||{};const k=s.replace(/\s+/g,' ').trim();if(T[s])return T[s];if(T[k])return T[k];let bad=false;const out=s.split(/(\s\|\s|;\s|\n|,\s*|\s{3,})/).map((p,i)=>{if(i%2)return /^\s{3,}$/.test(p)?' · ':p;const q=p.replace(/\s+/g,' ').trim();if(!/[฀-๿]/.test(q))return p;if(T[q])return T[q];if(/^ชื่อต้นฉบับ:/.test(q))return '\u0000';{const m=q.match(/^ต้นทางจำกัดบริการตามวงเล็บในชื่อ:.*\(([^()]*)\)\s*$/);if(m&&!/[\u0E00-\u0E7F]/.test(m[1]))return 'Source limits service per the bracket in the name: '+m[1];}let v=q;for(const [re,r] of HN_HRS)v=v.replace(re,r);if(/[฀-๿]/.test(v)){bad=true;return p;}return v.replace(/\s{2,}/g,' ').trim();}).join('');return bad?s:out.replace(/(\s\|\s|;\s|\n|,\s*)?\u0000/g,'').replace(/^(\s\|\s|;\s|\n|,\s*)+/,'').replace(/\u0000/g,'').replace(/:\s*·\s*/g,': ');}
+function hnProv(p){if(!hnEnOn())return p;return (HNEN&&HNEN.words[p])||p;}
+function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);if(r.english_name&&!e.en)e.en=r.english_name.trim();e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{if(HNEN&&HNEN.names[e.name])e.aliases.push(HNEN.names[e.name]);e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
 function matchesRow(rows){const s=summary(rows);return (state.policy==='all'||state.policy==='both'&&s.individual===true&&s.group===true||state.policy==='individual'&&s.individual===true||state.policy==='group'&&s.group===true||state.policy==='group_only'&&s.group===true&&s.individual===false)&&(!state.special||s.special.length>0);}
 function selectEntities(){const q=normalize(state.query);return ENTITIES.filter(e=>(!q||e.search.includes(q))&&(!state.province||e.province===state.province)&&(state.allFacilities||e.type==='hospital')&&Object.entries(e.companies).some(([id,rows])=>(!state.company.size||state.company.has(id))&&matchesRow(rows))).sort((a,b)=>{if(q){let ae=a.aliases.some(n=>normalize(n)===q),be=b.aliases.some(n=>normalize(n)===q);if(ae!==be)return ae?-1:1;}return b.count-a.count||a.name.localeCompare(b.name,'th');});}
-function render(){CURRENT=selectEntities();$('#hnResultsTitle').textContent=state.query?`ผลค้นหา “${state.query}”`:'รายชื่อโรงพยาบาล';$('#hnResultCount').textContent=`พบ ${CURRENT.length.toLocaleString('th-TH')} สถานพยาบาล${state.province?' ใน'+state.province:''} · จาก ${COMPANIES.length} บริษัทประกัน`;
-$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(hnName(e))}"><div class="hn-card-upper"><span class="hn-province-tag">${esc(e.province)}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3 data-noi18n>${esc(hnName(e))}</h3><p class="hn-address"${e.address?' data-noi18n':''}>${esc(e.address||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
+function render(){CURRENT=selectEntities();$('#hnResultsTitle').textContent=state.query?(hnEnOn()?`Results for “${state.query}”`:`ผลค้นหา “${state.query}”`):'รายชื่อโรงพยาบาล';$('#hnResultCount').textContent=`พบ ${CURRENT.length.toLocaleString('th-TH')} สถานพยาบาล${state.province?' ใน'+state.province:''} · จาก ${COMPANIES.length} บริษัทประกัน`;
+$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(hnName(e))}"><div class="hn-card-upper"><span class="hn-province-tag" data-noi18n>${esc(hnProv(e.province))}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3 data-noi18n>${esc(hnName(e))}</h3><p class="hn-address"${e.address?' data-noi18n':''}>${esc(hnAddr(e.address)||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
 function eligibility(v,checkup){if(checkup)return '<span class="hn-pill hn-dim">ตรวจสุขภาพเท่านั้น</span>';return v===true?'<span class="hn-pill">✓ มีข้อมูลรับสิทธิ</span>':v===false?'<span class="hn-pill hn-dim">ไม่ระบุรับสิทธิในรายการ</span>':'<span class="hn-pill hn-dim">ยังไม่ระบุ</span>';}
-function detail(index){const e=ENTITIES[index];$('#hnDetailName').textContent=e.name;$('#hnDetailLocation').textContent=e.province+(e.type!=='hospital'?' · คลินิก / บริการอื่น':'');$('#hnDetailBody').innerHTML=`<div class="hn-detail-content"><div class="hn-matrix-wrap"><table class="hn-matrix"><thead><tr><th>บริษัทประกัน</th><th>รายชื่อคู่สัญญา</th><th>ประกันเดี่ยว</th><th>ประกันกลุ่ม</th><th>เครือข่ายพิเศษ</th></tr></thead><tbody>${COMPANIES.map(c=>{const rows=e.companies[c.id];if(!rows)return `<tr><td style="color:${c.color}">${c.name}</td><td colspan="4"><span class="hn-pill hn-dim">ไม่พบในชุดข้อมูล</span><small class="hn-row-source">อาจใช้ชื่อหรือสาขาต่างกัน โปรดตรวจฐานทางการเพิ่มเติม</small></td></tr>`;const s=summary(rows);return `<tr><td style="color:${c.color}">${c.name}</td><td><span class="hn-pill ${s.checkup?'hn-dim':''}">${s.checkup?'ตรวจสุขภาพ':'✓ พบรายชื่อ'}</span><small class="hn-row-source">${s.group===true&&s.individual===false?'กลุ่มเท่านั้นตามรายการ<br>':''}ข้อมูล ${esc(rows[0].source_date||'ไม่ระบุวันที่')}</small></td><td>${eligibility(s.individual,s.checkup)}</td><td>${eligibility(s.group,s.checkup)}</td><td>${s.special.length?s.special.map(n=>`<span class="hn-pill hn-special">${esc(n)}</span>`).join('<br>'):'<span class="hn-row-source">ไม่พบสถานะพิเศษในชุดข้อมูล</span>'}</td></tr>`;}).join('')}</tbody></table></div><p class="hn-detail-note">สิทธิที่แสดงเป็นข้อมูลในรายชื่อบริษัท ไม่ใช่การตรวจสิทธิรายกรมธรรม์ บริการ IPD / OPD และขอบเขตแผนประกันอาจแตกต่างกัน อ่านข้อความต้นทางด้านล่างก่อนใช้บริการ</p><div class="hn-evidence"><h3>รายละเอียดจากแต่ละบริษัท</h3>${COMPANIES.filter(c=>e.companies[c.id]).map(c=>`<details><summary><span style="color:${c.color}">${c.name}</span> · ${esc(c.full)} (${e.companies[c.id].length} รายการอ้างอิง)</summary>${e.companies[c.id].map(r=>`<div class="hn-evidence-meta"><b>ชื่อในฐานต้นทาง:</b> ${esc(r.name)}<br><b>สิทธิ / บริการ:</b> ${esc(Array.isArray(r.services)?r.services.join(', '):r.services||'ไม่ระบุ')}${r.individual_services?'<br><b>บริการประกันเดี่ยว:</b> '+esc(r.individual_services.join(', ')||'ไม่ระบุ'):''}${r.group_services?'<br><b>บริการประกันกลุ่ม:</b> '+esc(r.group_services.join(', ')||'ไม่ระบุ'):''}${r.special_basis?'<br><b>ที่มาสถานะพิเศษ:</b> '+esc(r.special_basis):''}${r.address?'<br><b>ที่อยู่:</b> '+esc(r.address):''}${r.phone?'<br><b>โทรศัพท์:</b> '+esc(r.phone):''}${r.notes?'<br><b>หมายเหตุ:</b> '+esc(r.notes):''}<br>${r.source_page?'<b>หน้าเอกสาร:</b> '+esc(r.source_page)+'<br>':''}<b>วันที่ข้อมูล / วันที่ดึง:</b> ${esc(r.source_date||'ไม่ระบุ')}<br><a href="${esc(r.source_url)}" target="_blank" rel="noopener">เปิดแหล่งข้อมูลทางการ ↗</a></div>`).join('<hr>')}</details>`).join('')}</div></div>`;$('#hnDetail').showModal();}
-function sources(){const items=META.sources||[];$('#hnSpecialNote').innerHTML=META.special_note||'';$('#hnSourceList').innerHTML=items.map(s=>`<article class="hn-source-item"><span class="hn-count">${s.records.toLocaleString()} รายการ</span><h3>${esc(s.name)}</h3><p>${esc(s.description||'')}<br>ข้อมูล / วันที่ดึง: ${esc(s.date||'ไม่ระบุ')}</p><a href="${esc(s.url)}" target="_blank" rel="noopener">เว็บไซต์หรือเอกสารทางการ ↗</a>${s.additional_url?` · <a href="${esc(s.additional_url)}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a>`:''}</article>`).join('');$('#hnSources').showModal();}
+function detail(index){const e=ENTITIES[index];$('#hnDetailName').textContent=hnName(e);$('#hnDetailLocation').textContent=hnProv(e.province)+(e.type!=='hospital'?' · คลินิก / บริการอื่น':'');$('#hnDetailBody').innerHTML=`<div class="hn-detail-content"><div class="hn-matrix-wrap"><table class="hn-matrix"><thead><tr><th>บริษัทประกัน</th><th>รายชื่อคู่สัญญา</th><th>ประกันเดี่ยว</th><th>ประกันกลุ่ม</th><th>เครือข่ายพิเศษ</th></tr></thead><tbody>${COMPANIES.map(c=>{const rows=e.companies[c.id];if(!rows)return `<tr><td style="color:${c.color}">${c.name}</td><td colspan="4"><span class="hn-pill hn-dim">ไม่พบในชุดข้อมูล</span><small class="hn-row-source">อาจใช้ชื่อหรือสาขาต่างกัน โปรดตรวจฐานทางการเพิ่มเติม</small></td></tr>`;const s=summary(rows);return `<tr><td style="color:${c.color}">${c.name}</td><td><span class="hn-pill ${s.checkup?'hn-dim':''}">${s.checkup?'ตรวจสุขภาพ':'✓ พบรายชื่อ'}</span><small class="hn-row-source">${s.group===true&&s.individual===false?'กลุ่มเท่านั้นตามรายการ<br>':''}ข้อมูล ${esc(rows[0].source_date||'ไม่ระบุวันที่')}</small></td><td>${eligibility(s.individual,s.checkup)}</td><td>${eligibility(s.group,s.checkup)}</td><td>${s.special.length?s.special.map(n=>`<span class="hn-pill hn-special">${esc(hnTx(n))}</span>`).join('<br>'):'<span class="hn-row-source">ไม่พบสถานะพิเศษในชุดข้อมูล</span>'}</td></tr>`;}).join('')}</tbody></table></div><p class="hn-detail-note">สิทธิที่แสดงเป็นข้อมูลในรายชื่อบริษัท ไม่ใช่การตรวจสิทธิรายกรมธรรม์ บริการ IPD / OPD และขอบเขตแผนประกันอาจแตกต่างกัน อ่านข้อความต้นทางด้านล่างก่อนใช้บริการ</p><div class="hn-evidence"><h3>รายละเอียดจากแต่ละบริษัท</h3>${COMPANIES.filter(c=>e.companies[c.id]).map(c=>`<details><summary><span style="color:${c.color}">${c.name}</span> · ${esc(c.full)} (${e.companies[c.id].length} รายการอ้างอิง)</summary>${e.companies[c.id].map(r=>`<div class="hn-evidence-meta"><b>ชื่อในฐานต้นทาง:</b> ${hnEnOn()&&/[\u0E00-\u0E7F]/.test(r.name)?`<span data-noi18n>${esc((r.english_name&&r.english_name.trim())||(HNEN&&HNEN.names[r.name])||hnName(e))}</span>`:esc(r.name)}<br><b>สิทธิ / บริการ:</b> ${esc(hnTx(Array.isArray(r.services)?r.services.join(', '):r.services)||'ไม่ระบุ')}${r.individual_services?'<br><b>บริการประกันเดี่ยว:</b> '+esc(hnTx(r.individual_services.join(', '))||'ไม่ระบุ'):''}${r.group_services?'<br><b>บริการประกันกลุ่ม:</b> '+esc(hnTx(r.group_services.join(', '))||'ไม่ระบุ'):''}${r.special_basis?'<br><b>ที่มาสถานะพิเศษ:</b> '+esc(hnTx(r.special_basis)):''}${r.address?'<br><b>ที่อยู่:</b> '+esc(hnAddr(r.address)):''}${r.phone?'<br><b>โทรศัพท์:</b> '+esc(hnTx(r.phone)):''}${r.notes?'<br><b>หมายเหตุ:</b> '+esc(hnTx(r.notes)):''}<br>${r.source_page?'<b>หน้าเอกสาร:</b> '+esc(r.source_page)+'<br>':''}<b>วันที่ข้อมูล / วันที่ดึง:</b> ${esc(r.source_date||'ไม่ระบุ')}<br><a href="${esc(r.source_url)}" target="_blank" rel="noopener">เปิดแหล่งข้อมูลทางการ ↗</a></div>`).join('<hr>')}</details>`).join('')}</div></div>`;$('#hnDetail').showModal();}
+function sources(){const items=META.sources||[];$('#hnSpecialNote').innerHTML=hnTx(META.special_note)||'';const EN=hnEnOn();$('#hnSourceList').innerHTML=items.map(s=>`<article class="hn-source-item"><span class="hn-count">${s.records.toLocaleString()} ${EN?'entries':'รายการ'}</span><h3>${esc(hnTx(s.name))}</h3><p>${esc(hnTx(s.description||''))}<br>${EN?'Data / pulled':'ข้อมูล / วันที่ดึง'}: ${esc(hnTx(s.date)||(EN?'Not stated':'ไม่ระบุ'))}</p><a href="${esc(s.url)}" target="_blank" rel="noopener">${EN?'Official website or document':'เว็บไซต์หรือเอกสารทางการ'} ↗</a>${s.additional_url?` · <a href="${esc(s.additional_url)}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a>`:''}</article>`).join('');$('#hnSources').showModal();}
 function reset(){state.query='';state.province='';state.company.clear();state.policy='all';state.special=false;state.allFacilities=false;state.limit=24;$('#hnSearch').value='';$('#hnProvince').value='';$('#hnSpecial').checked=false;$('#hnAllFacilities').checked=false;document.querySelectorAll('[data-company]').forEach(x=>x.checked=false);document.querySelectorAll('#page-hospitals [data-policy]').forEach(x=>x.classList.toggle('hn-active',x.dataset.policy==='all'));render();}
 function exportCSV(){let head=['โรงพยาบาล','จังหวัด','บริษัท','ประกันเดี่ยว','ประกันกลุ่ม','เครือข่ายพิเศษ','สิทธิและบริการ','วันที่ข้อมูล','แหล่งอ้างอิง'];let rows=CURRENT.flatMap(e=>Object.entries(e.companies).flatMap(([id,rs])=>rs.map(r=>[e.name,e.province,id,r.individual===true?'มีข้อมูลรับสิทธิ':r.individual===false?'ไม่ระบุรับสิทธิในรายการ':'ยังไม่ยืนยัน',r.group===true?'มีข้อมูลรับสิทธิ':r.group===false?'ไม่ระบุรับสิทธิในรายการ':'ยังไม่ยืนยัน',r.special||'',Array.isArray(r.services)?r.services.join(', '):r.services||'',r.source_date||'',r.source_url])));const csv='\ufeff'+[head,...rows].map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='hospital-network-results.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-async function init(){try{const m=await fetch('/data/hospital-network/meta.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()});const parts=await Promise.all(m.companies.map(c=>fetch('/data/hospital-network/'+c.id+'.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()})));const d=parts.flat();DATA=d;META=m;COMPANIES=m.companies;identityRows();{const cc=document.getElementById('hnCompanyCount');if(cc)cc.textContent=COMPANIES.length+' บริษัทประกัน';}$('#hnCompanyStrip').innerHTML=COMPANIES.map(c=>`<div class="hn-company-word" style="color:${c.color}">${c.name}<small>${esc(c.full)}</small></div>`).join('');$('#hnCompanyFilters').innerHTML=COMPANIES.map(c=>`<label class="hn-check"><input type="checkbox" data-company="${c.id}"><span class="hn-label"><i class="hn-insurer-dot" style="background:${c.color}"></i>${c.name}</span><span class="hn-num">${DATA.filter(r=>r.insurer===c.id).length.toLocaleString()}</span></label>`).join('');const prov=[...new Set(ENTITIES.map(e=>e.province))].sort((a,b)=>a.localeCompare(b,'th'));$('#hnProvince').insertAdjacentHTML('beforeend',prov.map(p=>`<option>${esc(p)}</option>`).join(''));render();}catch(err){$('#hnResultCount').textContent='โหลดข้อมูลไม่สำเร็จ กรุณาลองรีเฟรชหน้าเว็บ';console.error('Unable to load hospital directory');}}
+async function init(){try{const m=await fetch('/data/hospital-network/meta.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()});const parts=await Promise.all(m.companies.map(c=>fetch('/data/hospital-network/'+c.id+'.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()})));if(hnEnOn())await hnLoadEn();const d=parts.flat();DATA=d;META=m;COMPANIES=m.companies;identityRows();{const cc=document.getElementById('hnCompanyCount');if(cc)cc.textContent=COMPANIES.length+' บริษัทประกัน';}$('#hnCompanyStrip').innerHTML=COMPANIES.map(c=>`<div class="hn-company-word" style="color:${c.color}">${c.name}<small>${esc(c.full)}</small></div>`).join('');$('#hnCompanyFilters').innerHTML=COMPANIES.map(c=>`<label class="hn-check"><input type="checkbox" data-company="${c.id}"><span class="hn-label"><i class="hn-insurer-dot" style="background:${c.color}"></i>${c.name}</span><span class="hn-num">${DATA.filter(r=>r.insurer===c.id).length.toLocaleString()}</span></label>`).join('');const prov=[...new Set(ENTITIES.map(e=>e.province))].sort((a,b)=>a.localeCompare(b,'th'));$('#hnProvince').insertAdjacentHTML('beforeend',prov.map(p=>`<option value="${esc(p)}" data-hnprov data-noi18n>${esc(hnProv(p))}</option>`).join(''));render();}catch(err){$('#hnResultCount').textContent='โหลดข้อมูลไม่สำเร็จ กรุณาลองรีเฟรชหน้าเว็บ';console.error('Unable to load hospital directory');}}
 $('#hnSearchForm').addEventListener('submit',e=>{e.preventDefault();state.query=$('#hnSearch').value.trim();state.limit=24;render();$('#hnFinder').scrollIntoView({behavior:'smooth'});});let timer;$('#hnSearch').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{state.query=$('#hnSearch').value.trim();state.limit=24;render();},120)});document.addEventListener('keydown',e=>{if(!document.getElementById('page-hospitals').classList.contains('active'))return;if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.querySelector('#page-hospitals dialog[open]')){e.preventDefault();$('#hnSearch').focus();}});document.addEventListener('click',e=>{if(!e.target.closest('#page-hospitals'))return;let q=e.target.closest('[data-query]');if(q){$('#hnSearch').value=q.dataset.query;state.query=q.dataset.query;state.limit=24;render();$('#hnFinder').scrollIntoView({behavior:'smooth'});}const card=e.target.closest('[data-entity]');if(card)detail(Number(card.dataset.entity));const close=e.target.closest('[data-close]');if(close)document.getElementById(close.dataset.close).close();const pol=e.target.closest('[data-policy]');if(pol){state.policy=pol.dataset.policy;state.limit=24;document.querySelectorAll('#page-hospitals [data-policy]').forEach(x=>x.classList.toggle('hn-active',x===pol));render();}});$('#hnCompanyFilters').addEventListener('change',e=>{const x=e.target;if(x.dataset.company){x.checked?state.company.add(x.dataset.company):state.company.delete(x.dataset.company);state.limit=24;render();}});$('#hnProvince').addEventListener('change',e=>{state.province=e.target.value;state.limit=24;render();});$('#hnSpecial').addEventListener('change',e=>{state.special=e.target.checked;state.limit=24;render();});$('#hnAllFacilities').addEventListener('change',e=>{state.allFacilities=e.target.checked;state.limit=24;render();});$('#hnReset').onclick=reset;$('#hnEmptyReset').onclick=reset;$('#hnSourcesBtn').onclick=sources;$('#hnMethodBtn').onclick=sources;$('#hnExport').onclick=exportCSV;$('#hnLoadMore').onclick=()=>{state.limit+=24;render();};for(const d of document.querySelectorAll('#page-hospitals dialog'))d.addEventListener('click',e=>{if(e.target===d){const b=d.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)d.close();}});
+  document.addEventListener('i18n:ready',()=>{hnLoadEn().then(()=>{if(!DATA.length)return;identityRows();document.querySelectorAll('#hnProvince [data-hnprov]').forEach(o=>o.textContent=hnProv(o.value));render();});});
   init();
 }
 
@@ -22619,7 +22711,10 @@ window.I18N = (function(){
     }
     return null;
   }
-  function trOne(k){
+  // ปี พ.ศ. ในหน้าอังกฤษ แปลงเป็น ค.ศ. (ลบ 543)
+  function ce(s){ return s == null ? s : s.replace(/\s*\((?:BE|B\.E\.)\s?2[45]\d\d\)/g, '').replace(/\b(?:BE|B\.E\.)\s?(2[45]\d\d)\b/g, (m, y) => String(y - 543)).replace(/\b(\d{1,2}\/\d{1,2}\/)(2[45]\d\d)\b/g, (m, a, y) => a + (y - 543)); }
+  function trOne(k){ return ce(trOne0(k)); }
+  function trOne0(k){
     if(Object.prototype.hasOwnProperty.call(dict, k)) return dict[k];
     let out = k;
     for(const [re, rep] of rules){ if(re.test(out)){ re.lastIndex = 0; out = out.replace(re, rep); } re.lastIndex = 0; }
@@ -22692,7 +22787,7 @@ window.I18N = (function(){
   function apply(){
     document.documentElement.lang = 'en';
     document.documentElement.classList.add('lang-en');
-    return load().then(start).then(() => { try{ if(document.getElementById('copySummaryText') && typeof renderAll === 'function') renderAll(); }catch(e){} }).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
+    return load().then(start).then(() => { try{ if(document.getElementById('copySummaryText') && typeof renderAll === 'function') renderAll(); }catch(e){} try{ document.dispatchEvent(new Event('i18n:ready')); }catch(e){} }).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
   }
   function set(next){
     if(next === lang) return;

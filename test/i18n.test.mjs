@@ -87,3 +87,44 @@ test("EN เฟส 4: ผู้ช่วยจัดแผน อุบัติ
   assert.match(html, /\.value = summaryLinesEn \|\| summaryLines;/);
   assert.match(html, /html\.lang-en \.ai-plan-card\.recommended::before\{content:"Top pick";\}/);
 });
+
+test("EN โรงพยาบาล: ชื่อทับศัพท์ ที่อยู่ และหมายเหตุ ครบทุกแห่ง", async () => {
+  const hn = JSON.parse(await readFile(new URL("../data/hospital-en.json", import.meta.url), "utf8"));
+  for (const part of ["names", "words", "text"]) {
+    for (const [k, v] of Object.entries(hn[part])) {
+      assert.ok(TH.test(k), `${part} คีย์ไม่มีภาษาไทย: ${k}`);
+      assert.ok(!TH.test(v), `${part} คำแปลยังมีภาษาไทย: ${k}`);
+    }
+  }
+  assert.equal(hn.names["คลินิกเวชกรรมกรุงเทพระยอง สาขาบ่อวิน 2"], "Bangkok Rayong Medical Clinic, Bo Win 2 branch");
+  assert.equal(hn.words["กรุงเทพมหานคร"], "Bangkok");
+  // ทุกสถานพยาบาลที่ไม่มีชื่ออังกฤษในข้อมูลบริษัท ต้องมีชื่อทับศัพท์
+  const meta = JSON.parse(await readFile(new URL("../data/hospital-network/meta.json", import.meta.url), "utf8"));
+  const map = new Map();
+  for (const c of meta.companies) {
+    const rows = JSON.parse(await readFile(new URL(`../data/hospital-network/${c.id}.json`, import.meta.url), "utf8"));
+    for (const r of rows) {
+      let e = map.get(r.entity_key);
+      if (!e) { e = { name: r.display_name || r.name, en: "" }; map.set(r.entity_key, e); }
+      if (r.english_name && !e.en) e.en = r.english_name;
+      if (r.name.startsWith("โรงพยาบาล") && !e.name.startsWith("โรงพยาบาล")) e.name = r.name;
+    }
+  }
+  const missing = [...map.values()].filter(e => !e.en && !hn.names[e.name]).map(e => e.name);
+  assert.deepEqual(missing, []);
+  assert.match(html, /function hnAddr\(s\)/);
+  assert.match(html, /function hnTx\(s\)/);
+  assert.match(html, /fetch\('\/data\/hospital-en\.json\?v='/);
+});
+
+test("EN ค้นหาคำถามที่พบบ่อยเป็นภาษาอังกฤษ และแปลง พ.ศ. เป็น ค.ศ.", () => {
+  assert.match(html, /const faqEnMode = !!q && i18nEN\(\) && !\/\[\\u0E00-\\u0E7F\]\/\.test\(q\);/);
+  assert.match(html, /function faqEnScore\(item, tokens\)/);
+  assert.match(html, /function ce\(s\)/);
+  const m = html.match(/function ce\(s\)\{ return (.*?); \}/);
+  const ce = new Function("s", "return " + m[1]);
+  assert.equal(ce("Created 14/11/2569 10:00"), "Created 14/11/2026 10:00");
+  assert.equal(ce("starting in BE 2562"), "starting in 2019");
+  assert.equal(ce("Current year 2026 (B.E. 2569)"), "Current year 2026");
+  assert.equal(ce("MTL_2-02-04-0843_01/10/2568"), "MTL_2-02-04-0843_01/10/2568");
+});
