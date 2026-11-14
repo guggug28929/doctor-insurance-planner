@@ -69,3 +69,10 @@ test("EN เฟส 2: หน้ารายละเอียดแผนแล�
   assert.match(html, /function i18nEN\(\)/);
   assert.match(html, /Premium table: \$\{plannerEscapeHtml\(i18nT\(mainLabel\)\)\}/);
 });
+
+test("EN เฟส 3: คำถามที่พบบ่อยและบทความความรู้แปลครบ", () => {
+  assert.equal(en.dict["คำถามที่พบบ่อย เรื่องประกันสุขภาพ"], "Frequently asked questions about health insurance");
+  assert.equal(en.dict["คำถามที่พบบ่อย เรื่องประกันชีวิต"], "Frequently asked questions about life insurance");
+  assert.ok(en.dict["วิธีเลือกประกันสุขภาพ ให้จ่ายเบี้ยตรงกับความเสี่ยงจริง"]);
+  assert.ok(Object.keys(en.dict).length > 8000);
+});
