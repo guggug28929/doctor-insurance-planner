@@ -1899,6 +1899,26 @@
     -webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .print-foot{font-size:7.5pt;color:#7a6871;margin-top:3mm;line-height:1.6;}
   .print-sec-next{break-before:page;page-break-before:always;padding-top:2mm;}
+  /* สรุปแผนและรายละเอียดแบบประกันท้ายไฟล์ PDF ใช้กระดาษแนวตั้งให้อ่านง่าย ตารางเบี้ยหน้าแรกยังเป็นแนวนอน */
+  @page pdfportrait{size:A4 portrait;margin:12mm 12mm 13mm;}
+  .pdf-extra{page:pdfportrait;font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;font-size:9.5pt;line-height:1.55;}
+  .pdf-extra .pdf-summary, .pdf-extra .pdf-plan{break-before:page;page-break-before:always;}
+  .pdf-extra h2{font-size:14pt;color:#8f0d40;margin:0 0 2mm;font-weight:800;}
+  .pdf-extra h3{font-size:11pt;color:#8f0d40;margin:4mm 0 1.5mm;font-weight:700;break-after:avoid;}
+  .pdf-extra p, .pdf-extra li{margin:0 0 1.2mm;}
+  .pdf-extra ul{margin:0 0 2mm;padding-left:5mm;}
+  .pdf-extra .pdf-plan-cat{font-size:8pt;letter-spacing:.06em;text-transform:uppercase;color:#a0782a;font-weight:700;}
+  .pdf-extra .meta{color:#6b5a62;font-size:8.5pt;}
+  .pdf-extra .content-card{box-shadow:none !important;border:0 !important;padding:0 !important;margin:0 0 3mm !important;background:none !important;}
+  .pdf-extra table{width:100%;border-collapse:collapse;font-size:8.5pt;margin:1mm 0 3mm;break-inside:auto;}
+  .pdf-extra tr{break-inside:avoid;}
+  .pdf-extra th, .pdf-extra td{border:.4pt solid #d9c2cd;padding:1mm 1.6mm;vertical-align:top;text-align:left;white-space:normal !important;}
+  .pdf-extra th{background:#8f0d40 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pdf-extra *{overflow:visible !important;max-height:none !important;position:static !important;}
+  .pdf-extra .info-icon, .pdf-extra .tooltip{display:none !important;}
+  .pdf-extra .coldrag-table thead th::after, .print-doc .coldrag-table thead th::after{content:none !important;}
+  .pdf-extra details > summary{list-style:none;font-weight:700;color:#8f0d40;}
+  .pdf-extra img{max-width:100%;height:auto;}
 
   .print-credit{display:none;}
   .site-credit{text-align:center;font-size:.76rem;color:#8b7480;padding:26px 16px 34px;line-height:1.9;}
@@ -7168,6 +7188,68 @@ function dgZip(files){
    หนึ่ง ไลบรารีพวกนั้นต้องฝังฟอนต์ไทยเองซึ่งไฟล์ใหญ่มากและสระวรรณยุกต์มักเพี้ยน
    สอง ระบบพิมพ์ขึ้นหน้าใหม่ให้เองและซ้ำหัวตารางให้ทุกหน้าอยู่แล้ว
    ผู้ใช้เลือกปลายทางเป็น "บันทึกเป็น PDF" ในกล่องพิมพ์ได้เลย */
+
+/* ---------- รายละเอียดแบบประกันท้ายไฟล์ PDF ----------
+   ลูกค้าได้ไฟล์เดียวครบ: หน้าแรกเป็นตารางเบี้ย ตามด้วยสรุปสัญญาที่เลือกแบบย่อ
+   แล้วต่อด้วยรายละเอียดเต็มของทุกแบบที่อยู่ในชุดนี้ (หมวดความคุ้มครอง โรคร้ายแรง เงื่อนไข ข้อยกเว้น)
+   ดึงจาก PLAN_DETAILS ชุดเดียวกับหน้ารายละเอียดแผนบนเว็บ ไม่เขียนเนื้อหาซ้ำ
+   ไม่ใส่ตารางอัตราเบี้ยของแต่ละแบบ เพราะตัวเลขของลูกค้ารายนี้อยู่ในตารางหน้าแรกแล้ว */
+function pdfPlanDetailIds(inp){
+  const ids = [];
+  const add = id => { if(id && PLAN_DETAILS[id] && !ids.includes(id)) ids.push(id); };
+  if(isPensionMainPlan(inp.mainPlan)){
+    const pid = currentPensionMain && currentPensionMain.pid;
+    add(PLAN_DETAILS[pid] ? pid : Object.keys(PLAN_DETAILS).find(k => PLAN_DETAILS[k].pension && PLAN_DETAILS[k].pensionIds && PLAN_DETAILS[k].pensionIds.includes(pid)));
+  } else {
+    add(MAIN_PLAN_DETAIL_ID[inp.mainPlan]);
+  }
+  if(inp.useTerm) add('termrider');
+  inp.healthList.forEach(h => add(h.type));
+  inp.opdList.forEach(o => add(o.type === 'mao' ? 'opdmaochai' : 'opd'));
+  if(inp.useCareplus) add('careplus');
+  if(inp.useCipc) add('cipc');
+  if(inp.useMci) add('multipleci');
+  if(inp.dcareSelections.length) add('dcare');
+  if(inp.useCancer) add('cancer');
+  if(inp.usePureCancer) add('purecancer');
+  if(inp.useHappyLady) add('happylady');
+  if(inp.useHappyLadyPlus) add('happyladyplus');
+  if(inp.useDiabetes) add('diabetes');
+  if(inp.useSmartSilver) add('smartsilver');
+  if(inp.paPlan && inp.paPlan !== 'none') add('pa');
+  if(inp.useTpd) add('tpd');
+  if(inp.useHb) add('hb');
+  return ids;
+}
+function pdfPlanDetailHtml(id){
+  const p = PLAN_DETAILS[id];
+  const safe = fn => { try{ return fn() || ''; }catch(e){ return ''; } };
+  const list = (title, arr) => arr && arr.length ? `<h3>${title}</h3><ul>${arr.map(c => `<li>${c}</li>`).join('')}</ul>` : '';
+  return `<section class="pdf-plan">
+    <div class="pdf-plan-cat">${p.category || ''}</div>
+    <h2>${p.title}</h2>
+    ${p.overview ? `<p>${p.overview}</p>` : ''}
+    ${list('ความคุ้มครองโดยละเอียด', p.coverage)}
+    ${p.benefitTable ? `<h3>${p.benefitTitle || (p.pension ? 'อัตราเงินบำนาญที่ได้รับ' : 'ตารางความคุ้มครอง 13 หมวด')}</h3>${safe(p.benefitTable)}` : ''}
+    ${p.detailSections ? safe(p.detailSections) : ''}
+    ${list('เงื่อนไขและข้อควรทราบ', p.conditions)}
+    ${p.exclusions && p.exclusions.length ? `${list('ข้อยกเว้นความคุ้มครอง', p.exclusions)}${p.exclusionExtra ? safe(p.exclusionExtra) : ''}${p.exclusionNote ? `<p class="meta">${p.exclusionNote}</p>` : ''}` : ''}
+  </section>`;
+}
+function pdfPlanExtrasHtml(inp){
+  const card = document.querySelector('#contractSummary .content-card');
+  const ids = pdfPlanDetailIds(inp);
+  const summary = card ? `<section class="pdf-summary">${card.innerHTML}
+    ${ids.length ? `<p class="meta">หน้าถัดไปเป็นรายละเอียดเต็มของแต่ละแบบตามลำดับนี้: ${ids.map(id => PLAN_DETAILS[id].title.replace(/<[^>]+>/g, '')).join(' · ')}</p>` : ''}</section>` : '';
+  return `<div class="pdf-extra">${summary}${ids.map(pdfPlanDetailHtml).join('')}</div>`;
+}
+/* เนื้อหาบนเว็บมีปุ่ม ช่องกรอก และกล่องพับ ซึ่งในกระดาษใช้ไม่ได้ จึงกางทุกกล่องและเอาส่วนที่กดได้ออก */
+function pdfCleanExtras(root){
+  root.querySelectorAll('details').forEach(d => d.setAttribute('open', ''));
+  root.querySelectorAll('button, input, select, textarea, script, .plan-cta, .brochure-strip, [id^="pensionCalc-"]').forEach(e => e.remove());
+  root.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+}
+
 function exportPremiumTablePdf(){
   const table = document.querySelector('#tableWrap table');
   if(!table){
@@ -7219,6 +7301,9 @@ function exportPremiumTablePdf(){
     </div>`;
 
   dgFitPrintTable(host, cols);
+  // วัดความพอดีของตารางเบี้ยก่อน แล้วค่อยต่อสรุปและรายละเอียดแบบ เพื่อไม่ให้ตารางในรายละเอียดไปถ่วงการย่ออักษร
+  host.insertAdjacentHTML('beforeend', pdfPlanExtrasHtml(inp));
+  pdfCleanExtras(host.querySelector('.pdf-extra'));
   document.body.classList.add('dg-printing');
   const cleanup = () => {
     document.body.classList.remove('dg-printing');
@@ -7322,6 +7407,18 @@ function dgSaveBlob(blob, fileName){
 }
 
 // ---- pre-table plain-language summary of everything selected ----
+const MAIN_PLAN_DETAIL_ID = {
+  '99_20':'main9920', '99_99':'main9999', smart_99_99:'main9999smart', '99_7':'main997', '80_10':'main8010',
+  flexi_99_5:'flexi995', flexi_99_20:'flexi9920', '15_3':'smartlink153', '15_6':'smartlink156', '15_6_pro':'smartlink156',
+  lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
+  happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
+  easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
+  easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
+  premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
+  legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
+  whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash', smart_index_10_1:'smartindex101',
+};
+
 function renderContractSummary(inp, rows, cols, entryAge, gender){
   const el = document.getElementById('contractSummary');
   // first-year premium per column key — already the true premium for ONE
@@ -7493,17 +7590,8 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     'Smart Protection 99/99':'เมืองไทย สมาร์ท โพรเทคชั่น 99/99',
   };
   const mainLabel = (n => COPY_NAME_FIX[n] || n)(mainPlanDisplayName(inp.mainPlan, inp.mainCapital));
-  const MAIN_ROUTE_KEY = {
-    '99_20':'main9920', '99_99':'main9999', smart_99_99:'main9999smart', '99_7':'main997', '80_10':'main8010',
-    flexi_99_5:'flexi995', flexi_99_20:'flexi9920', '15_3':'smartlink153', '15_6':'smartlink156', '15_6_pro':'smartlink156',
-    lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
-    happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
-    easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
-    easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
-    premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
-    legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
-    whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash', smart_index_10_1:'smartindex101',
-  };
+  const MAIN_ROUTE_KEY = MAIN_PLAN_DETAIL_ID;
+
   // แบบที่ไม่ได้อยู่ใน SPECIAL_MAIN_PLANS ต้องบอกระยะชำระและอายุคุ้มครองไว้ที่นี่แทน
   const MAIN_TERM_BASE = {
     '99_20':{payYears:20, coverToAge:99}, '99_99':{payYears:null, coverToAge:99},

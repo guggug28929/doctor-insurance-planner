@@ -38,3 +38,18 @@ test("ตัวเลขเบี้ยในคำแปลต้องตร�
     }
   }
 });
+
+test("ชื่อการค้าอังกฤษ: เหมาจ่าย Extra ต้องวงเล็บ Maochai Extra และ OPD เหมาจ่ายต้องวงเล็บ OPD Maochai", () => {
+  assert.equal(en.dict["เหมาจ่าย Extra"], "Flat-rate Extra (Maochai Extra)");
+  assert.match(en.dict["สัญญาเพิ่มเติม โอพีดี เหมาจ่าย"], /\(OPD Maochai\)/);
+  assert.match(en.dict["OPD เหมาจ่ายรายปี"], /\(OPD Maochai\)/);
+});
+
+test("PDF ตารางเบี้ยต้องต่อท้ายด้วยสรุปแผนและรายละเอียดเต็มของทุกแบบที่เลือก", () => {
+  assert.match(html, /function pdfPlanDetailIds\(inp\)/);
+  assert.match(html, /host\.insertAdjacentHTML\('beforeend', pdfPlanExtrasHtml\(inp\)\)/);
+  assert.match(html, /@page pdfportrait\{size:A4 portrait;/);
+  // ตารางเบี้ยต้องวัดความพอดีก่อนต่อรายละเอียด ไม่งั้นตารางในรายละเอียดจะถ่วงการย่ออักษร
+  const fit = html.indexOf("dgFitPrintTable(host, cols);\n  // วัดความพอดี");
+  assert.ok(fit > 0);
+});
