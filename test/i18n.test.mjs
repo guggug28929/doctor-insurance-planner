@@ -53,3 +53,10 @@ test("PDF ตารางเบี้ยต้องต่อท้ายด้�
   const fit = html.indexOf("dgFitPrintTable(host, cols);\n  // วัดความพอดี");
   assert.ok(fit > 0);
 });
+
+test("PDF: เหลือเฉพาะแผนย่อยที่ซื้อ มีลายน้ำและหมายเหตุท้ายทุกหน้า และข้อความ Care Plus ระบุยามุ่งเป้า/Immunotherapy", () => {
+  assert.match(html, /function pdfKeepTierColumns\(root, sel\)/);
+  assert.match(html, /<div class="pdf-watermark" aria-hidden="true">doctor-insurance\.com<\/div>/);
+  assert.match(html, /@bottom-center\{content:var\(--pdf-foot, none\)/);
+  assert.match(html, /ยามุ่งเป้า \(Targeted Therapy\) ยาภูมิคุ้มกันบำบัด \(Immunotherapy\) และค่าตรวจวินิจฉัย เช่น CT\/MRI\/PET Scan/);
+});

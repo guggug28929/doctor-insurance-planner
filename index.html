@@ -1876,7 +1876,7 @@
     body.dg-printing .print-doc tfoot{display:table-footer-group;}
     body.dg-printing .print-doc tr{page-break-inside:avoid;}
   }
-  @page{size:A4 landscape;margin:9mm 8mm;}
+  @page{size:A4 landscape;margin:9mm 8mm 13mm;}
 
   #printArea{display:none;}
   .print-doc{font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;}
@@ -1900,7 +1900,16 @@
   .print-foot{font-size:7.5pt;color:#7a6871;margin-top:3mm;line-height:1.6;}
   .print-sec-next{break-before:page;page-break-before:always;padding-top:2mm;}
   /* สรุปแผนและรายละเอียดแบบประกันท้ายไฟล์ PDF ใช้กระดาษแนวตั้งให้อ่านง่าย ตารางเบี้ยหน้าแรกยังเป็นแนวนอน */
-  @page pdfportrait{size:A4 portrait;margin:12mm 12mm 13mm;}
+  .pdf-watermark{display:none;}
+  @media print{
+    body.dg-printing .pdf-watermark{display:block;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-28deg);
+      font:800 54pt/1 "Anuphan","Noto Sans Thai",sans-serif;color:rgba(143,13,64,.07);white-space:nowrap;pointer-events:none;z-index:0;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+  /* หมายเหตุท้ายทุกหน้า ใช้กล่องขอบกระดาษของ @page ข้อความมาจากตัวแปร --pdf-foot ที่ตั้งตอนกดส่งออก
+     ตอนพิมพ์หน้าเว็บทั่วไปไม่มีตัวแปรนี้ จึงไม่มีหมายเหตุโผล่ */
+  @page{@bottom-center{content:var(--pdf-foot, none);font:7pt/1.4 "Anuphan","Noto Sans Thai",sans-serif;color:#8b7480;vertical-align:top;padding-top:2mm;}}
+  @page pdfportrait{size:A4 portrait;margin:12mm 12mm 16mm;}
   .pdf-extra{page:pdfportrait;font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;font-size:9.5pt;line-height:1.55;}
   .pdf-extra .pdf-summary, .pdf-extra .pdf-plan{break-before:page;page-break-before:always;}
   .pdf-extra h2{font-size:14pt;color:#8f0d40;margin:0 0 2mm;font-weight:800;}
@@ -7194,6 +7203,8 @@ function dgZip(files){
    แล้วต่อด้วยรายละเอียดเต็มของทุกแบบที่อยู่ในชุดนี้ (หมวดความคุ้มครอง โรคร้ายแรง เงื่อนไข ข้อยกเว้น)
    ดึงจาก PLAN_DETAILS ชุดเดียวกับหน้ารายละเอียดแผนบนเว็บ ไม่เขียนเนื้อหาซ้ำ
    ไม่ใส่ตารางอัตราเบี้ยของแต่ละแบบ เพราะตัวเลขของลูกค้ารายนี้อยู่ในตารางหน้าแรกแล้ว */
+// ลายน้ำและหมายเหตุท้ายหน้า ใช้ position:fixed ซึ่งตอนพิมพ์เบราว์เซอร์จะวาดซ้ำทุกหน้า
+const PDF_DISCLAIMER = 'เอกสารนี้เป็นสรุปย่อเพื่อประกอบการพิจารณาเบื้องต้นเท่านั้น ไม่ใช่สัญญาประกันภัย ความคุ้มครอง เงื่อนไข และข้อยกเว้นที่มีผลจริงให้ยึดตามกรมธรรม์ฉบับจริงที่บริษัทออกให้';
 function pdfPlanDetailIds(inp){
   const ids = [];
   const add = id => { if(id && PLAN_DETAILS[id] && !ids.includes(id)) ids.push(id); };
@@ -7225,7 +7236,7 @@ function pdfPlanDetailHtml(id){
   const p = PLAN_DETAILS[id];
   const safe = fn => { try{ return fn() || ''; }catch(e){ return ''; } };
   const list = (title, arr) => arr && arr.length ? `<h3>${title}</h3><ul>${arr.map(c => `<li>${c}</li>`).join('')}</ul>` : '';
-  return `<section class="pdf-plan">
+  return `<section class="pdf-plan" data-plan="${id}">
     <div class="pdf-plan-cat">${p.category || ''}</div>
     <h2>${p.title}</h2>
     ${p.overview ? `<p>${p.overview}</p>` : ''}
@@ -7235,6 +7246,48 @@ function pdfPlanDetailHtml(id){
     ${list('เงื่อนไขและข้อควรทราบ', p.conditions)}
     ${p.exclusions && p.exclusions.length ? `${list('ข้อยกเว้นความคุ้มครอง', p.exclusions)}${p.exclusionExtra ? safe(p.exclusionExtra) : ''}${p.exclusionNote ? `<p class="meta">${p.exclusionNote}</p>` : ''}` : ''}
   </section>`;
+}
+
+/* ในตารางความคุ้มครองของ PDF เหลือเฉพาะคอลัมน์แผนย่อยที่ลูกค้าซื้อ
+   เช่นซื้อ D Health Lite 5 ล้าน ก็ไม่ต้องโชว์คอลัมน์ 1 ล้าน ให้ลูกค้างง
+   เทียบจากจำนวนเงินในหัวคอลัมน์ (1 ล้าน = 1,000,000, 20M = 20,000,000, แผน 1 = 1) */
+function pdfTierAmount(text){
+  // หัวคอลัมน์อย่าง "แผน 1: 1 ล้านบาท/ครั้ง" มีทั้งเลขแผนและวงเงิน ให้ใช้ตัวที่มีหน่วยก่อน
+  const all = [...String(text).replace(/,/g, '').matchAll(/(\d+(?:\.\d+)?)\s*(ล้าน|M\b|k\b|แสน)?/g)];
+  if(!all.length) return null;
+  const m = all.find(x => x[2]) || all[all.length - 1];
+  const mult = {'ล้าน':1e6, 'M':1e6, 'k':1e3, 'แสน':1e5}[m[2]] || 1;
+  return Number(m[1]) * mult;
+}
+function pdfSelectedTier(id, inp){
+  const h = inp.healthList.find(x => x.type === id);
+  const v = {
+    dhl: h && pdfTierAmount(h.sum && h.sum.replace('m', 'M')),
+    ehp: h && pdfTierAmount(h.plan && h.plan.replace('m', 'M')),
+    maochai: h && pdfTierAmount(h.plan), ecp: h && pdfTierAmount(h.plan), hsn: h && pdfTierAmount(h.plan),
+    opd: (inp.opdList.find(o => o.type === 'krang') || {}).plan,
+    cancer: inp.useCancer && pdfTierAmount(String(inp.cancerPlan).replace('m', 'M')),
+    purecancer: inp.usePureCancer && pdfTierAmount(String(inp.pureCancerPlan).replace('m', 'M')),
+  }[id];
+  return v == null || v === false ? null : Number(v);
+}
+function pdfKeepTierColumns(root, sel){
+  if(sel == null || !isFinite(sel)) return;
+  root.querySelectorAll('table').forEach(t => {
+    const hr = t.tHead && t.tHead.rows.length ? t.tHead.rows[t.tHead.rows.length - 1] : t.rows[0];
+    if(!hr) return;
+    const head = [...hr.cells];
+    if(head.length < 3) return;
+    const keep = head.map((c, i) => i === 0 || pdfTierAmount(c.textContent) === sel);
+    const tiers = keep.slice(1);
+    if(tiers.every(Boolean) || !tiers.some(Boolean)) return;   // หาคอลัมน์ที่ตรงไม่เจอ ปล่อยตารางเต็มไว้ดีกว่าตัดผิด
+    const n = head.length, left = keep.filter(Boolean).length;
+    [...t.rows].forEach(r => {
+      const cs = [...r.cells];
+      if(cs.length === n) cs.forEach((c, i) => { if(!keep[i]) c.remove(); });
+      else if(cs.length === 1) cs[0].colSpan = left;
+    });
+  });
 }
 function pdfPlanExtrasHtml(inp){
   const card = document.querySelector('#contractSummary .content-card');
@@ -7293,7 +7346,8 @@ function exportPremiumTablePdf(){
     </section>`;
   }).join('');
 
-  host.innerHTML = `<div class="print-doc">${sections}
+  host.innerHTML = `<div class="pdf-watermark" aria-hidden="true">doctor-insurance.com</div>
+    <div class="print-doc">${sections}
       <div class="print-foot print-adjust-note">${plannerEscapeHtml(RIDER_PREMIUM_ADJUST_NOTE)}</div>
       <div class="print-foot">${plannerEscapeHtml(CONTENT_CREDIT)} ·
         สร้างเมื่อ ${new Date().toLocaleString('th-TH')} ·
@@ -7304,8 +7358,11 @@ function exportPremiumTablePdf(){
   // วัดความพอดีของตารางเบี้ยก่อน แล้วค่อยต่อสรุปและรายละเอียดแบบ เพื่อไม่ให้ตารางในรายละเอียดไปถ่วงการย่ออักษร
   host.insertAdjacentHTML('beforeend', pdfPlanExtrasHtml(inp));
   pdfCleanExtras(host.querySelector('.pdf-extra'));
+  host.querySelectorAll('.pdf-plan[data-plan]').forEach(sec => pdfKeepTierColumns(sec, pdfSelectedTier(sec.dataset.plan, inp)));
+  document.documentElement.style.setProperty('--pdf-foot', JSON.stringify((window.I18N ? I18N.t(PDF_DISCLAIMER) : PDF_DISCLAIMER) + ' · doctor-insurance.com'));
   document.body.classList.add('dg-printing');
   const cleanup = () => {
+    document.documentElement.style.removeProperty('--pdf-foot');
     document.body.classList.remove('dg-printing');
     host.innerHTML = '';
     window.removeEventListener('afterprint', cleanup);
@@ -7634,7 +7691,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   mainItem.coverage = `${mainItem.coverage} (${mainTerm})`;
   items.forEach(it => {
     if(it.name.startsWith('Care Plus')){
-      it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD)`;
+      it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD) รวมถึงยามุ่งเป้า (Targeted Therapy) ยาภูมิคุ้มกันบำบัด (Immunotherapy) และค่าตรวจวินิจฉัย เช่น CT/MRI/PET Scan ที่เกี่ยวกับโรคที่คุ้มครอง โดยไม่ต้องนอนโรงพยาบาล`;
     } else if(it.name.startsWith('D Care')){
       const d = inp.dcareSelections.find(cfg => it.name === 'D Care - '+cfg.label.split(' (')[0]);
       if(d){
