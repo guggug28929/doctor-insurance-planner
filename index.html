@@ -2,6 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<script>(function(){try{var q=new URLSearchParams(location.search).get('lang');var l=q||localStorage.getItem('lang');if(l==='en'){document.documentElement.classList.add('i18n-loading');document.documentElement.lang='en';setTimeout(function(){document.documentElement.classList.remove('i18n-loading')},3000);}}catch(e){}})();</script>
+<style>html.i18n-loading body{visibility:hidden}</style>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก DoctorGugInsurance</title>
 <meta name="description" content="คำนวณเบี้ยประกันสุขภาพและประกันชีวิตจากตารางจริงของเมืองไทยประกันชีวิต เทียบทุกแผนพร้อมข้อจำกัด และช่วยดูประวัติสุขภาพก่อนยื่น โดย นพ.หนึ่งบุรุษ เทียมถนอม แพทย์ที่เป็นตัวแทนประกันชีวิต">
@@ -126,6 +129,7 @@
     background:rgba(255,255,255,.06);
   }
   .hero-inner{max-width:1440px;margin:0 auto;position:relative;z-index:1;}
+
   .eyebrow{
     font-family:"Anuphan","Noto Sans Thai",sans-serif;
     font-size:.72rem;
@@ -2538,6 +2542,17 @@
   body:not(.hnw) .plan-card .cat{color:var(--gold);}
   /* ค้นหาทั้งเว็บ
      ปุ่มลอยมุมบนขวาให้เห็นได้จากทุกหน้า ไม่ผูกกับแถบเมนู เพราะแถบเมนูเลื่อนหายไปตอนอ่านเนื้อหายาว */
+  /* ปุ่มเปลี่ยนภาษา อยู่มุมขวาบนข้างปุ่มค้นหา ตำแหน่ง right ตั้งจาก JS ตามความกว้างปุ่มค้นหา */
+  .lang-toggle{position:fixed;top:14px;right:128px;z-index:1200;display:inline-flex;padding:3px;gap:2px;
+    border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(255,255,255,.16);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.18);}
+  .lang-toggle button{all:unset;cursor:pointer;font:700 13px/1 "Anuphan","Noto Sans Thai",sans-serif;letter-spacing:.04em;color:#fff;padding:8px 11px;border-radius:999px}
+  .lang-toggle button.on{background:#fff;color:#8f0d40}
+  .lang-toggle button:focus-visible{outline:2px solid #fff;outline-offset:1px}
+  body.ss-solid .lang-toggle{background:var(--pink-deep,#8f0d40);border-color:rgba(255,255,255,.25);}
+  body.hnw.ss-solid .lang-toggle{background:#1d1d20;border-color:var(--gold,#c9a227);}
+  @media(max-width:640px){ html.lang-en .hero .eyebrow, .hero .eyebrow{padding-right:150px} .lang-toggle{top:10px;right:60px;} .lang-toggle button{padding:7px 9px;font-size:12px} }
+  @media print{ .lang-toggle{display:none !important;} }
   .ss-btn{position:fixed;top:14px;right:14px;z-index:1200;display:flex;align-items:center;gap:7px;
     padding:9px 15px 9px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;
     background:rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -2760,6 +2775,7 @@
 </head>
 <body>
 
+<div class="lang-toggle" id="langToggle" role="group" aria-label="Language"><button type="button" data-lang="th" lang="th">TH</button><button type="button" data-lang="en" lang="en">EN</button></div>
 <button type="button" class="ss-btn" onclick="openSiteSearch()" aria-label="ค้นหาทั้งเว็บ">
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.4" y1="16.4" x2="21.5" y2="21.5"></line></svg>
   <span class="ss-btn-t">ค้นหา</span>
@@ -4731,7 +4747,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-13b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-14a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -18579,11 +18595,12 @@ let DATA=[],META={},ENTITIES=[],CURRENT=[];
 function normalize(s){return String(s||'').normalize('NFKC').toLowerCase().replace(/[\s\-.,()\/&’'"ฯ:]/g,'').replace(/โรงพยาบาล|รพ\.|hospital|\(รัฐบาล\)/g,'');}
 function boolOf(rows,k){return rows.some(r=>r[k]===true)?true:rows.some(r=>r[k]==null)?null:false;}
 function summary(rows){return {individual:boolOf(rows,'individual'),group:boolOf(rows,'group'),special:[...new Set(rows.map(r=>r.special).filter(Boolean))],checkup:rows.every(r=>r.relation==='checkup')};}
-function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
+function hnName(e){if(!(window.I18N&&I18N.lang==='en'&&e.en))return e.name;let n=e.en;if(n===n.toUpperCase())n=n.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());if(e.type==='hospital'&&!/hospital|clinic|medical|center|centre|institute/i.test(n))n+=' Hospital';return n;}
+function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);if(r.english_name&&!e.en)e.en=r.english_name.trim();e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
 function matchesRow(rows){const s=summary(rows);return (state.policy==='all'||state.policy==='both'&&s.individual===true&&s.group===true||state.policy==='individual'&&s.individual===true||state.policy==='group'&&s.group===true||state.policy==='group_only'&&s.group===true&&s.individual===false)&&(!state.special||s.special.length>0);}
 function selectEntities(){const q=normalize(state.query);return ENTITIES.filter(e=>(!q||e.search.includes(q))&&(!state.province||e.province===state.province)&&(state.allFacilities||e.type==='hospital')&&Object.entries(e.companies).some(([id,rows])=>(!state.company.size||state.company.has(id))&&matchesRow(rows))).sort((a,b)=>{if(q){let ae=a.aliases.some(n=>normalize(n)===q),be=b.aliases.some(n=>normalize(n)===q);if(ae!==be)return ae?-1:1;}return b.count-a.count||a.name.localeCompare(b.name,'th');});}
 function render(){CURRENT=selectEntities();$('#hnResultsTitle').textContent=state.query?`ผลค้นหา “${state.query}”`:'รายชื่อโรงพยาบาล';$('#hnResultCount').textContent=`พบ ${CURRENT.length.toLocaleString('th-TH')} สถานพยาบาล${state.province?' ใน'+state.province:''} · จาก ${COMPANIES.length} บริษัทประกัน`;
-$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(e.name)}"><div class="hn-card-upper"><span class="hn-province-tag">${esc(e.province)}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3>${esc(e.name)}</h3><p class="hn-address">${esc(e.address||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
+$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(hnName(e))}"><div class="hn-card-upper"><span class="hn-province-tag">${esc(e.province)}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3 data-noi18n>${esc(hnName(e))}</h3><p class="hn-address"${e.address?' data-noi18n':''}>${esc(e.address||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
 function eligibility(v,checkup){if(checkup)return '<span class="hn-pill hn-dim">ตรวจสุขภาพเท่านั้น</span>';return v===true?'<span class="hn-pill">✓ มีข้อมูลรับสิทธิ</span>':v===false?'<span class="hn-pill hn-dim">ไม่ระบุรับสิทธิในรายการ</span>':'<span class="hn-pill hn-dim">ยังไม่ระบุ</span>';}
 function detail(index){const e=ENTITIES[index];$('#hnDetailName').textContent=e.name;$('#hnDetailLocation').textContent=e.province+(e.type!=='hospital'?' · คลินิก / บริการอื่น':'');$('#hnDetailBody').innerHTML=`<div class="hn-detail-content"><div class="hn-matrix-wrap"><table class="hn-matrix"><thead><tr><th>บริษัทประกัน</th><th>รายชื่อคู่สัญญา</th><th>ประกันเดี่ยว</th><th>ประกันกลุ่ม</th><th>เครือข่ายพิเศษ</th></tr></thead><tbody>${COMPANIES.map(c=>{const rows=e.companies[c.id];if(!rows)return `<tr><td style="color:${c.color}">${c.name}</td><td colspan="4"><span class="hn-pill hn-dim">ไม่พบในชุดข้อมูล</span><small class="hn-row-source">อาจใช้ชื่อหรือสาขาต่างกัน โปรดตรวจฐานทางการเพิ่มเติม</small></td></tr>`;const s=summary(rows);return `<tr><td style="color:${c.color}">${c.name}</td><td><span class="hn-pill ${s.checkup?'hn-dim':''}">${s.checkup?'ตรวจสุขภาพ':'✓ พบรายชื่อ'}</span><small class="hn-row-source">${s.group===true&&s.individual===false?'กลุ่มเท่านั้นตามรายการ<br>':''}ข้อมูล ${esc(rows[0].source_date||'ไม่ระบุวันที่')}</small></td><td>${eligibility(s.individual,s.checkup)}</td><td>${eligibility(s.group,s.checkup)}</td><td>${s.special.length?s.special.map(n=>`<span class="hn-pill hn-special">${esc(n)}</span>`).join('<br>'):'<span class="hn-row-source">ไม่พบสถานะพิเศษในชุดข้อมูล</span>'}</td></tr>`;}).join('')}</tbody></table></div><p class="hn-detail-note">สิทธิที่แสดงเป็นข้อมูลในรายชื่อบริษัท ไม่ใช่การตรวจสิทธิรายกรมธรรม์ บริการ IPD / OPD และขอบเขตแผนประกันอาจแตกต่างกัน อ่านข้อความต้นทางด้านล่างก่อนใช้บริการ</p><div class="hn-evidence"><h3>รายละเอียดจากแต่ละบริษัท</h3>${COMPANIES.filter(c=>e.companies[c.id]).map(c=>`<details><summary><span style="color:${c.color}">${c.name}</span> · ${esc(c.full)} (${e.companies[c.id].length} รายการอ้างอิง)</summary>${e.companies[c.id].map(r=>`<div class="hn-evidence-meta"><b>ชื่อในฐานต้นทาง:</b> ${esc(r.name)}<br><b>สิทธิ / บริการ:</b> ${esc(Array.isArray(r.services)?r.services.join(', '):r.services||'ไม่ระบุ')}${r.individual_services?'<br><b>บริการประกันเดี่ยว:</b> '+esc(r.individual_services.join(', ')||'ไม่ระบุ'):''}${r.group_services?'<br><b>บริการประกันกลุ่ม:</b> '+esc(r.group_services.join(', ')||'ไม่ระบุ'):''}${r.special_basis?'<br><b>ที่มาสถานะพิเศษ:</b> '+esc(r.special_basis):''}${r.address?'<br><b>ที่อยู่:</b> '+esc(r.address):''}${r.phone?'<br><b>โทรศัพท์:</b> '+esc(r.phone):''}${r.notes?'<br><b>หมายเหตุ:</b> '+esc(r.notes):''}<br>${r.source_page?'<b>หน้าเอกสาร:</b> '+esc(r.source_page)+'<br>':''}<b>วันที่ข้อมูล / วันที่ดึง:</b> ${esc(r.source_date||'ไม่ระบุ')}<br><a href="${esc(r.source_url)}" target="_blank" rel="noopener">เปิดแหล่งข้อมูลทางการ ↗</a></div>`).join('<hr>')}</details>`).join('')}</div></div>`;$('#hnDetail').showModal();}
 function sources(){const items=META.sources||[];$('#hnSpecialNote').innerHTML=META.special_note||'';$('#hnSourceList').innerHTML=items.map(s=>`<article class="hn-source-item"><span class="hn-count">${s.records.toLocaleString()} รายการ</span><h3>${esc(s.name)}</h3><p>${esc(s.description||'')}<br>ข้อมูล / วันที่ดึง: ${esc(s.date||'ไม่ระบุ')}</p><a href="${esc(s.url)}" target="_blank" rel="noopener">เว็บไซต์หรือเอกสารทางการ ↗</a>${s.additional_url?` · <a href="${esc(s.additional_url)}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a>`:''}</article>`).join('');$('#hnSources').showModal();}
@@ -19813,7 +19830,7 @@ const COL_REORDER = {
     if(n < 3) return false;
     if(t.closest('[data-reorder]')) return true;
     if(t.matches('.cmp, .xw-table, .benefit-table')) return true;
-    return /^(หัวข้อ|หมวดความคุ้มครอง|หัวข้อเปรียบเทียบ)$/.test(firstHeadText(t));
+    return /^(หัวข้อ|หมวดความคุ้มครอง|หัวข้อเปรียบเทียบ|Item|Coverage category|Comparison item)$/.test(firstHeadText(t));
   }
   // แถวที่จำนวนเซลล์ไม่เท่าหัวตาราง (ยกเว้นแถวหัวข้อกลุ่มที่มีเซลล์เดียว) ทำให้สลับไม่ได้อย่างปลอดภัย
   function movableRows(t){
@@ -22393,5 +22410,142 @@ ssSyncBtnSkin();
   </div>
   <button type="button" class="cd-btn" onclick="dgJumpToSummary()">ดูสรุปทั้งหมด</button>
 </div>
+<script>
+/* ===== ภาษาอังกฤษ (TH/EN) =====
+   หน้าเว็บเขียนเป็นภาษาไทยทั้งหมด ตอนเลือก EN จะโหลดพจนานุกรม data/i18n-en.json
+   แล้วแปลข้อความบนหน้าจอทีละโหนด (ตรงตัวก่อน แล้วค่อยใช้กฎแบบมีตัวเลข)
+   และคอยแปลส่วนที่ render ใหม่ด้วย MutationObserver
+   ข้อความที่ห้ามแปล เช่น ชื่อ/ที่อยู่โรงพยาบาล ใส่ data-noi18n
+   กลับเป็นภาษาไทยด้วยการโหลดหน้าใหม่ จึงไม่ต้องเก็บข้อความเดิมไว้ */
+window.I18N = (function(){
+  const TH = /[฀-๿]/;
+  const SKIP_TAGS = {SCRIPT:1, STYLE:1, NOSCRIPT:1, TEXTAREA:1, CODE:1, PRE:1};
+  const ATTRS = ['placeholder','title','aria-label','alt'];
+  let lang = 'th', dict = null, rules = [], observer = null;
+  const params = new URLSearchParams(location.search);
+  const q = params.get('lang');
+  try{ if(q === 'en' || q === 'th') localStorage.setItem('lang', q); lang = (q || localStorage.getItem('lang')) === 'en' ? 'en' : 'th'; }catch(e){ lang = q === 'en' ? 'en' : 'th'; }
+
+  function norm(s){ return s.replace(/\s+/g,' ').trim(); }
+  function tr(s){
+    const k = norm(s);
+    if(!k || !TH.test(k)) return null;
+    const whole = trOne(k);
+    if(whole != null) return whole;
+    // ข้อความยาวที่ต่อกันด้วย • หรือ · (เช่นสรุปแผนในหน้าคำนวณ) แปลทีละท่อนแล้วต่อกลับ
+    for(const sep of [' • ', ' · ', ' | ', '; ']){
+      if(k.indexOf(sep) < 0) continue;
+      const parts = k.split(sep).map(p => TH.test(p) ? trOne(p.trim()) : p);
+      if(parts.every(p => p != null)) return parts.join(sep);
+    }
+    return null;
+  }
+  function trOne(k){
+    if(Object.prototype.hasOwnProperty.call(dict, k)) return dict[k];
+    let out = k;
+    for(const [re, rep] of rules){ if(re.test(out)){ re.lastIndex = 0; out = out.replace(re, rep); } re.lastIndex = 0; }
+    out = out.replace(/\s{2,}/g,' ').replace(/\s+([,.):;])/g,'$1').replace(/\(\s+/g,'(').replace(/\s+\/(?=[A-Za-z])/g,'/').replace(/,(?=\s*[•·|])/g,'').trim();
+    if(TH.test(out)) return null;   // แปลได้ไม่ครบ คงภาษาไทยไว้ดีกว่าปนสองภาษา
+    if(/^[a-z]/.test(out) && !/^[a-z]/.test(k)) out = out[0].toUpperCase() + out.slice(1);
+    return out;
+  }
+  function skip(el){
+    for(let e = el; e && e !== document.body; e = e.parentElement){
+      if(SKIP_TAGS[e.tagName] || e.hasAttribute('data-noi18n') || e.isContentEditable) return true;
+    }
+    return false;
+  }
+  function doText(n){
+    const v = n.nodeValue;
+    if(!v || !TH.test(v)) return;
+    const p = n.parentElement;
+    if(!p || skip(p)) return;
+    const out = tr(v);
+    if(out == null) return;
+    // <option> ที่ไม่มี value ใช้ข้อความเป็นค่า ต้องเก็บค่าภาษาไทยไว้ก่อนเปลี่ยนข้อความ
+    if(p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', p.textContent);
+    let lead = v.match(/^\s*/)[0], trail = v.match(/\s*$/)[0];
+    // ภาษาไทยไม่เว้นวรรคระหว่างข้อความกับแท็กข้าง ๆ แต่ภาษาอังกฤษต้องเว้น
+    if(!trail && n.nextSibling && !/^[\s,.:;)!?]/.test(n.nextSibling.textContent || '') && !/[\s(\/–-]$/.test(out)) trail = ' ';
+    if(!lead && n.previousSibling && !/[\s(\/]$/.test(n.previousSibling.textContent || '') && !/^[\s,.:;)!?\/–-]/.test(out)) lead = ' ';
+    n.nodeValue = lead + out + trail;
+  }
+  function doAttrs(el){
+    if(el.tagName !== 'TEXTAREA' && skip(el)) return;
+    for(const a of ATTRS){
+      const v = el.getAttribute(a);
+      if(v && TH.test(v)){ const out = tr(v); if(out != null) el.setAttribute(a, out); }
+    }
+    if(el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit') && TH.test(el.value)){ const out = tr(el.value); if(out != null) el.value = out; }
+  }
+  function walk(root){
+    if(!root) return;
+    if(root.nodeType === 3){ doText(root); return; }
+    if(root.nodeType !== 1 || SKIP_TAGS[root.tagName]) return;
+    doAttrs(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let n;
+    while((n = w.nextNode())){
+      if(n.nodeType === 3) doText(n); else doAttrs(n);
+    }
+  }
+  function start(){
+    walk(document.body);
+    if(TH.test(document.title)){ const t = tr(document.title); if(t) document.title = t; }
+    observer = new MutationObserver(muts => {
+      observer.disconnect();
+      for(const m of muts){
+        if(m.type === 'characterData') doText(m.target);
+        else if(m.type === 'attributes') doAttrs(m.target);
+        else m.addedNodes.forEach(walk);
+      }
+      observe();
+    });
+    observe();
+  }
+  function observe(){ observer.observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:ATTRS}); }
+  function load(){
+    return fetch('/data/i18n-en.json?v=' + (typeof DATA_VERSION !== 'undefined' ? DATA_VERSION : '1')).then(r => { if(!r.ok) throw Error(); return r.json(); }).then(j => {
+      dict = j.dict;
+      rules = j.rules.map(([src, rep]) => [new RegExp(src, 'g'), rep]);
+    });
+  }
+  function apply(){
+    document.documentElement.lang = 'en';
+    document.documentElement.classList.add('lang-en');
+    return load().then(start).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
+  }
+  function set(next){
+    if(next === lang) return;
+    try{ localStorage.setItem('lang', next); }catch(e){}
+    const u = new URL(location.href); u.searchParams.delete('lang');
+    if(next === 'th'){ history.replaceState(null, '', u); location.reload(); return; }
+    history.replaceState(null, '', u);
+    lang = 'en'; syncButtons(); apply();
+  }
+  function place(){
+    const t = document.getElementById('langToggle'), b = document.querySelector('.ss-btn');
+    if(!t || !b) return;
+    const r = b.getBoundingClientRect();
+    if(r.width) t.style.right = Math.round(window.innerWidth - r.left + 8) + 'px';
+  }
+  window.addEventListener('resize', place);
+  window.addEventListener('load', place);
+  function syncButtons(){
+    place(); setTimeout(place, 300);
+    document.querySelectorAll('#langToggle button').forEach(b => {
+      const on = b.dataset.lang === lang;
+      b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('#langToggle button');
+    if(b) set(b.dataset.lang);
+  });
+  syncButtons();
+  if(lang === 'en') apply();
+  return { get lang(){ return lang; }, t: s => (lang === 'en' && dict ? (tr(s) ?? s) : s), set };
+})();
+</script>
 </body>
 </html>
