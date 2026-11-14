@@ -1876,7 +1876,7 @@
     body.dg-printing .print-doc tfoot{display:table-footer-group;}
     body.dg-printing .print-doc tr{page-break-inside:avoid;}
   }
-  @page{size:A4 landscape;margin:9mm 8mm 13mm;}
+  @page{size:A4 landscape;margin:9mm 8mm;}
 
   #printArea{display:none;}
   .print-doc{font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;}
@@ -1908,7 +1908,7 @@
   }
   /* หมายเหตุท้ายทุกหน้า ใช้กล่องขอบกระดาษของ @page ข้อความมาจากตัวแปร --pdf-foot ที่ตั้งตอนกดส่งออก
      ตอนพิมพ์หน้าเว็บทั่วไปไม่มีตัวแปรนี้ จึงไม่มีหมายเหตุโผล่ */
-  @page{@bottom-center{content:var(--pdf-foot, none);font:7pt/1.4 "Anuphan","Noto Sans Thai",sans-serif;color:#8b7480;vertical-align:top;padding-top:2mm;}}
+  @page{@bottom-center{content:var(--pdf-foot, none);font:7pt/1.4 "Anuphan","Noto Sans Thai",sans-serif;color:#8b7480;vertical-align:middle;}}
   @page pdfportrait{size:A4 portrait;margin:12mm 12mm 16mm;}
   .pdf-extra{page:pdfportrait;font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;font-size:9.5pt;line-height:1.55;}
   .pdf-extra .pdf-summary, .pdf-extra .pdf-plan{break-before:page;page-break-before:always;}
