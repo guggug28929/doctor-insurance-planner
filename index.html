@@ -2240,6 +2240,8 @@
     background:var(--pink);color:#fff;
     padding:5px 42px;font-size:.68rem;font-weight:700;
   }
+html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
+
   .ai-plan-card h3{
     font-family:"Anuphan","Noto Sans Thai",sans-serif;
     color:var(--pink-deep);
@@ -4776,7 +4778,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-14c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-14d';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -7733,6 +7735,36 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     'ผ่อน 0% สูงสุด 10 เดือน และรับเครดิตเงินคืนตามเงื่อนไขบัตรเครดิตที่ร่วมรายการ',
     'ดูรายละเอียด: https://www.muangthai.co.th/th/campaign/promotion'
   ].join('\n');
+  // ภาษาอังกฤษ: ข้อความสำหรับคัดลอกอยู่ใน textarea ซึ่งตัวแปลไม่แตะ จึงสร้างฉบับอังกฤษแยก
+  const enUrl = u => u + (u.includes('?') ? '&' : '?') + 'lang=en';
+  const enPrem = v => i18nT(displayPremium(v));
+  const summaryLinesEn = !i18nEN() ? '' : [
+    `👤 ${gender==='m'?'Male':'Female'} | Age ${entryAge} | ${i18nT(paymentInfo.label)} payment`,
+    '',
+    '━━━━━━━━━━━━━━━━',
+    '📋 Plan details',
+    `  ✓ Base policy: ${i18nT(mainLabel)} | Sum assured: ${fmt(inp.mainCapital)} THB`,
+    `    Premium ${enPrem(mainItem.premium)}`,
+    `    📌 ${i18nT(mainItem.coverage)}`,
+    `Details >> ${enUrl(mainItem.detailUrl)}`,
+    ...items.flatMap(it => [``, `  ✓ ${i18nT(it.name)}`, `    Premium ${enPrem(it.premium)}`, `    📌 ${i18nT(it.coverage)}`, `Details >> ${enUrl(it.detailUrl)}`]),
+    '',
+    'Note: rider premiums may increase with the insured\'s age (reflecting risk and inflation), and premiums must be paid continuously for as long as cover is needed',
+    '',
+    '━━━━━━━━━━━━━━━━',
+    paymentInfo.periods === 1
+      ? `💳 Premium ${fmt(totalY1)} THB/year (about ${fmt(Math.round(totalY1 / 365))} THB a day)`
+      : `💳 Total premium for all plans ${fmt(totalY1)} THB/${i18nT(paymentUnitLabel)}`,
+    '',
+    'Feel free to ask for more details or a quotation',
+    '',
+    'Frequently asked insurance questions',
+    'https://www.doctor-insurance.com/health-knowledge?lang=en',
+    '━━━━━━━━━━━━━━━━',
+    '💳 Special offers',
+    '0% installments for up to 10 months, plus cashback per the participating credit card conditions',
+    'Details: https://www.muangthai.co.th/th/campaign/promotion'
+  ].join('\n');
 
   // combined critical-illness coverage across every CI-related rider chosen
   const ciLines = [];
@@ -7777,7 +7809,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       <div class="copy-summary-actions"><button type="button" class="btn" onclick="copyContractSummary()">คัดลอกข้อความ</button></div>
     </div>
   `;
-  document.getElementById('copySummaryText').value = summaryLines;
+  document.getElementById('copySummaryText').value = summaryLinesEn || summaryLines;
 
   renderAdvisor(inp, rows, items, mainItem, totalY1, entryAge);
 }
@@ -12860,7 +12892,7 @@ function renderLifeAdvisorResult(){
              <li>${o.coversGap ? 'ปิดช่องว่างได้ครบ' : 'ยังปิดช่องว่างไม่ครบ'}</li>`}
       </ul>
       ${warn}
-      <div class="ai-note">${o.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>
+      <div class="ai-note">${o.why.map(w=>`• ${plannerEscapeHtml(w).replace(/&lt;(\/?)b&gt;/g,'<$1b>')}`).join('<br>')}</div>
       <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyLifeOption(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
     </div>`;
   }).join('');
@@ -22660,7 +22692,7 @@ window.I18N = (function(){
   function apply(){
     document.documentElement.lang = 'en';
     document.documentElement.classList.add('lang-en');
-    return load().then(start).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
+    return load().then(start).then(() => { try{ if(document.getElementById('copySummaryText') && typeof renderAll === 'function') renderAll(); }catch(e){} }).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
   }
   function set(next){
     if(next === lang) return;

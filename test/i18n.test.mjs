@@ -76,3 +76,14 @@ test("EN เฟส 3: คำถามที่พบบ่อยและบท�
   assert.ok(en.dict["วิธีเลือกประกันสุขภาพ ให้จ่ายเบี้ยตรงกับความเสี่ยงจริง"]);
   assert.ok(Object.keys(en.dict).length > 8000);
 });
+
+test("EN เฟส 4: ผู้ช่วยจัดแผน อุบัติเหตุ HNW และข้อความสรุปสำหรับคัดลอก", () => {
+  assert.equal(en.dict["ประกันอุบัติเหตุ"], "Accident insurance");
+  assert.equal(en.dict["แบบประกันสำหรับผู้มีสินทรัพย์สูง"], "Plans for high-net-worth individuals");
+  assert.equal(en.dict["ผู้ช่วยออกแบบแผนประกันสุขภาพ"], "Health insurance plan design assistant");
+  assert.ok(en.rules.some(([src]) => src.startsWith("^ข้อเสนอหลัก — ")));
+  // ข้อความคัดลอกอยู่ใน textarea ซึ่งตัวแปลไม่แตะ ต้องมีฉบับอังกฤษแยก
+  assert.match(html, /const summaryLinesEn = !i18nEN\(\) \? '' : \[/);
+  assert.match(html, /\.value = summaryLinesEn \|\| summaryLines;/);
+  assert.match(html, /html\.lang-en \.ai-plan-card\.recommended::before\{content:"Top pick";\}/);
+});
