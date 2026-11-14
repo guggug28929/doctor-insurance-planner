@@ -4776,7 +4776,7 @@
 
 
 <script>
-const DATA_VERSION = '2026-11-14a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-14b';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6903,7 +6903,7 @@ async function exportPremiumTableExcel(){
     return;
   }
   const inp = readInputs();
-  const title = `ตารางเบี้ยประกัน ${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)}`;
+  const title = i18nEN() ? `Premium table: ${i18nT(mainPlanDisplayName(inp.mainPlan, inp.mainCapital))}` : `ตารางเบี้ยประกัน ${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)}`;
   const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
   const healthLabels = inp.healthList.map(cfg => {
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
@@ -7204,6 +7204,8 @@ function dgZip(files){
    ดึงจาก PLAN_DETAILS ชุดเดียวกับหน้ารายละเอียดแผนบนเว็บ ไม่เขียนเนื้อหาซ้ำ
    ไม่ใส่ตารางอัตราเบี้ยของแต่ละแบบ เพราะตัวเลขของลูกค้ารายนี้อยู่ในตารางหน้าแรกแล้ว */
 // ลายน้ำและหมายเหตุท้ายหน้า ใช้ position:fixed ซึ่งตอนพิมพ์เบราว์เซอร์จะวาดซ้ำทุกหน้า
+function i18nEN(){ return !!(window.I18N && I18N.lang === 'en'); }
+function i18nT(x){ return window.I18N ? I18N.t(x) : x; }
 const PDF_DISCLAIMER = 'เอกสารนี้เป็นสรุปย่อเพื่อประกอบการพิจารณาเบื้องต้นเท่านั้น ไม่ใช่สัญญาประกันภัย ความคุ้มครอง เงื่อนไข และข้อยกเว้นที่มีผลจริงให้ยึดตามกรมธรรม์ฉบับจริงที่บริษัทออกให้';
 function pdfPlanDetailIds(inp){
   const ids = [];
@@ -7293,7 +7295,7 @@ function pdfPlanExtrasHtml(inp){
   const card = document.querySelector('#contractSummary .content-card');
   const ids = pdfPlanDetailIds(inp);
   const summary = card ? `<section class="pdf-summary">${card.innerHTML}
-    ${ids.length ? `<p class="meta">หน้าถัดไปเป็นรายละเอียดเต็มของแต่ละแบบตามลำดับนี้: ${ids.map(id => PLAN_DETAILS[id].title.replace(/<[^>]+>/g, '')).join(' · ')}</p>` : ''}</section>` : '';
+    ${ids.length ? `<p class="meta">${i18nEN() ? 'The following pages give the full details of each plan in this order:' : 'หน้าถัดไปเป็นรายละเอียดเต็มของแต่ละแบบตามลำดับนี้:'} ${ids.map(id => i18nT(PLAN_DETAILS[id].title.replace(/<[^>]+>/g, '').trim())).join(' · ')}</p>` : ''}</section>` : '';
   return `<div class="pdf-extra">${summary}${ids.map(pdfPlanDetailHtml).join('')}</div>`;
 }
 /* เนื้อหาบนเว็บมีปุ่ม ช่องกรอก และกล่องพับ ซึ่งในกระดาษใช้ไม่ได้ จึงกางทุกกล่องและเอาส่วนที่กดได้ออก */
@@ -7339,7 +7341,7 @@ function exportPremiumTablePdf(){
       `<td class="${(r[ci] || {}).cls || ''}">${plannerEscapeHtml((r[ci] || {}).text || '')}</td>`).join('') + '</tr>').join('');
     return `<section class="print-sec${i ? ' print-sec-next' : ''}">
       <div class="print-head">
-        <div class="print-title">ตารางเบี้ยประกัน ${plannerEscapeHtml(mainLabel)}${many ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}</div>
+        <div class="print-title">${i18nEN() ? `Premium table: ${plannerEscapeHtml(i18nT(mainLabel))}${many ? ` (set ${i+1} of ${groups.length})` : ''}` : `ตารางเบี้ยประกัน ${plannerEscapeHtml(mainLabel)}${many ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}`}</div>
         <div class="print-meta">${plannerEscapeHtml(metaLine)}${many ? ' · คอลัมน์เยอะเกินหน้ากระดาษ จึงแบ่งเป็นชุด โดยมีอายุและปีกรมธรรม์กำกับทุกชุด' : ''}</div>
       </div>
       <table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>

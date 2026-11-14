@@ -60,3 +60,12 @@ test("PDF: เหลือเฉพาะแผนย่อยที่ซื้
   assert.match(html, /@bottom-center\{content:var\(--pdf-foot, none\)/);
   assert.match(html, /ยามุ่งเป้า \(Targeted Therapy\) ยาภูมิคุ้มกันบำบัด \(Immunotherapy\) และค่าตรวจวินิจฉัย เช่น CT\/MRI\/PET Scan/);
 });
+
+test("EN เฟส 2: หน้ารายละเอียดแผนและหัว PDF แปลครบ", () => {
+  const j = en;
+  assert.ok(Object.keys(j.dict).length > 5000);
+  assert.equal(j.dict["มะเร็ง + ไตวายเรื้อรัง (Care Plus)"], "Cancer + chronic kidney failure (Care Plus)");
+  assert.ok(j.rules.some(([src]) => src.startsWith("^อายุเริ่มทำสัญญา")));
+  assert.match(html, /function i18nEN\(\)/);
+  assert.match(html, /Premium table: \$\{plannerEscapeHtml\(i18nT\(mainLabel\)\)\}/);
+});
