@@ -131,5 +131,12 @@ test("เปรียบเทียบประกันสุขภาพม�
   const blk = html.slice(i, html.indexOf("  careplus: {", i));
   assert.match(blk, /const b = RATES\.hsn\.benefits/);
   assert.match(blk, /healthRiderPremium\(Object\.assign\(\{type:'hsn'\}, cfg\)/);
-  for (const k of ["n1", "n2", "n3", "n4", "n6", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
+  for (const k of ["n1", "n2", "n3", "n4", "n6_1", "n6_2", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
+});
+
+test("เทียบแผนชีวิต: เฟล็กซี่ 99/5 และ 99/20 ขึ้นว่าแปลงทุนชีวิตเป็นค่ารักษาได้", () => {
+  assert.match(html, /\{key:'medical', label:'แปลงทุนชีวิตเป็นค่ารักษา'\}/);
+  const blk = k => html.slice(html.indexOf(`  ${k}: {title:`), html.indexOf("}},", html.indexOf(`  ${k}: {title:`)));
+  for (const k of ["flexi995", "flexi9920"]) assert.match(blk(k), /medical:'<b>ได้<\/b> ตั้งแต่อายุ 65 ปี/);
+  assert.match(blk("flexi995"), /entry:'30 วัน – 55 ปี'/);
 });
