@@ -3,14 +3,14 @@ const dir=new URL('../data/hospital-network/',import.meta.url);
 const meta=JSON.parse(fs.readFileSync(new URL('meta.json',dir),'utf8'));
 const rows=meta.companies.flatMap(c=>JSON.parse(fs.readFileSync(new URL(c.id+'.json',dir),'utf8')));
 test('ข้อมูลครบทุกแถวและทุกบริษัท',()=>{
-  assert.equal(meta.companies.length,13);
-  assert.equal(rows.length,9657);
+  assert.equal(meta.companies.length,15);
+  assert.equal(rows.length,10981);
 });
-test('ศรีนครินทร์ มข. รวมเป็นที่เดียวครบ 13 บริษัท',()=>{
+test('ศรีนครินทร์ มข. รวมเป็นที่เดียวครบ 15 บริษัท',()=>{
   const keys=new Set(rows.filter(r=>r.province==='ขอนแก่น'&&/ศรีนครินทร์|srinagarind/i.test(r.name)).map(r=>r.entity_key));
   assert.equal(keys.size,1);
   const ins=new Set(rows.filter(r=>keys.has(r.entity_key)).map(r=>r.insurer));
-  assert.equal(ins.size,13);
+  assert.equal(ins.size,15);
 });
 const keyOf=(prov,re)=>new Set(rows.filter(r=>r.province===prov&&re.test(r.name)).map(r=>r.entity_key));
 test('ชื่อต่างกันแต่เป็น รพ. เดียวกัน ต้องรวมเป็นการ์ดเดียว',()=>{
@@ -47,4 +47,22 @@ test('บริษัทเดียวกันไม่มีสองแถ�
 test('เปาโลเกษตรกับคลินิกเปาโลโชคชัย 4 ไม่ปนกัน',()=>{
   const k=rows.filter(r=>/เปาโล\s*เกษตร/.test(r.name)).map(r=>r.entity_key);
   assert.ok(rows.filter(r=>k.includes(r.entity_key)).every(r=>!/โชคชัย/.test(r.name)));
+});
+
+test('อาคเนย์ (SE Life) แยกรายบุคคล/กลุ่ม และทิพยฯ (Tip Life) ไม่สรุปสิทธิเดี่ยว/กลุ่มเอง',()=>{
+  const se=rows.filter(r=>r.insurer==='SELife'), tip=rows.filter(r=>r.insurer==='TipLife');
+  assert.equal(se.length,672); assert.equal(tip.length,652);
+  assert.ok(se.every(r=>typeof r.individual==='boolean'&&typeof r.group==='boolean'&&(r.individual||r.group)));
+  assert.ok(se.filter(r=>r.individual).every(r=>Array.isArray(r.individual_services)));
+  assert.ok(tip.every(r=>r.individual===null&&r.group===null));
+  assert.ok([...se,...tip].every(r=>!/muangthai/i.test(r.source_url)));
+  const ids=new Set(meta.sources.map(s=>s.id)); assert.ok(ids.has('SELife')&&ids.has('TipLife'));
+});
+test('ชื่อเดิม/ชื่อใหม่ของ รพ. จากอาคเนย์และทิพยฯ รวมการ์ดกับบริษัทอื่น',()=>{
+  const k=(ins,re)=>new Set(rows.filter(r=>r.insurer===ins&&re.test(r.name)).map(r=>r.entity_key));
+  const one=(a,b)=>{assert.equal(a.size,1);assert.deepEqual([...a],[...b]);};
+  one(k('SELife',/^โรงพยาบาลพีเอ็มจี$/),k('TipLife',/^โรงพยาบาลพีเอ็มจี/));
+  assert.ok(rows.some(r=>r.insurer==='SELife'&&/พีเอ็มจี/.test(r.name)&&/พระราม 2/.test(r.notes)));
+  one(k('SELife',/เสรีรักษ์/),keyOf('กรุงเทพมหานคร',/สินแพทย์\s*เสรีรักษ์/));
+  one(k('TipLife',/เปาโลเมโมเรียลเกษตร/),keyOf('กรุงเทพมหานคร',/^(โรงพยาบาล)?เปาโล\s*เกษตร$/));
 });
