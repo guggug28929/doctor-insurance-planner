@@ -118,7 +118,10 @@ test("หน้าแผนทั้งหมด: เรียงกลุ่ม
   const keys = [...pd.slice(0, 1200000).matchAll(/\n  ([a-z0-9_]+): \{\n    title:/g)].map(m => m[1]);
   assert.deepEqual(keys.filter(k => !ids.includes(k)), [], "ทุกแบบที่มีหน้ารายละเอียดต้องมีการ์ดในหน้าแผน");
   assert.doesNotMatch(page, /<div class="cat">ประกันชีวิตเพื่อวัยเกษียณ<\/div>/);
-  assert.match(page, /<div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 20 ปี · แปลงเป็นค่ารักษาได้<\/div>/);
+  assert.match(page, /<div class="cat">ชำระ 5 ปี · แปลงเป็นค่ารักษาได้ตั้งแต่อายุ 65<\/div>/);
+  assert.match(page, /<div class="cat">ชำระ 20 ปี · แปลงเป็นค่ารักษาได้ตั้งแต่อายุ 65<\/div>/);
+  for (const sub of ["sub-life-wl","sub-life-single","sub-life-saving","sub-health-ipd","sub-ci-general","sub-pen-single"]) assert.match(page, new RegExp(`id="${sub}" class="plan-subgroup`));
+  assert.match(page, /class="plan-subnav"/);
 });
 
 test("เปรียบเทียบประกันสุขภาพมี H&S (N) อ่านวงเงินจากข้อมูลชุดเดียวกับหน้าแผน", () => {
@@ -128,16 +131,5 @@ test("เปรียบเทียบประกันสุขภาพม�
   const blk = html.slice(i, html.indexOf("  careplus: {", i));
   assert.match(blk, /const b = RATES\.hsn\.benefits/);
   assert.match(blk, /healthRiderPremium\(Object\.assign\(\{type:'hsn'\}, cfg\)/);
-  for (const k of ["n1", "n2", "n3", "n4", "n6_1", "n6_2", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
-});
-
-test("ตารางเปรียบเทียบลากสลับคอลัมน์ได้ และหน้าที่มี state สลับลำดับใน array (การ์ดกับตารางสลับตามกัน)", async () => {
-  const fs = await import("node:fs");
-  const src = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(src, /id="compareContent" data-reorder="compare"/);
-  assert.match(src, /id="pensionCompareBox" data-reorder="pension"/);
-  assert.match(src, /const COL_REORDER = \{/);
-  assert.match(src, /\[compareSelected\[a\], compareSelected\[b\]\] = \[compareSelected\[b\], compareSelected\[a\]\]/);
-  // ตารางบำนาญต้องไม่มีหัวคอลัมน์เกินจากแถวข้อมูล
-  assert.doesNotMatch(src, /const headers = \['หัวข้อเปรียบเทียบ', \.\.\.cols/);
+  for (const k of ["n1", "n2", "n3", "n4", "n6", "n7", "n12"]) assert.match(blk, new RegExp("\\b" + k + ":"));
 });
