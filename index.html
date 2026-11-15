@@ -2,9 +2,6 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<script>(function(){try{var q=new URLSearchParams(location.search).get('lang');var l=q||localStorage.getItem('lang');if(l==='en'){document.documentElement.classList.add('i18n-loading');document.documentElement.lang='en';setTimeout(function(){document.documentElement.classList.remove('i18n-loading')},3000);}}catch(e){}})();</script>
-<style>html.i18n-loading body{visibility:hidden}</style>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>วางแผนความคุ้มครอง ด้วยมุมมองแพทย์ | หมอกึ๊ก DoctorGugInsurance</title>
 <meta name="description" content="คำนวณเบี้ยประกันสุขภาพและประกันชีวิตจากตารางจริงของเมืองไทยประกันชีวิต เทียบทุกแผนพร้อมข้อจำกัด และช่วยดูประวัติสุขภาพก่อนยื่น โดย นพ.หนึ่งบุรุษ เทียมถนอม แพทย์ที่เป็นตัวแทนประกันชีวิต">
@@ -129,7 +126,6 @@
     background:rgba(255,255,255,.06);
   }
   .hero-inner{max-width:1440px;margin:0 auto;position:relative;z-index:1;}
-
   .eyebrow{
     font-family:"Anuphan","Noto Sans Thai",sans-serif;
     font-size:.72rem;
@@ -554,14 +550,6 @@
   .hint-open .tooltip{visibility:visible;opacity:1;}
   .info-icon:focus-visible, .tx-hint:focus-visible{outline:2px solid var(--pink-deep);outline-offset:2px;}
   .info-icon.hint-open{background:var(--pink-deep);}
-  .info-icon.tip-down .tooltip{bottom:auto;top:135%;}
-  /* ลากสลับคอลัมน์ในตารางเปรียบเทียบ */
-  .coldrag-table thead th:not(:first-child),[data-reorder] .compare-col-summary:not(.compare-col-add){cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-  .coldrag-table thead th:not(:first-child)::after,[data-reorder] .compare-col-summary:not(.compare-col-add) .compare-col-title::after{content:" ⇄";opacity:.45;font-weight:400;font-size:.85em;}
-  body.coldrag-active .coldrag-table, body.coldrag-active [data-reorder]{cursor:grabbing;}
-  .coldrag-src{opacity:.45;}
-  .coldrag-over{box-shadow:inset 0 0 0 2px var(--pink-deep,#8f0d40);background:rgba(143,13,64,.06) !important;}
-  .coldrag-ghost{position:fixed;z-index:9999;pointer-events:none;padding:6px 12px;border-radius:999px;background:var(--pink-deep,#8f0d40);color:#fff;font-size:.8rem;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .tx-hint.hint-open{background:var(--pink-deep);color:#fff;}
   @media (max-width:600px){
     /* บนมือถือ ตรึงกล่องคำอธิบายไว้ที่ขอบล่างของจอเสมอ แทนการวางลอยข้างไอคอน
@@ -1155,6 +1143,13 @@
   }
   .content-card ul{margin:6px 0;padding-left:20px;}
 
+  .plan-subnav{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 4px;}
+  .plan-subnav a{font-size:.8rem;font-weight:700;color:var(--pink-deep);background:#fff;border:1px solid #eab9cd;border-radius:999px;padding:6px 14px;text-decoration:none;}
+  .plan-subnav a:hover{background:#fff1f6;}
+  .plan-subgroup{grid-column:1 / -1;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin:14px 0 0;padding:10px 0 8px;border-bottom:1.5px dashed #eed3de;scroll-margin-top:90px;}
+  .plan-subgroup h3{margin:0;font-size:1.02rem;color:var(--pink-deep);display:flex;align-items:center;gap:8px;}
+  .plan-subgroup h3::before{content:"";width:6px;height:18px;border-radius:3px;background:linear-gradient(180deg,var(--pink),#d4a24c);}
+  .plan-subgroup span{font-size:.8rem;color:var(--muted);}
   .group-break{
     grid-column:1 / -1;
     border-top:3px solid var(--line);
@@ -1676,13 +1671,6 @@
   .hg-callout th{background:#fdeef4;color:var(--pink-deep);}
   .hg-block h3{font-size:.95rem;color:var(--ink);margin:0 0 8px;}
   .hg-block p{font-size:.86rem;line-height:1.85;margin:0 0 10px;color:#4a5568;}
-  .hg-block .hg-ol{font-size:.86rem;line-height:1.85;color:#4a5568;margin:0 0 12px;padding-left:22px;}
-  .hg-block .hg-ol li{margin-bottom:8px;}
-  .hg-block .table-wrap{margin:8px 0 14px;max-height:none;}
-  .hg-block .hg-table{width:100%;}
-  .hg-block .hg-table th,.hg-block .hg-table td{white-space:normal;text-align:left;font-size:.8rem;min-width:110px;}
-  .hg-block .hg-table td.hg-td-head{white-space:nowrap;min-width:0;}
-  .hg-callout table td,.hg-callout table th{white-space:normal;}
 
   .hg-buckets{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
   .hg-bucket{border-radius:16px;padding:16px 16px 14px;border:1.5px solid;}
@@ -1899,35 +1887,6 @@
     -webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .print-foot{font-size:7.5pt;color:#7a6871;margin-top:3mm;line-height:1.6;}
   .print-sec-next{break-before:page;page-break-before:always;padding-top:2mm;}
-  /* สรุปแผนและรายละเอียดแบบประกันท้ายไฟล์ PDF ใช้กระดาษแนวตั้งให้อ่านง่าย ตารางเบี้ยหน้าแรกยังเป็นแนวนอน */
-  .pdf-watermark{display:none;}
-  @media print{
-    body.dg-printing .pdf-watermark{display:block;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-28deg);
-      font:800 54pt/1 "Anuphan","Noto Sans Thai",sans-serif;color:rgba(143,13,64,.07);white-space:nowrap;pointer-events:none;z-index:0;
-      -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  }
-  /* หมายเหตุท้ายทุกหน้า ใช้กล่องขอบกระดาษของ @page ข้อความมาจากตัวแปร --pdf-foot ที่ตั้งตอนกดส่งออก
-     ตอนพิมพ์หน้าเว็บทั่วไปไม่มีตัวแปรนี้ จึงไม่มีหมายเหตุโผล่ */
-  @page{@bottom-center{content:var(--pdf-foot, none);font:7pt/1.4 "Anuphan","Noto Sans Thai",sans-serif;color:#8b7480;vertical-align:middle;}}
-  @page pdfportrait{size:A4 portrait;margin:12mm 12mm 16mm;}
-  .pdf-extra{page:pdfportrait;font-family:"Anuphan","Noto Sans Thai",sans-serif;color:#241a1f;font-size:9.5pt;line-height:1.55;}
-  .pdf-extra .pdf-summary, .pdf-extra .pdf-plan{break-before:page;page-break-before:always;}
-  .pdf-extra h2{font-size:14pt;color:#8f0d40;margin:0 0 2mm;font-weight:800;}
-  .pdf-extra h3{font-size:11pt;color:#8f0d40;margin:4mm 0 1.5mm;font-weight:700;break-after:avoid;}
-  .pdf-extra p, .pdf-extra li{margin:0 0 1.2mm;}
-  .pdf-extra ul{margin:0 0 2mm;padding-left:5mm;}
-  .pdf-extra .pdf-plan-cat{font-size:8pt;letter-spacing:.06em;text-transform:uppercase;color:#a0782a;font-weight:700;}
-  .pdf-extra .meta{color:#6b5a62;font-size:8.5pt;}
-  .pdf-extra .content-card{box-shadow:none !important;border:0 !important;padding:0 !important;margin:0 0 3mm !important;background:none !important;}
-  .pdf-extra table{width:100%;border-collapse:collapse;font-size:8.5pt;margin:1mm 0 3mm;break-inside:auto;}
-  .pdf-extra tr{break-inside:avoid;}
-  .pdf-extra th, .pdf-extra td{border:.4pt solid #d9c2cd;padding:1mm 1.6mm;vertical-align:top;text-align:left;white-space:normal !important;}
-  .pdf-extra th{background:#8f0d40 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .pdf-extra *{overflow:visible !important;max-height:none !important;position:static !important;}
-  .pdf-extra .info-icon, .pdf-extra .tooltip{display:none !important;}
-  .pdf-extra .coldrag-table thead th::after, .print-doc .coldrag-table thead th::after{content:none !important;}
-  .pdf-extra details > summary{list-style:none;font-weight:700;color:#8f0d40;}
-  .pdf-extra img{max-width:100%;height:auto;}
 
   .print-credit{display:none;}
   .site-credit{text-align:center;font-size:.76rem;color:#8b7480;padding:26px 16px 34px;line-height:1.9;}
@@ -2240,8 +2199,6 @@
     background:var(--pink);color:#fff;
     padding:5px 42px;font-size:.68rem;font-weight:700;
   }
-html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
-
   .ai-plan-card h3{
     font-family:"Anuphan","Noto Sans Thai",sans-serif;
     color:var(--pink-deep);
@@ -2573,17 +2530,6 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
   body:not(.hnw) .plan-card .cat{color:var(--gold);}
   /* ค้นหาทั้งเว็บ
      ปุ่มลอยมุมบนขวาให้เห็นได้จากทุกหน้า ไม่ผูกกับแถบเมนู เพราะแถบเมนูเลื่อนหายไปตอนอ่านเนื้อหายาว */
-  /* ปุ่มเปลี่ยนภาษา อยู่มุมขวาบนข้างปุ่มค้นหา ตำแหน่ง right ตั้งจาก JS ตามความกว้างปุ่มค้นหา */
-  .lang-toggle{position:fixed;top:14px;right:128px;z-index:1200;display:inline-flex;padding:3px;gap:2px;
-    border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(255,255,255,.16);
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.18);}
-  .lang-toggle button{all:unset;cursor:pointer;font:700 13px/1 "Anuphan","Noto Sans Thai",sans-serif;letter-spacing:.04em;color:#fff;padding:8px 11px;border-radius:999px}
-  .lang-toggle button.on{background:#fff;color:#8f0d40}
-  .lang-toggle button:focus-visible{outline:2px solid #fff;outline-offset:1px}
-  body.ss-solid .lang-toggle{background:var(--pink-deep,#8f0d40);border-color:rgba(255,255,255,.25);}
-  body.hnw.ss-solid .lang-toggle{background:#1d1d20;border-color:var(--gold,#c9a227);}
-  @media(max-width:640px){ html.lang-en .hero .eyebrow, .hero .eyebrow{padding-right:150px} .lang-toggle{top:10px;right:60px;} .lang-toggle button{padding:7px 9px;font-size:12px} }
-  @media print{ .lang-toggle{display:none !important;} }
   .ss-btn{position:fixed;top:14px;right:14px;z-index:1200;display:flex;align-items:center;gap:7px;
     padding:9px 15px 9px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;
     background:rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -2806,7 +2752,6 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 </head>
 <body>
 
-<div class="lang-toggle" id="langToggle" role="group" aria-label="Language"><button type="button" data-lang="th" lang="th">TH</button><button type="button" data-lang="en" lang="en">EN</button></div>
 <button type="button" class="ss-btn" onclick="openSiteSearch()" aria-label="ค้นหาทั้งเว็บ">
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="16.4" y1="16.4" x2="21.5" y2="21.5"></line></svg>
   <span class="ss-btn-t">ค้นหา</span>
@@ -2946,7 +2891,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
         <label><input type="radio" name="mainPlan" value="99_7"> 99/7 (จ่าย 7 ปี)<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นเพียง 7 ปี แต่คุ้มครองยาวถึงอายุ 99 ปี เหมาะกับคนที่มีกำลังจ่ายช่วงนี้และอยากปิดภาระเบี้ยให้จบเร็ว ทุนขั้นต่ำ 150,000 บาท และบริษัทกำหนดให้ต้องแนบสัญญาสุขภาพหรือโรคร้ายแรง และอุบัติเหตุ</span></span></label>
         <div class="plan-group-label">แบบตลอดชีพและชั่วระยะเวลาอื่น</div>
         <label><input type="radio" name="mainPlan" value="80_10"> 80/10 (จ่าย 10 ปี คุ้มครองถึง 80)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี ตั้งแต่ปีกรมธรรม์ที่ 6 ทุนคุ้มครองเพิ่มเป็น 150% และอยู่ครบสัญญาที่อายุ 80 ปี รับเงินก้อน 150% ของทุนประกัน อายุ 20–59 ปี รวมสิทธิยกเว้นเบี้ยกรณีทุพพลภาพสิ้นเชิงถาวรมาให้แล้ว</span></span></label>
-        <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
+        <label><input type="radio" name="mainPlan" value="flexi_99_5"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5<span class="info-icon">i<span class="tooltip">ชำระเบี้ยสั้นที่สุดเพียง 5 ปี คุ้มครองถึงอายุ 99 ปี ตั้งแต่อายุ 65 ปีเปลี่ยนวงเงินชีวิตเป็นค่ารักษา IPD/OPD ได้ ทุนขั้นต่ำ 500,000 บาท มีส่วนลดเบี้ยเมื่อทุนตั้งแต่ 2 ล้านบาทขึ้นไป และลดมากขึ้นอีกเมื่อทุนตั้งแต่ 5 ล้านบาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="flexi_99_20"> เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20<span class="info-icon">i<span class="tooltip">เตรียมค่ารักษาหลังเกษียณ ชำระเบี้ย 20 ปี เบี้ยคงที่ คุ้มครองถึงอายุ 99 ปี รับอายุ 30 วัน – 45 ปี ตั้งแต่อายุ 65 ปีใช้ทุนที่เหลือเบิกค่ารักษา IPD/OPD ได้ ทุนมีให้เลือก 500,000 / 1,000,000 / 5,000,000 บาท</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_3"> เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 3 ปี คุ้มครอง 15 ปี ใช้สำหรับวางแผนออมทรัพย์/ลดหย่อนภาษีตามหลักเกณฑ์ และไม่สามารถแนบสัญญาเพิ่มเติมได้</span></span></label>
         <label><input type="radio" name="mainPlan" value="15_6"> เมืองไทย สมาร์ท อินเด็กซ์ 15/6 (Global)<span class="info-icon">i<span class="tooltip">ชำระเบี้ย 6 ปี คุ้มครอง 15 ปี เน้นการออม เงินคืนการันตี 5% ของทุนทุก 2 ปี (ปีที่ 2-14) ครบสัญญา 600% และร่วมผลตอบแทนดัชนี 50% (ไม่การันตี) ไม่ต้องตอบคำถามสุขภาพ แนบสัญญาเพิ่มเติมไม่ได้ แทนแบบ สมาร์ท ลิงค์ 15/6 ที่ปิดการขายแล้ว</span></span></label>
@@ -3720,8 +3665,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 
     <div id="grp-life" class="group-break"><h2>ประกันชีวิต / สัญญาหลัก</h2><p>รวมประกันชีวิตตลอดชีพ ประกันชีวิตเพื่อเตรียมค่ารักษาหลังเกษียณ และประกันชีวิตแบบสะสมทรัพย์</p></div>
 
+    <nav class="plan-subnav" aria-label="หมวดย่อย"><a href="#sub-life-wl" onclick="return jumpToPlanGroup('sub-life-wl');">ตลอดชีพ คุ้มครองถึงอายุ 99</a><a href="#sub-life-senior" onclick="return jumpToPlanGroup('sub-life-senior');">เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ</a><a href="#sub-life-term" onclick="return jumpToPlanGroup('sub-life-term');">คุ้มครองตามระยะเวลาที่กำหนด</a><a href="#sub-life-single" onclick="return jumpToPlanGroup('sub-life-single');">ชำระเบี้ยครั้งเดียว</a><a href="#sub-life-saving" onclick="return jumpToPlanGroup('sub-life-saving');">สะสมทรัพย์ ผลตอบแทนอ้างอิงดัชนี (Index-Linked)</a></nav>
+
+    <div id="sub-life-wl" class="plan-subgroup"><h3>ตลอดชีพ คุ้มครองถึงอายุ 99</h3><span>เลือกตามระยะเวลาชำระเบี้ยที่ไหว ทุนคุ้มครองอยู่ถึงอายุ 99 ปี</span></div>
+
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 20 ปี</div>
+      <div class="cat">ชำระ 20 ปี</div>
       <h3>สมาร์ท โพรเทคชั่น 99/20</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนเริ่มต้น 200,000 บาท • ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3733,7 +3682,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 7 ปี</div>
+      <div class="cat">ชำระ 7 ปี</div>
       <h3>สมาร์ท โพรเทคชั่น 99/7</h3>
       <p class="meta">อายุรับ 30 วัน – 85 ปี • ทุนเริ่มต้น 150,000 บาท • ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3746,11 +3695,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 5 ปี</div>
+      <div class="cat">ชำระ 5 ปี · แปลงเป็นค่ารักษาได้ตั้งแต่อายุ 65</div>
       <h3>เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5</h3>
-      <p class="meta">อายุรับ 0 – 55 ปี • ทุนขั้นต่ำ 500,000 บาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
+      <p class="meta">อายุรับ 30 วัน – 55 ปี • ทุนขั้นต่ำ 500,000 บาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
         <li>ชำระเบี้ยสั้นที่สุดในระบบเพียง 5 ปี แล้วคุ้มครองยาวถึงอายุ 99 ปี</li>
+        <li>ตั้งแต่อายุ 65 ปี เปลี่ยนวงเงินชีวิตเป็นค่ารักษา IPD/OPD ได้ เหมือนรุ่น 99/20</li>
         <li>มีส่วนลดเบี้ยตามระดับทุน ทุน 2 ล้านขึ้นไปลด 5 บาท ทุน 5 ล้านขึ้นไปลด 10 บาท ต่อทุน 1,000 บาท</li>
         <li>เลือกงวดชำระได้ทั้งรายปี ราย 6 เดือน ราย 3 เดือน และรายเดือน</li>
       </ul>
@@ -3758,9 +3708,9 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 20 ปี · แปลงเป็นค่ารักษาได้</div>
+      <div class="cat">ชำระ 20 ปี · แปลงเป็นค่ารักษาได้ตั้งแต่อายุ 65</div>
       <h3>เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20</h3>
-      <p class="meta">อายุรับ 30 วัน – 45 ปี • ทุน 500,000 / 1 / 5 ล้านบาท • ชำระเบี้ย 20 ปี</p>
+      <p class="meta">อายุรับ 30 วัน – 45 ปี • ทุน 500,000 / 1 / 5 ล้านบาท • ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
         <li>เบี้ยคงที่ และคุ้มครองชีวิตถึงอายุ 99 ปี</li>
         <li>ตั้งแต่อายุ 65 ปี เปลี่ยนวงเงินชีวิตที่เหลือเป็นค่ารักษา IPD/OPD ได้ตามเงื่อนไข</li>
@@ -3769,7 +3719,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระถึงอายุ 99</div>
+      <div class="cat">ชำระถึงอายุ 99</div>
       <h3>สมาร์ท โพรเทคชั่น 99/99 <span class="badge-best">ทุน 50,001 บาทขึ้นไป</span></h3>
       <p class="meta">อายุรับ 30 วัน – 90 ปี • ทุน 50,001 – 9,999,999 บาท • ชำระเบี้ยยาวถึงอายุ 99 ปี</p>
       <ul>
@@ -3781,7 +3731,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระถึงอายุ 99</div>
+      <div class="cat">ชำระถึงอายุ 99</div>
       <h3>คุ้มครองตลอดชีพ 99/99 <span class="badge-best">ทุน 50,000 บาทเท่านั้น</span></h3>
       <p class="meta">อายุรับ 30 วัน – 90 ปี • ทุน 50,000 บาทเท่านั้น • ชำระเบี้ยยาวถึงอายุ 99 ปี</p>
       <ul>
@@ -3794,7 +3744,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · รวมโรคร้ายแรงในตัว</div>
+      <div class="cat">ชำระ 20 ปี · รวมโรคร้ายแรงในตัว</div>
       <h3>เมืองไทย ไลฟ์ไทม์ โพรเทคชั่น 99/20</h3>
       <p class="meta">อายุรับ 1 – 65 ปี • ทุนขั้นต่ำ 150,000 บาท • ชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3806,7 +3756,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · มีเงินคืนทุกปี</div>
+      <div class="cat">ชำระ 7 ปี · มีเงินคืนทุกปี</div>
       <h3>เมืองไทย แฮปปี้ รีเทิร์น 99/7</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 200,000 บาท • ชำระเบี้ย 7 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3817,7 +3767,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · มีเงินคืนทุกปี</div>
+      <div class="cat">ชำระ 9 ปี · มีเงินคืนทุกปี</div>
       <h3>เมืองไทย แฮปปี้ รีเทิร์น 99/9</h3>
       <p class="meta">อัตราเบี้ยครอบคลุมอายุ 0 – 80 ปี • ทุนขั้นต่ำ 100,000 บาท • ชำระเบี้ย 9 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3827,8 +3777,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('happyreturn999')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-life-senior" class="plan-subgroup"><h3>เพื่อผู้สูงอายุ ไม่ต้องตอบคำถามสุขภาพ</h3><span>รับทำอายุมาก ไม่ต้องตรวจและไม่ต้องตอบคำถามสุขภาพ</span></div>
+
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ผู้สูงอายุ ไม่ตอบคำถามสุขภาพ</div>
+      <div class="cat">ชำระ 10 ปี · คุ้มครองถึงอายุ 99</div>
       <h3>วัยเก๋า คุ้มได้ใจ 99/10</h3>
       <p class="meta">อายุรับ 50 – 80 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3840,7 +3792,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิต คุ้มครองถึงอายุ 90 · ผู้สูงอายุ ไม่ตอบคำถามสุขภาพ</div>
+      <div class="cat">คุ้มครองถึงอายุ 90</div>
       <h3>วัยเก๋า คุ้มสุขใจ 90/90</h3>
       <p class="meta">อายุรับ 50 – 75 ปี • ทุนรวมทุกช่องทางไม่เกิน 600,000 บาท • ชำระและคุ้มครองถึงอายุ 90 ปี</p>
       <ul>
@@ -3851,8 +3803,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('waigao9090')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-life-term" class="plan-subgroup"><h3>คุ้มครองตามระยะเวลาที่กำหนด</h3><span>เบี้ยถูกกว่าตลอดชีพ เหมาะกับช่วงที่ยังมีภาระ</span></div>
+
     <div class="plan-card">
-      <div class="cat">ประกันชีวิต คุ้มครองถึงอายุ 80 · ชำระ 10 ปี</div>
+      <div class="cat">ชำระ 10 ปี · คุ้มครองถึงอายุ 80</div>
       <h3>สมาร์ท โพรเทคชั่น 80/10</h3>
       <p class="meta">อายุรับ 1 เดือน – 65 ปี • ทุนขั้นต่ำ 100,000 บาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 80 ปี</p>
       <ul>
@@ -3864,7 +3818,21 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระครั้งเดียว · มีเงินคืน</div>
+      <div class="cat">คุ้มครอง 1 / 5 / 10 / 15 ปี</div>
+      <h3>อีซี่ โพรเทคชั่น 1/1, 5/5, 10/10, 15/15</h3>
+      <p class="meta">อายุรับ 0 – 85 ปี แล้วแต่แบบ • ทุนขั้นต่ำ 50,000 บาท • คุ้มครอง 1, 5, 10 หรือ 15 ปี</p>
+      <ul>
+        <li>ทุนคุ้มครองสูงด้วยเบี้ยต่ำ เหมาะกับการปิดหนี้หรือดูแลครอบครัวเฉพาะช่วงที่ภาระยังอยู่</li>
+        <li>ครบสัญญาไม่มีเงินคืน ลดหย่อนภาษีได้เฉพาะ 10/10 และ 15/15</li>
+        <li>ถ้าใช้เป็นสัญญาหลักแนบสุขภาพ พอครบสัญญาความคุ้มครองสุขภาพจะจบตามไปด้วย</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('easyprotection')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div id="sub-life-single" class="plan-subgroup"><h3>ชำระเบี้ยครั้งเดียว</h3><span>มีเงินก้อนแล้วอยากเปลี่ยนเป็นทุนคุ้มครองหรือมรดกทันที</span></div>
+
+    <div class="plan-card">
+      <div class="cat">คุ้มครองถึงอายุ 99 · มีเงินคืนปีละ 1.75%</div>
       <h3>เมืองไทย คุ้มครองตลอดชีพ 99/1 <span class="badge-best">มีเงินคืน 1.75% ทุกปี</span></h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 1,000,000 บาท • ชำระเบี้ยครั้งเดียว คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3876,7 +3844,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระครั้งเดียว</div>
+      <div class="cat">คุ้มครองถึงอายุ 99</div>
       <h3>เมืองไทย เพื่อคุ้มครองตลอดชีพ 99/1</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ทุนขั้นต่ำ 10,000,000 บาท • ชำระเบี้ยครั้งเดียว คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3887,7 +3855,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card hnw-only">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระครั้งเดียว · HNW</div>
+      <div class="cat">HNW · คุ้มครองถึงอายุ 99</div>
       <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/1</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ยครั้งเดียว คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3897,8 +3865,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('premierlegacy991')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-life-hnw" class="plan-subgroup hnw-only"><h3>กลุ่ม HNW ทุน 10 ล้านขึ้นไป</h3><span>แบบประกันสำหรับวางแผนมรดกทุนสูง</span></div>
+
     <div class="plan-card hnw-only">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 5 ปี · HNW</div>
+      <div class="cat">HNW · ชำระ 5 ปี</div>
       <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/5</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3910,7 +3880,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card hnw-only">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 10 ปี · HNW</div>
+      <div class="cat">HNW · ชำระ 10 ปี</div>
       <h3>เมืองไทย พรีเมียร์ เลกาซี่ 99/10</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 10 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3921,7 +3891,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card hnw-only">
-      <div class="cat">ประกันชีวิตตลอดชีพ · ชำระ 5 ปี · HNW</div>
+      <div class="cat">HNW · ชำระ 5 ปี · ค่าเวนคืนคงที่</div>
       <h3>เมืองไทย เลกาซี่ เวลธ์ 99/5 <span class="badge-best">แบบค่าเวนคืนคงที่</span></h3>
       <p class="meta">อายุรับ 30 วัน – 75 ปี • ทุนขั้นต่ำ 10 ล้านบาท • ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -3932,20 +3902,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('legacywealth995')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
-    <div class="plan-card">
-      <div class="cat">ประกันชีวิตชั่วระยะเวลา · คุ้มครอง 1 / 5 / 10 / 15 ปี</div>
-      <h3>อีซี่ โพรเทคชั่น 1/1, 5/5, 10/10, 15/15</h3>
-      <p class="meta">อายุรับ 0 – 85 ปี แล้วแต่แบบ • ทุนขั้นต่ำ 50,000 บาท • คุ้มครอง 1, 5, 10 หรือ 15 ปี</p>
-      <ul>
-        <li>ทุนคุ้มครองสูงด้วยเบี้ยต่ำ เหมาะกับการปิดหนี้หรือดูแลครอบครัวเฉพาะช่วงที่ภาระยังอยู่</li>
-        <li>ครบสัญญาไม่มีเงินคืน ลดหย่อนภาษีได้เฉพาะ 10/10 และ 15/15</li>
-        <li>ถ้าใช้เป็นสัญญาหลักแนบสุขภาพ พอครบสัญญาความคุ้มครองสุขภาพจะจบตามไปด้วย</li>
-      </ul>
-      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('easyprotection')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
-    </div>
+    <div id="sub-life-saving" class="plan-subgroup"><h3>สะสมทรัพย์ ผลตอบแทนอ้างอิงดัชนี (Index-Linked)</h3><span>เงินต้นการันตี พร้อมโอกาสรับผลตอบแทนเพิ่มจากดัชนีโลก</span></div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตสะสมทรัพย์ · Index-Linked · ชำระครั้งเดียว</div>
+      <div class="cat">ชำระครั้งเดียว · คุ้มครอง 10 ปี</div>
       <h3>เมืองไทย สมาร์ท อินเด็กซ์ 10/1 (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ยครั้งเดียว • คุ้มครอง 10 ปี • ทุนขั้นต่ำ 50,000 บาท</p>
       <ul>
@@ -3956,7 +3916,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตสะสมทรัพย์ · Index-Linked · ชำระ 3 ปี</div>
+      <div class="cat">ชำระ 3 ปี · คุ้มครอง 15 ปี</div>
       <h3>เมืองไทย สมาร์ท อินเด็กซ์ 15/3 (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ย 3 ปี • คุ้มครอง 15 ปี</p>
       <ul>
@@ -3967,7 +3927,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันชีวิตสะสมทรัพย์ · Index-Linked · ชำระ 6 ปี</div>
+      <div class="cat">ชำระ 6 ปี · คุ้มครอง 15 ปี</div>
       <h3>เมืองไทย สมาร์ท อินเด็กซ์ 15/6 และ 15/6 โปร (Global)</h3>
       <p class="meta">อายุรับ 30 วัน – 80 ปี • ชำระเบี้ย 6 ปี • คุ้มครอง 15 ปี • ไม่ต้องตอบคำถามสุขภาพ</p>
       <ul>
@@ -3993,8 +3953,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 
     <div id="grp-health" class="group-break"><h2>สัญญาเพิ่มเติมสุขภาพ / ชดเชยรายได้</h2><p>กลุ่มนี้เป็นตัวหลักสำหรับค่ารักษา IPD, OPD และเงินชดเชยรายวัน</p></div>
 
+    <nav class="plan-subnav" aria-label="หมวดย่อย"><a href="#sub-health-ipd" onclick="return jumpToPlanGroup('sub-health-ipd');">ค่ารักษาผู้ป่วยใน (IPD)</a><a href="#sub-health-addon" onclick="return jumpToPlanGroup('sub-health-addon');">ความคุ้มครองเสริม</a><a href="#sub-health-opd" onclick="return jumpToPlanGroup('sub-health-opd');">ค่ารักษาผู้ป่วยนอก (OPD)</a><a href="#sub-health-hb" onclick="return jumpToPlanGroup('sub-health-hb');">ชดเชยรายได้</a></nav>
+
+    <div id="sub-health-ipd" class="plan-subgroup"><h3>ค่ารักษาผู้ป่วยใน (IPD)</h3><span>สัญญาสุขภาพหลัก เลือกก่อนส่วนอื่น</span></div>
+
     <div class="plan-card">
-      <div class="cat">สุขภาพ IPD · เหมาจ่าย</div>
+      <div class="cat">เหมาจ่าย</div>
       <h3>D Health Lite <span class="badge-best">Best Seller เมื่อจับคู่ Care Plus</span></h3>
       <p class="meta">อายุรับ 30 วัน – 90 ปี • วงเงิน 1 ล้าน หรือ 5 ล้านบาท/ครั้ง</p>
       <ul>
@@ -4006,7 +3970,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ IPD · เหมาจ่าย วงเงินสูง</div>
+      <div class="cat">เหมาจ่าย วงเงินสูง</div>
       <h3>Elite Health Plus</h3>
       <p class="meta">อายุรับ 11 – 90 ปี • วงเงิน 20 / 40 / 75 / 100 ล้านบาทต่อปี</p>
       <ul>
@@ -4018,7 +3982,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ IPD · เหมาจ่าย</div>
+      <div class="cat">เหมาจ่าย</div>
       <h3>เหมาจ่าย Extra</h3>
       <p class="meta">อายุรับ 11 – 90 ปี • วงเงิน 200,000 – 500,000 บาท/ครั้ง</p>
       <ul>
@@ -4029,7 +3993,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ IPD · มีส่วนร่วมจ่าย</div>
+      <div class="cat">มีส่วนร่วมจ่าย</div>
       <h3>Extra Care Plus</h3>
       <p class="meta">อายุรับ 11 – 90 ปี • วงเงิน 200,000 – 500,000 บาท/ครั้ง • Deductible 20,000/ครั้ง</p>
       <ul>
@@ -4039,7 +4003,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ IPD · แยกค่าใช้จ่ายรายหมวด</div>
+      <div class="cat">แยกค่าใช้จ่ายรายหมวด</div>
       <h3>แยกค่าใช้จ่าย H&amp;S (N)</h3>
       <p class="meta">อายุรับ 11 – 74 ปี (ต่ออายุถึง 80) • ค่าห้อง 1,000 – 5,000 บาท/วัน • ไม่มีส่วนแรก</p>
       <ul>
@@ -4049,8 +4013,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('hsn')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-health-addon" class="plan-subgroup"><h3>ความคุ้มครองเสริม</h3><span>ซื้อเพิ่มคู่กับสัญญาสุขภาพหลัก</span></div>
+
     <div class="plan-card">
-      <div class="cat">สุขภาพ · ความคุ้มครองเสริม (คลอดบุตร)</div>
+      <div class="cat">คลอดบุตร</div>
       <h3>Maternity Plus</h3>
       <p class="meta">เพศหญิง อายุ 15–49 ปี • แผน 1 วงเงิน 2 ล้าน / แผน 2 วงเงิน 4 ล้านบาท</p>
       <ul>
@@ -4061,7 +4027,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ · ความคุ้มครองเสริม (สวัสดิการ)</div>
+      <div class="cat">สวัสดิการสุขภาพ</div>
       <h3>Well-Being Plus</h3>
       <p class="meta">อายุรับ 11–90 ปี • เลือกได้ 2 แผน</p>
       <ul>
@@ -4071,8 +4037,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('wellbeing')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-health-opd" class="plan-subgroup"><h3>ค่ารักษาผู้ป่วยนอก (OPD)</h3><span>หาหมอไม่นอนโรงพยาบาล</span></div>
+
     <div class="plan-card">
-      <div class="cat">สุขภาพ OPD · จำกัดวงเงินต่อครั้ง</div>
+      <div class="cat">จำกัดวงเงินต่อครั้ง</div>
       <h3>สัญญาเพิ่มเติม การรักษาพยาบาลผู้ป่วยนอก (OPD รายครั้ง)</h3>
       <p class="meta">อายุรับ 6 – 80 ปี • 7 แบบ วงเงินต่อครั้ง 500 – 3,000 บาท • คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -4083,7 +4051,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">สุขภาพ OPD · เหมาจ่ายรายปี</div>
+      <div class="cat">เหมาจ่ายรายปี</div>
       <h3>สัญญาเพิ่มเติม โอพีดี เหมาจ่าย</h3>
       <p class="meta">อายุรับ 6 – 90 ปี • 6 แผน วงเงินรวมต่อปี 15,000 – 100,000 บาท • คุ้มครองถึงอายุ 99 ปี</p>
       <ul>
@@ -4093,8 +4061,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('opdmaochai')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-health-hb" class="plan-subgroup"><h3>ชดเชยรายได้</h3><span>รับเงินรายวันตอนนอนโรงพยาบาล</span></div>
+
     <div class="plan-card">
-      <div class="cat">ชดเชยรายวัน · นอนโรงพยาบาล</div>
+      <div class="cat">ชดเชยรายวัน</div>
       <h3>HB (สุขภาพวงเงินแน่นอน)</h3>
       <p class="meta">เลือกวงเงินชดเชยตามรายได้ต่อปี (ไม่เกินรายได้ ÷ 360) • เบี้ยคงที่ตามอายุแรกสมัคร</p>
       <ul>
@@ -4122,19 +4092,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       </div>
     </div>
 
-    <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · มะเร็ง / ไต (ค่ารักษา)</div>
-      <h3>Care Plus</h3>
-      <p class="meta">อายุรับ 30 วัน – 80 ปี • วงเงิน 1 ล้าน หรือ 5 ล้านบาทต่อปี</p>
-      <ul>
-        <li>เลือกคุ้มครองมะเร็ง หรือไตวายเรื้อรัง หรือทั้งสองโรค (ซื้อคู่กันเบี้ยถูกลง 10%)</li>
-        <li>ดูแลทั้งผู้ป่วยในและผู้ป่วยนอกในวงเงินเดียวกัน</li>
-      </ul>
-      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('careplus')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
-    </div>
+    <nav class="plan-subnav" aria-label="หมวดย่อย"><a href="#sub-ci-general" onclick="return jumpToPlanGroup('sub-ci-general');">โรคร้ายแรงหลายโรค</a><a href="#sub-ci-cancer" onclick="return jumpToPlanGroup('sub-ci-cancer');">มะเร็ง / ไตวายเรื้อรัง</a><a href="#sub-ci-specific" onclick="return jumpToPlanGroup('sub-ci-specific');">เฉพาะกลุ่ม</a></nav>
+
+    <div id="sub-ci-general" class="plan-subgroup"><h3>โรคร้ายแรงหลายโรค</h3><span>รับเงินก้อนเมื่อตรวจพบโรคร้ายแรงตามสัญญา</span></div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · จ่ายตามระยะโรค</div>
+      <div class="cat">จ่ายตามระยะโรค</div>
       <h3>CI Perfect Care</h3>
       <p class="meta">อายุรับ 30 วัน – 65 ปี • ทุนขั้นต่ำ 100,000 บาท • สูงสุด 10,000,000 บาท</p>
       <ul>
@@ -4145,7 +4108,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เคลมได้หลายครั้ง</div>
+      <div class="cat">เคลมได้หลายครั้ง</div>
       <h3>Multiple CI</h3>
       <p class="meta">อายุรับ 7–65 ปี • ทุนตัวอย่าง 500,000 / 1 / 2 ล้านบาท</p>
       <ul>
@@ -4156,7 +4119,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เงินก้อน</div>
+      <div class="cat">เงินก้อน</div>
       <h3>D Care</h3>
       <p class="meta">อายุรับ 30 วัน – 70 ปี • เลือกทุนได้เองต่อกลุ่มโรค ทุนรวมสูงสุด 2,500,000 บาท</p>
       <ul>
@@ -4167,7 +4130,31 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เฉพาะมะเร็ง</div>
+      <div class="cat">ผู้สูงวัย 40–80 ปี</div>
+      <h3>สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส</h3>
+      <p class="meta">อายุรับ 40 – 80 ปี • เลือกซื้อแยกได้ 3 ความคุ้มครอง</p>
+      <ul>
+        <li>อัลไซเมอร์ และหลอดเลือดสมองแตก/อุดตัน · ทุพพลภาพถาวรสิ้นเชิง · กระดูกแตกหักจากอุบัติเหตุ</li>
+        <li>ซิลเวอร์รับเงินก้อน ซิลเวอร์ พลัสรับรายเดือน 120 เดือน (รวม 180% ของทุน) เบี้ยเท่ากัน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('smartsilver')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div id="sub-ci-cancer" class="plan-subgroup"><h3>มะเร็ง / ไตวายเรื้อรัง</h3><span>เน้นค่ารักษามะเร็งหรือไตโดยเฉพาะ</span></div>
+
+    <div class="plan-card">
+      <div class="cat">ค่ารักษามะเร็ง / ไต</div>
+      <h3>Care Plus</h3>
+      <p class="meta">อายุรับ 30 วัน – 80 ปี • วงเงิน 1 ล้าน หรือ 5 ล้านบาทต่อปี</p>
+      <ul>
+        <li>เลือกคุ้มครองมะเร็ง หรือไตวายเรื้อรัง หรือทั้งสองโรค (ซื้อคู่กันเบี้ยถูกลง 10%)</li>
+        <li>ดูแลทั้งผู้ป่วยในและผู้ป่วยนอกในวงเงินเดียวกัน</li>
+      </ul>
+      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('careplus')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
+    </div>
+
+    <div class="plan-card">
+      <div class="cat">เฉพาะมะเร็ง</div>
       <h3>ความคุ้มครองโรคมะเร็ง (Cancer)</h3>
       <p class="meta">อายุรับ 18 – 60 ปี • ทุน 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท</p>
       <ul>
@@ -4178,7 +4165,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เฉพาะมะเร็ง</div>
+      <div class="cat">เฉพาะมะเร็ง</div>
       <h3>เพียว แคนเซอร์ (Pure Cancer)</h3>
       <p class="meta">อายุรับ 18 – 60 ปี • ทุน 300,000 / 500,000 / 1,000,000 / 2,000,000 บาท</p>
       <ul>
@@ -4188,8 +4175,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('purecancer')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
+    <div id="sub-ci-specific" class="plan-subgroup"><h3>เฉพาะกลุ่ม</h3><span>โรคเฉพาะผู้หญิง และเบาหวาน</span></div>
+
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เฉพาะผู้หญิง</div>
+      <div class="cat">เฉพาะผู้หญิง</div>
       <h3>แฮปปี้ เลดี้ (Happy Lady)</h3>
       <p class="meta">รับเฉพาะผู้หญิง อายุ 18 – 50 ปี • ทุน 200,000 – 1,000,000 บาท</p>
       <ul>
@@ -4200,7 +4189,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เฉพาะผู้หญิง</div>
+      <div class="cat">เฉพาะผู้หญิง</div>
       <h3>แฮปปี้ เลดี้ พลัส (Happy Lady Plus)</h3>
       <p class="meta">รับเฉพาะผู้หญิง อายุ 18 – 40 ปี • ทุน 200,000 – 1,000,000 บาท</p>
       <ul>
@@ -4211,7 +4200,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · เบาหวาน</div>
+      <div class="cat">เบาหวาน</div>
       <h3>คุ้มครองโรคเบาหวาน (Diabetes)</h3>
       <p class="meta">อายุรับ 18 – 60 ปี • อัตราต่อทุน 1,000 บาท แยกชาย/หญิง</p>
       <ul>
@@ -4219,17 +4208,6 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
         <li>ต่ออายุได้ถึง 70 ปี คุ้มครองถึงอายุ 71 ปี</li>
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('diabetes')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
-    </div>
-
-    <div class="plan-card">
-      <div class="cat">โรคร้ายแรง · ผู้สูงวัย 40–80 ปี</div>
-      <h3>สมาร์ท ซิลเวอร์ / สมาร์ท ซิลเวอร์ พลัส</h3>
-      <p class="meta">อายุรับ 40 – 80 ปี • เลือกซื้อแยกได้ 3 ความคุ้มครอง</p>
-      <ul>
-        <li>อัลไซเมอร์ และหลอดเลือดสมองแตก/อุดตัน · ทุพพลภาพถาวรสิ้นเชิง · กระดูกแตกหักจากอุบัติเหตุ</li>
-        <li>ซิลเวอร์รับเงินก้อน ซิลเวอร์ พลัสรับรายเดือน 120 เดือน (รวม 180% ของทุน) เบี้ยเท่ากัน</li>
-      </ul>
-      <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('smartsilver')">ดูรายละเอียดเต็ม + ตารางเบี้ย &rarr;</button>
     </div>
 
     <!-- ทุพพลภาพสิ้นเชิงถาวรเป็นหมวดของตัวเอง ไม่ใช่สุขภาพ ไม่ใช่โรคร้ายแรง ไม่ใช่อุบัติเหตุ
@@ -4277,8 +4255,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 
     <div id="grp-pension" class="group-break group-break-with-action"><div class="group-break-text"><h2>ประกันชีวิตแบบบำนาญ</h2><p>เปลี่ยนเงินออมวันนี้ให้เป็นรายรับประจำหลังเกษียณ เลือกอายุเริ่มรับบำนาญและระยะจ่ายเบี้ยได้ ทุกแบบยกเว้นแฮปปี้ รีไทร์ 60 ใช้สิทธิลดหย่อนภาษีกลุ่มบำนาญได้สูงสุด 300,000 บาท — ทุกหน้ามีเครื่องคำนวณเบี้ย ตารางบำนาญรายปี ผลตอบแทน IRR และภาษีที่ประหยัดได้</p></div><button class="btn-compare-toggle" onclick="showPage('pension-compare')">เปรียบเทียบแบบบำนาญ</button></div>
 
+    <nav class="plan-subnav" aria-label="หมวดย่อย"><a href="#sub-pen-annual" onclick="return jumpToPlanGroup('sub-pen-annual');">ชำระเบี้ยหลายปี</a><a href="#sub-pen-single" onclick="return jumpToPlanGroup('sub-pen-single');">ชำระเบี้ยครั้งเดียว</a><a href="#sub-pen-mix" onclick="return jumpToPlanGroup('sub-pen-mix');">สะสมทรัพย์ + บำนาญ</a></nav>
+
+    <div id="sub-pen-annual" class="plan-subgroup"><h3>ชำระเบี้ยหลายปี</h3><span>ทยอยสะสมก่อนเกษียณ</span></div>
+
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ขั้นบันได</div>
+      <div class="cat">ขั้นบันได</div>
       <h3>เฟล็กซี่ รีไทร์ 9055 / 9060 / 9065</h3>
       <p class="meta">อายุรับ 20 – 60 ปี • เริ่มรับบำนาญ 55 / 60 / 65 ปี • ชำระเบี้ยถึงก่อนเกษียณ</p>
       <ul>
@@ -4290,7 +4272,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ขั้นบันได · ชำระ 5 ปี</div>
+      <div class="cat">ขั้นบันได · ชำระ 5 ปี</div>
       <h3>เฟล็กซี่ รีไทร์ 90/5 ดี55 / ดี60 / ดี65</h3>
       <p class="meta">อายุรับ 20 – 55 ปี • ชำระเบี้ย 5 ปี</p>
       <ul>
@@ -4302,7 +4284,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ทุนชีวิตสูง</div>
+      <div class="cat">ทุนชีวิตสูง</div>
       <h3>เมืองไทย 8555 จี20 <span class="badge-best">บำนาญสูงสุดปีละ 24%</span></h3>
       <p class="meta">อายุรับ 20 – 50 ปี • เริ่มรับบำนาญ 55 ปี ถึง 85 ปี</p>
       <ul>
@@ -4314,7 +4296,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ทุนชีวิตสูง</div>
+      <div class="cat">ทุนชีวิตสูง</div>
       <h3>เมืองไทย 8560 จี15</h3>
       <p class="meta">อายุรับ 20 – 55 ปี • เริ่มรับบำนาญ 60 ปี ถึง 85 ปี</p>
       <ul>
@@ -4325,8 +4307,10 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_8560_g15')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
     </div>
 
+    <div id="sub-pen-single" class="plan-subgroup"><h3>ชำระเบี้ยครั้งเดียว</h3><span>มีเงินก้อนแล้วเปลี่ยนเป็นรายได้หลังเกษียณ</span></div>
+
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ขั้นบันได · ชำระครั้งเดียว</div>
+      <div class="cat">ขั้นบันได</div>
       <h3>เฟล็กซี่ รีไทร์ เน็กซ์ 90/1 ดี55 / ดี60 / ดี65 / ดี70</h3>
       <p class="meta">อายุรับ 20 – 65 ปี • ชำระเบี้ยครั้งเดียวจบ • คุ้มครองถึงอายุ 90 ปี</p>
       <ul>
@@ -4338,7 +4322,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ขั้นบันได · ชำระครั้งเดียว · รับก้อน 30%</div>
+      <div class="cat">ขั้นบันได · รับก้อน 30%</div>
       <h3>เฟล็กซี่ รีไทร์ โปร 90/1 ดี55 / ดี60 / ดี65 / ดี70</h3>
       <p class="meta">อายุรับ 20 – 65 ปี • ชำระเบี้ยครั้งเดียวจบ • คุ้มครองถึงอายุ 90 ปี</p>
       <ul>
@@ -4350,7 +4334,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ชำระครั้งเดียว</div>
+      <div class="cat">เริ่มรับอายุ 65</div>
       <h3>เมืองไทย 9901 ดี65</h3>
       <p class="meta">อายุรับ 30 วัน – 60 ปี • เริ่มรับบำนาญ 65 ปี ถึง 99 ปี</p>
       <ul>
@@ -4362,7 +4346,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
     </div>
 
     <div class="plan-card">
-      <div class="cat">ประกันบำนาญ · ชำระครั้งเดียว · อายุ 55–70 ปี</div>
+      <div class="cat">อายุ 55–70 ปี</div>
       <h3>เมืองไทย 8501</h3>
       <p class="meta">อายุรับ 55 – 70 ปี • ชำระเบี้ยครั้งเดียว รับบำนาญถึงอายุ 85 ปี</p>
       <ul>
@@ -4372,6 +4356,8 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
       </ul>
       <button class="btn" style="margin-top:12px;padding:8px;font-size:.82rem;" onclick="showPlanDetail('mt_8501')">ดูรายละเอียดเต็ม + คำนวณบำนาญ &rarr;</button>
     </div>
+
+    <div id="sub-pen-mix" class="plan-subgroup"><h3>สะสมทรัพย์ + บำนาญ</h3><span>ได้เงินคืนระหว่างทางและบำนาญ</span></div>
 
     <div class="plan-card">
       <div class="cat">สะสมทรัพย์ + บำนาญ</div>
@@ -4626,7 +4612,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
   <div class="content-card" style="margin-top:14px;">
     <h2>เปรียบเทียบประกันชีวิตแบบบำนาญ</h2>
     <p style="color:var(--muted);">เลือกได้สูงสุด 4 แบบ ระบบจะเทียบเงื่อนไข อัตราบำนาญ ความคุ้มครองชีวิต และคำนวณเบี้ยกับผลตอบแทนจากอายุและทุนประกันที่กรอกให้ทันที</p>
-    <div id="pensionCompareBox" data-reorder="pension" style="margin-top:14px;"></div>
+    <div id="pensionCompareBox" style="margin-top:14px;"></div>
   </div>
 </div>
 </div>
@@ -4707,7 +4693,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 <div id="page-compare" class="page">
 <div class="wrap">
   <button class="btn secondary" style="width:auto;padding:8px 18px;" onclick="showPage('plans')">&larr; กลับไปหน้ารายการแผนทั้งหมด</button>
-  <div id="compareContent" data-reorder="compare" style="margin-top:14px;">
+  <div id="compareContent" style="margin-top:14px;">
     <div class="content-card">
       <p>ยังไม่ได้เลือกแผนสำหรับเปรียบเทียบ กรุณากลับไปหน้ารายการแผนแล้วกดปุ่ม "เลือกแผนที่ต้องการเปรียบเทียบ" ที่หัวข้อสัญญาเพิ่มเติมสุขภาพ/ชดเชยรายได้</p>
     </div>
@@ -4718,9 +4704,9 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 <!-- ============ PAGE: KNOWLEDGE / FAQ ============ -->
 <div id="page-hospitals" class="page">
 <div class="wrap">
-<section class="hn-hero"><div class="hn-eyebrow"><i></i> INSURANCE NETWORK DIRECTORY</div><h1>โรงพยาบาลเดียว เช็กคู่สัญญาครบ <span id="hnCompanyCount">11 บริษัทประกัน</span></h1><p>ค้นหาคู่สัญญา เปรียบเทียบประกันเดี่ยว–กลุ่ม<br class="hn-mobile-break"> และเครือข่ายพิเศษ ในที่เดียว</p><form id="hnSearchForm" role="search"><label class="hn-searchbox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></svg><input id="hnSearch" type="search" autocomplete="off" placeholder="ค้นหาชื่อโรงพยาบาล เช่น ศิริราช, สมิติเวช, BNH" aria-label="ค้นหาชื่อโรงพยาบาล"><kbd>/</kbd></label><button class="hn-search-button" type="submit">ค้นหา <span>→</span></button></form><div class="hn-toggles"><label class="hn-toggle"><input id="hnSpecial" type="checkbox"><span>เฉพาะเครือข่ายพิเศษ</span></label><label class="hn-toggle"><input id="hnAllFacilities" type="checkbox"><span>รวมคลินิกและบริการอื่น</span></label></div><div class="hn-examples"><button class="hn-text-button" id="hnSourcesBtn">แหล่งข้อมูล ↗</button> · ลองค้นหา <button data-query="ศิริราช">ศิริราช</button><button data-query="สมิติเวช">สมิติเวช</button><button data-query="กรุงเทพ">กรุงเทพ</button><button data-query="พญาไท">พญาไท</button></div><div class="hn-companies" id="hnCompanyStrip"></div></section>
+<section class="hn-hero"><div class="hn-eyebrow"><i></i> INSURANCE NETWORK DIRECTORY</div><h1>โรงพยาบาลเดียว เช็กคู่สัญญาครบ <span>10 บริษัทประกัน</span></h1><p>ค้นหาคู่สัญญา เปรียบเทียบประกันเดี่ยว–กลุ่ม<br class="hn-mobile-break"> และเครือข่ายพิเศษ ในที่เดียว</p><form id="hnSearchForm" role="search"><label class="hn-searchbox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></svg><input id="hnSearch" type="search" autocomplete="off" placeholder="ค้นหาชื่อโรงพยาบาล เช่น ศิริราช, สมิติเวช, BNH" aria-label="ค้นหาชื่อโรงพยาบาล"><kbd>/</kbd></label><button class="hn-search-button" type="submit">ค้นหา <span>→</span></button></form><div class="hn-toggles"><label class="hn-toggle"><input id="hnSpecial" type="checkbox"><span>เฉพาะเครือข่ายพิเศษ</span></label><label class="hn-toggle"><input id="hnAllFacilities" type="checkbox"><span>รวมคลินิกและบริการอื่น</span></label></div><div class="hn-examples"><button class="hn-text-button" id="hnSourcesBtn">แหล่งข้อมูล ↗</button> · ลองค้นหา <button data-query="ศิริราช">ศิริราช</button><button data-query="สมิติเวช">สมิติเวช</button><button data-query="กรุงเทพ">กรุงเทพ</button><button data-query="พญาไท">พญาไท</button></div><div class="hn-companies" id="hnCompanyStrip"></div></section>
 <section class="hn-finder" id="hnFinder"><aside class="hn-filters"><div class="hn-filter-title"><h2>ตัวกรอง</h2><button class="hn-text-button" id="hnReset">ล้างทั้งหมด</button></div><label class="hn-field-label" for="hnProvince">จังหวัด</label><select id="hnProvince"><option value="">ทุกจังหวัด</option></select><div class="hn-field-label">บริษัทประกัน</div><div id="hnCompanyFilters"></div><div class="hn-field-label">ประเภทกรมธรรม์</div><div class="hn-segmented"><button class="hn-active" data-policy="all">ทั้งหมด</button><button data-policy="individual">เดี่ยว</button><button data-policy="group">กลุ่ม</button><button data-policy="both">ทั้งสอง</button><button data-policy="group_only">เฉพาะกลุ่ม*</button></div><div class="hn-filter-note"><span class="hn-info-icon">i</span><p>แสดงสิทธิตามที่บริษัทระบุ<br>“ไม่ระบุ” หมายถึงยังยืนยันไม่ได้<br>ไม่ใช่ข้อสรุปว่าใช้สิทธิไม่ได้</p></div><button class="hn-source-link" id="hnMethodBtn">วิธีอ่านข้อมูลและแหล่งอ้างอิง ↗</button></aside>
-<div class="hn-results"><div class="hn-result-top"><div><div class="hn-eyebrow">FIND YOUR HOSPITAL</div><h2 id="hnResultsTitle">รายชื่อโรงพยาบาล</h2><p id="hnResultCount" role="status" aria-live="polite">กำลังโหลดรายชื่อ…</p></div><button id="hnExport" class="hn-outline-button">↓ <span>ส่งออก CSV</span></button></div><div class="hn-status-legend"><span><i class="hn-dot hn-yes"></i>พบรายชื่อคู่สัญญา</span><span><i class="hn-dot hn-unknown"></i>ไม่พบในชุดข้อมูล</span><span class="hn-legend-tip">เลือกโรงพยาบาลเพื่อดูสิทธิครบทุกบริษัท</span></div><div class="hn-cards" id="hnCards"></div><div class="hn-empty" id="hnEmpty" hidden><div>⌕</div><h3>ยังไม่พบรายชื่อที่ตรงกัน</h3><p>ลองพิมพ์ชื่อสั้นลง หรือเปลี่ยนจังหวัดและตัวกรอง</p><button id="hnEmptyReset" class="hn-outline-button">ล้างตัวกรอง</button></div><button class="hn-more-button" id="hnLoadMore" hidden>แสดงเพิ่มเติม</button></div></section>
+<div class="hn-results"><div class="hn-result-top"><div><div class="hn-eyebrow">FIND YOUR HOSPITAL</div><h2 id="hnResultsTitle">รายชื่อโรงพยาบาล</h2><p id="hnResultCount" role="status" aria-live="polite">กำลังโหลดรายชื่อ…</p></div><button id="hnExport" class="hn-outline-button">↓ <span>ส่งออก CSV</span></button></div><div class="hn-status-legend"><span><i class="hn-dot hn-yes"></i>พบรายชื่อคู่สัญญา</span><span><i class="hn-dot hn-unknown"></i>ไม่พบในชุดข้อมูล</span><span class="hn-legend-tip">เลือกโรงพยาบาลเพื่อดูสิทธิครบ 10 บริษัท</span></div><div class="hn-cards" id="hnCards"></div><div class="hn-empty" id="hnEmpty" hidden><div>⌕</div><h3>ยังไม่พบรายชื่อที่ตรงกัน</h3><p>ลองพิมพ์ชื่อสั้นลง หรือเปลี่ยนจังหวัดและตัวกรอง</p><button id="hnEmptyReset" class="hn-outline-button">ล้างตัวกรอง</button></div><button class="hn-more-button" id="hnLoadMore" hidden>แสดงเพิ่มเติม</button></div></section>
 <section class="hn-bottom-note"><span class="hn-info-icon">i</span><div><b>ตรวจสอบก่อนเข้ารับบริการ</b><p>ข้อมูลนี้เป็นรายชื่อคู่สัญญาตามแหล่งอ้างอิง ไม่ใช่การอนุมัติเคลม สิทธิจริงขึ้นกับกรมธรรม์ แผนประกัน บริการ และเงื่อนไขของบริษัท ควรยืนยันกับโรงพยาบาลหรือบริษัทอีกครั้ง</p></div><span id="hnUpdateLabel">ข้อมูลอ้างอิง ต.ค. 2569</span></section><dialog id="hnDetail"><div class="hn-dialog-header"><div><div class="hn-eyebrow">HOSPITAL PROFILE</div><h2 id="hnDetailName"></h2><p id="hnDetailLocation"></p></div><button class="hn-close-button" data-close="hnDetail" aria-label="ปิด">×</button></div><div id="hnDetailBody"></div></dialog>
 <dialog id="hnSources"><div class="hn-dialog-header"><div><div class="hn-eyebrow">OFFICIAL SOURCES</div><h2>ข้อมูลที่ตรวจสอบย้อนกลับได้</h2><p>รายชื่อจากเว็บไซต์และเอกสารของบริษัทประกัน</p></div><button class="hn-close-button" data-close="hnSources" aria-label="ปิด">×</button></div><div class="hn-source-content"><div class="hn-method"><b>อ่านผลการค้นหาอย่างไร</b><p>“พบข้อมูล” หมายถึงพบชื่อสถานพยาบาลในฐานรายชื่อที่นำเข้า ไม่ใช่ยืนยันการอนุมัติเคลม “ไม่พบในชุดข้อมูล” ไม่ได้แปลว่าไม่เป็นคู่สัญญา ส่วนประเภทประกันที่ต้นทางไม่ระบุชัดจะแสดงว่า “ไม่ระบุ” ไม่เดาว่าเป็นเฉพาะกลุ่มหรือเฉพาะเดี่ยว</p><p>รวมชื่อที่เขียนต่างกันเฉพาะช่องว่าง คำว่าโรงพยาบาล และชื่อที่ตรวจสอบว่าเป็นแห่งเดียวกัน โดยคงแหล่งอ้างอิงทุกบริษัทไว้ หากชื่อหรือสาขาต่างกันอาจแสดงแยกการ์ดเพื่อไม่รวมผิดแห่ง</p></div><div id="hnSourceList"></div><div class="hn-method"><b>เครือข่ายพิเศษ</b><p id="hnSpecialNote"></p><p>* ตัวกรองเฉพาะกลุ่ม หมายถึงต้นทางระบุสิทธิกลุ่มและช่องรายบุคคลไม่ระบุรับสิทธิในรายการนั้น ไม่ใช่ข้อสรุปปฏิเสธสิทธิทุกกรมธรรม์</p><p>เป็นข้อมูลชุดอ้างอิง ไม่ได้เชื่อมตรวจสิทธิกรมธรรม์หรืออัปเดตอัตโนมัติแบบเรียลไทม์</p></div></div></dialog><div class="hn-credit"><span>Hospital Network Finder · created by Dr.Gug</span><span>created by Nuengburut Tiamtanom, M.D.</span></div>
 </div>
@@ -4774,11 +4760,12 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
   หมายเหตุ: ตารางนี้จัดทำจากตารางอัตราเบี้ยในไฟล์ต้นฉบับ (ชีท Calculate) และเกณฑ์การพิจารณารับประกันโดยสรุป เพื่อใช้ประกอบการนำเสนอเบื้องต้นเท่านั้น
   ไม่ใช่เอกสารเสนอขายอย่างเป็นทางการ เบี้ยและเงื่อนไขจริงต้องยืนยันกับใบเสนอราคาและเกณฑ์พิจารณารับประกันของบริษัทอีกครั้ง
   ทุกแผนในระบบนี้ใช้ตารางอัตราเบี้ยชุดเดียวกันทั้งเว็บ จึงเทียบข้ามแผนได้โดยไม่ต้องกังวลว่าใช้คนละเกณฑ์
+  &nbsp;•&nbsp; <b>Care Plus:</b> ไม่มีอัตราเบี้ยสำหรับทุนประกัน 1 ล้านบาทที่อายุเกิน 80 ปี จึงแสดงเป็น "-" ในช่วงอายุนั้น
 </div>
 
 
 <script>
-const DATA_VERSION = '2026-11-14e';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-11c';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -6905,7 +6892,7 @@ async function exportPremiumTableExcel(){
     return;
   }
   const inp = readInputs();
-  const title = i18nEN() ? `Premium table: ${i18nT(mainPlanDisplayName(inp.mainPlan, inp.mainCapital))}` : `ตารางเบี้ยประกัน ${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)}`;
+  const title = `ตารางเบี้ยประกัน ${mainPlanDisplayName(inp.mainPlan, inp.mainCapital)}`;
   const mainLabel = mainPlanDisplayName(inp.mainPlan, inp.mainCapital);
   const healthLabels = inp.healthList.map(cfg => {
     if(cfg.type === 'dhl') return `D Health Lite — ${cfg.sum === '5m' ? 'วงเงิน 5 ล้านบาท/ครั้ง' : 'วงเงิน 1 ล้านบาท/ครั้ง'} (${cfg.mode === 'deduct' ? `Deductible ${cfg.deduct}` : `Copayment ${cfg.copay}`})`;
@@ -7199,114 +7186,6 @@ function dgZip(files){
    หนึ่ง ไลบรารีพวกนั้นต้องฝังฟอนต์ไทยเองซึ่งไฟล์ใหญ่มากและสระวรรณยุกต์มักเพี้ยน
    สอง ระบบพิมพ์ขึ้นหน้าใหม่ให้เองและซ้ำหัวตารางให้ทุกหน้าอยู่แล้ว
    ผู้ใช้เลือกปลายทางเป็น "บันทึกเป็น PDF" ในกล่องพิมพ์ได้เลย */
-
-/* ---------- รายละเอียดแบบประกันท้ายไฟล์ PDF ----------
-   ลูกค้าได้ไฟล์เดียวครบ: หน้าแรกเป็นตารางเบี้ย ตามด้วยสรุปสัญญาที่เลือกแบบย่อ
-   แล้วต่อด้วยรายละเอียดเต็มของทุกแบบที่อยู่ในชุดนี้ (หมวดความคุ้มครอง โรคร้ายแรง เงื่อนไข ข้อยกเว้น)
-   ดึงจาก PLAN_DETAILS ชุดเดียวกับหน้ารายละเอียดแผนบนเว็บ ไม่เขียนเนื้อหาซ้ำ
-   ไม่ใส่ตารางอัตราเบี้ยของแต่ละแบบ เพราะตัวเลขของลูกค้ารายนี้อยู่ในตารางหน้าแรกแล้ว */
-// ลายน้ำและหมายเหตุท้ายหน้า ใช้ position:fixed ซึ่งตอนพิมพ์เบราว์เซอร์จะวาดซ้ำทุกหน้า
-function i18nEN(){ return !!(window.I18N && I18N.lang === 'en'); }
-function i18nT(x){ return window.I18N ? I18N.t(x) : x; }
-const PDF_DISCLAIMER = 'เอกสารนี้เป็นสรุปย่อเพื่อประกอบการพิจารณาเบื้องต้นเท่านั้น ไม่ใช่สัญญาประกันภัย ความคุ้มครอง เงื่อนไข และข้อยกเว้นที่มีผลจริงให้ยึดตามกรมธรรม์ฉบับจริงที่บริษัทออกให้';
-function pdfPlanDetailIds(inp){
-  const ids = [];
-  const add = id => { if(id && PLAN_DETAILS[id] && !ids.includes(id)) ids.push(id); };
-  if(isPensionMainPlan(inp.mainPlan)){
-    const pid = currentPensionMain && currentPensionMain.pid;
-    add(PLAN_DETAILS[pid] ? pid : Object.keys(PLAN_DETAILS).find(k => PLAN_DETAILS[k].pension && PLAN_DETAILS[k].pensionIds && PLAN_DETAILS[k].pensionIds.includes(pid)));
-  } else {
-    add(MAIN_PLAN_DETAIL_ID[inp.mainPlan]);
-  }
-  if(inp.useTerm) add('termrider');
-  inp.healthList.forEach(h => add(h.type));
-  inp.opdList.forEach(o => add(o.type === 'mao' ? 'opdmaochai' : 'opd'));
-  if(inp.useCareplus) add('careplus');
-  if(inp.useCipc) add('cipc');
-  if(inp.useMci) add('multipleci');
-  if(inp.dcareSelections.length) add('dcare');
-  if(inp.useCancer) add('cancer');
-  if(inp.usePureCancer) add('purecancer');
-  if(inp.useHappyLady) add('happylady');
-  if(inp.useHappyLadyPlus) add('happyladyplus');
-  if(inp.useDiabetes) add('diabetes');
-  if(inp.useSmartSilver) add('smartsilver');
-  if(inp.paPlan && inp.paPlan !== 'none') add('pa');
-  if(inp.useTpd) add('tpd');
-  if(inp.useHb) add('hb');
-  return ids;
-}
-function pdfPlanDetailHtml(id){
-  const p = PLAN_DETAILS[id];
-  const safe = fn => { try{ return fn() || ''; }catch(e){ return ''; } };
-  const list = (title, arr) => arr && arr.length ? `<h3>${title}</h3><ul>${arr.map(c => `<li>${c}</li>`).join('')}</ul>` : '';
-  return `<section class="pdf-plan" data-plan="${id}">
-    <div class="pdf-plan-cat">${p.category || ''}</div>
-    <h2>${p.title}</h2>
-    ${p.overview ? `<p>${p.overview}</p>` : ''}
-    ${list('ความคุ้มครองโดยละเอียด', p.coverage)}
-    ${p.benefitTable ? `<h3>${p.benefitTitle || (p.pension ? 'อัตราเงินบำนาญที่ได้รับ' : 'ตารางความคุ้มครอง 13 หมวด')}</h3>${safe(p.benefitTable)}` : ''}
-    ${p.detailSections ? safe(p.detailSections) : ''}
-    ${list('เงื่อนไขและข้อควรทราบ', p.conditions)}
-    ${p.exclusions && p.exclusions.length ? `${list('ข้อยกเว้นความคุ้มครอง', p.exclusions)}${p.exclusionExtra ? safe(p.exclusionExtra) : ''}${p.exclusionNote ? `<p class="meta">${p.exclusionNote}</p>` : ''}` : ''}
-  </section>`;
-}
-
-/* ในตารางความคุ้มครองของ PDF เหลือเฉพาะคอลัมน์แผนย่อยที่ลูกค้าซื้อ
-   เช่นซื้อ D Health Lite 5 ล้าน ก็ไม่ต้องโชว์คอลัมน์ 1 ล้าน ให้ลูกค้างง
-   เทียบจากจำนวนเงินในหัวคอลัมน์ (1 ล้าน = 1,000,000, 20M = 20,000,000, แผน 1 = 1) */
-function pdfTierAmount(text){
-  // หัวคอลัมน์อย่าง "แผน 1: 1 ล้านบาท/ครั้ง" มีทั้งเลขแผนและวงเงิน ให้ใช้ตัวที่มีหน่วยก่อน
-  const all = [...String(text).replace(/,/g, '').matchAll(/(\d+(?:\.\d+)?)\s*(ล้าน|M\b|k\b|แสน)?/g)];
-  if(!all.length) return null;
-  const m = all.find(x => x[2]) || all[all.length - 1];
-  const mult = {'ล้าน':1e6, 'M':1e6, 'k':1e3, 'แสน':1e5}[m[2]] || 1;
-  return Number(m[1]) * mult;
-}
-function pdfSelectedTier(id, inp){
-  const h = inp.healthList.find(x => x.type === id);
-  const v = {
-    dhl: h && pdfTierAmount(h.sum && h.sum.replace('m', 'M')),
-    ehp: h && pdfTierAmount(h.plan && h.plan.replace('m', 'M')),
-    maochai: h && pdfTierAmount(h.plan), ecp: h && pdfTierAmount(h.plan), hsn: h && pdfTierAmount(h.plan),
-    opd: (inp.opdList.find(o => o.type === 'krang') || {}).plan,
-    cancer: inp.useCancer && pdfTierAmount(String(inp.cancerPlan).replace('m', 'M')),
-    purecancer: inp.usePureCancer && pdfTierAmount(String(inp.pureCancerPlan).replace('m', 'M')),
-  }[id];
-  return v == null || v === false ? null : Number(v);
-}
-function pdfKeepTierColumns(root, sel){
-  if(sel == null || !isFinite(sel)) return;
-  root.querySelectorAll('table').forEach(t => {
-    const hr = t.tHead && t.tHead.rows.length ? t.tHead.rows[t.tHead.rows.length - 1] : t.rows[0];
-    if(!hr) return;
-    const head = [...hr.cells];
-    if(head.length < 3) return;
-    const keep = head.map((c, i) => i === 0 || pdfTierAmount(c.textContent) === sel);
-    const tiers = keep.slice(1);
-    if(tiers.every(Boolean) || !tiers.some(Boolean)) return;   // หาคอลัมน์ที่ตรงไม่เจอ ปล่อยตารางเต็มไว้ดีกว่าตัดผิด
-    const n = head.length, left = keep.filter(Boolean).length;
-    [...t.rows].forEach(r => {
-      const cs = [...r.cells];
-      if(cs.length === n) cs.forEach((c, i) => { if(!keep[i]) c.remove(); });
-      else if(cs.length === 1) cs[0].colSpan = left;
-    });
-  });
-}
-function pdfPlanExtrasHtml(inp){
-  const card = document.querySelector('#contractSummary .content-card');
-  const ids = pdfPlanDetailIds(inp);
-  const summary = card ? `<section class="pdf-summary">${card.innerHTML}
-    ${ids.length ? `<p class="meta">${i18nEN() ? 'The following pages give the full details of each plan in this order:' : 'หน้าถัดไปเป็นรายละเอียดเต็มของแต่ละแบบตามลำดับนี้:'} ${ids.map(id => i18nT(PLAN_DETAILS[id].title.replace(/<[^>]+>/g, '').trim())).join(' · ')}</p>` : ''}</section>` : '';
-  return `<div class="pdf-extra">${summary}${ids.map(pdfPlanDetailHtml).join('')}</div>`;
-}
-/* เนื้อหาบนเว็บมีปุ่ม ช่องกรอก และกล่องพับ ซึ่งในกระดาษใช้ไม่ได้ จึงกางทุกกล่องและเอาส่วนที่กดได้ออก */
-function pdfCleanExtras(root){
-  root.querySelectorAll('details').forEach(d => d.setAttribute('open', ''));
-  root.querySelectorAll('button, input, select, textarea, script, .plan-cta, .brochure-strip, [id^="pensionCalc-"]').forEach(e => e.remove());
-  root.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
-}
-
 function exportPremiumTablePdf(){
   const table = document.querySelector('#tableWrap table');
   if(!table){
@@ -7343,15 +7222,14 @@ function exportPremiumTablePdf(){
       `<td class="${(r[ci] || {}).cls || ''}">${plannerEscapeHtml((r[ci] || {}).text || '')}</td>`).join('') + '</tr>').join('');
     return `<section class="print-sec${i ? ' print-sec-next' : ''}">
       <div class="print-head">
-        <div class="print-title">${i18nEN() ? `Premium table: ${plannerEscapeHtml(i18nT(mainLabel))}${many ? ` (set ${i+1} of ${groups.length})` : ''}` : `ตารางเบี้ยประกัน ${plannerEscapeHtml(mainLabel)}${many ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}`}</div>
+        <div class="print-title">ตารางเบี้ยประกัน ${plannerEscapeHtml(mainLabel)}${many ? ` (ชุดที่ ${i+1} จาก ${groups.length})` : ''}</div>
         <div class="print-meta">${plannerEscapeHtml(metaLine)}${many ? ' · คอลัมน์เยอะเกินหน้ากระดาษ จึงแบ่งเป็นชุด โดยมีอายุและปีกรมธรรม์กำกับทุกชุด' : ''}</div>
       </div>
       <table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>
     </section>`;
   }).join('');
 
-  host.innerHTML = `<div class="pdf-watermark" aria-hidden="true">doctor-insurance.com</div>
-    <div class="print-doc">${sections}
+  host.innerHTML = `<div class="print-doc">${sections}
       <div class="print-foot print-adjust-note">${plannerEscapeHtml(RIDER_PREMIUM_ADJUST_NOTE)}</div>
       <div class="print-foot">${plannerEscapeHtml(CONTENT_CREDIT)} ·
         สร้างเมื่อ ${new Date().toLocaleString('th-TH')} ·
@@ -7359,14 +7237,8 @@ function exportPremiumTablePdf(){
     </div>`;
 
   dgFitPrintTable(host, cols);
-  // วัดความพอดีของตารางเบี้ยก่อน แล้วค่อยต่อสรุปและรายละเอียดแบบ เพื่อไม่ให้ตารางในรายละเอียดไปถ่วงการย่ออักษร
-  host.insertAdjacentHTML('beforeend', pdfPlanExtrasHtml(inp));
-  pdfCleanExtras(host.querySelector('.pdf-extra'));
-  host.querySelectorAll('.pdf-plan[data-plan]').forEach(sec => pdfKeepTierColumns(sec, pdfSelectedTier(sec.dataset.plan, inp)));
-  document.documentElement.style.setProperty('--pdf-foot', JSON.stringify((window.I18N ? I18N.t(PDF_DISCLAIMER) : PDF_DISCLAIMER) + ' · doctor-insurance.com'));
   document.body.classList.add('dg-printing');
   const cleanup = () => {
-    document.documentElement.style.removeProperty('--pdf-foot');
     document.body.classList.remove('dg-printing');
     host.innerHTML = '';
     window.removeEventListener('afterprint', cleanup);
@@ -7468,18 +7340,6 @@ function dgSaveBlob(blob, fileName){
 }
 
 // ---- pre-table plain-language summary of everything selected ----
-const MAIN_PLAN_DETAIL_ID = {
-  '99_20':'main9920', '99_99':'main9999', smart_99_99:'main9999smart', '99_7':'main997', '80_10':'main8010',
-  flexi_99_5:'flexi995', flexi_99_20:'flexi9920', '15_3':'smartlink153', '15_6':'smartlink156', '15_6_pro':'smartlink156',
-  lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
-  happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
-  easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
-  easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
-  premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
-  legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
-  whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash', smart_index_10_1:'smartindex101',
-};
-
 function renderContractSummary(inp, rows, cols, entryAge, gender){
   const el = document.getElementById('contractSummary');
   // first-year premium per column key — already the true premium for ONE
@@ -7651,8 +7511,17 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     'Smart Protection 99/99':'เมืองไทย สมาร์ท โพรเทคชั่น 99/99',
   };
   const mainLabel = (n => COPY_NAME_FIX[n] || n)(mainPlanDisplayName(inp.mainPlan, inp.mainCapital));
-  const MAIN_ROUTE_KEY = MAIN_PLAN_DETAIL_ID;
-
+  const MAIN_ROUTE_KEY = {
+    '99_20':'main9920', '99_99':'main9999', smart_99_99:'main9999smart', '99_7':'main997', '80_10':'main8010',
+    flexi_99_5:'flexi995', flexi_99_20:'flexi9920', '15_3':'smartlink153', '15_6':'smartlink156', '15_6_pro':'smartlink156',
+    lifetime_protection:'lifetimeprotection', sabaijai_90_90:'waigao9090', sabaijai_99_10:'waigao9910',
+    happy_return_99_7:'happyreturn997', happy_return_99_9:'happyreturn999',
+    easy_protection_1_1:'easyprotection', easy_protection_5_5:'easyprotection',
+    easy_protection_10_10:'easyprotection', easy_protection_15_15:'easyprotection',
+    premier_legacy_99_5:'premierlegacy995', premier_legacy_99_10:'premierlegacy9910',
+    legacy_wealth_99_5:'legacywealth995', premier_legacy_99_1:'premierlegacy991',
+    whole_life_99_1_cashback:'wholelife991cashback', whole_life_99_1_nocash:'wholelife991nocash', smart_index_10_1:'smartindex101',
+  };
   // แบบที่ไม่ได้อยู่ใน SPECIAL_MAIN_PLANS ต้องบอกระยะชำระและอายุคุ้มครองไว้ที่นี่แทน
   const MAIN_TERM_BASE = {
     '99_20':{payYears:20, coverToAge:99}, '99_99':{payYears:null, coverToAge:99},
@@ -7695,7 +7564,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
   mainItem.coverage = `${mainItem.coverage} (${mainTerm})`;
   items.forEach(it => {
     if(it.name.startsWith('Care Plus')){
-      it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD) รวมถึงยามุ่งเป้า (Targeted Therapy) ยาภูมิคุ้มกันบำบัด (Immunotherapy) และค่าตรวจวินิจฉัย เช่น CT/MRI/PET Scan ที่เกี่ยวกับโรคที่คุ้มครอง โดยไม่ต้องนอนโรงพยาบาล`;
+      it.coverage = `${it.coverage} เป็นความคุ้มครองค่ารักษาพยาบาล คุ้มครองทั้งผู้ป่วยใน (IPD) และผู้ป่วยนอก (OPD)`;
     } else if(it.name.startsWith('D Care')){
       const d = inp.dcareSelections.find(cfg => it.name === 'D Care - '+cfg.label.split(' (')[0]);
       if(d){
@@ -7734,36 +7603,6 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
     '💳 สิทธิพิเศษเพิ่มเติม',
     'ผ่อน 0% สูงสุด 10 เดือน และรับเครดิตเงินคืนตามเงื่อนไขบัตรเครดิตที่ร่วมรายการ',
     'ดูรายละเอียด: https://www.muangthai.co.th/th/campaign/promotion'
-  ].join('\n');
-  // ภาษาอังกฤษ: ข้อความสำหรับคัดลอกอยู่ใน textarea ซึ่งตัวแปลไม่แตะ จึงสร้างฉบับอังกฤษแยก
-  const enUrl = u => u + (u.includes('?') ? '&' : '?') + 'lang=en';
-  const enPrem = v => i18nT(displayPremium(v));
-  const summaryLinesEn = !i18nEN() ? '' : [
-    `👤 ${gender==='m'?'Male':'Female'} | Age ${entryAge} | ${i18nT(paymentInfo.label)} payment`,
-    '',
-    '━━━━━━━━━━━━━━━━',
-    '📋 Plan details',
-    `  ✓ Base policy: ${i18nT(mainLabel)} | Sum assured: ${fmt(inp.mainCapital)} THB`,
-    `    Premium ${enPrem(mainItem.premium)}`,
-    `    📌 ${i18nT(mainItem.coverage)}`,
-    `Details >> ${enUrl(mainItem.detailUrl)}`,
-    ...items.flatMap(it => [``, `  ✓ ${i18nT(it.name)}`, `    Premium ${enPrem(it.premium)}`, `    📌 ${i18nT(it.coverage)}`, `Details >> ${enUrl(it.detailUrl)}`]),
-    '',
-    'Note: rider premiums may increase with the insured\'s age (reflecting risk and inflation), and premiums must be paid continuously for as long as cover is needed',
-    '',
-    '━━━━━━━━━━━━━━━━',
-    paymentInfo.periods === 1
-      ? `💳 Premium ${fmt(totalY1)} THB/year (about ${fmt(Math.round(totalY1 / 365))} THB a day)`
-      : `💳 Total premium for all plans ${fmt(totalY1)} THB/${i18nT(paymentUnitLabel)}`,
-    '',
-    'Feel free to ask for more details or a quotation',
-    '',
-    'Frequently asked insurance questions',
-    'https://www.doctor-insurance.com/health-knowledge?lang=en',
-    '━━━━━━━━━━━━━━━━',
-    '💳 Special offers',
-    '0% installments for up to 10 months, plus cashback per the participating credit card conditions',
-    'Details: https://www.muangthai.co.th/th/campaign/promotion'
   ].join('\n');
 
   // combined critical-illness coverage across every CI-related rider chosen
@@ -7809,7 +7648,7 @@ function renderContractSummary(inp, rows, cols, entryAge, gender){
       <div class="copy-summary-actions"><button type="button" class="btn" onclick="copyContractSummary()">คัดลอกข้อความ</button></div>
     </div>
   `;
-  document.getElementById('copySummaryText').value = summaryLinesEn || summaryLines;
+  document.getElementById('copySummaryText').value = summaryLines;
 
   renderAdvisor(inp, rows, items, mainItem, totalY1, entryAge);
 }
@@ -9258,7 +9097,7 @@ function formatBenefitCell(c){
   let s = String(c);
   const raw = s.trim();
   if(raw === '—' || raw === '-' || raw.includes('ไม่ครอบคลุม') || raw.includes('ไม่คุ้มครอง')){
-    const label = (raw === '—' || raw === '-' || raw === 'ไม่ครอบคลุมในแผนนี้') ? 'ไม่คุ้มครอง' : s;
+    const label = (raw === '—' || raw === '-') ? 'ไม่คุ้มครอง' : s;
     return `<span class="benefit-no"><span class="benefit-icon no">×</span>${label}</span>`;
   }
   if(raw.includes('จ่ายตามจริง')){
@@ -9365,12 +9204,11 @@ function dhlBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000 บาท/วัน', '4,000 บาท/วัน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', '20,000 บาท/ครั้ง (สูงสุด 14 วัน)', '20,000 บาท/ครั้ง (สูงสุด 14 วัน)'],
+    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', 'สูงสุด 14 วัน', 'สูงสุด 14 วัน'],
     ['3. ค่าแพทย์ตรวจรักษา', '2,000 บาท/วัน', '4,000 บาท/วัน'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>'],
     ['8. เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['9. ค่าล้างไต', carePlusLinkText(), carePlusLinkText()],
@@ -9388,12 +9226,11 @@ function eliteBenefitRows(){
     ['§ผลประโยชน์ส่วนความคุ้มครองหลัก (13 หมวดมาตรฐาน)'],
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '10,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '12,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '15,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน', '25,000 บาท/วัน หรือห้องเดี่ยวมาตรฐาน'],
     ['2. ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล ฯลฯ', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)', '100,000 บาท/ครั้ง (สูงสุด 30 วัน)'],
+    ['2.4 ค่ายา/เวชภัณฑ์กลับบ้าน (สูงสุดไม่เกิน 30 วัน)', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง', '100,000 บาท/ครั้ง'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ รวมผ่าตัดเปลี่ยนอวัยวะ (1 ครั้งตลอดชีวิต)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน (ผูกกับการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
+    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน (ผูกกับการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>', 'จ่ายตามจริง<span class="benefit-subnote">เฉพาะการรักษาภายใน 24 ชม. แรก; ล้างแผลต่อเนื่อง/วัคซีนเข็มกระตุ้น ให้ใช้ PA หรือ OPD</span>'],
     ['8. เวชศาสตร์ฟื้นฟู หลังนอนโรงพยาบาล (รวมในวงเงินการแอดมิดครั้งนั้น)', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['9. ล้างไตผ่านทางเส้นเลือด', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
@@ -9427,12 +9264,11 @@ function eliteBenefitTable(){
 function maochaiBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
-    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)'],
+    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
-    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
+    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['8. เวชศาสตร์ฟื้นฟู', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['9. ค่าล้างไต', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
@@ -9448,12 +9284,11 @@ function maochaiBenefitTable(){
 function ecpBenefitRows(){
   return [
     ['1. ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล', '2,000/วัน', '4,000/วัน', '4,000/วัน'],
-    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)', 'จ่ายตามจริง; ยากลับบ้าน 1,000/ครั้ง (สูงสุด 7 วัน)'],
+    ['2. ค่าบริการทางการแพทย์รักษาตัวเป็นผู้ป่วยใน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน', 'จ่ายตามจริง; ยากลับบ้าน 1,000/วัน'],
     ['3. ค่าแพทย์ตรวจรักษา', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['4. ค่าผ่าตัด/หัตถการ/ห้องผ่าตัด/วิสัญญีแพทย์', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
     ['5. Day Surgery', 'จ่ายตามจริง', 'จ่ายตามจริง', 'จ่ายตามจริง'],
-    ['6.1 ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
-    ['6.2 ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง', 'ไม่คุ้มครอง'],
+    ['6. ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['7. อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['8. เวชศาสตร์ฟื้นฟู', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
     ['9. ค่าล้างไต', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้', 'ไม่ครอบคลุมในแผนนี้'],
@@ -9955,19 +9790,24 @@ const PLAN_DETAILS = {
   },
 
   flexi995: {
-    title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ)',
+    title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/5', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ · แปลงทุนชีวิตเป็นค่ารักษาได้ตั้งแต่อายุ 65)',
     fit: ['มีสวัสดิการค่ารักษาจากที่ทำงานอยู่แล้ว แต่รู้ว่าพอเกษียณจะไม่มี และไม่อยากไปเริ่มหาประกันสุขภาพตอนอายุ 60', 'อยากปิดภาระเบี้ยให้จบเร็ว จ่ายแค่ 5 ปีในช่วงที่รายได้ยังดี', 'อยากได้ทั้งลดหย่อนภาษี คุ้มครองชีวิต และเงินก้อนไว้ใช้เป็นค่ารักษาหลังเกษียณในสัญญาเดียว'],
     notFit: 'ยังมีงบไม่พอจนต้องเลือกระหว่างแบบนี้กับประกันสุขภาพ ให้เอาประกันสุขภาพก่อนเสมอ เพราะแบบนี้ช่วยเรื่องค่ารักษาได้ก็ต่อเมื่อสะสมมานานพอ',
     overview: 'ประกันชีวิตตลอดชีพที่<b>ชำระเบี้ยสั้นที่สุดในระบบ เพียง 5 ปี</b> แต่คุ้มครองถึงอายุ 99 ปี เหมาะกับคนที่มีเงินก้อนช่วงนี้และอยากปิดภาระเบี้ยให้เร็วที่สุด จุดต่างจากตระกูลสมาร์ท โพรเทคชั่นคือ<b>มีส่วนลดเบี้ยตามระดับทุน</b> ยิ่งทำทุนสูงยิ่งได้อัตราถูกลง จึงเหมาะกับการวางแผนมรดกด้วยทุนก้อนใหญ่',
     images: [],
     coverage: [
       'คุ้มครองชีวิตถึงอายุ 99 ปี โดยชำระเบี้ยเพียง 5 ปีแรก',
+      '<b>ปรับเปลี่ยนวงเงินคุ้มครองชีวิตเป็นวงเงินค่ารักษาพยาบาลได้ในวัยเกษียณ</b> คุ้มครองค่ารักษาตั้งแต่อายุ 65 ปี ทั้งผู้ป่วยในและผู้ป่วยนอก ด้วยวงเงินเหมาจ่าย (ตามหน้าข้อมูลผลิตภัณฑ์บน SmartWeb แนวคิดเดียวกับรุ่น 99/20)',
       'อัตราเบี้ยคงที่ตามอายุ ณ วันทำสัญญา ไม่ปรับขึ้นตามอายุ',
+      'ลดหย่อนภาษีได้สูงสุด 100,000 บาทต่อปี ตามหลักเกณฑ์กรมสรรพากร',
       'มีมูลค่าเวนคืนกรมธรรม์ กู้ยืมหรือเวนคืนได้ตามเงื่อนไข',
     ],
     conditions: [
-      'อายุรับประกัน 0 – 55 ปี',
-      'ทุนประกันขั้นต่ำ 500,000 บาท',
+      'อายุรับประกัน 30 วัน – 55 ปี',
+      'ทุนประกันขั้นต่ำ 500,000 บาท และเบี้ยรายงวดไม่ต่ำกว่า 200 บาท',
+      'ซื้อได้มากกว่า 1 กรมธรรม์ แต่ทุนของ เฟล็กซี่ โพรเทคชั่น 99/5 รวมกับ 99/20 ทุกกรมธรรม์ทุกช่องทาง ต้องไม่เกิน 10,000,000 บาทต่อคน',
+      'แนบสัญญาเพิ่มเติมได้ตามเงื่อนไขของสัญญาเพิ่มเติมนั้น · รับกรณีภัยต่ำกว่ามาตรฐาน (Sub-Standard) ได้',
+      'ชำระด้วยบัตรเครดิตและผ่านบัญชีบัตรเครดิต (CCP) ได้',
       'ชำระเบี้ย 5 ปี คุ้มครองถึงอายุ 99 ปี',
       'เลือกงวดชำระได้ทั้ง รายปี / ราย 6 เดือน / ราย 3 เดือน / รายเดือน',
       '<b>ส่วนลดอัตราเบี้ยรายปี ต่อทุน 1,000 บาท</b> — ทุน 500,000 ถึงต่ำกว่า 2,000,000 บาท: ไม่มีส่วนลด · ทุน 2,000,000 ถึงต่ำกว่า 5,000,000 บาท: ลด 5 บาท · ทุนตั้งแต่ 5,000,000 บาทขึ้นไป: ลด 10 บาท',
@@ -10563,7 +10403,7 @@ const PLAN_DETAILS = {
   },
 
   flexi9920: {
-    title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20', category: 'ประกันชีวิตเพื่อเตรียมค่ารักษาหลังเกษียณ',
+    title: 'เมืองไทย เฟล็กซี่ โพรเทคชั่น 99/20', category: 'สัญญาหลัก (ประกันชีวิตตลอดชีพ · แปลงทุนชีวิตเป็นค่ารักษาได้ตั้งแต่อายุ 65)',
     fit: ['ทำงานบริษัทหรือรัฐวิสาหกิจที่มีประกันกลุ่ม แต่เกษียณแล้วสวัสดิการหายไป เหลือแค่สิทธิบัตรทอง', 'กังวลว่าเบี้ยประกันสุขภาพตอนอายุ 65 ขึ้นไปจะแพงเกินกำลัง จึงอยากเตรียมเงินไว้จ่ายส่วนนั้นล่วงหน้า', 'อยากกระจายเบี้ยเป็น 20 ปีให้เบาต่อปี แทนที่จะอัดจบใน 5 ปีเหมือนรุ่น 99/5'],
     notFit: 'ยังไม่มีประกันสุขภาพเลย ควรปิดความเสี่ยงค่ารักษาก้อนใหญ่ก่อน แล้วค่อยมาเตรียมส่วนหลังเกษียณ',
     overview: 'ประกันชีวิตชำระเบี้ย 20 ปี คุ้มครองถึงอายุ 99 ปี เบี้ยคงที่ และตั้งแต่อายุ 65 ปีสามารถใช้วงเงินผลประโยชน์ชีวิตที่เหลือเป็นค่ารักษาพยาบาลแบบ IPD/OPD ได้ตามเงื่อนไข เหมาะกับผู้ที่ต้องการเตรียมค่ารักษาหลังเกษียณตั้งแต่ยังทำงานอยู่',
@@ -12003,7 +11843,7 @@ const LIFE_PRODUCTS = [
     purposes:['family','legacy','tax'],
     payYears:5, coverToAge:99, entryAgeMin:0, entryAgeMax:55,
     capitalMin:500000, capitalMax:null, capitalStep:100000,
-    strength:'ชำระเบี้ยสั้นที่สุดเพียง 5 ปี แล้วคุ้มครองยาวถึงอายุ 99 ปี และมีส่วนลดเบี้ยตามระดับทุน ทำทุนตั้งแต่ 2 ล้านลด 5 บาทต่อพัน ตั้งแต่ 5 ล้านลด 10 บาทต่อพัน จึงคุ้มขึ้นเรื่อย ๆ เมื่อทุนสูง เหมาะกับวางแผนมรดกด้วยเงินก้อน',
+    strength:'ชำระเบี้ยสั้นที่สุดเพียง 5 ปี แล้วคุ้มครองยาวถึงอายุ 99 ปี ตั้งแต่อายุ 65 ปีเปลี่ยนวงเงินชีวิตเป็นค่ารักษา IPD/OPD ได้ และมีส่วนลดเบี้ยตามระดับทุน ทำทุนตั้งแต่ 2 ล้านลด 5 บาทต่อพัน ตั้งแต่ 5 ล้านลด 10 บาทต่อพัน จึงคุ้มขึ้นเรื่อย ๆ เมื่อทุนสูง เหมาะกับวางแผนมรดกด้วยเงินก้อน',
     tradeoff:'เบี้ยต่อปีสูงที่สุดในกลุ่ม เพราะอัดค่าเบี้ยทั้งชีวิตไว้ใน 5 ปี และทุนขั้นต่ำ 500,000 บาท จึงไม่เหมาะกับลูกค้างบน้อย',
     premiumOf:(cap,g,age,freq)=>mainPremiumAtEntry('flexi_99_5',cap,g,age,freq),
     calcPlanValue:'flexi_99_5',
@@ -12892,7 +12732,7 @@ function renderLifeAdvisorResult(){
              <li>${o.coversGap ? 'ปิดช่องว่างได้ครบ' : 'ยังปิดช่องว่างไม่ครบ'}</li>`}
       </ul>
       ${warn}
-      <div class="ai-note">${o.why.map(w=>`• ${plannerEscapeHtml(w).replace(/&lt;(\/?)b&gt;/g,'<$1b>')}`).join('<br>')}</div>
+      <div class="ai-note">${o.why.map(w=>`• ${plannerEscapeHtml(w)}`).join('<br>')}</div>
       <button class="btn" style="padding:9px;margin-top:12px;" onclick="applyLifeOption(${idx})">เลือกแผนนี้ แล้วไปคำนวณเบี้ยละเอียด</button>
     </div>`;
   }).join('');
@@ -14722,10 +14562,6 @@ const HEALTH_GUIDE_BUCKETS = [
   },
 ];
 
-// ลิงก์จากคู่มือไปหัวข้อใน FAQ ใช้ร่วมกันหลายบล็อก
-function hgFaq(group, key, label){
-  return `<span class="mini-link" onclick="openLegacyDest({page:'faq', group:'${group}', key:'${key}'})">${label}</span>`;
-}
 const HEALTH_GUIDE_SECTIONS = [
   {
     id:'g-why', num:'1', title:'ประกันสุขภาพมีไว้ทำอะไรกันแน่',
@@ -14830,135 +14666,6 @@ const HEALTH_GUIDE_SECTIONS = [
       {n:'ขั้นที่ 5', t:'ของที่จ่ายเองไหว ค่อยเติมท้ายสุด', d:'OPD ชดเชยรายวัน อุบัติเหตุ ใส่เมื่อทุกอย่างข้างบนครบแล้วและยังมีงบเหลือ'},
     ],
     mapTable:true,
-  },
-  {
-    id:'g-claim', num:'6', title:'เคลมประกันสุขภาพทำยังไง ตั้งแต่ป่วยจนเงินเข้า',
-    lead:'คนส่วนใหญ่รู้จักประกันตอนซื้อ แล้วมารู้จักอีกทีตอนนอนโรงพยาบาล ซึ่งเป็นจังหวะที่ไม่มีใครอยากเจอเรื่องงง หัวข้อนี้เล่าทั้งเส้นทางตั้งแต่ต้นจนจบ ว่ามีช่องทางเคลมอะไรบ้าง วันแอดมิตต้องทำอะไร ฝ่ายสินไหมดูอะไรก่อนอนุมัติ บิลโรงพยาบาลถูกแยกเข้าหมวดยังไง และถ้าต้องสำรองจ่าย ต้องเตรียมเอกสารอะไร ส่งที่ไหน ได้เงินเมื่อไร อ่านจบแล้ววันที่ต้องใช้จริงจะรู้ว่าตัวเองอยู่ขั้นไหน',
-    blocks:[
-      {h:'ภาพรวม: เคลมมีแค่สองแบบ คือไม่ต้องจ่ายก่อน กับจ่ายก่อนแล้วเบิกคืน',
-       html:`<p>ชื่อเรียกที่ได้ยินกันเยอะ ทั้งแฟกซ์เคลม เครดิตเคลม Cashless Direct Claim พรีเคลม สรุปแล้วแบ่งได้แค่สองกลุ่ม</p>
-<p><b>กลุ่มแรก เคลมแบบไม่ต้องสำรองจ่าย</b> โรงพยาบาลส่งประวัติ ผลตรวจ และค่าใช้จ่ายให้บริษัทพิจารณาระหว่างที่เรายังอยู่โรงพยาบาล ถ้าอนุมัติ เราจ่ายเฉพาะส่วนที่เกินสิทธิ์หรือไม่อยู่ในความคุ้มครอง แล้วกลับบ้านได้เลย ไม่ต้องรวบรวมเอกสารไปยื่นเองทีหลัง</p>
-<p><b>กลุ่มที่สอง เคลมแบบสำรองจ่าย</b> หรือเบิกตรง (Direct Claim) เราจ่ายโรงพยาบาลไปก่อน แล้วเอาเอกสารไปยื่นเบิกกับบริษัท บริษัทพิจารณาแล้วโอนเงินคืนให้</p>
-<p><b>สองแบบนี้ใช้เกณฑ์ความคุ้มครองชุดเดียวกัน</b> ต่างกันแค่ว่าใครจ่ายเงินก่อน วันไหนที่ต้องสำรองจ่าย จึงไม่ได้แปลว่าบริษัทไม่จ่าย แต่แปลว่าบริษัทยังตัดสินไม่ได้ภายในเวลาที่เรากำลังจะกลับบ้าน ส่วนใหญ่เพราะต้องขอข้อมูลเพิ่ม</p>
-<div class="table-wrap"><table class="hg-table"><thead><tr><th>ช่องทาง</th><th>ใช้กับการรักษาแบบไหน</th><th>ใช้ได้ที่ไหน</th><th>สิ่งที่ต้องทำ</th></tr></thead><tbody>
-<tr><td class="hg-td-head">แฟกซ์เคลม<br>(ผู้ป่วยใน)</td><td>นอนโรงพยาบาลเป็นผู้ป่วยใน · ผ่าตัดใหญ่ที่ไม่ต้องนอนโรงพยาบาล (Day Surgery) · ผ่าตัดเล็กตามหมวด 13 สำหรับแบบที่มีหมวดนี้</td><td>โรงพยาบาลคู่สัญญา</td><td>ยื่นบัตรประชาชน หรือบัตรประกันในแอป MTL Click (Digicard) แล้วแจ้งตั้งแต่จุดลงทะเบียนว่าจะใช้สิทธิ์ประกัน</td></tr>
-<tr><td class="hg-td-head">OPD Cashless<br>(ผู้ป่วยนอก)</td><td>เฉพาะแบบที่มีความคุ้มครองผู้ป่วยนอก เช่น สัญญา OPD แบบรายครั้งหรือแบบเหมาจ่าย · Elite Health Plus แผนที่มี OPD · ค่ารักษาอุบัติเหตุแบบผู้ป่วยนอกภายใน 24 ชั่วโมง · ประกันอุบัติเหตุส่วนบุคคล</td><td>โรงพยาบาลคู่สัญญาที่เข้าร่วม</td><td>เหมือนแฟกซ์เคลม ถ้าไม่มีความคุ้มครอง OPD เลย ช่องทางนี้ใช้ไม่ได้</td></tr>
-<tr><td class="hg-td-head">โรงพยาบาลรัฐ<br>(ระบบ iClaim)</td><td>ทั้งผู้ป่วยนอกและผู้ป่วยใน ภายใต้วงเงินของกรมธรรม์</td><td>โรงพยาบาลรัฐที่เข้าร่วม ซึ่งบริษัทแจ้งว่ามีมากกว่า 400 แห่ง รวมโรงเรียนแพทย์และคลินิกพรีเมียมในโรงพยาบาลรัฐบางแห่ง</td><td>เช็กชื่อโรงพยาบาลก่อนไป เพราะไม่ใช่โรงพยาบาลรัฐทุกแห่ง</td></tr>
-<tr><td class="hg-td-head">ขออนุมัติล่วงหน้า<br>(Pre-authorization)</td><td>ผ่าตัดที่ไม่ฉุกเฉินและนัดวันไว้แล้ว · ตรวจวินิจฉัยด้วยวิธีพิเศษ เช่น ส่องกล้อง · บริการ MTL Claim Cover Check ช่วยประเมินค่ารักษาและส่วนที่ประกันจ่ายให้ก่อนเข้ารักษา</td><td>โรงพยาบาลคู่สัญญาที่มีหน่วยงานรองรับ</td><td>ให้โรงพยาบาลส่งแผนการรักษาของแพทย์ไปขออนุมัติ แล้วรอผลก่อนถึงวันนัด</td></tr>
-<tr><td class="hg-td-head">สำรองจ่ายแล้วเบิกตรง<br>(Direct Claim)</td><td>โรงพยาบาลไม่ใช่คู่สัญญา · รักษาต่างประเทศ · แฟกซ์เคลมไม่ผ่านในวันนั้น · ใช้สวัสดิการหรือประกันกลุ่มไปก่อนแล้วจะเบิกส่วนที่เหลือ</td><td>ยื่นที่สำนักงานใหญ่ สาขา หรือศูนย์บริการลูกค้า หรือส่งไปรษณีย์</td><td>เตรียมเอกสารตามหัวข้อด้านล่าง แล้วติดตามสถานะในแอป MTL Click</td></tr>
-</tbody></table></div>
-<p>ก่อนไปโรงพยาบาลในเคสที่ไม่ฉุกเฉิน เช็กได้ว่าเป็นคู่สัญญาหรือไม่ที่<span class="mini-link" onclick="showPage('hospitals')">หน้าค้นหาโรงพยาบาลคู่สัญญา</span>ของเว็บนี้ ในแอป MTL Click หรือโทร 1766 ซึ่งเปิดตลอด 24 ชั่วโมง ถ้าเป็นภาวะฉุกเฉิน ไปโรงพยาบาลที่ใกล้และพร้อมที่สุดก่อนเสมอ เรื่องช่องทางเคลมค่อยว่ากันทีหลัง</p>`},
-
-      {h:'วันที่ต้องนอนโรงพยาบาล ทำอะไรบ้าง ทีละขั้น',
-       html:`<ol class="hg-ol">
-<li><b>แจ้งว่าจะใช้สิทธิ์ประกันตั้งแต่ตอนลงทะเบียน</b> ไม่ใช่ตอนจะกลับบ้าน โรงพยาบาลจะได้ส่งเอกสารแรกรับให้บริษัทยืนยันสิทธิ์ตั้งแต่ต้น ถ้ามีหลายกรมธรรม์ หรือมีประกันกลุ่มของที่ทำงานด้วย ให้บอกให้ครบทุกฉบับ ส่วนใหญ่จะใช้ประกันกลุ่มหรือสวัสดิการก่อน แล้วให้ประกันส่วนตัวรับส่วนที่เหลือ โดยเฉพาะถ้าแผนส่วนตัวมีความรับผิดส่วนแรก</li>
-<li><b>ถามราคาห้องก่อนเลือก</b> แล้วเทียบกับค่าห้องในตารางผลประโยชน์ ค่าห้องตามสัญญาแบบมาตรฐานใหม่รวมค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาลไว้ด้วยกัน แผนที่เขียนว่าห้องเดี่ยวมาตรฐาน หมายถึงห้องเดี่ยวราคาเริ่มต้นของโรงพยาบาลนั้น ถ้าเลือกห้องที่แพงกว่าสิทธิ์ ส่วนต่างจ่ายเองทุกวันที่นอน</li>
-<li><b>ตอบหมอตามจริงทุกข้อ</b> โดยเฉพาะคำถามว่าเป็นมานานแค่ไหน เคยรักษาที่ไหนมาก่อน คำตอบเหล่านี้ถูกบันทึกในเวชระเบียน และฝ่ายสินไหมอ่านจากตรงนั้น</li>
-<li><b>ถ้านอนนาน</b> ให้โรงพยาบาลอัปเดตการรักษากับบริษัทเป็นระยะ อย่ารอส่งทีเดียววันกลับบ้าน เพราะวันที่ไม่มีการรักษาหรือไม่จำเป็นต้องเฝ้าระวังแล้ว อาจถูกมองเป็นการพักฟื้นที่ไม่คุ้มครอง ${hgFaq('claim','claim-long-stay','อ่านเพิ่ม')}</li>
-<li><b>วันกลับบ้าน</b> โรงพยาบาลส่งสรุปค่าใช้จ่ายแยกหมวดให้บริษัท เคสทั่วไปบริษัทตั้งกรอบพิจารณาไว้ราว 30 นาทีหลังได้เอกสารครบ เคสที่ต้องดูรายละเอียดจะนานกว่านั้น อนุมัติแล้วเราเซ็นเอกสาร จ่ายส่วนที่เกินสิทธิ์ แล้ว<b>ขอสำเนาใบสรุปค่าใช้จ่ายเก็บไว้ทุกครั้ง</b> เผื่อมีกรมธรรม์อื่นหรือค่าชดเชยรายวันที่ต้องเบิกต่อ</li>
-<li><b>ยาที่ได้กลับบ้าน</b> ต้องเป็นยาที่ใช้รักษาต่อเนื่องจากโรคที่นอนครั้งนั้น และถูกจำกัดทั้งวงเงินและจำนวนวันตามแผน ยาโรคประจำตัวอื่นที่ขอเพิ่มไปพร้อมกันมักถูกตัดออก และต้องจ่ายเอง</li>
-</ol>`},
-
-      {h:'ฝ่ายสินไหมตรวจอะไร: หกด่านที่ต้องผ่านครบทุกด่าน',
-       html:`<p>ทุกเคลม ไม่ว่าจะยื่นช่องทางไหน ถูกตรวจด้วยคำถามหกข้อนี้ <b>ถ้าตกข้อใดข้อหนึ่ง เคลมนั้นไม่ผ่าน</b> ต่อให้ห้าข้อที่เหลือผ่านหมดก็ตาม รู้หกข้อนี้แล้วเราประเมินเองได้คร่าว ๆ ตั้งแต่ก่อนถึงโรงพยาบาล</p>
-<ol class="hg-ol">
-<li><b>กรมธรรม์มีผลบังคับในวันที่รักษา</b> คือจ่ายเบี้ยครบตามงวด ถ้าเลยกำหนดชำระแต่ยังอยู่ในระยะผ่อนผัน 31 วัน ยังคุ้มครองอยู่ แต่จะใช้แฟกซ์เคลมไม่ได้ ต้องสำรองจ่ายก่อน ส่วนถ้าปล่อยให้ขาดผลบังคับแล้วต่ออายุใหม่ ระยะรอคอยจะเริ่มนับใหม่ และช่วงที่ขาดไม่มีความคุ้มครอง</li>
-<li><b>แผนที่ซื้อไว้มีความคุ้มครองตรงกับประเภทการรักษา</b> ถ้ามีแต่ความคุ้มครองผู้ป่วยใน แล้วไปรักษาแบบผู้ป่วยนอก ก็เบิกไม่ได้ ต่อให้ค่ารักษาถูกกว่านอนโรงพยาบาลก็ตาม ยกเว้นบางหมวดที่ผูกกับการนอนโรงพยาบาล เช่น ค่าตรวจวินิจฉัยภายใน 30 วันก่อนและหลังนอนโรงพยาบาล (หมวด 6.1) สำหรับแผนที่มีหมวดนี้ ${hgFaq('coverage','cov-daysurg-followup','ดูหมวด 5-8')}</li>
-<li><b>ถ้าผ่าตัดโดยไม่นอนโรงพยาบาล ต้องเข้านิยามการผ่าตัดใหญ่</b> คือผ่าตัดผ่านผนังหรือช่องโพรงของร่างกาย และต้องใช้ยาสลบแบบทั่วไป หรือยาระงับความรู้สึกเฉพาะส่วน เช่นการบล็อกหลัง แบบนี้จ่ายเสมือนนอนโรงพยาบาล (Day Surgery) แต่ถ้าเป็นการผ่าตัดระดับผิวหนังหรือใต้ผิวหนังที่ใช้แค่ยาชาเฉพาะที่ จะเป็นการผ่าตัดเล็ก ซึ่งเบิกได้เฉพาะแผนที่มีหมวด 13 ${hgFaq('coverage','cov-minor-surgery','ผ่าตัดเล็กต่างจากผ่าตัดใหญ่ยังไง')}</li>
-<li><b>ถ้านอนโรงพยาบาล ต้องมีความจำเป็นทางการแพทย์</b> ผู้ป่วยในตามนิยาม คือคนที่จำเป็นต้องพักรักษาตัวต่อเนื่องไม่น้อยกว่า 6 ชั่วโมงและลงทะเบียนเป็นผู้ป่วยใน (รวมถึงกรณีรับไว้แล้วเสียชีวิตก่อนครบ 6 ชั่วโมง) การนอนเพื่อตรวจร่างกาย เพื่อพักผ่อน หรือเพื่อทำสิ่งที่ทำแบบผู้ป่วยนอกได้ ไม่เข้าเงื่อนไข ในห้องฉุกเฉิน ข้อบ่งชี้ที่พบบ่อยคือต้องให้ยาหรือน้ำเกลือทางหลอดเลือดต่อเนื่อง สัญญาณชีพผิดปกติ กินไม่ได้จนขาดน้ำ ปวดรุนแรงจนต้องใช้ยาฉีด หรือต้องเฝ้าระวังอาการใกล้ชิด</li>
-<li><b>พ้นระยะรอคอยแล้ว</b> โรคทั่วไปรอ 30 วัน กลุ่มโรคที่ก่อตัวนาน เช่น เนื้องอก ถุงน้ำ มะเร็ง ไส้เลื่อน ริดสีดวงทวาร ต้อเนื้อ ต้อกระจก นิ่ว เส้นเลือดขอดที่ขา การตัดทอนซิล และเยื่อบุโพรงมดลูกเจริญผิดที่ รอ 120 วัน นับจากวันเริ่มคุ้มครองหรือวันต่ออายุครั้งสุดท้าย ส่วนอุบัติเหตุคุ้มครองทันที ${hgFaq('exclude','waiting-period','ตารางระยะรอคอยครบทุกชั้น')}</li>
-<li><b>ไม่ติดข้อยกเว้น</b> ที่เจอบ่อยคือโรคที่เป็นมาก่อนทำประกัน ภาวะที่เป็นมาแต่กำเนิด ปัญหาพัฒนาการ การรักษาหรือผ่าตัดเพื่อความสวยงาม การตั้งครรภ์และภาวะแทรกซ้อน การตรวจสุขภาพที่ไม่เกี่ยวกับการรักษา และโรคที่ถูกสลักหลังยกเว้นไว้ในกรมธรรม์ของเราเอง ${hgFaq('exclude','health-exclusions','ข้อยกเว้นทั่วไปทั้งหมด')}</li>
-</ol>
-<div class="hg-callout"><h3>ลองไล่หกด่านกับเคสจริง</h3>
-<p><b>เคสที่ 1</b> ทำประกันมาได้ 3 เดือน ตรวจเจอก้อนที่เต้านม หมอตัดออกโดยไม่ต้องนอนโรงพยาบาล กรมธรรม์มีผลบังคับ แผนมีความคุ้มครอง การผ่าตัดเข้าเงื่อนไข ไม่ติดข้อยกเว้น แต่<b>ตกด่านที่ 5</b> เพราะก้อนเนื้อเป็นกลุ่มโรครอคอย 120 วัน และเพิ่งผ่านมา 90 วัน เคลมนี้จึงไม่ได้ ไม่ว่าจะยื่นช่องทางไหน</p>
-<p><b>เคสที่ 2</b> ทำประกันมาได้ 6 เดือน ต้องผ่าตัดเนื้องอกมดลูกแบบนอนโรงพยาบาล พ้น 120 วันแล้ว มีข้อบ่งชี้ผ่าตัด ผ่านครบหกด่าน <b>เคลมได้</b> แต่เนื้องอกมดลูกเป็นโรคที่โตช้า บริษัทจึงมักขอตรวจประวัติก่อนว่าเคยตรวจเจอมาก่อนทำประกันหรือไม่ เคสนี้มีโอกาสสูงที่ต้องสำรองจ่ายไปก่อน ถ้าประวัติสะอาดก็ได้เงินคืนตามสิทธิ์ และถ้ารู้วันผ่าล่วงหน้า การขออนุมัติล่วงหน้าจะทำให้รู้ผลก่อนวันผ่าตัด ไม่ต้องลุ้นวันกลับบ้าน</p></div>`},
-
-      {h:'ผลพิจารณามีสามแบบ แต่ละแบบแปลว่าอะไร และควรทำอะไรต่อ',
-       html:`<div class="table-wrap"><table class="hg-table"><thead><tr><th>ผล</th><th>แปลว่า</th><th>ตัวอย่าง</th><th>ทำอะไรต่อ</th></tr></thead><tbody>
-<tr><td class="hg-td-head">อนุมัติ</td><td>เข้าเงื่อนไขครบ บริษัทจ่ายตามตารางผลประโยชน์</td><td>ส่วนที่เกินวงเงิน ส่วนต่างค่าห้อง และรายการที่ไม่คุ้มครองยังต้องจ่ายเอง</td><td>เช็กใบอนุมัติว่าตัดอะไรออกบ้าง ถ้ามีรายการที่น่าจะคุ้มครองแต่ถูกตัด ขอเหตุผลได้</td></tr>
-<tr><td class="hg-td-head">ปฏิเสธ<br>เพราะข้อยกเว้น</td><td>การรักษานั้นอยู่นอกขอบเขตของสัญญา</td><td>โรคที่เป็นมาก่อนทำประกัน · ภาวะแต่กำเนิด · ปัญหาพัฒนาการ · เสริมสวย · ตั้งครรภ์</td><td>ยื่นช่องทางอื่นก็ได้ผลเดิม ยกเว้นมีข้อมูลทางการแพทย์ใหม่ที่ทำให้ข้อเท็จจริงเปลี่ยน</td></tr>
-<tr><td class="hg-td-head">ปฏิเสธ<br>เพราะไม่เข้าเงื่อนไข</td><td>การรักษาอยู่ในขอบเขต แต่ยังไม่ครบเงื่อนไขของสัญญา</td><td>อยู่ในระยะรอคอย 30 หรือ 120 วัน · ไม่เข้านิยาม Day Surgery · ไม่มีข้อบ่งชี้ให้นอนโรงพยาบาล · เกิดในช่วงที่กรมธรรม์ขาดผลบังคับ</td><td>ถ้าเห็นว่าข้อบ่งชี้มีจริงแต่เอกสารเขียนไม่ชัด ขอให้แพทย์บันทึกเหตุผลเพิ่มแล้วยื่นทบทวน</td></tr>
-<tr><td class="hg-td-head">ขอข้อมูลเพิ่ม<br>(ให้สำรองจ่าย)</td><td>บริษัทยังไม่ได้ตัดสิน ต้องการข้อมูลมากกว่าที่ส่งมาในวันนั้น</td><td>ขอประวัติการรักษาย้อนหลังเพื่อดูว่าเป็นมาก่อนทำประกันหรือไม่ · ขอข้อมูลการเกิดอุบัติเหตุเพิ่ม · รอผลชิ้นเนื้อ</td><td>จ่ายโรงพยาบาลไปก่อน เก็บต้นฉบับเอกสารทั้งหมด แล้วยื่นเบิกตรง บริษัทใช้เวลาตรวจสอบได้ไม่เกิน 90 วัน</td></tr>
-</tbody></table></div>
-<p>แถวสุดท้ายคือแถวที่คนเข้าใจผิดมากที่สุด <b>แฟกซ์เคลมไม่ผ่าน ไม่เท่ากับเคลมไม่ได้</b> ถ้าตรวจแล้วประวัติสะอาด บริษัทก็จ่าย และครั้งต่อไปมักผ่านง่ายขึ้นเพราะตรวจไปแล้ว ${hgFaq('claim','fax-claim','ทำไมแฟกซ์เคลมบางครั้งยังต้องสำรองจ่าย')}</p>`},
-
-      {h:'บิลโรงพยาบาลถูกแยกเข้าหมวดยังไง และรายการไหนที่มักถูกตัด',
-       html:`<p>ใบแจ้งค่าใช้จ่ายของโรงพยาบาลใช้หมวดรายการมาตรฐานชุดเดียวกัน (Standard Items for Medical Billing) ที่สมาคมประกันชีวิตไทย สมาคมโรงพยาบาลเอกชน และสำนักงานประกันสังคมทำร่วมกัน ฝ่ายสินไหมจะจับแต่ละบรรทัดเข้าหมวดผลประโยชน์ของกรมธรรม์ <b>ถ้าแผนเป็นแบบแยกวงเงินตามหมวด หมวดไหนเต็ม ส่วนที่เกินในหมวดนั้นต้องจ่ายเอง</b> แม้หมวดอื่นจะยังเหลือวงเงิน ส่วนแผนเหมาจ่ายจะรวมเกือบทุกหมวดเป็นก้อนเดียว เหลือเพดานแยกแค่บางรายการ เช่นค่าห้องและค่ายากลับบ้าน</p>
-<div class="table-wrap"><table class="hg-table"><thead><tr><th>ในบิลเขียนว่า</th><th>เข้าหมวดไหนของกรมธรรม์</th><th>ข้อควรรู้</th></tr></thead><tbody>
-<tr><td>ค่าห้อง ค่าอาหารผู้ป่วยใน อาหารทางการแพทย์ เช่น นมหรืออาหารทางสายยาง ค่าบริการโรงพยาบาล</td><td>หมวด 1 ค่าห้อง</td><td>คิดทุกครบ 24 ชั่วโมงเป็น 1 วัน เศษที่เกิน 6 ชั่วโมงนับเป็นอีก 1 วัน · ถ้าสังเกตอาการแล้วรับไว้เป็นผู้ป่วยใน ค่าห้องสังเกตอาการนับรวมเป็นค่าห้อง</td></tr>
-<tr><td>ค่าบริการพยาบาล</td><td>สัญญามาตรฐานใหม่อยู่ในหมวด 2 ค่ารักษาพยาบาล · สัญญาแบบเดิมอยู่ในค่าห้อง</td><td>สัญญาแบบใหม่จึงไม่กินวงเงินค่าห้องในส่วนนี้</td></tr>
-<tr><td>ยาผู้ป่วยใน เวชภัณฑ์สิ้นเปลือง เลือด ตรวจเลือดและชิ้นเนื้อ เอกซเรย์ อัลตราซาวด์ CT MRI เครื่องช่วยหายใจ เครื่องมือติดตามอาการ กายภาพบำบัด</td><td>หมวด 2 ค่ารักษาพยาบาลและค่าบริการทั่วไป</td><td>เป็นหมวดที่ยอดสูงที่สุดในเกือบทุกบิล</td></tr>
-<tr><td>ยากลับบ้าน</td><td>หมวด 2.4</td><td>จำกัดทั้งวงเงินและจำนวนวันตามแผน ดูตัวเลขของแต่ละแผนได้ใน<span class="mini-link" onclick="showPage('compare')">หน้าเปรียบเทียบแผน</span></td></tr>
-<tr><td>ค่าแพทย์ตรวจเยี่ยมระหว่างนอน ค่าแพทย์เฉพาะทางที่มาปรึกษา</td><td>หมวด 3 ค่าแพทย์</td><td>แผนที่จำกัดวันละครั้ง จะจ่ายไม่ครบถ้ามีแพทย์หลายแผนกมาดูในวันเดียวกัน ${hgFaq('coverage','cov-doctorfee','อ่านเพิ่ม')}</td></tr>
-<tr><td>ค่าแพทย์ผ่าตัด ค่าวิสัญญีแพทย์ ค่าห้องผ่าตัด อุปกรณ์ในห้องผ่าตัด</td><td>หมวด 4 ค่าผ่าตัดและหัตถการ</td><td>แผนแยกค่าใช้จ่ายบางแบบมีเพดานต่อการผ่าตัด</td></tr>
-<tr><td>อุปกรณ์ที่ใส่ค้างในร่างกาย เช่น เหล็กดามกระดูก ลิ้นหัวใจเทียม เลนส์ตาเทียม</td><td>หมวด 2</td><td>มักจ่าย แต่บางชิ้น เช่นเครื่องกระตุ้นหัวใจแบบฝัง หลายฉบับเขียนยกเว้นไว้</td></tr>
-<tr><td>อุปกรณ์ที่ใช้ภายนอกร่างกาย เช่น ไม้ค้ำยัน ที่พยุงคอ ที่พยุงหลัง ที่คล้องแขน รถเข็น</td><td>ส่วนใหญ่ไม่คุ้มครอง</td><td>บางรายการจ่ายเมื่อจำเป็นจากกระดูกแตกหัก ${hgFaq('exclude','medical-supplies','รายการเวชภัณฑ์ที่มักไม่จ่าย')}</td></tr>
-<tr><td>ห้องสังเกตอาการที่ไม่ถึง 6 ชั่วโมงแล้วกลับบ้าน · อาหารลดน้ำหนัก อาหารเสริม วิตามิน · อาหารญาติ ค่าโทรศัพท์ · ค่าตรวจสุขภาพ · ฝังเข็ม · ค่าเก็บรักษาศพ</td><td>ไม่คุ้มครอง</td><td>ของใช้ส่วนตัวในบิล เช่น เหยือกน้ำ แผ่นรองซับ ผ้าอ้อม ชุดอาบน้ำ แผ่นเจลประคบ แผ่นลดไข้ มักถูกตัดออกด้วย</td></tr>
-</tbody></table></div>`},
-
-      {h:'เคลมแบบสำรองจ่าย: เตรียมเอกสารอะไร ส่งที่ไหน ได้เงินเมื่อไร',
-       html:`<p><b>เอกสารกรณีนอนโรงพยาบาลหรือ Day Surgery</b></p>
-<ol class="hg-ol">
-<li><b>แบบฟอร์มเรียกร้องค่าชดเชยกรณีบาดเจ็บหรือเจ็บป่วย</b> ตามแบบของบริษัท ส่วนของผู้เอาประกันกรอกเอง ส่วนของแพทย์ให้แพทย์ผู้รักษากรอก หรือใช้ใบรับรองแพทย์ที่ระบุการวินิจฉัย วันที่เริ่มมีอาการ และการรักษาที่ได้รับ</li>
-<li><b>ใบเสร็จรับเงินค่ารักษาพยาบาล</b></li>
-<li><b>ใบแจ้งรายการค่ารักษาพยาบาล</b> ที่แยกรายการละเอียด ไม่ใช่แค่ยอดรวม</li>
-</ol>
-<p><b>ต้นฉบับหรือสำเนา</b> ถ้าเป็นแผนที่จ่ายตามค่าใช้จ่ายจริง เช่นแบบแยกค่าใช้จ่ายหรือแบบเหมาจ่าย ใช้ใบเสร็จและใบแจ้งรายการ<b>ฉบับจริง</b> ถ้าเป็นแผนที่จ่ายเป็นจำนวนเงินแน่นอน เช่นค่าชดเชยรายวัน ใช้<b>สำเนา</b>ได้ ถ้าต้นฉบับถูกใช้เบิกกับประกันกลุ่มหรือสวัสดิการไปแล้ว ให้ขอสำเนาที่หน่วยงานนั้นรับรอง พร้อมเอกสารแสดงยอดที่จ่ายไปแล้ว เพื่อเบิกส่วนที่เหลือ</p>
-<p><b>เอกสารกรณีผู้ป่วยนอก</b> ใบรับรองแพทย์หรือแบบฟอร์มเรียกร้องของบริษัท กับใบเสร็จรับเงินฉบับจริง</p>
-<p><b>เอกสารที่อาจถูกขอเพิ่ม</b> สำเนาบัตรประชาชน หน้าสมุดบัญชีสำหรับรับเงินโอน และถ้าเป็นอุบัติเหตุ อาจขอข้อมูลการเกิดเหตุ เช่น บันทึกประจำวันของตำรวจ · ก่อนส่งสำเนาบัตรประชาชน บริษัทแนะนำให้ขีดฆ่าข้อมูลศาสนาจนอ่านไม่ได้ แล้วเซ็นรับรองสำเนา</p>
-<p><b>ส่งที่ไหน</b> ยื่นด้วยตัวเองที่ศูนย์บริการลูกค้าของบริษัททั่วประเทศ หรือส่งไปรษณีย์ไปที่ บริษัท เมืองไทยประกันชีวิต จำกัด (มหาชน) 250 ถนนรัชดาภิเษก แขวงห้วยขวาง เขตห้วยขวาง กรุงเทพฯ 10310 แล้วติดตามสถานะการเคลมได้ในแอป MTL Click ถ้าส่งไปรษณีย์ แนะนำให้ส่งแบบลงทะเบียน และถ่ายรูปเอกสารทุกหน้าเก็บไว้ก่อนส่ง</p>
-<p><b>กรอบเวลาตามสัญญาสุขภาพแบบมาตรฐาน</b></p>
-<ul class="hg-ol">
-<li>ยื่นหลักฐานภายใน <b>30 วัน</b> นับจากวันที่ออกจากโรงพยาบาล หรือวันที่รักษาแบบผู้ป่วยนอก ถ้ายื่นช้ากว่านั้นแต่มีเหตุอันสมควร สิทธิ์ไม่ได้หายไป แต่ควรยื่นให้เร็วที่สุดเท่าที่ทำได้</li>
-<li>บริษัทจ่ายภายใน <b>15 วัน</b> หลังได้เอกสารครบ</li>
-<li>ถ้ามีเหตุอันควรสงสัย ขยายเวลาตรวจสอบได้ แต่ไม่เกิน <b>90 วัน</b> นับจากวันที่ได้เอกสารครบ</li>
-<li>ถ้าจ่ายช้ากว่ากำหนด บริษัทต้องรับผิด<b>ดอกเบี้ยร้อยละ 15 ต่อปี</b>ของจำนวนที่ต้องจ่าย</li>
-</ul>`},
-
-      {h:'ตัวอย่างคิดเงินจริง: มีหลายฉบับ หรือมีความรับผิดส่วนแรก ใครจ่ายเท่าไร',
-       html:`<p><b>หลักข้อแรก</b> ประกันค่ารักษาพยาบาลเป็นสัญญาชดใช้ตามจริง ถ้ามีหลายฉบับ แต่ละฉบับจ่ายตามเงื่อนไขของตัวเอง <b>แต่รวมกันแล้วต้องไม่เกินค่าใช้จ่ายจริง</b> จะเบิกซ้ำให้ได้เงินเกินบิลไม่ได้ ส่วนค่าชดเชยรายวันเป็นเงินจำนวนแน่นอน จ่ายแยกต่างหาก ไม่ได้หักกับค่ารักษา</p>
-<p><b>หลักข้อสอง</b> ความรับผิดส่วนแรก (Deductible) คือก้อนแรกที่เราต้องรับเอง จะจ่ายจากกระเป๋าตัวเอง หรือใช้ประกันกลุ่ม สวัสดิการ หรือกรมธรรม์อื่นจ่ายแทนก็ได้ พอก้อนแรกครบ แผนนี้ถึงเริ่มจ่ายส่วนที่เกิน</p>
-<div class="hg-callout"><h3>ตัวอย่าง: แผนมีความรับผิดส่วนแรก 30,000 บาท ค่าห้องตามแผน 5,000 บาทต่อวัน</h3>
-<p>นอนโรงพยาบาล 2 คืน เลือกห้องราคาคืนละ 6,000 บาท บิลรวม 80,000 บาท แบ่งเป็นค่าห้อง 12,000 บาท และค่ารักษาอื่น 68,000 บาท</p>
-<table><thead><tr><th>ถ้ามีประกันกลุ่มของที่ทำงาน วงเงินค่ารักษา 30,000 บาท</th><th>ถ้าไม่มีสิทธิ์อื่นเลย</th></tr></thead><tbody>
-<tr><td>ประกันกลุ่มจ่ายก่อน 30,000 บาท ก้อนนี้นับเป็นความรับผิดส่วนแรกครบพอดี</td><td>เราจ่ายเอง 30,000 บาทแรก เป็นความรับผิดส่วนแรก</td></tr>
-<tr><td>แผนส่วนตัวจ่ายส่วนที่เหลือตามสิทธิ์ ค่าห้องได้ไม่เกิน 5,000 x 2 = 10,000 บาท</td><td>แผนส่วนตัวจ่ายส่วนที่เหลือตามสิทธิ์เหมือนกัน</td></tr>
-<tr><td><b>เราจ่ายเองประมาณ 2,000 บาท</b> คือส่วนต่างค่าห้อง</td><td><b>เราจ่ายเองประมาณ 32,000 บาท</b> คือความรับผิดส่วนแรกกับส่วนต่างค่าห้อง</td></tr>
-</tbody></table>
-<p>สองบทเรียนจากตัวอย่างนี้ คือแผนที่มีความรับผิดส่วนแรกเหมาะมากกับคนที่มีสวัสดิการที่ทำงานรองรับก้อนแรกอยู่แล้ว และ<b>ส่วนต่างค่าห้องที่เกินสิทธิ์ต้องจ่ายเองเสมอ</b> ไม่ว่าจะมีกี่ฉบับ ถ้าบิลรวมไม่ถึงความรับผิดส่วนแรก แผนนี้จะไม่จ่ายเลยในครั้งนั้น</p>
-<p class="meta">ตัวเลขเป็นตัวอย่างเพื่อให้เห็นลำดับการจ่าย ยอดจริงขึ้นกับตารางผลประโยชน์ของแต่ละแผนและการจัดหมวดของบิลจริง</p></div>`},
-
-      {h:'นอนหลายรอบด้วยโรคเดียวกัน วงเงินนับยังไง',
-       html:`<p><b>แผนที่ให้วงเงินต่อครั้งการรักษา</b> ถ้ากลับมานอนโรงพยาบาลด้วยโรคเดิม หรือภาวะแทรกซ้อนที่เกี่ยวข้อง ภายใน <b>90 วัน</b> นับจากวันที่ออกจากโรงพยาบาลครั้งล่าสุด จะนับเป็นการรักษาครั้งเดียวกัน ใช้วงเงินก้อนเดิมต่อ ถ้าห่างเกิน 90 วัน ถึงจะนับเป็นครั้งใหม่และได้วงเงินใหม่ สัญญาแบบมาตรฐานใหม่นับการผ่าตัดใหญ่แบบไม่ต้องนอนโรงพยาบาลรวมอยู่ในกติกานี้ด้วย</p>
-<p><b>แผนที่ให้วงเงินต่อปีกรมธรรม์</b> ไม่สนว่าโรคเดิมหรือโรคใหม่ ใช้จากก้อนเดียวกันทั้งปี สำหรับผู้ป่วยใน การนอนครั้งไหนเริ่มในปีกรมธรรม์ใด ใช้วงเงินของปีนั้นทั้งครั้ง แม้จะนอนข้ามไปถึงปีถัดไป ส่วนผู้ป่วยนอกนับตามวันที่ไปรักษา</p>
-<div class="hg-callout"><h3>ตัวอย่างคนไข้มะเร็งที่ต้องนอนให้ยาเป็นรอบ</h3>
-<p>นอนครั้งแรกเดือนมีนาคม กลับมานอนอีกครั้งปลายเดือนเมษายน ห่างกันไม่ถึง 90 วัน แผนต่อครั้งจะนับเป็นครั้งเดียวกัน วงเงินที่ใช้ไปในเดือนมีนาคมจะถูกหักต่อเนื่อง แล้วถ้ารอบถัดไปคือเดือนกันยายน ห่างจากครั้งล่าสุดเกิน 90 วัน จึงได้วงเงินใหม่ นี่คือเหตุผลที่โรคที่ต้องรักษาต่อเนื่องอย่างมะเร็ง เหมาะกับแผนวงเงินต่อปีมากกว่า หรือต้องมีหมวด 9-11 ที่จ่ายรังสีรักษาและเคมีบำบัดแยกไว้</p></div>`},
-
-      {h:'บริการที่ลูกค้าเมืองไทยประกันชีวิตใช้ได้ แต่ไม่ค่อยมีคนรู้',
-       html:`<p>นอกจากเคลมค่ารักษา บริษัทมีสายบริการด้านสุขภาพแยกต่างหาก โทร <b>0 2290 2424</b> แล้วเลือกหมายเลขตามบริการ ทั้งหมดเป็นไปตามเงื่อนไขของกรมธรรม์และแบบประกันที่บริษัทกำหนด</p>
-<div class="table-wrap"><table class="hg-table"><thead><tr><th>กด</th><th>บริการ</th><th>ใช้ทำอะไร</th><th>ใครใช้ได้</th></tr></thead><tbody>
-<tr><td class="hg-td-head">1</td><td>MTL Global Connect</td><td>นอนโรงพยาบาลในต่างประเทศโดยไม่ต้องสำรองจ่าย เฉพาะผู้ป่วยใน</td><td>แบบที่มีค่ารักษาผู้ป่วยใน และคุ้มครองในประเทศนั้น ${hgFaq('exclude','territory-coverage','เรื่องอาณาเขตความคุ้มครอง')}</td></tr>
-<tr><td class="hg-td-head">2</td><td>MTL Global Doctors</td><td>ขอความเห็นที่สองจากแพทย์ผู้เชี่ยวชาญ เมื่อได้รับการวินิจฉัยโรคร้ายแรง ต้องผ่าตัด หรือการรักษาค่าใช้จ่ายสูง หรือยังไม่มั่นใจในคำวินิจฉัยแรก</td><td>ลูกค้าที่มีสัญญาสุขภาพหรือโรคร้ายแรงตามที่บริษัทกำหนด</td></tr>
-<tr><td class="hg-td-head">3</td><td>MTL Health Buddy</td><td>ปรึกษาปัญหาสุขภาพกับแพทย์ทางโทรศัพท์ ปรึกษาเรื่องยากับเภสัชกร และสิทธิพิเศษกับโรงพยาบาลที่ร่วมโครงการ</td><td>ทุกแบบประกันที่ยังมีผลบังคับ</td></tr>
-<tr><td class="hg-td-head">4</td><td>ช่วยเหลือฉุกเฉินทางการแพทย์ (SOS) ตลอด 24 ชั่วโมง</td><td>เคลื่อนย้ายผู้ป่วยไปโรงพยาบาลอื่น ส่งตัวกลับภูมิลำเนา ค่าเดินทางและที่พักของญาติที่ไปเยี่ยม เมื่อเดินทางห่างบ้านเกิน 150 กิโลเมตรในประเทศ หรือเดินทางไปต่างประเทศ ไม่เกิน 90 วันต่อครั้ง</td><td>Elite Health และ Elite Health Plus ทุกแผน และประกันอุบัติเหตุบางแบบ</td></tr>
-</tbody></table></div>
-<p>เรื่องกรมธรรม์ การชำระเบี้ย และการเคลมทั่วไป โทรศูนย์บริการลูกค้า <b>1766</b> ได้ตลอด 24 ชั่วโมง</p>`},
-
-      {h:'ถ้าเคลมไม่ผ่าน ทำอะไรได้บ้าง',
-       html:`<ol class="hg-ol">
-<li><b>ขอเหตุผลการปฏิเสธเป็นลายลักษณ์อักษร</b> จะได้รู้ว่าตกด่านไหนในหกด่าน</li>
-<li><b>ถ้าตกเพราะเอกสารไม่ชัด</b> เช่นไม่เห็นข้อบ่งชี้ในการนอนโรงพยาบาล ขอให้แพทย์เขียนบันทึกเพิ่มตามข้อเท็จจริง ให้ตรงกับเหตุผลที่ถูกปฏิเสธ แล้วยื่นทบทวน อย่ายื่นเอกสารชุดเดิมซ้ำ ${hgFaq('claim','claim-form-note','ควรขอให้หมอเขียนอะไรเพิ่ม')}</li>
-<li><b>อย่าขอให้แพทย์เปลี่ยนประวัติหรือวันที่เริ่มมีอาการ</b> นอกจากผิดกฎหมาย บริษัทเทียบกับเวชระเบียนได้ และจะกลายเป็นปัญหาที่ใหญ่กว่าเดิม ${hgFaq('claim','medical-record-claim','อ่านเหตุผล')}</li>
-<li><b>ถ้ายังเชื่อว่าเข้าเงื่อนไขจริง</b> ร้องเรียนต่อสำนักงาน คปภ. สายด่วน 1186 ได้</li>
-</ol>`},
-
-      {h:'สิ่งที่ผมอยากให้ทุกคนรู้ก่อนเข้าห้องฉุกเฉิน', box:true,
-       p:['<b>บอกพยาบาลตั้งแต่แรกว่ามีประกัน และตอบหมอตามจริง</b> ระยะเวลาที่เป็นมาบอกหมอได้ว่าโรคอยู่ระยะไหน และเลือกวิธีรักษาได้ถูก การตอบเลี่ยงเพื่อรักษาสิทธิ์เคลมแล้วได้การรักษาที่ช้าไป ไม่คุ้มกันเลย',
-          '<b>อย่าขอแอดมิตถ้าหมอบอกว่ากลับบ้านได้</b> นอกจากเคลมไม่ผ่านเพราะไม่มีข้อบ่งชี้ การนอนโรงพยาบาลด้วยโรคเล็กน้อยบ่อย ๆ ยังถูกนับเข้าเกณฑ์ Copayment ของปีต่ออายุด้วย ' + hgFaq('copay','copayment','Copayment คืออะไร'),
-          '<b>ถ้าไม่ฉุกเฉิน และกรมธรรม์อายุยังไม่ถึง 2 ปี</b> คุยกับตัวแทนก่อนนัดผ่าตัด ให้ทำเรื่องขออนุมัติล่วงหน้า จะรู้ผลก่อนวันผ่า และไม่ต้องเตรียมเงินก้อนไปเผื่อ',
-          '<b>เก็บเอกสารทุกใบ</b> ใบสรุปค่าใช้จ่าย ใบอนุมัติ ใบรับรองแพทย์ ใบนัด ถ่ายรูปเก็บไว้ในโทรศัพท์ทุกครั้ง เอกสารที่หายเป็นสาเหตุที่ทำให้เคลมช้าบ่อยที่สุด ทั้งที่ป้องกันได้ง่ายที่สุด'],
-      },
-    ],
   },
 ];
 
@@ -15131,7 +14838,7 @@ const FAQ_ITEMS = [
   {g:'coverage', k:'cov-daysurg-followup', q:'Day Surgery ตรวจก่อน-หลังนอนโรงพยาบาล อุบัติเหตุ OPD เวชศาสตร์ฟื้นฟู (หมวด 5-8) จ่ายอะไร ไม่จ่ายอะไร',
    lead:'สี่หมวดนี้ดูเหมือนจะเป็นเรื่องเดียวกันแต่จริง ๆ มีเงื่อนไขคนละแบบ และเป็นจุดที่เหมาจ่าย Extra ไม่คุ้มครองเลยทั้งสี่หมวด',
    body:`<b>หมวด 5 — Day Surgery</b> คือผ่าตัดใหญ่ที่เดี๋ยวนี้เทคโนโลยีทำให้ไม่ต้องนอนโรงพยาบาลข้ามคืน กลับบ้านได้ในวันเดียวกัน เช่น ผ่าตัดต้อกระจก ส่องกล้องข้อเข่าบางกรณี จ่ายเหมือนกับกรณีนอนโรงพยาบาลทุกประการ ไม่ได้ลดสิทธิลงเพราะไม่ได้นอนค้างคืน
-<b>หมวด 6 — ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน</b> แบ่งเป็นสองหมวดย่อยที่แยกวงเงินกัน คือ<b>6.1 ค่าตรวจวินิจฉัย</b> (แล็บ เอกซเรย์ ที่เกี่ยวข้องโดยตรงกับโรคที่แอดมิด ทำภายใน 30 วันทั้งก่อนและหลังการแอดมิดครั้งนั้น) และ<b>6.2 ค่ารักษา OPD ต่อเนื่อง</b> (พบแพทย์ รับยา สำหรับโรคเดิมภายใน 30 วันหลังออกจากโรงพยาบาล ไม่รวมค่าตรวจวินิจฉัย) บางแผนคุ้มครองแค่ 6.1 เช่น H&S ทั้งสองช่วงผูกกับการแอดมิดครั้งนั้นเท่านั้น ไม่ใช่วงเงิน OPD ทั่วไป
+<b>หมวด 6 — ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน</b> แบ่งเป็นสองช่วง คือ<b>6.1 ก่อนแอดมิด</b> (ตรวจแล็บ เอกซเรย์ ที่นำไปสู่การตัดสินใจแอดมิดครั้งนั้นจริง) และ<b>6.2 หลังแอดมิด</b> (นัดตรวจติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วัน สำหรับโรคเดียวกับที่แอดมิด) ทั้งสองช่วงผูกกับการแอดมิดครั้งนั้นเท่านั้น ไม่ใช่วงเงิน OPD ทั่วไป
 · <b>จ่าย</b> ตรวจเลือด เอกซเรย์ อัลตราซาวด์ ที่แพทย์สั่งก่อนแอดมิดแล้วผลนำไปสู่การนอนโรงพยาบาลจริง และนัดติดตามอาการหลังออกจากโรงพยาบาลภายใน 30 วันสำหรับโรคเดียวกัน
 · <b>ไม่จ่าย</b> ตรวจแล้วสุดท้ายไม่ได้แอดมิดจริง (ตรวจแล้วให้กลับบ้าน) มักไม่เข้าเงื่อนไข 6.1 เพราะเงื่อนไขกำหนดให้ต้องนำไปสู่การแอดมิดจริง และการตรวจที่ไม่เกี่ยวกับโรคที่แอดมิดครั้งนั้นก็ไม่เข้าเงื่อนไขเช่นกัน
 !ผ่าตัดเล็กตามหมวด 13 ที่ทำด้วยยาชาเฉพาะที่ ไม่สามารถใช้สิทธิ Follow-up 30 วันตามหมวด 6.1/6.2 ได้ ต้องใช้สิทธิ OPD แทน เพราะหมวด 6 ผูกกับการนอนโรงพยาบาลหรือ Day Surgery เท่านั้น
@@ -15964,7 +15671,7 @@ D Health Lite และ Elite Health Plus จ่ายหมวดนี้แ�
 4 ถ้ายังไม่ได้และเชื่อว่าเข้าเงื่อนไขจริง ร้องเรียนต่อสำนักงาน คปภ. สายด่วน 1186 ได้`,
    doc:'ในฐานะหมอ ผมยินดีเขียนเหตุผลทางการแพทย์ให้เสมอถ้ามันเป็นความจริง สิ่งที่ช่วยได้มากคือคนไข้บอกตั้งแต่ตอนอยู่หน้าห้องตรวจว่าจะเอาไปเบิก ไม่ใช่โทรมาขอย้อนหลังหลังออกจากโรงพยาบาลไปแล้ว'},
 
-  {g:'claim', k:'claim-long-stay', q:'นอนโรงพยาบาลนาน ต้องระวังอะไรเป็นพิเศษ',
+  {g:'claim', q:'นอนโรงพยาบาลนาน ต้องระวังอะไรเป็นพิเศษ',
    lead:'ให้โรงพยาบาลส่งเอกสารการรักษาเข้าฝ่ายสินไหมทุกวันถ้าทำได้ อย่ารอส่งทีเดียวตอนกลับบ้าน',
    body:`เพราะข้อยกเว้นข้อ 6 ไม่คุ้มครองการพักฟื้นที่ไม่มีการรักษาหรือความจำเป็นต้องเฝ้าระวัง
 ถ้าฝ่ายสินไหมได้เอกสารทีเดียวตอนจบ อาจพบว่าวันท้าย ๆ ไม่มีการรักษาอะไรแล้ว และตัดวันเหล่านั้นออก จากที่นอน 7 วัน อาจเคลมได้ไม่ครบ 7 วัน
@@ -16009,12 +15716,8 @@ D Health Lite และ Elite Health Plus จ่ายหมวดนี้แ�
 <b>การสืบประวัติใช้เวลาได้สูงสุด 90 วัน</b> ถ้าเกินกว่านั้นบริษัทต้องเสียค่าปรับพร้อมดอกเบี้ย และโดยทั่วไปจะสืบครั้งเดียว
 <b>แฟกซ์เคลมไม่ผ่าน ไม่ได้แปลว่าเคลมไม่ได้</b> ถ้าประวัติสะอาด สืบแล้วไม่เจออะไร บริษัทก็จ่าย และครั้งต่อ ๆ ไปมักผ่านง่ายโดยไม่สืบซ้ำ
 <b>อย่าเพิ่งน้อยใจแล้วยกเลิกไปทำที่ใหม่</b> เพราะบริษัทใหม่จะเห็นประวัติโรคนั้นและยกเว้นถาวร กลายเป็นเสียมากกว่าเดิม
-<b>ช่องทางอื่นที่ควรรู้คู่กัน</b>
-· <b>OPD Cashless</b> คือไม่ต้องสำรองจ่ายสำหรับการรักษาแบบผู้ป่วยนอก ใช้ได้เฉพาะแบบที่มีความคุ้มครอง OPD ที่โรงพยาบาลคู่สัญญาที่เข้าร่วม
-· <b>Pre-authorization หรือพรีเคลม</b> คือขออนุมัติก่อนเข้ารักษา เหมาะกับกรมธรรม์อายุน้อยที่ต้องทำหัตถการค่าใช้จ่ายสูงและไม่ฉุกเฉิน อนุมัติแล้วค่อยเข้ารักษา จะไม่ต้องสำรองจ่าย บริการ MTL Claim Cover Check ช่วยประเมินค่ารักษาและส่วนที่ประกันจ่ายให้ล่วงหน้าได้ที่โรงพยาบาลคู่สัญญาที่มีหน่วยงานรองรับ
-· <b>Direct Claim หรือเบิกตรง</b> คือสำรองจ่ายไปก่อน แล้วยื่นเอกสารเบิกกับบริษัทเอง ที่ศูนย์บริการลูกค้าหรือทางไปรษณีย์ ใช้ตอนแฟกซ์เคลมไม่ผ่าน รักษาที่โรงพยาบาลที่ไม่ใช่คู่สัญญา หรือใช้สวัสดิการอื่นไปก่อนแล้วจะเบิกส่วนที่เหลือ
-· <b>โรงพยาบาลรัฐ</b> ตอนนี้ใช้สิทธิ์แบบไม่ต้องสำรองจ่ายได้ทั้งผู้ป่วยนอกและผู้ป่วยในผ่านระบบ iClaim ซึ่งบริษัทแจ้งว่าเชื่อมกับโรงพยาบาลรัฐมากกว่า 400 แห่ง ควรเช็กชื่อโรงพยาบาลก่อนไป
-ขั้นตอนเคลมทั้งเส้นทาง ตั้งแต่วันแอดมิต หกด่านที่ฝ่ายสินไหมตรวจ ไปจนถึงเอกสารที่ต้องเตรียมเวลาสำรองจ่าย อ่านต่อได้ใน<span class="mini-link" onclick="showPage('knowledge');setTimeout(()=>{const e=document.getElementById('g-claim');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});},350)">คู่มือ หัวข้อเคลมประกันสุขภาพทำยังไง</span>
+<b>ยังมีอีกสองรูปแบบ</b> Direct Claim คือใช้สิทธิ์ได้ทันทีในโรงพยาบาลที่มีข้อตกลงกับบริษัท · Pre-authorization หรือพรีเคลม คือขออนุมัติก่อนเข้ารักษา เหมาะกับกรมธรรม์อายุน้อยที่ต้องทำหัตถการค่าใช้จ่ายสูงและไม่ฉุกเฉิน อนุมัติแล้วค่อยเข้ารักษา จะไม่ต้องสำรองจ่าย
+ปัจจุบันโรงพยาบาลรัฐหลายแห่งแฟกซ์เคลมได้แล้ว ส่วนใหญ่เฉพาะผู้ป่วยใน บางแห่งมี OPD ด้วย
 <b>ถ้าไม่มีเงินสำรองจ่ายในตอนนั้น</b> ถ้าเป็นภาวะฉุกเฉินหรือจำเป็นต้องรักษาเร่งด่วน ไม่ควรชะลอการรักษาเพื่อรอผลแฟกซ์เคลม ให้แจ้งเจ้าหน้าที่ว่ากำลังรอผลพิจารณา และถ้าสำรองจ่ายที่โรงพยาบาลเอกชนไม่ไหวจริง ให้สอบถามสิทธิ์การรักษาหลักที่มีอยู่ หรือการส่งต่อเมื่ออาการปลอดภัยและเหมาะสมทางการแพทย์แล้ว
 <b>ใครทำหน้าที่อะไร</b>
 · <b>แพทย์</b> วินิจฉัยและบันทึกข้อมูลทางการแพทย์ตามข้อเท็จจริง
@@ -16556,87 +16259,6 @@ function faqScore(item, tokens){
   score += hits / list.length * 4;
   return score;
 }
-// โหมดภาษาอังกฤษ: ค้นจากข้อความที่แปลแล้วของแต่ละข้อ (แปลทีละ text node แบบเดียวกับที่ผู้ใช้เห็น)
-const FAQ_EN = new Map();
-function faqEnText(item){
-  if(FAQ_EN.has(item)) return FAQ_EN.get(item);
-  const part = html => { const d = document.createElement('div'); d.innerHTML = html || ''; const out = [];
-    const w = document.createTreeWalker(d, NodeFilter.SHOW_TEXT); let n;
-    while((n = w.nextNode())){ const v = n.nodeValue.replace(/\s+/g,' ').trim(); if(v) out.push(i18nT(v)); }
-    return out.join(' ').replace(/\s+/g,' ').trim(); };
-  const r = { q: part(item.q), lead: part(item.lead), body: part(faqBodyHtml(item.body)), doc: part(item.doc) };
-  r.plain = [r.lead, r.body, r.doc].filter(Boolean).join(' · ');
-  r.hay = (r.q + ' ' + r.plain).toLowerCase();
-  FAQ_EN.set(item, r);
-  return r;
-}
-const FAQ_EN_STOP = new Set(['the','a','an','and','or','of','to','in','on','for','is','are','am','do','does','did','can','could','i','my','me','it','its','what','how','why','when','which','who','with','be','if','will','would','should','about','this','that','there','have','has','get','you','your','we','at','by','as','from','not','no','any']);
-const FAQ_EN_RE = new Map();
-function faqEnHas(hay, t){
-  let re = FAQ_EN_RE.get(t);
-  if(!re){ re = new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')); FAQ_EN_RE.set(t, re); }
-  return re.test(hay);
-}
-const FAQ_EN_SYN = {deny:['reject','refus','declin','turn down'],reject:['deni','deny','refus','declin'],refuse:['reject','deni','deny','declin'],decline:['reject','deni','deny','refus'],
-  cancel:['terminat','lapse','surrender'],surrender:['cash value','cancel'],price:['premium','cost'],cost:['premium','price','fee'],premium:['price','cost'],fee:['cost','charge'],
-  disease:['illness','condition'],illness:['disease','sick'],sick:['ill','disease'],hide:['conceal','non-disclos','undisclos'],conceal:['hide','hid','non-disclos'],lie:['conceal','non-disclos','false'],
-  kid:['child'],child:['kid','baby'],baby:['child','newborn','infant'],pregnan:['maternity','birth'],elderly:['senior','older'],
-  tax:['deduct'],deduct:['tax','deductible'],copay:['co-pay','copayment'],cashless:['fax claim','credit','upfront']};
-const FAQ_EN_VAR = new Map();
-function faqEnVariants(t){
-  if(FAQ_EN_VAR.has(t)) return FAQ_EN_VAR.get(t);
-  const v = new Set([t]);
-  if(t.length > 4 && t.endsWith('ied')) v.add(t.slice(0,-3) + 'y');
-  if(t.length > 4 && t.endsWith('ed')){ v.add(t.slice(0,-2)); v.add(t.slice(0,-1)); }
-  if(t.length > 5 && t.endsWith('ing')){ v.add(t.slice(0,-3)); v.add(t.slice(0,-3) + 'e'); }
-  for(const x of [...v]) for(const [k, syn] of Object.entries(FAQ_EN_SYN)) if(x === k || (k.length > 4 && x.startsWith(k))) syn.forEach(s => v.add(s));
-  const out = [...v].filter(x => x.length >= 2);
-  FAQ_EN_VAR.set(t, out);
-  return out;
-}
-function faqEnHasAny(hay, t){ return faqEnVariants(t).some(v => faqEnHas(hay, v)); }
-function faqEnTokens(q){
-  const low = q.toLowerCase().replace(/\s+/g,' ').trim();
-  const raw = low.split(/[^a-z0-9%'-]+/).map(t => t.replace(/^[-']+|[-']+$/g,'')).filter(t => t.length >= 2);
-  const use = raw.filter(t => !FAQ_EN_STOP.has(t));
-  const out = [...new Set((use.length ? use : raw).map(t => t.length > 3 && /[^s]s$/.test(t) ? t.slice(0,-1) : t))];
-  out.phrase = raw.length > 1 ? low.replace(/[^a-z0-9%' -]+/g,' ').replace(/\s+/g,' ').trim() : '';
-  return out;
-}
-function faqEnScore(item, tokens){
-  if(!tokens.length) return 0;
-  const e = faqEnText(item), q = e.q.toLowerCase(), lead = e.lead.toLowerCase();
-  let score = 0, hits = 0;
-  for(const t of tokens){
-    if(!faqEnHasAny(e.hay, t)) continue;
-    hits++;
-    const df = FAQ_ITEMS.reduce((n, it) => n + (faqEnHasAny(faqEnText(it).hay, t) ? 1 : 0), 0);
-    const w = (Math.min(t.length, 12) / 3) * Math.max(0.35, Math.log(FAQ_ITEMS.length / Math.max(df,1)) / Math.log(4));
-    score += w;
-    if(faqEnHasAny(lead, t)) score += w * 1.5;
-    if(faqEnHasAny(q, t)) score += w * 3;
-  }
-  if(!hits) return 0;
-  const ph = tokens.phrase;
-  if(ph && e.hay.includes(ph)) score += 12 + (q.includes(ph) ? 20 : 0);
-  const cover = hits / tokens.length;
-  return (score + cover * 4) * cover;
-}
-function faqEnSnippet(item, tokens){
-  if(!tokens.length) return '';
-  const plain = faqEnText(item).plain, low = plain.toLowerCase();
-  let at = -1;
-  if(tokens.phrase) at = low.indexOf(tokens.phrase);
-  if(at < 0) for(const t of tokens.flatMap(faqEnVariants)){ const i = low.search(new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))); if(i >= 0 && (at < 0 || i < at)) at = i; }
-  if(at < 0) return '';
-  const start = Math.max(0, at - 60);
-  let cut = plain.slice(start, start + 180);
-  if(start > 0) cut = '…' + cut;
-  if(start + 180 < plain.length) cut += '…';
-  let html = faqEsc(cut);
-  const alt = [...new Set(tokens.flatMap(faqEnVariants))].sort((a,b)=>b.length-a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
-  return html.replace(new RegExp('\\b(?:' + alt + ')[a-z]*', 'gi'), m => '<mark>' + m + '</mark>');
-}
 function faqEsc(t){ return t.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 // ตัวอย่างบรรทัดที่ตรง พร้อมไฮไลท์ เพื่อให้รู้ว่าคำที่ค้นไปโผล่ตรงไหนของคำตอบ
 function faqSnippet(item, tokens){
@@ -16687,10 +16309,9 @@ function renderFaq(){
   const clearBtn = document.getElementById('faqClear');
   if(clearBtn) clearBtn.style.display = q ? 'block' : 'none';
 
-  const faqEnMode = !!q && i18nEN() && !/[\u0E00-\u0E7F]/.test(q);
-  const tokens = q ? (faqEnMode ? faqEnTokens(q) : faqSegment(q)) : [];
+  const tokens = q ? faqSegment(q) : [];
   const scored = q
-    ? FAQ_ITEMS.map(it => ({it, sc: faqEnMode ? faqEnScore(it, tokens) : faqScore(it, tokens)})).filter(x => x.sc > 0)
+    ? FAQ_ITEMS.map(it => ({it, sc: faqScore(it, tokens)})).filter(x => x.sc > 0)
         .sort((a,b) => b.sc - a.sc).map(x => x.it)
     : FAQ_ITEMS.slice();
   // ค้นทั้งเว็บก่อน แล้วค่อยแยกว่าอันไหนอยู่แท็บนี้ อันไหนอยู่แท็บอีกฝั่ง
@@ -16722,7 +16343,7 @@ function renderFaq(){
   let html = '', found = 0;
   if(q){
     html += `<p class="faq-result">พบ ${hits.length} คำถามที่ตรงกับ “${faqEsc(q)}”`
-      + (() => { const u = tokens.filter(t => !FAQ_STOP.has(t)); return !faqEnMode && u.length > 1 ? ` <span class="faq-tok">แยกคำเป็น ${u.map(t=>`<b>${faqEsc(t)}</b>`).join(' + ')}</span>` : ''; })()
+      + (() => { const u = tokens.filter(t => !FAQ_STOP.has(t)); return u.length > 1 ? ` <span class="faq-tok">แยกคำเป็น ${u.map(t=>`<b>${faqEsc(t)}</b>`).join(' + ')}</span>` : ''; })()
       + `</p>`;
     // ถ้าแท็บนี้ไม่เจอเลย กล่องว่างจะพาไปอีกแท็บให้อยู่แล้ว ไม่ต้องบอกซ้ำสองที่
     if(other.length && hits.length){
@@ -16738,7 +16359,7 @@ function renderFaq(){
     html += `<section class="faq-sec">
       <div class="faq-sec-h"><span class="faq-sec-i" aria-hidden="true">${g.icon}</span>
         <div><div class="faq-sec-t">${g.label}</div><div class="faq-sec-d">${g.desc}</div></div></div>
-      ${list.map(it => { const snip = q ? (faqEnMode ? faqEnSnippet(it, tokens) : faqSnippet(it, tokens)) : ''; return `<details class="faq-item"${it.k ? ` id="faq-${it.k}"` : ''}${q ? ' data-hit="1"' : ''}>
+      ${list.map(it => { const snip = q ? faqSnippet(it, tokens) : ''; return `<details class="faq-item"${it.k ? ` id="faq-${it.k}"` : ''}${q ? ' data-hit="1"' : ''}>
         <summary><span class="faq-qwrap"><span class="faq-q">${it.q}</span>${snip ? `<span class="faq-snip">${snip}</span>` : ''}</span><span class="faq-arrow" aria-hidden="true"></span></summary>
         <div class="faq-a">
           <p class="faq-lead">${it.lead}</p>
@@ -16814,7 +16435,7 @@ function renderHealthGuide(){
       <p class="hg-lead">${sec.lead}</p>
       ${sec.infographic ? healthGuideBucketsHtml() : ''}
       ${sec.typeTable ? healthGuideTypeTableHtml() : ''}
-      ${(sec.blocks||[]).map(b => `<div class="hg-block${b.box ? ' hg-callout' : ''}"${b.anchor ? ` id="${b.anchor}"` : ''}><h3>${b.h}</h3>${b.html ? b.html : b.p.map(x=>`<p>${x}</p>`).join('')}</div>`).join('')}
+      ${(sec.blocks||[]).map(b => `<div class="hg-block${b.box ? ' hg-callout' : ''}"${b.anchor ? ` id="${b.anchor}"` : ''}><h3>${b.h}</h3>${b.p.map(x=>`<p>${x}</p>`).join('')}</div>`).join('')}
       ${(sec.traps||[]).length ? `<div class="hg-traps">${sec.traps.map((t,i)=>`
         <div class="hg-trap"><div class="hg-trap-n">${i+1}</div><div><div class="hg-trap-t">${t.t}</div><p>${t.d}</p></div></div>`).join('')}</div>` : ''}
       ${(sec.steps||[]).length ? `<div class="hg-steps">${sec.steps.map(st=>`
@@ -18856,29 +18477,18 @@ let DATA=[],META={},ENTITIES=[],CURRENT=[];
 function normalize(s){return String(s||'').normalize('NFKC').toLowerCase().replace(/[\s\-.,()\/&’'"ฯ:]/g,'').replace(/โรงพยาบาล|รพ\.|hospital|\(รัฐบาล\)/g,'');}
 function boolOf(rows,k){return rows.some(r=>r[k]===true)?true:rows.some(r=>r[k]==null)?null:false;}
 function summary(rows){return {individual:boolOf(rows,'individual'),group:boolOf(rows,'group'),special:[...new Set(rows.map(r=>r.special).filter(Boolean))],checkup:rows.every(r=>r.relation==='checkup')};}
-let HNEN=null,HNEN_P=null;
-function hnEnOn(){return !!(window.I18N&&I18N.lang==='en');}
-function hnLoadEn(){if(HNEN_P)return HNEN_P;HNEN_P=fetch('/data/hospital-en.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()}).then(j=>{HNEN=j;return j}).catch(()=>{HNEN_P=null;return null});return HNEN_P;}
-function hnName(e){if(!hnEnOn())return e.name;if(!e.en)return (HNEN&&HNEN.names[e.name])||e.name;let n=e.en;if(n===n.toUpperCase())n=n.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());if(e.type==='hospital'&&!/hospital|clinic|medical|center|centre|institute/i.test(n))n+=' Hospital';return n;}
-const HN_MK=/(หมู่ที่|หมู่บ้าน|หมู่|ม\.|ถนน|ถ\.|ซอย|ซ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.|ก\.ม\.|กม\.)/;
-const HN_MKL={'หมู่ที่':'Moo','หมู่บ้าน':'Village','หมู่':'Moo','ม':'Moo','ถนน':'R','ถ':'R','ซอย':'Soi','ซ':'Soi','ตำบล':'Tambon','ต':'Tambon','แขวง':'Khwaeng','อำเภอ':'Amphoe','อ':'Amphoe','เขต':'Khet','จังหวัด':'','จ':'','ก.ม':'Km','กม':'Km'};
-function hnAddr(s){if(!s||!hnEnOn()||!HNEN||!/[฀-๿]/.test(s))return s;const W=HNEN.words;let road=false,miss=false;const out=s.replace(/[฀-๿.]+/g,run=>{if(!/[฀-๿]/.test(run))return run;const t=[];for(let p of run.split(HN_MK)){p=p.replace(/^\.+|\.+$/g,'');if(!p)continue;if(Object.prototype.hasOwnProperty.call(HN_MKL,p)){const l=HN_MKL[p];if(road){t.push('Rd.');road=false;}if(l==='R')road=true;else if(l)t.push(l);continue;}if(!/[฀-๿]/.test(p)){t.push(p);continue;}let v=W[p];if(v==null){miss=true;v=p;}if(road){v+=' Rd.';road=false;}if(v)t.push(v);}return t.length?' '+t.join(' ')+' ':' ';});if(miss)return s;return (out+(road?' Rd.':'')).replace(/\s+/g,' ').replace(/\s+([,)])/g,'$1').replace(/\(\s+/g,'(').replace(/,(\s*,)+/g,',').trim();}
-const HN_HRS=[[/เวลาบริการ\/ข้อจำกัด:\s*/g,'Hours: '],[/หมายเหตุจากต้นทาง:\s*/g,'Source note: '],[/ให้บริการผู้ป่วยนอก\s*ในวัน-เวลาราชการ/g,'outpatient service during official hours'],[/เปิดให้บริการ|เปิดทำการ/g,'open'],[/ให้บริการ/g,'service'],[/ทุ+กวั+น/g,'daily'],[/วันหยุดนักขัตฤกษ์|นักขัตฤกษ์|วันหยุดราชการ/g,'public holidays'],[/วันทำการ/g,'working days'],[/จ-ศ/g,'Mon-Fri'],[/ส\.-อา/g,'Sat-Sun'],[/(?:วัน)?จันทร์/g,'Mon'],[/(?:วัน)?อังคาร/g,'Tue'],[/(?:วัน)?พุธ/g,'Wed'],[/(?:วัน)?พฤหัสบดี/g,'Thu'],[/(?:วัน)?ศุกร์/g,'Fri'],[/(?:วัน)?เสาร์/g,'Sat'],[/(?:วัน)?อาทิตย์|อวันาทิตย์/g,'Sun'],[/ตลอด\s*24\s*(?:ชั่วโมง|ชม\.)|24\s*(?:ชั่วโมง|ชม\.)/g,'24 hours'],[/ช่วงเช้า|เช้า/g,'morning'],[/ช่วงบ่าย/g,'afternoon'],[/ยกเว้น/g,'except'],[/ปิดทำการ|หยุด/g,'closed'],[/เฉพาะคลินิกพิเศษ/g,'special clinic only'],[/ผู้ป่วยใน/g,'inpatient'],[/ผู้ป่วยนอก/g,'outpatient'],[/หมายเลขโทรศัพท์/g,'Tel.'],[/เบอร์\s*/g,''],[/สายด่วน/g,'Hotline'],[/ต่อ\s*/g,'ext. '],[/หรือ/g,'or'],[/ถึง/g,'to'],[/เวลา\s*/g,''],[/\s*น\s*\.(?=\s|,|$|\))/g,''],[/(\d)\s*น\.?/g,'$1'],[/\s*น\.\s*$/g,'']];
-function hnTx(s){if(s==null||!hnEnOn()||!HNEN||!/[฀-๿]/.test(String(s)))return s;s=String(s);const T=HNEN.text||{};const k=s.replace(/\s+/g,' ').trim();if(T[s])return T[s];if(T[k])return T[k];let bad=false;const out=s.split(/(\s\|\s|;\s|\n|,\s*|\s{3,})/).map((p,i)=>{if(i%2)return /^\s{3,}$/.test(p)?' · ':p;const q=p.replace(/\s+/g,' ').trim();if(!/[฀-๿]/.test(q))return p;if(T[q])return T[q];if(/^ชื่อต้นฉบับ:/.test(q))return '\u0000';{const m=q.match(/^ต้นทางจำกัดบริการตามวงเล็บในชื่อ:.*\(([^()]*)\)\s*$/);if(m&&!/[\u0E00-\u0E7F]/.test(m[1]))return 'Source limits service per the bracket in the name: '+m[1];}let v=q;for(const [re,r] of HN_HRS)v=v.replace(re,r);if(/[฀-๿]/.test(v)){bad=true;return p;}return v.replace(/\s{2,}/g,' ').trim();}).join('');return bad?s:out.replace(/(\s\|\s|;\s|\n|,\s*)?\u0000/g,'').replace(/^(\s\|\s|;\s|\n|,\s*)+/,'').replace(/\u0000/g,'').replace(/:\s*·\s*/g,': ');}
-function hnProv(p){if(!hnEnOn())return p;return (HNEN&&HNEN.words[p])||p;}
-function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);if(r.english_name&&!e.en)e.en=r.english_name.trim();e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{if(HNEN&&HNEN.names[e.name])e.aliases.push(HNEN.names[e.name]);e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
+function identityRows(){const map=new Map();for(const r of DATA){let key=r.entity_key;let e=map.get(key);if(!e){e={key,name:r.display_name||r.name,province:r.province||'ไม่ระบุจังหวัด',type:r.facility_type,rows:[],companies:{},aliases:[]};map.set(key,e);}e.rows.push(r);e.aliases.push(r.name,r.english_name||'',r.display_name||'');(e.companies[r.insurer]??=[]).push(r);if(r.name.startsWith('โรงพยาบาล')&&!e.name.startsWith('โรงพยาบาล'))e.name=r.name;if(r.facility_type==='hospital')e.type='hospital';}ENTITIES=[...map.values()];ENTITIES.forEach(e=>{e.search=normalize(e.aliases.join(' '));e.address=e.rows.find(r=>r.address)?.address||'';e.count=Object.keys(e.companies).length;e.hasSpecial=e.rows.some(r=>r.special);});}
 function matchesRow(rows){const s=summary(rows);return (state.policy==='all'||state.policy==='both'&&s.individual===true&&s.group===true||state.policy==='individual'&&s.individual===true||state.policy==='group'&&s.group===true||state.policy==='group_only'&&s.group===true&&s.individual===false)&&(!state.special||s.special.length>0);}
 function selectEntities(){const q=normalize(state.query);return ENTITIES.filter(e=>(!q||e.search.includes(q))&&(!state.province||e.province===state.province)&&(state.allFacilities||e.type==='hospital')&&Object.entries(e.companies).some(([id,rows])=>(!state.company.size||state.company.has(id))&&matchesRow(rows))).sort((a,b)=>{if(q){let ae=a.aliases.some(n=>normalize(n)===q),be=b.aliases.some(n=>normalize(n)===q);if(ae!==be)return ae?-1:1;}return b.count-a.count||a.name.localeCompare(b.name,'th');});}
-function render(){CURRENT=selectEntities();$('#hnResultsTitle').textContent=state.query?(hnEnOn()?`Results for “${state.query}”`:`ผลค้นหา “${state.query}”`):'รายชื่อโรงพยาบาล';$('#hnResultCount').textContent=`พบ ${CURRENT.length.toLocaleString('th-TH')} สถานพยาบาล${state.province?' ใน'+state.province:''} · จาก ${COMPANIES.length} บริษัทประกัน`;
-$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(hnName(e))}"><div class="hn-card-upper"><span class="hn-province-tag" data-noi18n>${esc(hnProv(e.province))}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3 data-noi18n>${esc(hnName(e))}</h3><p class="hn-address"${e.address?' data-noi18n':''}>${esc(hnAddr(e.address)||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
+function render(){CURRENT=selectEntities();$('#hnResultsTitle').textContent=state.query?`ผลค้นหา “${state.query}”`:'รายชื่อโรงพยาบาล';$('#hnResultCount').textContent=`พบ ${CURRENT.length.toLocaleString('th-TH')} สถานพยาบาล${state.province?' ใน'+state.province:''} · จาก ${COMPANIES.length} บริษัทประกัน`;
+$('#hnCards').innerHTML=CURRENT.slice(0,state.limit).map(e=>{let index=ENTITIES.indexOf(e);return `<button class="hn-hospital-card" data-entity="${index}" aria-label="ดูคู่สัญญาของ ${esc(e.name)}"><div class="hn-card-upper"><span class="hn-province-tag">${esc(e.province)}</span><span class="hn-match-total">พบข้อมูล ${e.count} / ${COMPANIES.length} บริษัท</span></div><h3>${esc(e.name)}</h3><p class="hn-address">${esc(e.address||'เลือกดูสิทธิและแหล่งอ้างอิงจากแต่ละบริษัท')}</p><div class="hn-insurer-badges">${COMPANIES.map(c=>`<span class="hn-insurer-badge ${e.companies[c.id]?'':'hn-absent'}" style="--brand:${c.color}" aria-label="${esc(c.full)}${e.companies[c.id]?'':' · ไม่พบในชุดข้อมูล'}">${c.name}</span>`).join('')}</div><div class="hn-card-bottom"><span>${e.hasSpecial?'<span class="hn-network-mark">✦ มีเครือข่ายพิเศษ</span>':'เทียบประกันเดี่ยว / กลุ่ม'}</span><span>ดูรายละเอียด ↗</span></div></button>`;}).join('');$('#hnEmpty').hidden=CURRENT.length>0;$('#hnLoadMore').hidden=CURRENT.length<=state.limit;$('#hnLoadMore').textContent=`แสดงเพิ่มเติม (${Math.min(24,CURRENT.length-state.limit)} แห่ง)`;}
 function eligibility(v,checkup){if(checkup)return '<span class="hn-pill hn-dim">ตรวจสุขภาพเท่านั้น</span>';return v===true?'<span class="hn-pill">✓ มีข้อมูลรับสิทธิ</span>':v===false?'<span class="hn-pill hn-dim">ไม่ระบุรับสิทธิในรายการ</span>':'<span class="hn-pill hn-dim">ยังไม่ระบุ</span>';}
-function detail(index){const e=ENTITIES[index];$('#hnDetailName').textContent=hnName(e);$('#hnDetailLocation').textContent=hnProv(e.province)+(e.type!=='hospital'?' · คลินิก / บริการอื่น':'');$('#hnDetailBody').innerHTML=`<div class="hn-detail-content"><div class="hn-matrix-wrap"><table class="hn-matrix"><thead><tr><th>บริษัทประกัน</th><th>รายชื่อคู่สัญญา</th><th>ประกันเดี่ยว</th><th>ประกันกลุ่ม</th><th>เครือข่ายพิเศษ</th></tr></thead><tbody>${COMPANIES.map(c=>{const rows=e.companies[c.id];if(!rows)return `<tr><td style="color:${c.color}">${c.name}</td><td colspan="4"><span class="hn-pill hn-dim">ไม่พบในชุดข้อมูล</span><small class="hn-row-source">อาจใช้ชื่อหรือสาขาต่างกัน โปรดตรวจฐานทางการเพิ่มเติม</small></td></tr>`;const s=summary(rows);return `<tr><td style="color:${c.color}">${c.name}</td><td><span class="hn-pill ${s.checkup?'hn-dim':''}">${s.checkup?'ตรวจสุขภาพ':'✓ พบรายชื่อ'}</span><small class="hn-row-source">${s.group===true&&s.individual===false?'กลุ่มเท่านั้นตามรายการ<br>':''}ข้อมูล ${esc(rows[0].source_date||'ไม่ระบุวันที่')}</small></td><td>${eligibility(s.individual,s.checkup)}</td><td>${eligibility(s.group,s.checkup)}</td><td>${s.special.length?s.special.map(n=>`<span class="hn-pill hn-special">${esc(hnTx(n))}</span>`).join('<br>'):'<span class="hn-row-source">ไม่พบสถานะพิเศษในชุดข้อมูล</span>'}</td></tr>`;}).join('')}</tbody></table></div><p class="hn-detail-note">สิทธิที่แสดงเป็นข้อมูลในรายชื่อบริษัท ไม่ใช่การตรวจสิทธิรายกรมธรรม์ บริการ IPD / OPD และขอบเขตแผนประกันอาจแตกต่างกัน อ่านข้อความต้นทางด้านล่างก่อนใช้บริการ</p><div class="hn-evidence"><h3>รายละเอียดจากแต่ละบริษัท</h3>${COMPANIES.filter(c=>e.companies[c.id]).map(c=>`<details><summary><span style="color:${c.color}">${c.name}</span> · ${esc(c.full)} (${e.companies[c.id].length} รายการอ้างอิง)</summary>${e.companies[c.id].map(r=>`<div class="hn-evidence-meta"><b>ชื่อในฐานต้นทาง:</b> ${hnEnOn()&&/[\u0E00-\u0E7F]/.test(r.name)?`<span data-noi18n>${esc((r.english_name&&r.english_name.trim())||(HNEN&&HNEN.names[r.name])||hnName(e))}</span>`:esc(r.name)}<br><b>สิทธิ / บริการ:</b> ${esc(hnTx(Array.isArray(r.services)?r.services.join(', '):r.services)||'ไม่ระบุ')}${r.individual_services?'<br><b>บริการประกันเดี่ยว:</b> '+esc(hnTx(r.individual_services.join(', '))||'ไม่ระบุ'):''}${r.group_services?'<br><b>บริการประกันกลุ่ม:</b> '+esc(hnTx(r.group_services.join(', '))||'ไม่ระบุ'):''}${r.special_basis?'<br><b>ที่มาสถานะพิเศษ:</b> '+esc(hnTx(r.special_basis)):''}${r.address?'<br><b>ที่อยู่:</b> '+esc(hnAddr(r.address)):''}${r.phone?'<br><b>โทรศัพท์:</b> '+esc(hnTx(r.phone)):''}${r.notes?'<br><b>หมายเหตุ:</b> '+esc(hnTx(r.notes)):''}<br>${r.source_page?'<b>หน้าเอกสาร:</b> '+esc(r.source_page)+'<br>':''}<b>วันที่ข้อมูล / วันที่ดึง:</b> ${esc(r.source_date||'ไม่ระบุ')}<br><a href="${esc(r.source_url)}" target="_blank" rel="noopener">เปิดแหล่งข้อมูลทางการ ↗</a></div>`).join('<hr>')}</details>`).join('')}</div></div>`;$('#hnDetail').showModal();}
-function sources(){const items=META.sources||[];$('#hnSpecialNote').innerHTML=hnTx(META.special_note)||'';const EN=hnEnOn();$('#hnSourceList').innerHTML=items.map(s=>`<article class="hn-source-item"><span class="hn-count">${s.records.toLocaleString()} ${EN?'entries':'รายการ'}</span><h3>${esc(hnTx(s.name))}</h3><p>${esc(hnTx(s.description||''))}<br>${EN?'Data / pulled':'ข้อมูล / วันที่ดึง'}: ${esc(hnTx(s.date)||(EN?'Not stated':'ไม่ระบุ'))}</p><a href="${esc(s.url)}" target="_blank" rel="noopener">${EN?'Official website or document':'เว็บไซต์หรือเอกสารทางการ'} ↗</a>${s.additional_url?` · <a href="${esc(s.additional_url)}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a>`:''}</article>`).join('');$('#hnSources').showModal();}
+function detail(index){const e=ENTITIES[index];$('#hnDetailName').textContent=e.name;$('#hnDetailLocation').textContent=e.province+(e.type!=='hospital'?' · คลินิก / บริการอื่น':'');$('#hnDetailBody').innerHTML=`<div class="hn-detail-content"><div class="hn-matrix-wrap"><table class="hn-matrix"><thead><tr><th>บริษัทประกัน</th><th>รายชื่อคู่สัญญา</th><th>ประกันเดี่ยว</th><th>ประกันกลุ่ม</th><th>เครือข่ายพิเศษ</th></tr></thead><tbody>${COMPANIES.map(c=>{const rows=e.companies[c.id];if(!rows)return `<tr><td style="color:${c.color}">${c.name}</td><td colspan="4"><span class="hn-pill hn-dim">ไม่พบในชุดข้อมูล</span><small class="hn-row-source">อาจใช้ชื่อหรือสาขาต่างกัน โปรดตรวจฐานทางการเพิ่มเติม</small></td></tr>`;const s=summary(rows);return `<tr><td style="color:${c.color}">${c.name}</td><td><span class="hn-pill ${s.checkup?'hn-dim':''}">${s.checkup?'ตรวจสุขภาพ':'✓ พบรายชื่อ'}</span><small class="hn-row-source">${s.group===true&&s.individual===false?'กลุ่มเท่านั้นตามรายการ<br>':''}ข้อมูล ${esc(rows[0].source_date||'ไม่ระบุวันที่')}</small></td><td>${eligibility(s.individual,s.checkup)}</td><td>${eligibility(s.group,s.checkup)}</td><td>${s.special.length?s.special.map(n=>`<span class="hn-pill hn-special">${esc(n)}</span>`).join('<br>'):'<span class="hn-row-source">ไม่พบสถานะพิเศษในชุดข้อมูล</span>'}</td></tr>`;}).join('')}</tbody></table></div><p class="hn-detail-note">สิทธิที่แสดงเป็นข้อมูลในรายชื่อบริษัท ไม่ใช่การตรวจสิทธิรายกรมธรรม์ บริการ IPD / OPD และขอบเขตแผนประกันอาจแตกต่างกัน อ่านข้อความต้นทางด้านล่างก่อนใช้บริการ</p><div class="hn-evidence"><h3>รายละเอียดจากแต่ละบริษัท</h3>${COMPANIES.filter(c=>e.companies[c.id]).map(c=>`<details><summary><span style="color:${c.color}">${c.name}</span> · ${esc(c.full)} (${e.companies[c.id].length} รายการอ้างอิง)</summary>${e.companies[c.id].map(r=>`<div class="hn-evidence-meta"><b>ชื่อในฐานต้นทาง:</b> ${esc(r.name)}<br><b>สิทธิ / บริการ:</b> ${esc(Array.isArray(r.services)?r.services.join(', '):r.services||'ไม่ระบุ')}${r.individual_services?'<br><b>บริการประกันเดี่ยว:</b> '+esc(r.individual_services.join(', ')||'ไม่ระบุ'):''}${r.group_services?'<br><b>บริการประกันกลุ่ม:</b> '+esc(r.group_services.join(', ')||'ไม่ระบุ'):''}${r.special_basis?'<br><b>ที่มาสถานะพิเศษ:</b> '+esc(r.special_basis):''}${r.address?'<br><b>ที่อยู่:</b> '+esc(r.address):''}${r.phone?'<br><b>โทรศัพท์:</b> '+esc(r.phone):''}${r.notes?'<br><b>หมายเหตุ:</b> '+esc(r.notes):''}<br>${r.source_page?'<b>หน้าเอกสาร:</b> '+esc(r.source_page)+'<br>':''}<b>วันที่ข้อมูล / วันที่ดึง:</b> ${esc(r.source_date||'ไม่ระบุ')}<br><a href="${esc(r.source_url)}" target="_blank" rel="noopener">เปิดแหล่งข้อมูลทางการ ↗</a></div>`).join('<hr>')}</details>`).join('')}</div></div>`;$('#hnDetail').showModal();}
+function sources(){const items=META.sources||[];$('#hnSpecialNote').innerHTML=META.special_note||'';$('#hnSourceList').innerHTML=items.map(s=>`<article class="hn-source-item"><span class="hn-count">${s.records.toLocaleString()} รายการ</span><h3>${esc(s.name)}</h3><p>${esc(s.description||'')}<br>ข้อมูล / วันที่ดึง: ${esc(s.date||'ไม่ระบุ')}</p><a href="${esc(s.url)}" target="_blank" rel="noopener">เว็บไซต์หรือเอกสารทางการ ↗</a>${s.additional_url?` · <a href="${esc(s.additional_url)}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a>`:''}</article>`).join('');$('#hnSources').showModal();}
 function reset(){state.query='';state.province='';state.company.clear();state.policy='all';state.special=false;state.allFacilities=false;state.limit=24;$('#hnSearch').value='';$('#hnProvince').value='';$('#hnSpecial').checked=false;$('#hnAllFacilities').checked=false;document.querySelectorAll('[data-company]').forEach(x=>x.checked=false);document.querySelectorAll('#page-hospitals [data-policy]').forEach(x=>x.classList.toggle('hn-active',x.dataset.policy==='all'));render();}
 function exportCSV(){let head=['โรงพยาบาล','จังหวัด','บริษัท','ประกันเดี่ยว','ประกันกลุ่ม','เครือข่ายพิเศษ','สิทธิและบริการ','วันที่ข้อมูล','แหล่งอ้างอิง'];let rows=CURRENT.flatMap(e=>Object.entries(e.companies).flatMap(([id,rs])=>rs.map(r=>[e.name,e.province,id,r.individual===true?'มีข้อมูลรับสิทธิ':r.individual===false?'ไม่ระบุรับสิทธิในรายการ':'ยังไม่ยืนยัน',r.group===true?'มีข้อมูลรับสิทธิ':r.group===false?'ไม่ระบุรับสิทธิในรายการ':'ยังไม่ยืนยัน',r.special||'',Array.isArray(r.services)?r.services.join(', '):r.services||'',r.source_date||'',r.source_url])));const csv='\ufeff'+[head,...rows].map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='hospital-network-results.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-async function init(){try{const m=await fetch('/data/hospital-network/meta.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()});const parts=await Promise.all(m.companies.map(c=>fetch('/data/hospital-network/'+c.id+'.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()})));if(hnEnOn())await hnLoadEn();const d=parts.flat();DATA=d;META=m;COMPANIES=m.companies;identityRows();{const cc=document.getElementById('hnCompanyCount');if(cc)cc.textContent=COMPANIES.length+' บริษัทประกัน';}$('#hnCompanyStrip').innerHTML=COMPANIES.map(c=>`<div class="hn-company-word" style="color:${c.color}">${c.name}<small>${esc(c.full)}</small></div>`).join('');$('#hnCompanyFilters').innerHTML=COMPANIES.map(c=>`<label class="hn-check"><input type="checkbox" data-company="${c.id}"><span class="hn-label"><i class="hn-insurer-dot" style="background:${c.color}"></i>${c.name}</span><span class="hn-num">${DATA.filter(r=>r.insurer===c.id).length.toLocaleString()}</span></label>`).join('');const prov=[...new Set(ENTITIES.map(e=>e.province))].sort((a,b)=>a.localeCompare(b,'th'));$('#hnProvince').insertAdjacentHTML('beforeend',prov.map(p=>`<option value="${esc(p)}" data-hnprov data-noi18n>${esc(hnProv(p))}</option>`).join(''));render();}catch(err){$('#hnResultCount').textContent='โหลดข้อมูลไม่สำเร็จ กรุณาลองรีเฟรชหน้าเว็บ';console.error('Unable to load hospital directory');}}
+async function init(){try{const m=await fetch('/data/hospital-network/meta.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()});const parts=await Promise.all(m.companies.map(c=>fetch('/data/hospital-network/'+c.id+'.json?v='+DATA_VERSION).then(r=>{if(!r.ok)throw Error();return r.json()})));const d=parts.flat();DATA=d;META=m;COMPANIES=m.companies;identityRows();$('#hnCompanyStrip').innerHTML=COMPANIES.map(c=>`<div class="hn-company-word" style="color:${c.color}">${c.name}<small>${esc(c.full)}</small></div>`).join('');$('#hnCompanyFilters').innerHTML=COMPANIES.map(c=>`<label class="hn-check"><input type="checkbox" data-company="${c.id}"><span class="hn-label"><i class="hn-insurer-dot" style="background:${c.color}"></i>${c.name}</span><span class="hn-num">${DATA.filter(r=>r.insurer===c.id).length.toLocaleString()}</span></label>`).join('');const prov=[...new Set(ENTITIES.map(e=>e.province))].sort((a,b)=>a.localeCompare(b,'th'));$('#hnProvince').insertAdjacentHTML('beforeend',prov.map(p=>`<option>${esc(p)}</option>`).join(''));render();}catch(err){$('#hnResultCount').textContent='โหลดข้อมูลไม่สำเร็จ กรุณาลองรีเฟรชหน้าเว็บ';console.error('Unable to load hospital directory');}}
 $('#hnSearchForm').addEventListener('submit',e=>{e.preventDefault();state.query=$('#hnSearch').value.trim();state.limit=24;render();$('#hnFinder').scrollIntoView({behavior:'smooth'});});let timer;$('#hnSearch').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{state.query=$('#hnSearch').value.trim();state.limit=24;render();},120)});document.addEventListener('keydown',e=>{if(!document.getElementById('page-hospitals').classList.contains('active'))return;if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.querySelector('#page-hospitals dialog[open]')){e.preventDefault();$('#hnSearch').focus();}});document.addEventListener('click',e=>{if(!e.target.closest('#page-hospitals'))return;let q=e.target.closest('[data-query]');if(q){$('#hnSearch').value=q.dataset.query;state.query=q.dataset.query;state.limit=24;render();$('#hnFinder').scrollIntoView({behavior:'smooth'});}const card=e.target.closest('[data-entity]');if(card)detail(Number(card.dataset.entity));const close=e.target.closest('[data-close]');if(close)document.getElementById(close.dataset.close).close();const pol=e.target.closest('[data-policy]');if(pol){state.policy=pol.dataset.policy;state.limit=24;document.querySelectorAll('#page-hospitals [data-policy]').forEach(x=>x.classList.toggle('hn-active',x===pol));render();}});$('#hnCompanyFilters').addEventListener('change',e=>{const x=e.target;if(x.dataset.company){x.checked?state.company.add(x.dataset.company):state.company.delete(x.dataset.company);state.limit=24;render();}});$('#hnProvince').addEventListener('change',e=>{state.province=e.target.value;state.limit=24;render();});$('#hnSpecial').addEventListener('change',e=>{state.special=e.target.checked;state.limit=24;render();});$('#hnAllFacilities').addEventListener('change',e=>{state.allFacilities=e.target.checked;state.limit=24;render();});$('#hnReset').onclick=reset;$('#hnEmptyReset').onclick=reset;$('#hnSourcesBtn').onclick=sources;$('#hnMethodBtn').onclick=sources;$('#hnExport').onclick=exportCSV;$('#hnLoadMore').onclick=()=>{state.limit+=24;render();};for(const d of document.querySelectorAll('#page-hospitals dialog'))d.addEventListener('click',e=>{if(e.target===d){const b=d.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)d.close();}});
-  document.addEventListener('i18n:ready',()=>{hnLoadEn().then(()=>{if(!DATA.length)return;identityRows();document.querySelectorAll('#hnProvince [data-hnprov]').forEach(o=>o.textContent=hnProv(o.value));render();});});
   init();
 }
 
@@ -19019,8 +18629,7 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(maochaiBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
-      rows.n2_4 = '1,000 บาท/ครั้ง (สูงสุด 7 วัน)<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
-      rows.n9 = rows.n10 = rows.n11 = carePlusLinkText();
+      rows.n2_4 = '1,000 บาทต่อครั้ง<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = 'ไม่มี';
       rows.copay_pct = 'ไม่มี';
@@ -19039,8 +18648,7 @@ const COMPARE_PRODUCTS = {
     getRows(cfg){
       const rows = benefitRowsToMap(ecpBenefitRows(), ['p1','p2','p3'].indexOf(cfg.plan));
       const sums = {p1:200000, p2:200000, p3:500000};
-      rows.n2_4 = '1,000 บาท/ครั้ง (สูงสุด 7 วัน)<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
-      rows.n9 = rows.n10 = rows.n11 = carePlusLinkText();
+      rows.n2_4 = '1,000 บาทต่อวัน<span class="benefit-subnote">รวมอยู่ในหมวดค่าบริการทางการแพทย์ผู้ป่วยใน</span>';
       rows.sum_insured = `${fmt(sums[cfg.plan])} บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง`;
       rows.deductible = '20,000 บาทต่อการเจ็บป่วยครั้งใดครั้งหนึ่ง';
       rows.copay_pct = 'ไม่มี';
@@ -19066,14 +18674,13 @@ const COMPARE_PRODUCTS = {
         deductible:'ไม่มี', copay_pct:'ไม่มี',
         n1:`${f(b.room_per_day[i])}/วัน (สูงสุด ${b.room_max_days} วัน · ICU ${b.icu_multiplier} เท่า ไม่เกิน ${b.icu_max_days} วัน)`,
         n2:`จ่ายตามจริง รวมหมวด 2.1–2.4 ไม่เกิน ${f(b.cat2_max_per_admission[i])}/ครั้ง`,
-        n2_4:`${f(b.cat2_4_take_home[i])} บาท/ครั้ง (สูงสุด 7 วัน · รวมในวงเงินหมวด 2)`,
+        n2_4:`${f(b.cat2_4_take_home[i])}/ครั้ง (รวมในวงเงินหมวด 2)`,
         n3:`${f(b.doctor_visit_per_day[i])}/วัน`,
         n4:`แพทย์ผ่าตัด ${f(b.surgeon_fee[i])} · ห้องผ่าตัด ${f(b.cat4_1_4_2_max_per_admission[i])} · วิสัญญี ${f(b.anesthesiologist_fee[i])}`,
         n5:'ตามจริง ไม่เกินวงเงินหมวด 4',
-        n6_1:`${f(b.cat6_1_pre_post_dx[i])} บาท (ก่อน-หลังนอน รพ. 30 วัน)`,
-        n6_2:'ไม่คุ้มครอง',
+        n6:`${f(b.cat6_1_pre_post_dx[i])} (ก่อน-หลังนอน รพ. 30 วัน)`,
         n7:`${f(b.cat7_accident_opd_24h[i])}/ครั้ง`,
-        n8:'ไม่คุ้มครอง', n9:carePlusLinkText(), n10:carePlusLinkText(), n11:carePlusLinkText(),
+        n8:'ไม่คุ้มครอง', n9:'ไม่คุ้มครอง', n10:'ไม่คุ้มครอง', n11:'ไม่คุ้มครอง',
         n12:f(b.cat12_ambulance[i]), n13:'ไม่คุ้มครอง',
       };
     },
@@ -19147,7 +18754,6 @@ const COMPARE_GROUPS = {
              'flexi9920','smartlink153','smartlink156','smartindex101']},
 };
 function compareGroupOf(id){
-  id = String(id).split('~')[0];   // คอลัมน์ซ้ำของแผนเดียวกันใช้ id แบบ ehp~2
   for(const k of Object.keys(COMPARE_GROUPS)) if(COMPARE_GROUPS[k].ids.includes(id)) return k;
   return null;
 }
@@ -19520,7 +19126,7 @@ function renderPensionCompare(){
   let table = '<p class="pension-hint">เลือกแบบประกันที่อยากเทียบ (สูงสุด 4 แบบ)</p>';
   if(sel.length){
     const cols = sel.map(pid => ({pid, rows: pensionCompareRows(pid)}));
-    const headers = cols.map(c => pensionPlan(c.pid).shortName);
+    const headers = ['หัวข้อเปรียบเทียบ', ...cols.map(c => pensionPlan(c.pid).shortName)];
     const rows = PENSION_COMPARE_ROW_DEFS.map(def => {
       if(def.section) return ['§' + def.section];
       return [def.label, ...cols.map(c => c.rows[def.key] != null ? c.rows[def.key] : '<span class="compare-na">—</span>')];
@@ -19559,44 +19165,37 @@ function renderPensionCompare(){
 const COMPARE_MAX = 4;
 const COMPARE_ROW_DEFS = [
   {section:'วงเงินคุ้มครองและเงื่อนไขการจ่าย'},
-  {key:'sum_insured', label:'วงเงินคุ้มครอง (ต่อครั้ง/ต่อปี)', tip:'เพดานสูงสุดที่บริษัทจ่าย แบบต่อครั้งนับรายการเจ็บป่วยแต่ละครั้ง แบบต่อปีนับรวมทุกครั้งในรอบปีกรมธรรม์'},
-  {key:'deductible', label:'ความรับผิดส่วนแรก (Deductible)', tip:'ค่ารักษาส่วนแรกที่ผู้เอาประกันจ่ายเองก่อนต่อการเจ็บป่วยครั้งหนึ่ง ส่วนที่เกินบริษัทจ่ายตามความคุ้มครอง'},
-  {key:'copay_pct', label:'ส่วนร่วมจ่าย (Copayment %)', tip:'สัดส่วนที่ผู้เอาประกันร่วมจ่ายทุกครั้งที่เคลม เช่น 20% บริษัทจ่าย 80%'},
+  {key:'sum_insured', label:'วงเงินคุ้มครอง (ต่อครั้ง/ต่อปี)'},
+  {key:'deductible', label:'ความรับผิดส่วนแรก (Deductible)'},
+  {key:'copay_pct', label:'ส่วนร่วมจ่าย (Copayment %)'},
   {section:'ผลประโยชน์หลัก (13 หมวดมาตรฐาน)'},
-  {key:'n1', label:'หมวด 1 · ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)', tip:'ค่าห้อง ค่าอาหาร และค่าบริการพื้นฐานของโรงพยาบาลระหว่างนอนเป็นผู้ป่วยใน รวมห้อง ICU ตามจำนวนวันที่แผนกำหนด'},
-  {key:'n2', label:'หมวด 2 · ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล', tip:'ค่าแล็บ เอกซเรย์ ค่าบำบัดรักษา เลือด ยา น้ำเกลือ เวชภัณฑ์ และค่าพยาบาลระหว่างนอนโรงพยาบาล (หมวดย่อย 2.1–2.4)'},
-  {key:'n2_4', label:'หมวด 2.4 · ค่ายา/เวชภัณฑ์กลับบ้าน', tip:'ยาและเวชภัณฑ์สิ้นเปลืองที่แพทย์สั่งให้นำกลับไปใช้ต่อที่บ้านในวันออกจากโรงพยาบาล จำกัดทั้งวงเงินและจำนวนวันตามแผน'},
-  {key:'n3', label:'หมวด 3 · ค่าแพทย์ตรวจรักษา', tip:'ค่าแพทย์เยี่ยมไข้และดูแลระหว่างนอนโรงพยาบาล ไม่รวมค่าแพทย์ผ่าตัด'},
-  {key:'n4', label:'หมวด 4 · ค่าผ่าตัด/หัตถการ', tip:'ค่าห้องผ่าตัด ยาและอุปกรณ์ผ่าตัด ค่าแพทย์ผ่าตัด วิสัญญีแพทย์ และการผ่าตัดเปลี่ยนอวัยวะ ระหว่างนอนโรงพยาบาล (หมวดย่อย 4.1–4.5)'},
-  {key:'n5', label:'หมวด 5 · Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)', tip:'ผ่าตัดใหญ่ในห้องผ่าตัดที่ใช้ยาสลบหรือยาชาทางไขสันหลัง แต่กลับบ้านได้ภายในวันเดียว ไม่ต้องนอนโรงพยาบาล'},
-  {key:'n6_1', label:'หมวด 6.1 · ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน', tip:'ค่าตรวจวินิจฉัย เช่น แล็บ เอกซเรย์ ที่เกี่ยวข้องโดยตรงกับโรคที่นอนโรงพยาบาล ทำภายใน 30 วันก่อนและหลังการนอนครั้งนั้น'},
-  {key:'n6_2', label:'หมวด 6.2 · ค่ารักษา OPD ต่อเนื่องหลังนอนโรงพยาบาล ภายใน 30 วัน', tip:'ค่ารักษาแบบผู้ป่วยนอกสำหรับโรคเดิมต่อเนื่อง ภายใน 30 วันหลังออกจากโรงพยาบาล ไม่รวมค่าตรวจวินิจฉัย (อยู่ในหมวด 6.1)'},
-  {key:'n7', label:'หมวด 7 · อุบัติเหตุ OPD ภายใน 24 ชั่วโมง', tip:'ค่ารักษาบาดเจ็บจากอุบัติเหตุแบบไม่ต้องนอนโรงพยาบาล เฉพาะที่รักษาภายใน 24 ชั่วโมงหลังเกิดเหตุ ไม่รวมนัดล้างแผลต่อเนื่อง'},
-  {key:'n8', label:'หมวด 8 · เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล', tip:'ค่ากายภาพหรือฟื้นฟูสมรรถภาพแบบผู้ป่วยนอก ต่อเนื่องหลังออกจากโรงพยาบาล ตามคำสั่งแพทย์และระยะเวลาที่กำหนด'},
-  {key:'n9', label:'หมวด 9 · ล้างไตผ่านทางเส้นเลือด', tip:'ค่าฟอกเลือดล้างไตทางหลอดเลือดสำหรับภาวะไตวาย แบบไม่ต้องนอนโรงพยาบาล'},
-  {key:'n10', label:'หมวด 10 · รังสีรักษา/รังสีร่วมรักษา/นิวเคลียร์รักษา', tip:'ค่าฉายแสง รังสีร่วมรักษา และเวชศาสตร์นิวเคลียร์รักษา แบบไม่ต้องนอนโรงพยาบาล ส่วนใหญ่ใช้รักษามะเร็ง'},
-  {key:'n11', label:'หมวด 11 · เคมีบำบัด/Targeted Therapy', tip:'ค่ายาเคมีบำบัดและยามุ่งเป้า (Targeted Therapy) รักษามะเร็ง แบบไม่ต้องนอนโรงพยาบาล'},
-  {key:'n12', label:'หมวด 12 · รถพยาบาลฉุกเฉิน', tip:'ค่ารถพยาบาลของโรงพยาบาลเพื่อนำส่งผู้ป่วยกรณีฉุกเฉิน หรือย้ายโรงพยาบาลตามความจำเป็นทางการแพทย์'},
-  {key:'n13', label:'หมวด 13 · ผ่าตัดเล็ก', tip:'ผ่าตัดหรือหัตถการที่ใช้ยาชาเฉพาะที่ ไม่ต้องนอนโรงพยาบาล เช่น ผ่าฝี ตัดไฝ เย็บแผล ไม่มีสิทธิตรวจติดตามตามหมวด 6'},
+  {key:'n1', label:'ค่าห้อง ค่าอาหาร และค่าบริการโรงพยาบาล (ผู้ป่วยใน)'},
+  {key:'n2', label:'ค่าบริการทางการแพทย์ ค่ายา เวชภัณฑ์ พยาบาล'},
+  {key:'n2_4', label:'ค่ายา/เวชภัณฑ์กลับบ้าน'},
+  {key:'n3', label:'ค่าแพทย์ตรวจรักษา'},
+  {key:'n4', label:'ค่าผ่าตัด/หัตถการ'},
+  {key:'n5', label:'Day Surgery (ผ่าตัดใหญ่ไม่ต้องนอนโรงพยาบาล)'},
+  {key:'n6', label:'ตรวจวินิจฉัยก่อน-หลังนอนโรงพยาบาล ภายใน 30 วัน'},
+  {key:'n7', label:'อุบัติเหตุ OPD ภายใน 24 ชั่วโมง'},
+  {key:'n8', label:'เวชศาสตร์ฟื้นฟูหลังนอนโรงพยาบาล'},
+  {key:'n9', label:'ล้างไตผ่านทางเส้นเลือด'},
+  {key:'n10', label:'รังสีรักษา/รังสีร่วมรักษา/นิวเคลียร์รักษา'},
+  {key:'n11', label:'เคมีบำบัด/Targeted Therapy'},
+  {key:'n12', label:'รถพยาบาลฉุกเฉิน'},
+  {key:'n13', label:'ผ่าตัดเล็ก'},
   {section:'ผลประโยชน์ส่วนขยาย (เฉพาะบางแผน)'},
-  {key:'parent_bed', label:'ค่าห้องพักบิดา/มารดา (เตียงเสริม)', tip:'ค่าเตียงเสริมให้พ่อหรือแม่เฝ้าไข้เด็กที่นอนโรงพยาบาล'},
-  {key:'rehab_ipd', label:'ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน', tip:'ค่าฟื้นฟูสมรรถภาพที่ต้องนอนโรงพยาบาล เช่น หลังโรคหลอดเลือดสมอง จำกัดจำนวนวันต่อโรค'},
-  {key:'medical_equipment', label:'ค่าเครื่องมือแพทย์/อุปกรณ์เทียม', tip:'ค่าอุปกรณ์ทางการแพทย์และอวัยวะเทียมตามคำสั่งแพทย์ มีวงเงินสูงสุดตลอดชีพ'},
-  {key:'psychiatric', label:'ค่ารักษาทางจิตเวช', tip:'ค่ารักษาโรคทางจิตเวชตามเงื่อนไขของแผน มีวงเงินต่อโรคและวงเงินตลอดชีพ'},
-  {key:'private_nurse', label:'ค่าพยาบาลส่วนตัวหลังออกจากโรงพยาบาล', tip:'ค่าพยาบาลดูแลที่บ้านหลังออกจากโรงพยาบาลตามคำแนะนำแพทย์ จำกัดจำนวนวันต่อปี'},
-  {key:'dental_accident', label:'ค่าทันตกรรมจากอุบัติเหตุ', tip:'ค่ารักษาฟันที่เสียหายจากอุบัติเหตุ ไม่รวมทันตกรรมทั่วไป'},
-  {key:'emergency_assist', label:'ค่าช่วยเหลือฉุกเฉินทางการแพทย์', tip:'บริการช่วยเหลือฉุกเฉิน เช่น เคลื่อนย้ายผู้ป่วยทางการแพทย์ ตามเงื่อนไขของแผน'},
-  {key:'advanced_imaging', label:'ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET)', tip:'ค่าตรวจ CT MRI PET Scan แบบไม่ต้องนอนโรงพยาบาล แยกจากหมวด 6.1 ที่ต้องผูกกับการนอนโรงพยาบาล'},
-  {key:'opd_general', label:'OPD ทั่วไป (ผู้ป่วยนอก)', tip:'ค่าพบแพทย์ ค่าตรวจ และค่ายาแบบผู้ป่วยนอกสำหรับเจ็บป่วยทั่วไป เช่น ไข้หวัด โดยไม่ต้องนอนโรงพยาบาล'},
-  {key:'physiotherapy', label:'ค่ากายภาพบำบัด', tip:'ค่ากายภาพบำบัดแบบผู้ป่วยนอก จำกัดจำนวนครั้งต่อวัน'},
-  {key:'acupuncture', label:'ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก', tip:'ค่าฝังเข็ม ธรรมชาติบำบัด และการจัดกระดูกหรือไคโรแพรกติก มีวงเงินต่อปี'},
+  {key:'parent_bed', label:'ค่าห้องพักบิดา/มารดา (เตียงเสริม)'},
+  {key:'rehab_ipd', label:'ค่าฟื้นฟูสภาพในฐานะผู้ป่วยใน'},
+  {key:'medical_equipment', label:'ค่าเครื่องมือแพทย์/อุปกรณ์เทียม'},
+  {key:'psychiatric', label:'ค่ารักษาทางจิตเวช'},
+  {key:'private_nurse', label:'ค่าพยาบาลส่วนตัวหลังออกจากโรงพยาบาล'},
+  {key:'dental_accident', label:'ค่าทันตกรรมจากอุบัติเหตุ'},
+  {key:'emergency_assist', label:'ค่าช่วยเหลือฉุกเฉินทางการแพทย์'},
+  {key:'advanced_imaging', label:'ค่าภาพวินิจฉัยขั้นสูง (CT/MRI/PET)'},
+  {key:'opd_general', label:'OPD ทั่วไป (ผู้ป่วยนอก)'},
+  {key:'physiotherapy', label:'ค่ากายภาพบำบัด'},
+  {key:'acupuncture', label:'ฝังเข็ม/ธรรมชาติบำบัด/จัดกระดูก'},
 ];
-/* หัวข้อด้านซ้ายของตารางเปรียบเทียบ พร้อมไอคอน i อธิบายนิยามแบบย่อ
-   ใช้คลาส tip-down ให้กล่องเปิดลงล่าง เพราะตารางมี overflow แถวบนสุดจะโดนตัดถ้าเปิดขึ้น */
-function compareRowLabel(def){
-  if(!def.tip) return def.label;
-  return `${def.label}<span class="info-icon tip-down" tabindex="0" role="button" aria-label="นิยาม">i<span class="tooltip">${def.tip}</span></span>`;
-}
 
 let compareMode = false;
 let compareSelected = [];
@@ -19709,7 +19308,7 @@ function toggleCompareSelect(id){
 /* ---------- คอลัมน์และแถวของกลุ่มสัญญาหลักประกันชีวิต ---------- */
 function buildLifeCompareColumns(inputs){
   return compareSelected.map(id => {
-    const p = LIFE_COMPARE_PRODUCTS[compareBaseId(id)];
+    const p = LIFE_COMPARE_PRODUCTS[id];
     const capital = Number(compareTierByProduct[id] || p.defaultValue);
     const premium = mainPremiumAtEntry(p.plan, capital, inputs.gender, inputs.age, 'annual');
     return {id, product:p, capital, premium};
@@ -19833,21 +19432,7 @@ function readCompareInputs(){
   return {gender, birthYear, age, occClass};
 }
 function rerenderComparePage(){ renderComparePage(); }
-function compareBaseId(key){ return String(key).split('~')[0]; }
-function compareProductOf(key){
-  const b = compareBaseId(key);
-  return compareGroupOf(b) === 'life' ? LIFE_COMPARE_PRODUCTS[b] : COMPARE_PRODUCTS[b];
-}
-// วงเงินที่คอลัมน์อื่นของแผนเดียวกันใช้อยู่ — ห้ามเลือกซ้ำ เพราะจะได้คอลัมน์เหมือนกันทุกช่อง
-function compareTiersUsedByOthers(key){
-  const b = compareBaseId(key);
-  return compareSelected.filter(k => k !== key && compareBaseId(k) === b)
-    .map(k => compareTierByProduct[k] || compareProductOf(k).defaultValue);
-}
-function setCompareTier(id, value){
-  if(compareTiersUsedByOthers(id).includes(value)) return;
-  compareTierByProduct[id] = value; renderComparePage();
-}
+function setCompareTier(id, value){ compareTierByProduct[id] = value; renderComparePage(); }
 function removeCompareColumn(id){
   compareSelected = compareSelected.filter(x => x !== id);
   renderComparePage();
@@ -19855,20 +19440,14 @@ function removeCompareColumn(id){
 // Lets the owner add a plan back (or a different one) directly from the
 // compare page itself, without navigating back to /plans first.
 function addCompareColumn(id){
-  if(!id || compareSelected.length >= COMPARE_MAX) return;
+  if(!id || compareSelected.includes(id) || compareSelected.length >= COMPARE_MAX) return;
   const cur = compareActiveGroup();
   if(cur && compareGroupOf(id) !== cur) return;   // กันเลือกข้ามกลุ่มจากช่องเพิ่มแผนด้วย
-  const product = compareProductOf(id);
-  // แผนเดียวกันเพิ่มซ้ำได้ เพื่อเทียบคนละวงเงิน เช่น Elite 20 ล้าน กับ 75 ล้าน
-  // คอลัมน์ใหม่เริ่มที่วงเงินแรกที่ยังไม่มีคอลัมน์ไหนใช้
-  const used = compareSelected.filter(k => compareBaseId(k) === id)
-    .map(k => compareTierByProduct[k] || product.defaultValue);
-  const freeTier = [product.defaultValue, ...product.tiers.map(t => t.value)].find(v => !used.includes(v));
-  if(freeTier === undefined) return;
-  let key = id, n = 2;
-  while(compareSelected.includes(key)) key = id + '~' + (n++);
-  compareSelected.push(key);
-  compareTierByProduct[key] = freeTier;
+  compareSelected.push(id);
+  if(!compareTierByProduct[id]){
+    compareTierByProduct[id] = compareGroupOf(id) === 'life'
+      ? LIFE_COMPARE_PRODUCTS[id].defaultValue : COMPARE_PRODUCTS[id].defaultValue;
+  }
   renderComparePage();
 }
 function buildCompareBenefitRows(columns){
@@ -19877,9 +19456,9 @@ function buildCompareBenefitRows(columns){
     if(def.section) return ['§'+def.section];
     const cells = colMaps.map(m => {
       const v = m[def.key];
-      return v === undefined ? 'ไม่คุ้มครอง' : v;
+      return v === undefined ? '<span class="compare-na">ไม่มีในแผนนี้</span>' : v;
     });
-    return [compareRowLabel(def), ...cells];
+    return [def.label, ...cells];
   });
 }
 /* ---------- สัญญาเพิ่มเติมที่ผูกกับสัญญาหลักบางแบบโดยเฉพาะ ----------
@@ -19961,7 +19540,7 @@ function renderLifeComparePage(el, inputs){
     <div class="compare-col-summary">
       <div class="compare-col-title">${col.product.title}</div>
       <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
-        ${(used => col.product.tiers.map(t => `<option value="${t.value}" ${Number(t.value)===col.capital?'selected':''} ${used.includes(t.value)?'disabled':''}>${t.label}${used.includes(t.value)?' (มีคอลัมน์แล้ว)':''}</option>`).join(''))(compareTiersUsedByOthers(col.id))}
+        ${col.product.tiers.map(t => `<option value="${t.value}" ${Number(t.value)===col.capital?'selected':''}>${t.label}</option>`).join('')}
       </select>
       <div class="compare-price">${col.premium != null ? fmt(Math.round(col.premium))+' บาท/ปี' : 'อายุนี้ทำแบบนี้ไม่ได้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
@@ -19996,12 +19575,8 @@ function compareSummaryRow(cardsHtml, colCount, withAddSlot = true){
 function renderCompareAddSlot(){
   const group = compareActiveGroup();
   const pool = group ? COMPARE_GROUPS[group].ids : COMPARE_SELECTABLE_IDS;
-  const titleOf = id => compareProductOf(id).title;
-  // แผนที่เลือกแล้วยังเพิ่มซ้ำได้ ถ้ายังมีวงเงินที่ไม่มีคอลัมน์ไหนใช้
-  const availableToAdd = pool.filter(id => {
-    const n = compareSelected.filter(k => compareBaseId(k) === id).length;
-    return n === 0 || n < compareProductOf(id).tiers.length;
-  });
+  const titleOf = id => (compareGroupOf(id) === 'life' ? LIFE_COMPARE_PRODUCTS[id].title : COMPARE_PRODUCTS[id].title);
+  const availableToAdd = pool.filter(id => !compareSelected.includes(id));
   if(compareSelected.length >= COMPARE_MAX || availableToAdd.length === 0) return '';
   return `
     <div class="compare-col-summary compare-col-add">
@@ -20028,7 +19603,7 @@ function renderComparePage(){
   const inputs = readCompareInputs();
   if(compareActiveGroup() === 'life'){ renderLifeComparePage(el, inputs); return; }
   const columns = compareSelected.map(id => {
-    const product = COMPARE_PRODUCTS[compareBaseId(id)];
+    const product = COMPARE_PRODUCTS[id];
     const tierVal = compareTierByProduct[id] || product.defaultValue;
     const tier = product.tiers.find(t => t.value === tierVal) || product.tiers[0];
     const occKey = occKeyFor(inputs.occClass);
@@ -20039,7 +19614,7 @@ function renderComparePage(){
     <div class="compare-col-summary">
       <div class="compare-col-title">${col.product.title}</div>
       <select class="compare-tier-select" onchange="setCompareTier('${col.id}', this.value)">
-        ${(used => col.product.tiers.map(t => `<option value="${t.value}" ${t.value===col.tier.value?'selected':''} ${used.includes(t.value)?'disabled':''}>${t.label}${used.includes(t.value)?' (มีคอลัมน์แล้ว)':''}</option>`).join(''))(compareTiersUsedByOthers(col.id))}
+        ${col.product.tiers.map(t => `<option value="${t.value}" ${t.value===col.tier.value?'selected':''}>${t.label}</option>`).join('')}
       </select>
       <div class="compare-price">${col.premium != null ? fmt(col.premium)+' บาท/ปี' : 'ไม่มีอัตราเบี้ยสำหรับกลุ่มอาชีพนี้'}</div>
       <button class="compare-remove-btn" type="button" onclick="removeCompareColumn('${col.id}')">เอาแผนนี้ออก ✕</button>
@@ -20072,171 +19647,6 @@ function renderComparePage(){
 }
 initComparePlanCards();
 initCompareToggle();
-
-/* =========================================================
-   ลากสลับคอลัมน์ในตารางเปรียบเทียบทุกหน้า
-   - หน้าที่มี state (เปรียบเทียบแผนสุขภาพ/ชีวิต และบำนาญ) สลับลำดับใน array แล้ว render ใหม่
-     การ์ดด้านบนกับตารางจึงสลับตามกันเสมอ
-   - ตารางคงที่ (CI, อุบัติเหตุ, เทียบหลายบริษัท ฯลฯ) สลับเซลล์ในตารางโดยตรง
-   - เมาส์: กดค้างแล้วลาก · มือถือ: แตะค้างครู่หนึ่งแล้วลาก (ปัดปกติยังเลื่อนตารางได้)
-   ========================================================= */
-const COL_REORDER = {
-  compare(a, b){
-    if(a===b || !compareSelected[a] || !compareSelected[b]) return;
-    [compareSelected[a], compareSelected[b]] = [compareSelected[b], compareSelected[a]];
-    renderComparePage();
-  },
-  pension(a, b){
-    if(a===b || !pensionCompareSelected[a] || !pensionCompareSelected[b]) return;
-    [pensionCompareSelected[a], pensionCompareSelected[b]] = [pensionCompareSelected[b], pensionCompareSelected[a]];
-    renderPensionCompare();
-  },
-};
-(function(){
-  const SKIP = 'select,button,input,textarea,a,option,label,[onclick],.info-icon';
-  const firstHeadText = t => ((t.tHead && t.tHead.rows[0] && t.tHead.rows[0].cells[0]) ? t.tHead.rows[0].cells[0].textContent : '').trim();
-  function isCompareTable(t){
-    if(!t || !t.tHead || t.tHead.rows.length !== 1) return false;
-    const n = t.tHead.rows[0].cells.length;
-    if(n < 3) return false;
-    if(t.closest('[data-reorder]')) return true;
-    if(t.matches('.cmp, .xw-table, .benefit-table')) return true;
-    return /^(หัวข้อ|หมวดความคุ้มครอง|หัวข้อเปรียบเทียบ|Item|Coverage category|Comparison item)$/.test(firstHeadText(t));
-  }
-  // แถวที่จำนวนเซลล์ไม่เท่าหัวตาราง (ยกเว้นแถวหัวข้อกลุ่มที่มีเซลล์เดียว) ทำให้สลับไม่ได้อย่างปลอดภัย
-  function movableRows(t){
-    const n = t.tHead.rows[0].cells.length, rows = [];
-    for(const r of t.rows){
-      if(r.cells.length === n){ rows.push(r); continue; }
-      if(r.cells.length === 1) continue;
-      return null;
-    }
-    return rows;
-  }
-  function swapTableCols(t, a, b){
-    const rows = movableRows(t); if(!rows) return;
-    rows.forEach(r => {
-      const x = r.cells[a], y = r.cells[b];
-      const mark = document.createComment('');
-      r.replaceChild(mark, x); r.replaceChild(x, y); r.replaceChild(y, mark);
-    });
-  }
-  // หา "รายการที่ลากได้" จากจุดที่กด
-  function targetOf(el){
-    if(!el || el.closest(SKIP)) return null;
-    const card = el.closest('.compare-columns-summary .compare-col-summary:not(.compare-col-add)');
-    if(card){
-      const box = card.closest('[data-reorder]'); if(!box) return null;
-      const items = [...card.parentElement.querySelectorAll(':scope > .compare-col-summary:not(.compare-col-add)')];
-      if(items.length < 2) return null;
-      return {kind:'card', box, key: box.dataset.reorder, items, index: items.indexOf(card)};
-    }
-    const th = el.closest('th');
-    if(!th) return null;
-    const t = th.closest('table');
-    if(!isCompareTable(t) || th.parentElement !== t.tHead.rows[0]) return null;
-    const idx = th.cellIndex;
-    if(idx < 1) return null;
-    const box = t.closest('[data-reorder]');
-    if(!box && !movableRows(t)) return null;
-    const items = [...t.tHead.rows[0].cells];
-    return {kind:'col', box, key: box && box.dataset.reorder, table: t, items, index: idx};
-  }
-  let st = null, ghost = null, hold = null, overIdx = -1;
-  function highlight(on){
-    if(!st) return;
-    document.querySelectorAll('.coldrag-over,.coldrag-src').forEach(e => e.classList.remove('coldrag-over','coldrag-src'));
-    if(!on) return;
-    const mark = (i, cls) => {
-      if(st.kind === 'card'){ st.items[i] && st.items[i].classList.add(cls); return; }
-      for(const r of st.table.rows) if(r.cells.length === st.items.length && r.cells[i]) r.cells[i].classList.add(cls);
-    };
-    mark(st.index, 'coldrag-src');
-    if(overIdx >= 0 && overIdx !== st.index) mark(overIdx, 'coldrag-over');
-  }
-  function begin(){
-    st.active = true;
-    document.body.classList.add('coldrag-active');
-    ghost = document.createElement('div');
-    ghost.className = 'coldrag-ghost';
-    const src = st.items[st.index];
-    ghost.textContent = (src.querySelector('.compare-col-title') || src).textContent.trim().slice(0, 40);
-    document.body.appendChild(ghost);
-    moveGhost(st.x, st.y);
-    highlight(true);
-    try{ navigator.vibrate && navigator.vibrate(15); }catch(e){}
-    try{ const sel = window.getSelection(); sel && sel.removeAllRanges(); }catch(e){}
-  }
-  function moveGhost(x, y){ if(ghost){ ghost.style.left = (x + 12) + 'px'; ghost.style.top = (y + 12) + 'px'; } }
-  function indexAt(x, y){
-    // เลือกคอลัมน์จากตำแหน่งแนวนอน ลากเลยขอบตารางขึ้น/ลงก็ยังเลือกได้
-    let best = -1;
-    st.items.forEach((it, i) => {
-      if(st.kind === 'col' && i === 0) return;
-      const r = it.getBoundingClientRect();
-      if(x >= r.left && x <= r.right) best = i;
-    });
-    return best;
-  }
-  function end(drop){
-    clearTimeout(hold); hold = null;
-    if(st && st.active){
-      highlight(false);
-      if(drop && overIdx >= 0 && overIdx !== st.index){
-        if(st.box && COL_REORDER[st.key]){
-          const off = st.kind === 'col' ? 1 : 0;
-          COL_REORDER[st.key](st.index - off, overIdx - off);
-        } else if(st.kind === 'col'){
-          swapTableCols(st.table, st.index, overIdx);
-        }
-      }
-      document.body.classList.remove('coldrag-active');
-      st.suppressClick = true;
-      setTimeout(() => { st = null; }, 0);
-    } else st = null;
-    if(ghost){ ghost.remove(); ghost = null; }
-    overIdx = -1;
-  }
-  document.addEventListener('pointerdown', e => {
-    if(e.button !== 0 && e.pointerType === 'mouse') return;
-    const t = targetOf(e.target);
-    if(!t) return;
-    st = Object.assign(t, {x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, type:e.pointerType, active:false});
-    if(e.pointerType !== 'mouse') hold = setTimeout(() => { if(st && !st.active) begin(); }, 280);
-  }, true);
-  document.addEventListener('pointermove', e => {
-    if(!st) return;
-    st.x = e.clientX; st.y = e.clientY;
-    const moved = Math.hypot(e.clientX - st.sx, e.clientY - st.sy);
-    if(!st.active){
-      if(st.type === 'mouse'){ if(moved > 6) begin(); else return; }
-      else { if(moved > 10){ clearTimeout(hold); st = null; } return; }  // ปัดเลื่อนตารางตามปกติ
-    }
-    e.preventDefault();
-    moveGhost(e.clientX, e.clientY);
-    const i = indexAt(e.clientX, e.clientY);
-    if(i !== overIdx){ overIdx = i; highlight(true); }
-  }, {capture:true, passive:false});
-  document.addEventListener('touchmove', e => { if(st && st.active) e.preventDefault(); }, {passive:false});
-  document.addEventListener('pointerup', () => end(true), true);
-  document.addEventListener('pointercancel', () => end(false), true);
-  document.addEventListener('keydown', e => { if(e.key === 'Escape') end(false); });
-  document.addEventListener('click', e => { if(st && st.suppressClick){ e.stopPropagation(); e.preventDefault(); } }, true);
-  // ใส่ title บอกว่าลากได้ ให้ผู้ใช้รู้โดยไม่ต้องอ่านคู่มือ
-  const hint = 'ลากเพื่อสลับตำแหน่งคอลัมน์ (มือถือ: แตะค้างแล้วลาก)';
-  const mark = () => {
-    document.querySelectorAll('table').forEach(t => {
-      if(t.dataset.coldragMarked || !isCompareTable(t)) return;
-      if(!t.closest('[data-reorder]') && !movableRows(t)) return;
-      t.dataset.coldragMarked = '1'; t.classList.add('coldrag-table');
-      [...t.tHead.rows[0].cells].slice(1).forEach(th => { th.title = hint; });
-    });
-    document.querySelectorAll('[data-reorder] .compare-col-summary:not(.compare-col-add)').forEach(c => { c.title = hint; });
-  };
-  new MutationObserver(() => { clearTimeout(mark._t); mark._t = setTimeout(mark, 60); })
-    .observe(document.documentElement, {childList:true, subtree:true});
-  if(document.readyState !== 'loading') mark(); else document.addEventListener('DOMContentLoaded', mark);
-})();
 
 /* =========================================================
    ประกันชีวิตแบบบำนาญ — ข้อมูล เครื่องคำนวณ และหน้ารายละเอียด
@@ -22681,145 +22091,5 @@ ssSyncBtnSkin();
   </div>
   <button type="button" class="cd-btn" onclick="dgJumpToSummary()">ดูสรุปทั้งหมด</button>
 </div>
-<script>
-/* ===== ภาษาอังกฤษ (TH/EN) =====
-   หน้าเว็บเขียนเป็นภาษาไทยทั้งหมด ตอนเลือก EN จะโหลดพจนานุกรม data/i18n-en.json
-   แล้วแปลข้อความบนหน้าจอทีละโหนด (ตรงตัวก่อน แล้วค่อยใช้กฎแบบมีตัวเลข)
-   และคอยแปลส่วนที่ render ใหม่ด้วย MutationObserver
-   ข้อความที่ห้ามแปล เช่น ชื่อ/ที่อยู่โรงพยาบาล ใส่ data-noi18n
-   กลับเป็นภาษาไทยด้วยการโหลดหน้าใหม่ จึงไม่ต้องเก็บข้อความเดิมไว้ */
-window.I18N = (function(){
-  const TH = /[฀-๿]/;
-  const SKIP_TAGS = {SCRIPT:1, STYLE:1, NOSCRIPT:1, TEXTAREA:1, CODE:1, PRE:1};
-  const ATTRS = ['placeholder','title','aria-label','alt'];
-  let lang = 'th', dict = null, rules = [], observer = null;
-  const params = new URLSearchParams(location.search);
-  const q = params.get('lang');
-  try{ if(q === 'en' || q === 'th') localStorage.setItem('lang', q); lang = (q || localStorage.getItem('lang')) === 'en' ? 'en' : 'th'; }catch(e){ lang = q === 'en' ? 'en' : 'th'; }
-
-  function norm(s){ return s.replace(/\s+/g,' ').trim(); }
-  function tr(s){
-    const k = norm(s);
-    if(!k || !TH.test(k)) return null;
-    const whole = trOne(k);
-    if(whole != null) return whole;
-    // ข้อความยาวที่ต่อกันด้วย • หรือ · (เช่นสรุปแผนในหน้าคำนวณ) แปลทีละท่อนแล้วต่อกลับ
-    for(const sep of [' • ', ' · ', ' | ', '; ']){
-      if(k.indexOf(sep) < 0) continue;
-      const parts = k.split(sep).map(p => TH.test(p) ? trOne(p.trim()) : p);
-      if(parts.every(p => p != null)) return parts.join(sep);
-    }
-    return null;
-  }
-  // ปี พ.ศ. ในหน้าอังกฤษ แปลงเป็น ค.ศ. (ลบ 543)
-  function ce(s){ return s == null ? s : s.replace(/\s*\((?:BE|B\.E\.)\s?2[45]\d\d\)/g, '').replace(/\b(?:BE|B\.E\.)\s?(2[45]\d\d)\b/g, (m, y) => String(y - 543)).replace(/\b(\d{1,2}\/\d{1,2}\/)(2[45]\d\d)\b/g, (m, a, y) => a + (y - 543)); }
-  function trOne(k){ return ce(trOne0(k)); }
-  function trOne0(k){
-    if(Object.prototype.hasOwnProperty.call(dict, k)) return dict[k];
-    let out = k;
-    for(const [re, rep] of rules){ if(re.test(out)){ re.lastIndex = 0; out = out.replace(re, rep); } re.lastIndex = 0; }
-    out = out.replace(/\s{2,}/g,' ').replace(/\s+([,.):;])/g,'$1').replace(/\(\s+/g,'(').replace(/\s+\/(?=[A-Za-z])/g,'/').replace(/,(?=\s*[•·|])/g,'').trim();
-    if(TH.test(out)) return null;   // แปลได้ไม่ครบ คงภาษาไทยไว้ดีกว่าปนสองภาษา
-    if(/^[a-z]/.test(out) && !/^[a-z]/.test(k)) out = out[0].toUpperCase() + out.slice(1);
-    return out;
-  }
-  function skip(el){
-    for(let e = el; e && e !== document.body; e = e.parentElement){
-      if(SKIP_TAGS[e.tagName] || e.hasAttribute('data-noi18n') || e.isContentEditable) return true;
-    }
-    return false;
-  }
-  function doText(n){
-    const v = n.nodeValue;
-    if(!v || !TH.test(v)) return;
-    const p = n.parentElement;
-    if(!p || skip(p)) return;
-    const out = tr(v);
-    if(out == null) return;
-    // <option> ที่ไม่มี value ใช้ข้อความเป็นค่า ต้องเก็บค่าภาษาไทยไว้ก่อนเปลี่ยนข้อความ
-    if(p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', p.textContent);
-    let lead = v.match(/^\s*/)[0], trail = v.match(/\s*$/)[0];
-    // ภาษาไทยไม่เว้นวรรคระหว่างข้อความกับแท็กข้าง ๆ แต่ภาษาอังกฤษต้องเว้น
-    if(!trail && n.nextSibling && !/^[\s,.:;)!?]/.test(n.nextSibling.textContent || '') && !/[\s(\/–-]$/.test(out)) trail = ' ';
-    if(!lead && n.previousSibling && !/[\s(\/]$/.test(n.previousSibling.textContent || '') && !/^[\s,.:;)!?\/–-]/.test(out)) lead = ' ';
-    n.nodeValue = lead + out + trail;
-  }
-  function doAttrs(el){
-    if(el.tagName !== 'TEXTAREA' && skip(el)) return;
-    for(const a of ATTRS){
-      const v = el.getAttribute(a);
-      if(v && TH.test(v)){ const out = tr(v); if(out != null) el.setAttribute(a, out); }
-    }
-    if(el.tagName === 'INPUT' && (el.type === 'button' || el.type === 'submit') && TH.test(el.value)){ const out = tr(el.value); if(out != null) el.value = out; }
-  }
-  function walk(root){
-    if(!root) return;
-    if(root.nodeType === 3){ doText(root); return; }
-    if(root.nodeType !== 1 || SKIP_TAGS[root.tagName]) return;
-    doAttrs(root);
-    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
-    let n;
-    while((n = w.nextNode())){
-      if(n.nodeType === 3) doText(n); else doAttrs(n);
-    }
-  }
-  function start(){
-    walk(document.body);
-    if(TH.test(document.title)){ const t = tr(document.title); if(t) document.title = t; }
-    observer = new MutationObserver(muts => {
-      observer.disconnect();
-      for(const m of muts){
-        if(m.type === 'characterData') doText(m.target);
-        else if(m.type === 'attributes') doAttrs(m.target);
-        else m.addedNodes.forEach(walk);
-      }
-      observe();
-    });
-    observe();
-  }
-  function observe(){ observer.observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:ATTRS}); }
-  function load(){
-    return fetch('/data/i18n-en.json?v=' + (typeof DATA_VERSION !== 'undefined' ? DATA_VERSION : '1')).then(r => { if(!r.ok) throw Error(); return r.json(); }).then(j => {
-      dict = j.dict;
-      rules = j.rules.map(([src, rep]) => [new RegExp(src, 'g'), rep]);
-    });
-  }
-  function apply(){
-    document.documentElement.lang = 'en';
-    document.documentElement.classList.add('lang-en');
-    return load().then(start).then(() => { try{ if(document.getElementById('copySummaryText') && typeof renderAll === 'function') renderAll(); }catch(e){} try{ document.dispatchEvent(new Event('i18n:ready')); }catch(e){} }).catch(() => {}).finally(() => document.documentElement.classList.remove('i18n-loading'));
-  }
-  function set(next){
-    if(next === lang) return;
-    try{ localStorage.setItem('lang', next); }catch(e){}
-    const u = new URL(location.href); u.searchParams.delete('lang');
-    if(next === 'th'){ history.replaceState(null, '', u); location.reload(); return; }
-    history.replaceState(null, '', u);
-    lang = 'en'; syncButtons(); apply();
-  }
-  function place(){
-    const t = document.getElementById('langToggle'), b = document.querySelector('.ss-btn');
-    if(!t || !b) return;
-    const r = b.getBoundingClientRect();
-    if(r.width) t.style.right = Math.round(window.innerWidth - r.left + 8) + 'px';
-  }
-  window.addEventListener('resize', place);
-  window.addEventListener('load', place);
-  function syncButtons(){
-    place(); setTimeout(place, 300);
-    document.querySelectorAll('#langToggle button').forEach(b => {
-      const on = b.dataset.lang === lang;
-      b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  }
-  document.addEventListener('click', e => {
-    const b = e.target.closest('#langToggle button');
-    if(b) set(b.dataset.lang);
-  });
-  syncButtons();
-  if(lang === 'en') apply();
-  return { get lang(){ return lang; }, t: s => (lang === 'en' && dict ? (tr(s) ?? s) : s), set };
-})();
-</script>
 </body>
 </html>
