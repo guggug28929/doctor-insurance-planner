@@ -57,6 +57,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/stats",
+      "destination": "/index.html"
+    },
+    {
       "source": "/((?!api/|brochures/|data/|plan-covers/|favicon|robots|sitemap).*[^.][^/]*)",
       "destination": "/index.html"
     }

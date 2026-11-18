@@ -2809,6 +2809,37 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
   .ul-print-chart svg{width:100%;max-height:95mm;} .ul-print-chart .ul-legend{display:flex;gap:6mm;font-size:8pt;} .ul-print-chart .ul-leg i{display:inline-block;width:8mm;height:1mm;margin-right:2mm;vertical-align:middle;}
   .ul-sub{margin-top:14px;font-size:1rem;color:var(--pink-deep);}
   .ul-table tbody tr{cursor:pointer;} .ul-table tbody tr.ul-sel td{background:#fff0f5;}
+
+/* ---------- สถิติผู้เข้าชม (เฉพาะผู้ดูแล) ---------- */
+.st-note{color:var(--muted);font-size:var(--fs-sm,.88rem);margin:.4rem 0}
+.st-range{display:flex;gap:.4rem;margin:.6rem 0 1rem}
+.st-range button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:.3rem .9rem;cursor:pointer;font:inherit;color:var(--ink)}
+.st-range button.active{background:var(--pink-deep);border-color:var(--pink-deep);color:#fff}
+.st-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.6rem;margin:.4rem 0}
+.st-kpi{border:1px solid var(--line);border-radius:12px;padding:.6rem .75rem;background:var(--panel);display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.st-kpi span{font-size:var(--fs-xs,.78rem);color:var(--muted)}
+.st-kpi b{font-size:1.45rem;line-height:1.15;color:var(--pink-deep);font-variant-numeric:tabular-nums}
+.st-kpi small{font-size:var(--fs-xs,.78rem);color:var(--muted)}
+#page-stats h3{font-size:1rem;margin:1.1rem 0 .4rem}
+.st-cols{display:flex;align-items:flex-end;gap:2px;height:130px;padding-bottom:18px;border-bottom:1px solid var(--line);position:relative}
+.st-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative;min-width:0}
+.st-col-fill{display:block;background:var(--pink);border-radius:3px 3px 0 0;min-height:1px;transition:background .15s}
+.st-col:hover .st-col-fill{background:var(--pink-deep)}
+.st-col:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:11px;padding:2px 6px;border-radius:6px;white-space:nowrap;z-index:2;pointer-events:none}
+.st-cols{overflow:visible}
+.st-col-x{position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+.st-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem 1.4rem}
+.st-bars{display:flex;flex-direction:column;gap:.35rem}
+.st-bar-row{display:grid;grid-template-columns:minmax(0,9.5rem) 1fr auto;align-items:center;gap:.5rem;font-size:var(--fs-sm,.88rem)}
+.st-bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-bar-track{height:10px;background:var(--pink-soft);border-radius:999px;overflow:hidden}
+.st-bar-fill{display:block;height:100%;background:var(--pink-deep);border-radius:999px}
+.st-bar-val{font-variant-numeric:tabular-nums;white-space:nowrap}
+.st-bar-val small{color:var(--muted)}
+.st-home-card{padding-top:.9rem;padding-bottom:.6rem}
+.st-home-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.st-link{border:0;background:none;color:var(--pink-deep);cursor:pointer;font:inherit;font-weight:600}
+@media (max-width:640px){.st-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.st-grid{grid-template-columns:1fr}.st-bar-row{grid-template-columns:minmax(0,7rem) 1fr auto}}
 </style>
 </head>
 <body>
@@ -3577,8 +3608,28 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 </div>
 
 <!-- ============ PAGE: HOME / ABOUT ============ -->
+<div id="page-stats" class="page">
+<div class="wrap">
+  <div class="content-card">
+    <h2>สถิติผู้เข้าชมเว็บ</h2>
+    <p class="st-note">เห็นเฉพาะผู้ดูแลเว็บ · นับเป็นยอดรวม ไม่เก็บชื่อ อีเมล หรือ IP ของผู้เข้าชม · การเข้าดูของผู้ดูแลเองไม่นับรวม</p>
+    <div class="st-range" role="group" aria-label="ช่วงเวลา">
+      <button type="button" data-days="7" onclick="stLoad(7)">7 วัน</button>
+      <button type="button" data-days="30" onclick="stLoad(30)">30 วัน</button>
+      <button type="button" data-days="90" onclick="stLoad(90)">90 วัน</button>
+    </div>
+    <div id="stBody"><p class="st-note">กำลังโหลด…</p></div>
+  </div>
+</div>
+</div>
+
 <div id="page-home" class="page active">
 <div class="wrap">
+
+  <div class="content-card st-home-card" id="stHomeCard" hidden>
+    <div class="st-home-head"><b>สถิติเว็บ (เห็นเฉพาะผู้ดูแล)</b><button type="button" class="st-link" onclick="showPage('stats')">ดูทั้งหมด →</button></div>
+    <div id="stHomeBody"></div>
+  </div>
 
   <div class="content-card home-hero-card">
     <h2>ไม่รู้จะเริ่มตรงไหน เริ่มตรงนี้</h2>
@@ -4826,7 +4877,7 @@ html.lang-en .ai-plan-card.recommended::before{content:"Top pick";}
 
 
 <script>
-const DATA_VERSION = '2026-11-15a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
+const DATA_VERSION = '2026-11-17a';   // bump เมื่อแก้ไฟล์ใน data/ เพื่อบังคับให้โหลดใหม่
 const ratesRequest = new XMLHttpRequest();
 ratesRequest.open("GET", "/data/premium-rates.json?v=" + DATA_VERSION, false);
 ratesRequest.send(null);
@@ -11576,6 +11627,7 @@ const PAGE_ROUTES = {
   unitlinked: '/unit-linked',
   hospitals: '/hospitals',
   contact: '/contact',
+  stats: '/stats',
 };
 
 const PLAN_ROUTES = {
@@ -17681,6 +17733,7 @@ function showPage(name, options = {}){
   if(name === 'tax' && typeof renderTaxPage === 'function') renderTaxPage();
   if(name === 'unitlinked' && typeof renderUnitLinkedPage === 'function') renderUnitLinkedPage();
   if(name === 'hospitals' && typeof hnInit === 'function') hnInit();
+  if(name === 'stats' && typeof stLoad === 'function') stLoad();
   if(name === 'ai'){
     const bb = document.getElementById('advBucketBox');
     if(bb && !bb.dataset.done){ bb.innerHTML = advPrincipleInfographic(); bb.dataset.done = '1'; }
@@ -18954,6 +19007,124 @@ function routeFromLocation(){
   }
   const page = Object.keys(PAGE_ROUTES).find(name => PAGE_ROUTES[name] === path) || 'home';
   showPage(page, {updateUrl:false});
+}
+
+/* ---------- สถิติผู้เข้าชม ----------
+   ส่งแค่ path ของหน้า + ที่มา (referrer/utm) ไป /api/stats ครั้งละหน้า
+   รหัสผู้เข้าชมเป็นเลขสุ่มในเบราว์เซอร์ ใช้นับ "คนไม่ซ้ำ" เท่านั้น ไม่ผูกกับตัวบุคคล
+   ผู้ดูแลเว็บที่ล็อกอินอยู่ ฝั่งเซิร์ฟเวอร์จะแยกออก ไม่ปนยอด */
+const ST_URL = '/api/stats';
+let stLastPath = null, stTimer = null, stSentEntry = false;
+function stVid(){
+  try{
+    let v = localStorage.getItem('dg_vid');
+    if(!v || !/^[a-z0-9]{12,40}$/.test(v)){ v = (Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)).slice(0, 24); localStorage.setItem('dg_vid', v); }
+    return v;
+  }catch(e){ return ''; }
+}
+function stEntryOnce(){
+  try{ if(sessionStorage.getItem('dg_st_entry')) return false; sessionStorage.setItem('dg_st_entry', '1'); return true; }
+  catch(e){ if(stSentEntry) return false; stSentEntry = true; return true; }
+}
+function stSend(){
+  if(location.protocol === 'file:') return;
+  const path = normalizedPathname();
+  if(path === stLastPath) return;
+  stLastPath = path;
+  const entry = stEntryOnce();
+  let utm = '';
+  try{ utm = new URLSearchParams(location.search).get('utm_source') || ''; }catch(e){}
+  const body = JSON.stringify({ path, entry, ref: entry ? document.referrer : '', utm: entry ? utm : '', vid: stVid() });
+  try{ fetch(ST_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body, keepalive:true, credentials:'same-origin' }).catch(() => {}); }catch(e){}
+}
+function stQueue(){ clearTimeout(stTimer); stTimer = setTimeout(stSend, 700); }
+['pushState','replaceState'].forEach(fn => {
+  const orig = history[fn];
+  history[fn] = function(){ const r = orig.apply(this, arguments); stQueue(); return r; };
+});
+window.addEventListener('popstate', stQueue);
+
+/* ชื่อหน้าแบบอ่านง่าย สำหรับ dashboard */
+function stPathLabel(path){
+  const page = Object.keys(PAGE_ROUTES).find(k => PAGE_ROUTES[k] === path);
+  if(page){
+    if(page === 'home') return 'หน้าแรก';
+    const b = document.querySelector(`#navbar button[data-page="${page}"]`);
+    if(b && b.textContent.trim()) return b.textContent.trim();
+    return {compare:'เปรียบเทียบแผน','pension-compare':'เปรียบเทียบบำนาญ','ci-compare':'เปรียบเทียบโรคร้ายแรง',stats:'สถิติเว็บ'}[page] || path;
+  }
+  const plan = Object.keys(PLAN_ROUTES).find(k => PLAN_ROUTES[k] === path);
+  if(plan && typeof PLAN_DETAILS === 'object' && PLAN_DETAILS[plan] && PLAN_DETAILS[plan].title) return PLAN_DETAILS[plan].title;
+  return path;
+}
+const ST_SRC = {line:'LINE', facebook:'Facebook', instagram:'Instagram', tiktok:'TikTok', google:'Google', youtube:'YouTube', 'other-search':'ค้นหาอื่น ๆ', 'other-site':'เว็บอื่น', direct:'พิมพ์ลิงก์ / ไม่ทราบที่มา'};
+const ST_DEV = {mobile:'มือถือ', tablet:'แท็บเล็ต', desktop:'คอมพิวเตอร์'};
+function stNum(n){ return Number(n || 0).toLocaleString('th-TH'); }
+function stDay(d){ const s = String(d); return new Date(+s.slice(0,4), +s.slice(4,6) - 1, +s.slice(6,8)).toLocaleDateString('th-TH', {day:'numeric', month:'short'}); }
+function stBars(rows, opts = {}){
+  const max = Math.max(1, ...rows.map(r => r.v));
+  const total = rows.reduce((s, r) => s + r.v, 0) || 1;
+  return `<div class="st-bars">${rows.map(r => `<div class="st-bar-row"><span class="st-bar-label">${plannerEscapeHtml(r.label)}</span><span class="st-bar-track"><span class="st-bar-fill" style="width:${(r.v / max * 100).toFixed(1)}%"></span></span><span class="st-bar-val">${stNum(r.v)}${opts.pct ? ` <small>${Math.round(r.v / total * 100)}%</small>` : ''}</span></div>`).join('') || '<p class="st-note">ยังไม่มีข้อมูล</p>'}</div>`;
+}
+function stColumns(values, labels, peakNote){
+  const max = Math.max(1, ...values);
+  return `<div class="st-cols">${values.map((v, i) => `<div class="st-col" data-tip="${plannerEscapeHtml(labels[i])}: ${stNum(v)}" aria-label="${plannerEscapeHtml(labels[i])}: ${stNum(v)}"><span class="st-col-fill" style="height:${(v / max * 100).toFixed(1)}%"></span><span class="st-col-x">${i % Math.ceil(values.length / 12) === 0 ? plannerEscapeHtml(String(labels[i])) : ''}</span></div>`).join('')}</div>${peakNote ? `<p class="st-note">${peakNote}</p>` : ''}`;
+}
+function stKpis(d){
+  const k = d.kindsRange || {};
+  const people = (k.guest || 0) + (k.agent || 0);
+  const agentPct = people ? Math.round((k.agent || 0) / people * 100) : 0;
+  return `<div class="st-kpis">
+    <div class="st-kpi"><span>ผู้เข้าชมทั้งหมด</span><b>${stNum(d.total.visitors)}</b><small>คน · ${stNum(d.total.pageviews)} หน้า</small></div>
+    <div class="st-kpi"><span>วันนี้</span><b>${stNum(d.today.uv)}</b><small>คน · ${stNum(d.today.pv)} หน้า</small></div>
+    <div class="st-kpi"><span>${d.days} วันล่าสุด</span><b>${stNum(d.daily.reduce((s, x) => s + x.pv, 0))}</b><small>หน้าที่ถูกเปิด</small></div>
+    <div class="st-kpi"><span>ลูกค้า : เอเจ้น</span><b>${100 - agentPct} : ${agentPct}</b><small>ตามการเปิดหน้า ${d.days} วัน</small></div>
+  </div>`;
+}
+let stDays = 30;
+async function stLoad(days){
+  stDays = days || stDays;
+  document.querySelectorAll('.st-range button').forEach(b => b.classList.toggle('active', +b.dataset.days === stDays));
+  const box = document.getElementById('stBody');
+  if(!box) return;
+  box.innerHTML = '<p class="st-note">กำลังโหลด…</p>';
+  try{
+    const r = await fetch(ST_URL + '?days=' + stDays, {credentials:'same-origin'});
+    const d = await r.json().catch(() => ({}));
+    if(r.status === 401){ box.innerHTML = `<p class="st-note">ต้องเข้าสู่ระบบด้วยอีเมลผู้ดูแลก่อน (ปุ่มเข้าสู่ระบบอยู่ในกล่อง "บันทึกแผน" หน้า <a href="/calculator" onclick="event.preventDefault();showPage('calc')">คำนวณเบี้ย</a>)</p>`; return; }
+    if(!r.ok){ box.innerHTML = `<p class="st-note">${plannerEscapeHtml(d.error || 'โหลดสถิติไม่สำเร็จ')}</p>`; return; }
+    const hrs = d.hoursRange; const peak = hrs.indexOf(Math.max(...hrs));
+    const k = d.kindsRange || {};
+    box.innerHTML = `
+      ${stKpis(d)}
+      <p class="st-note">เริ่มนับเมื่อ ${d.since ? stDay(d.since) + ' ' + (+String(d.since).slice(0,4) + 543) : 'วันนี้'} · ข้อมูลก่อนหน้านั้นไม่มีในระบบ</p>
+      <h3>ผู้เข้าชมรายวัน (คนไม่ซ้ำ)</h3>
+      ${stColumns(d.daily.map(x => x.uv), d.daily.map(x => stDay(x.day)))}
+      <h3>ช่วงเวลาที่คนเข้า (${d.days} วัน รวมกัน)</h3>
+      ${stColumns(hrs, hrs.map((_, h) => h + ':00'), Math.max(...hrs) ? `ช่วงที่คนเข้ามากสุด ${peak}:00–${peak + 1}:00 น.` : '')}
+      <div class="st-grid">
+        <div><h3>หน้าที่ถูกเปิดมากสุด (${d.days} วัน)</h3>${stBars(d.pagesRange.slice(0, 10).map(p => ({label: stPathLabel(p.key), title: p.key, v: p.count})))}</div>
+        <div><h3>มาจากช่องทางไหน</h3>${stBars(Object.entries(d.sourcesRange).sort((a, b) => b[1] - a[1]).map(([s, v]) => ({label: ST_SRC[s] || s, v})), {pct:true})}</div>
+        <div><h3>ใครเข้ามาดู</h3>${stBars([{label:'ลูกค้า / คนทั่วไป', v:k.guest || 0}, {label:'เอเจ้นที่ล็อกอิน', v:k.agent || 0}], {pct:true})}<p class="st-note">นับตามการเปิดหน้า เอเจ้นที่ไม่ได้ล็อกอินจะถูกนับเป็นคนทั่วไป · เอเจ้นที่เคยล็อกอินเข้ามาดูรวม ${stNum(d.total.agents)} คน</p></div>
+        <div><h3>อุปกรณ์</h3>${stBars(Object.entries(d.devices).sort((a, b) => b[1] - a[1]).map(([s, v]) => ({label: ST_DEV[s] || s, v})), {pct:true})}</div>
+      </div>`;
+  }catch(e){ box.innerHTML = '<p class="st-note">โหลดสถิติไม่สำเร็จ ลองใหม่อีกครั้ง</p>'; }
+}
+/* การ์ดเล็กหน้าแรก โผล่เฉพาะเมื่อคนที่ล็อกอินเป็นผู้ดูแล */
+async function stHomeInit(){
+  const card = document.getElementById('stHomeCard');
+  if(!card || location.protocol === 'file:') return;
+  try{
+    const a = await fetch('/api/agent-auth', {credentials:'same-origin'}).then(r => r.json());
+    if(!a || !a.isAdmin) return;
+    const d = await fetch(ST_URL + '?days=7', {credentials:'same-origin'}).then(r => r.ok ? r.json() : null);
+    if(!d) return;
+    const topPage = d.pagesRange[0];
+    const src = Object.entries(d.sourcesRange).sort((x, y) => y[1] - x[1])[0];
+    document.getElementById('stHomeBody').innerHTML = stKpis(d) +
+      `<p class="st-note">7 วันล่าสุด · หน้าฮิต: ${topPage ? plannerEscapeHtml(stPathLabel(topPage.key)) : '-'} · มาจาก${src ? ' ' + (ST_SRC[src[0]] || src[0]) : ' -'} มากสุด</p>`;
+    card.hidden = false;
+  }catch(e){}
 }
 
 window.addEventListener('popstate', routeFromLocation);
@@ -22426,6 +22597,8 @@ updateTpdHint();
 updateTermHint();
 
 routeFromLocation();
+stQueue();
+stHomeInit();
 /* =========================================================================
    ค้นหาทั้งเว็บ
    เนื้อหาถูกกระจายอยู่หลายที่ ทั้งหน้าแบบประกัน คำถามที่พบบ่อย และนิยามโรคร้ายแรง
