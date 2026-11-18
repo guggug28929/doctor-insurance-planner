@@ -19078,7 +19078,7 @@ function stKpis(d){
     <div class="st-kpi"><span>ผู้เข้าชมทั้งหมด</span><b>${stNum(d.total.visitors)}</b><small>คน · ${stNum(d.total.pageviews)} หน้า</small></div>
     <div class="st-kpi"><span>วันนี้</span><b>${stNum(d.today.uv)}</b><small>คน · ${stNum(d.today.pv)} หน้า</small></div>
     <div class="st-kpi"><span>${d.days} วันล่าสุด</span><b>${stNum(d.daily.reduce((s, x) => s + x.pv, 0))}</b><small>หน้าที่ถูกเปิด</small></div>
-    <div class="st-kpi"><span>ลูกค้า : เอเจ้น</span><b>${100 - agentPct} : ${agentPct}</b><small>ตามการเปิดหน้า ${d.days} วัน</small></div>
+    <div class="st-kpi"><span>ลูกค้า : เอเจ้น</span><b>${people ? (100 - agentPct) + ' : ' + agentPct : '–'}</b><small>ตามการเปิดหน้า ${d.days} วัน</small></div>
   </div>`;
 }
 let stDays = 30;
